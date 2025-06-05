@@ -1,5 +1,5 @@
 {
-  "name": "myapp",
+  "name": "frame",
   "version": "0.1.0",
   "type": "module",
   "private": false,
@@ -27,6 +27,8 @@
     "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
     "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
     "@farcaster/mini-app-solana": "^0.0.5",
+    "@neynar/nodejs-sdk": "^2.19.0",
+    "@neynar/react": "^0.9.7",
     "@radix-ui/react-label": "^2.1.1",
     "@solana/wallet-adapter-react": "^0.15.38",
     "@tanstack/react-query": "^5.61.0",
@@ -38,15 +40,14 @@
     "mipd": "^0.0.7",
     "next": "15.0.3",
     "next-auth": "^4.24.11",
+    "openai": "^5.1.0",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.23.6",
     "wagmi": "^2.14.12",
-    "zod": "^3.24.2",
-    "@neynar/nodejs-sdk": "^2.19.0",
-    "@neynar/react": "^0.9.7"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20",

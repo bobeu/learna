@@ -1,0 +1,75 @@
+import { deployContracts, retrieveSafeContract } from "../../deployments";
+import { loadFixture, } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { ethers } from "hardhat";
+import { expect } from "chai";
+import { 
+  UNIT_LIQUIDITY,
+  COLLATER_COVERAGE_RATIO,
+  DURATION_IN_HOURS,
+  ZERO,
+  INTEREST_RATE,
+  formatAddr,
+  TOTAL_LIQUIDITY,
+} from "../../utilities";
+import { createPermissionedPool, joinEpoch } from "../../utils";
+
+describe("Permissioned: Contribute", function () {
+  async function deployContractsFixcture() {
+    return { ...await deployContracts(ethers.getSigners) };
+  }
+  
+    describe("Contribute liquidity to existing pool", function () {
+         it("Should add users and contribute quota to the pool successfully", async function () {
+             const {
+               baseAsset,
+               flexpool,
+               collateralAsset,
+               signers : { signer1, signer2, signer3, deployer, signer2Addr, signer3Addr },
+               flexpoolAddr 
+            } = await loadFixture(deployContractsFixcture);
+               
+             const create = await createPermissionedPool({
+               asset: baseAsset,
+               colCoverage: COLLATER_COVERAGE_RATIO,
+               durationInHours: DURATION_IN_HOURS,
+               factory: flexpool,
+               intRate: INTEREST_RATE,
+               signer: signer1,
+               unitLiquidity: UNIT_LIQUIDITY,
+               contributors: [signer1, signer2, signer3],
+               deployer,
+               collateralToken: collateralAsset
+             });
+       
+             const {
+               balances: { base, collateral }, 
+               pool: { 
+                 pool: {
+                   big: { currentPool,}
+                 }
+               },
+               profiles: [s1, s2]
+             } = await joinEpoch({
+               deployer,
+               unit: create.pool.pool.big.unit,
+               factory: flexpool,
+               factoryAddr: formatAddr(flexpoolAddr),
+               signers: [signer2, signer3],
+               testAsset: baseAsset,
+               collateral: collateralAsset
+             });
+       
+             expect(currentPool).to.be.equal(TOTAL_LIQUIDITY);
+             expect(base).to.be.equal(TOTAL_LIQUIDITY);
+             expect(collateral).to.be.equal(ZERO);
+             expect(s1.id).to.be.equal(signer2Addr);
+             expect(s2.id).to.be.equal(signer3Addr);
+       
+             const safeContract = await retrieveSafeContract(formatAddr(create.pool.pool.addrs.safe));
+             const safeData = await safeContract.getData();
+             // Assertions
+             expect(safeData.aggregateFee).to.be.eq(ZERO);
+             expect(safeData.totalClients).to.be.eq(3n);
+        });
+    })
+})
