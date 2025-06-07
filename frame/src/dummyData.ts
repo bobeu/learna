@@ -21,6 +21,13 @@ export type QuizDatum = {
 };
 
 export type QuizData = Array<QuizDatum>;
+export type Path = 'selectategory' | 'review' | 'scores' | 'quiz';
+export type DisplayQuizProps = {
+    indexedAnswer: number;
+    selectedQuizData: {category: string, data: QuizDatum};
+    setpath: (arg: Path) => void;
+    handleSelectAnswer: (arg: {label: string, value: string}) => void;
+}
 
 export const categories = ['solidity', 'vyper', 'wagmi', 'ethersJs', 'web3Js', 'ReactJs'];
 export const difficultyLevels = ['beginner', 'intermediate', 'advance'];
@@ -76,8 +83,8 @@ export const quizData : QuizData = [
                     },
                 ],
                 correctAnswer: {
-                    label: 'd',
-                    value: 'uint8 myTime = 5'
+                    label: 'c',
+                    value: 'uint8 myTime = 5;'
                 }
             },
             {

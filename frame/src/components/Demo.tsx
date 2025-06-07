@@ -3,7 +3,7 @@
 import * as React  from 'react';
 import { QuizData, quizData, QuizDatum } from '~/dummyData';
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Input } from "./ui/input";
+// import { Input } from "./ui/input";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
   SignIn as SignInCore,
@@ -26,15 +26,17 @@ import {
 import { useHasSolanaProvider } from "./providers/SafeFarcasterSolanaProvider";
 
 import { config } from "~/components/providers/WagmiProvider";
-import { Button } from "~/components/ui/Button";
+import { Button } from "~/components/ui/button";
 import { truncateAddress } from "~/lib/truncateAddress";
 import { base, degen, mainnet, optimism, unichain } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react";
-import { Label } from "~/components/ui/label";
+// import { Label } from "~/components/ui/label";
 import { useFrame } from "~/components/providers/FrameProvider";
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import DisplayCategories from './DisplayCategories';
+// import DisplayCategories from './App';
+import App from './App';
+import { MotionDisplayWrapper } from './MotionDisplayWrapper';
 
 
 export default function Demo({ title }: { title?: string } = { title: "Frames v2 Demo" }) {
@@ -221,43 +223,12 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
         paddingLeft: context?.client.safeAreaInsets?.left ?? 10,
         paddingRight: context?.client.safeAreaInsets?.right ?? 10,
       }}
-      className="w-[480px] mx-auto"
+      className="relative w-[300px] mx-auto"
     >
-      <div className='w-1/4 pb-4'>
-        <Button onClick={() => setStart(!start)} className='float-l'>Back</Button>
-      </div>
-      { !start && <DisplayCategories difficultyLevel={difficultyLevel} handleStart={handleStart} selectedCategory={selectedCategory.category} setCategory={setCategory} setDifficultyLevel={setDifficultyLevel} /> }
-      { 
-        start && <div className='space-y-6'>
-           <div className='relative w-full bg-green-300 p-4 rounded-lg flex justify-between items-center'>
-              <h3>{selectedCategory.category}</h3>
-              <h3>{difficultyLevel}</h3>
-              <h3 className='absolute left-2 top-1 text-xs text-white'>Category</h3>
-              <h3 className='absolute right-4 top-1 text-xs text-white'>Difficulty level</h3>
-            </div>
-          {
-            selectedCategory.data.questions
-            // .filter((_, i) => i === indexedAnswer)
-            .map(({options, quest}, i) => (
-              <div className={`${i === indexedAnswer? 'block' : 'hidden'} w-full place-items-center`} key={quest}>
-                <div className='w-full space-y-4 border p-4 rounded-lg bg-green-200/30' key={quest}>
-                  <h1 className='font-semibold text-lg'>{`${i + 1}. ${quest}`}</h1>
-                  <div className='w-full grid grid-cols-2 bg-white p-4 rounded-lg'>
-                      {
-                        options.map(({label, value}) => (
-                          <Button onClick={() => handleSelectAnswer({label, value})} key={value} className='bg-white text-black/70 flex justify-start items-baseline gap-4 text-sm hover:bg-green-300/20'>
-                            <h3 className="font-semibold italic">{`(${label}). `}</h3>
-                            <h3>{value}</h3>
-                          </Button>
-                        ))
-                      }
-                  </div>
-                </div>
-              </div>
-            ))
-          }
-        </div> 
-      }
+      <MotionDisplayWrapper className='w-full flex justify-center uppercase text-sm text-center space-y-4 pb-4'>
+        <h1 className='h-[80px] w-[80px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic text-4xl font-black text-cyan-800'>L</span><span className='font-mono'>earna</span></h1>
+      </MotionDisplayWrapper>
+      <App />
     </div>
   );
 
@@ -1035,3 +1006,131 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
 //   return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
 // };
 
+
+
+
+// "use client"
+
+// import { Checkbox } from "@/components/ui/checkbox"
+// import { Label } from "@/components/ui/label"
+
+// export function CheckboxDemo() {
+//   return (
+//     <div className="flex flex-col gap-6">
+//       <div className="flex items-center gap-3">
+//         <Checkbox id="terms" />
+//         <Label htmlFor="terms">Accept terms and conditions</Label>
+//       </div>
+//       <div className="flex items-start gap-3">
+//         <Checkbox id="terms-2" defaultChecked />
+//         <div className="grid gap-2">
+//           <Label htmlFor="terms-2">Accept terms and conditions</Label>
+//           <p className="text-muted-foreground text-sm">
+//             By clicking this checkbox, you agree to the terms and conditions.
+//           </p>
+//         </div>
+//       </div>
+//       <div className="flex items-start gap-3">
+//         <Checkbox id="toggle" disabled />
+//         <Label htmlFor="toggle">Enable notifications</Label>
+//       </div>
+//       <Label className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
+//         <Checkbox
+//           id="toggle-2"
+//           defaultChecked
+//           className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+//         />
+//         <div className="grid gap-1.5 font-normal">
+//           <p className="text-sm leading-none font-medium">
+//             Enable notifications
+//           </p>
+//           <p className="text-muted-foreground text-sm">
+//             You can enable or disable notifications at any time.
+//           </p>
+//         </div>
+//       </Label>
+//     </div>
+//   )
+// }
+
+
+
+
+// import {
+//   ResizableHandle,
+//   ResizablePanel,
+//   ResizablePanelGroup,
+// } from "@/components/ui/resizable"
+
+// export function ResizableDemo() {
+//   return (
+//     <ResizablePanelGroup
+//       direction="vertical"
+//       className="min-h-[200px] max-w-md rounded-lg border md:min-w-[450px]"
+//     >
+//       <ResizablePanel defaultSize={25}>
+//         <div className="flex h-full items-center justify-center p-6">
+//           <span className="font-semibold">Header</span>
+//         </div>
+//       </ResizablePanel>
+//       <ResizableHandle />
+//       <ResizablePanel defaultSize={75}>
+//         <div className="flex h-full items-center justify-center p-6">
+//           <span className="font-semibold">Content</span>
+//         </div>
+//       </ResizablePanel>
+//     </ResizablePanelGroup>
+//   )
+// }
+
+
+
+
+// Carousel
+
+// import * as React from "react"
+
+
+
+
+// Sonner
+
+// "use client"
+
+// import { toast } from "sonner"
+
+// import { Button } from "@/components/ui/button"
+
+// export function SonnerDemo() {
+//   return (
+//     <Button
+//       variant="outline"
+//       onClick={() =>
+//         toast("Event has been created", {
+//           description: "Sunday, December 03, 2023 at 9:00 AM",
+//           action: {
+//             label: "Undo",
+//             onClick: () => console.log("Undo"),
+//           },
+//         })
+//       }
+//     >
+//       Show Toast
+//     </Button>
+//   )
+// }
+
+
+// Toggle
+
+// import { Bold } from "lucide-react"
+
+// import { Toggle } from "@/components/ui/toggle"
+
+// export function ToggleDemo() {
+//   return (
+//     <Toggle aria-label="Toggle italic">
+//       <Bold className="h-4 w-4" />
+//     </Toggle>
+//   )
+// }
