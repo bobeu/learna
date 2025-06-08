@@ -55,7 +55,7 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY}`,
     },
-    feeTo: {
+    reserve: {
       default: 0,
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY}`

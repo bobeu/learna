@@ -33,9 +33,23 @@ contract Learna is Ownable, ReentrancyGuard {
     struct ReadData {
         uint activeLearners;
         uint weekCounter;
-        uint minimumSignupFee;
         Claims[] claims;
     }
+
+        struct Tipper {
+        uint totalTipped;
+        uint64 points;
+        uint lastTippedDate;
+    }
+
+    struct TipperData {
+        bool exist;
+        uint index;
+    }
+
+    // Contract allowed to send allocation request
+
+    Tipper[] private tippers;
 
     // Total active learners
     uint private activeLearners; 
@@ -43,8 +57,8 @@ contract Learna is Ownable, ReentrancyGuard {
     // Weeks already passed
     uint private weekCounter;
 
-    // Minimum sign up fee
-    uint private minimumSignupFee;
+    // Tippers 
+    mapping(address => TipperData) private isTipper;
 
     /**
      * @dev Mapping of user address to profile data
@@ -57,14 +71,11 @@ contract Learna is Ownable, ReentrancyGuard {
 
     // Only registered users
     modifier onlyApproved(uint weekId) {
-        // require(weekId > 0, 'Invalid weekId');
         require(users[_msgSender()][weekId].isApproved, 'Only approved users');
         _;
     }
 
-    constructor(uint _minSignupFee) Ownable(_msgSender()) {
-        minimumSignupFee = _minSignupFee;
-    }
+    constructor() Ownable(_msgSender()) {}
 
     receive() external payable {}
  
@@ -81,6 +92,7 @@ contract Learna is Ownable, ReentrancyGuard {
                 bool isApproved = users[user][weekId].isApproved;
                 if(!isApproved) {
                     users[user][weekId].isApproved = true;
+                    activeLearners ++;
                 }
             }
         }
@@ -145,11 +157,13 @@ contract Learna is Ownable, ReentrancyGuard {
         address sender = _msgSender();
         require(!users[sender][weekId].claimed, 'Already claimed');
         Claims memory claim = claims[weekId];
-        uint ercAmount = claim.erc20;
-        uint nativeClaim = claim.native;
-        unchecked {
-            if(ercAmount > 0 && ercAmount >= claim.totalWeeklyClaimers ) ercAmount = ercAmount / claim.totalWeeklyClaimers ;
-            if(nativeClaim > 0 && nativeClaim >= claim.totalWeeklyClaimers ) nativeClaim = nativeClaim / claim.totalWeeklyClaimers ;
+        uint ercAmount;
+        uint nativeClaim;
+        if(claim.totalWeeklyClaimers > 0) {
+            unchecked {
+                if(claim.erc20 > 0 && claim.erc20 >= claim.totalWeeklyClaimers ) ercAmount = claim.erc20 / claim.totalWeeklyClaimers ;
+                if(claim.native > 0 && claim.native >= claim.totalWeeklyClaimers ) nativeClaim = claim.native / claim.totalWeeklyClaimers ;
+            }
         }
         users[sender][weekId] = Profile({
             isApproved: true,
@@ -157,8 +171,8 @@ contract Learna is Ownable, ReentrancyGuard {
             amountClaimedInERC20: ercAmount,
             claimed: true
         });
-        _claimErc20(sender, ercAmount, IERC20(claim.erc20Addr));
-        _claimNativeToken(sender, nativeClaim);
+        if(ercAmount > 0) _claimErc20(sender, ercAmount, IERC20(claim.erc20Addr));
+        if(nativeClaim > 0) _claimNativeToken(sender, nativeClaim);
 
         emit ClaimedWeeklyReward(sender, users[sender][weekId]);
         return true;
@@ -193,21 +207,10 @@ contract Learna is Ownable, ReentrancyGuard {
         return true;
     }
 
-    /**
-     * @dev Set minimum sign up fee. 
-     * @param newFee: New fee
-     * @notice Only owner function
-     */
-    function setMinimumSignupFee(uint newFee) public onlyOwner returns(bool) {
-        minimumSignupFee = newFee;
-        return true;
-    }
-
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
         data.activeLearners = activeLearners;
         data.weekCounter = weekCounter;
-        data.minimumSignupFee = minimumSignupFee;
         Claims[] memory _claims = new Claims[](data.weekCounter);
         if(data.weekCounter > 0) {
             for(uint i = 0; i < data.weekCounter; i++) {
@@ -216,6 +219,37 @@ contract Learna is Ownable, ReentrancyGuard {
             }
             data.claims = _claims;
         }
+    } 
+
+        // set tips to the learna contract. Tippers earn points
+    function tip() public payable returns(bool) {
+        TipperData memory td = isTipper[_msgSender()];
+        if(!td.exist) {
+            td.exist = true;
+            td.index = tippers.length;
+            tippers.push();
+        }
+        uint amount = msg.value;
+        if(amount >= 50 ether) {
+            unchecked {
+                tippers[td.index].totalTipped += msg.value;
+                uint64 point = uint64(msg.value % 50 ether);
+                tippers[td.index].points += point;
+            }
+        }
+
+        return true;
+    }
+
+    // Fetch all tippers
+    function getTippers() public view returns(Tipper[] memory result) {
+        result = tippers;
+        return result;
+    }
+
+    // Get user's data
+    function getUserData(address user, uint weekId) public view returns(Profile memory) {
+        return users[user][weekId];
     }
 
 }

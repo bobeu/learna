@@ -8,7 +8,7 @@ import { IGrowToken } from './IGrowToken.sol';
 
 contract GrowToken is IGrowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
-    address private mainContract; 
+    address private mainContract;
 
     /**
      * @dev Constructor: Totol supply of 21000000 GROW Token is minted at construction to the token address
@@ -35,8 +35,14 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
         mainContract =_mainContract;
     }
 
+    // Fallback
+    receive() external payable {
+      (bool sent,) = mainContract.call{value: msg.value}('');
+      require(sent);
+    }
+
     /**
-     * @dev Send allocation request
+     * @dev Allocate token to the learna contract
      * @param amount : Amount to allocate
      */
     function allocate(uint amount) external returns(uint) {
@@ -45,4 +51,5 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
         _transfer(address(this), approvedSpender, amount);
         return balanceOf(approvedSpender);
     }
+
 }
