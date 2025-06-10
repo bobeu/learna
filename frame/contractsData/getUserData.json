@@ -1,0 +1,54 @@
+{
+  "contractAddress": "0x7B5C41A863604aE9dC5471Af977cbB3Effa365A7",
+  "functionName": "getUserData",
+  "inputCount": 2,
+  "requireArgUpdate": false,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "isApproved",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountClaimedInNative",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountClaimedInERC20",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "claimed",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Learna.Profile",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

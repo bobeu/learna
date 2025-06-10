@@ -1,11 +1,12 @@
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
-import { Path, QuizDatum } from "~/dummyData";
 import { Button } from "~/components//ui/button";
+import useStorage from "../StorageContextProvider/useStorage";
 
 const TOTAL_WEIGHT = 100;
 
-export default function Scores({data, setpath}: {data: QuizDatum, setpath: (arg: Path) => void}) {
+export default function Scores() {
+    const { data, setpath } = useStorage();
     const { category, difficultyLevel, questions } = data;
 
     const { 

@@ -1,0 +1,37 @@
+{
+  "approvedFunctions": [
+    "registerUsersForWeeklyEarning",
+    "unregisterUsersForWeeklyEarning",
+    "claimWeeklyReward",
+    "sortWeeklyReward",
+    "tip",
+    "getTippers",
+    "getUserData",
+    "owner"
+  ],
+  "chainName": {
+    "42220": "celo",
+    "44787": "alfajores"
+  },
+  "chainIds": [
+    44787,
+    42220
+  ],
+  "paths": {
+    "42220": [],
+    "44787": [
+      "deployments\\alfajores\\GrowToken.json",
+      "deployments\\alfajores\\Learna.json"
+    ]
+  },
+  "contractAddresses": [
+    {
+      "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+      "GrowToken": "0x26F833e9367f00E40EcFdF000aB6f7AbA9583CD1",
+      "Learna": "0x7B5C41A863604aE9dC5471Af977cbB3Effa365A7"
+    },
+    {
+      "stablecoin": "0x0000000000000000000000000000000000000000"
+    }
+  ]
+}

@@ -69,14 +69,28 @@ export async function claimWeeklyReward(x: {learna: Learna, weekId: bigint, sign
 }
 
 /**
- * @dev Add a user to weekly payout
+ * @dev Get passkey for the current key
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function registerUsersForWeeklyEarning(x: {user: Address, weekId: bigint, learna: Learna, deployer: Signer}) {
-  const { user, learna, deployer, weekId } = x;
-  await learna.connect(deployer).registerUsersForWeeklyEarning([user]);
-  return await learna.getUserData(user, weekId);
+export async function getPassKey(x: {learna: Learna, signer: Signer}) {
+  const { learna, signer } = x;
+  const address = await signer.getAddress();
+  await learna.connect(signer).generateKey();
+  const data = await learna.getData();
+  return await learna.getUserData(address, data.state.weekCounter);
+}
+
+/**
+ * @dev Get passkey for the current key
+ * @param x : Parameters
+ * @returns : User's profile data
+*/
+export async function recordPoints(x: {user: Address, learna: Learna, points: number, deployer: Signer}) {
+  const { user, learna, deployer, points } = x;
+  await learna.connect(deployer).recordPoints(user, points);
+  const data = await learna.getData();
+  return await learna.getUserData(user, data.state.weekCounter);
 }
 
 /**
@@ -86,7 +100,7 @@ export async function registerUsersForWeeklyEarning(x: {user: Address, weekId: b
 */
 export async function unregisterUsersForWeeklyEarning(x: {user: Address, weekId: bigint, learna: Learna, deployer: Signer}) {
   const { user, learna, deployer, weekId } = x;
-  await learna.connect(deployer).unregisterUsersForWeeklyEarning([user], weekId);
+  await learna.connect(deployer).removeUsersForWeeklyEarning([user], weekId);
   return await learna.getUserData(user, weekId);
 }
 
@@ -101,7 +115,7 @@ export async function sendTip(x: {signer: Signer, tipAmount: bigint, learna: Lea
   const balanceOfLeanerB4Tipped = await signer.provider?.getBalance(learnaAddr);
   await learna.connect(signer).tip({value: tipAmount});
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
-  const tippers = await learna.getTippers();
+  const tippers = (await learna.getData()).state.tippers;
   return {
     tippers,
     balanceOfLeanerB4Tipped,

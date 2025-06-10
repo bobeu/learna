@@ -6,18 +6,16 @@ const { zeroAddress } = require('viem');
 
 // Configuration - directory files
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
-const REACT_DATA_PATH = '../Deployment/contractsData';
-const GLOBAL_OUTPUT_PATH = '../Deployment/contractsData/global.json';
-const approvedFunctions = ['createPool', 'getFinance', 'deposit', 'payback', 'liquidate', 'deposits', 'closePool', 'contribute', 'registerToEarnPoints', 'provideLiquidity', 'removeLiquidity', 'borrow', 'claimTestTokens', 'setBaseToken', 'setCollateralToken', 'panicUnlock', 'unlockToken', 'lockToken', 'transferFrom', 'approve', 'getCollateralQuote', 'getCurrentDebt', 'allowance', 'balanceOf', 'getProviders', 'symbol', 'getFactoryData', 'getPoolRecord', 'getPoints', 'getSupportedAssets', 'getPoolData'];
-const readFunctions = ['getCollateralQuote', 'getCurrentDebt', 'allowance', 'balanceOf', 'getProviders', 'symbol', 'getFactoryData', 'getPoolRecord', 'getPoints', 'getSupportedAssets', 'getPoolData'];
-const functionsRequireArgUpdate = ['transferFrom', 'approve', 'deposit'];
-const chainName = {44787: 'alfajores', 4157: 'crossstestnet', 42220: 'celo', 4158: 'crossmainnet'};
-const chainIds = [44787, 4157, 42220, 4158]
+const REACT_DATA_PATH = '../frame/contractsData';
+const GLOBAL_OUTPUT_PATH = '../frame/contractsData/global.json';
+const approvedFunctions = ['registerUsersForWeeklyEarning', 'unregisterUsersForWeeklyEarning', 'claimWeeklyReward', 'sortWeeklyReward', 'tip', 'getTippers', 'getUserData', 'owner'];
+const readFunctions = ['getTippers', 'getUserData', 'owner'];
+const functionsRequireArgUpdate = [];
+const chainName = {44787: 'alfajores', 42220: 'celo'};
+const chainIds = [44787, 42220]
 let workBuild = {
     44787: [],
     42220: [],
-    4157:[],
-    4158: []
 };
 
 let globalOutput = {

@@ -28,18 +28,23 @@ import { useHasSolanaProvider } from "./providers/SafeFarcasterSolanaProvider";
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/button";
 import { truncateAddress } from "~/lib/truncateAddress";
-import { base, degen, mainnet, optimism, unichain } from "wagmi/chains";
+import { base, celo, celoAlfajores, degen, mainnet, optimism, unichain } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react";
 // import { Label } from "~/components/ui/label";
 import { useFrame } from "~/components/providers/FrameProvider";
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 // import DisplayCategories from './App';
-import App from './App';
-import { MotionDisplayWrapper } from './MotionDisplayWrapper';
+import App from './LearnaApp';
+import { MotionDisplayWrapper } from './peripherals/MotionDisplayWrapper';
 
 
 export default function Demo({ title }: { title?: string } = { title: "Frames v2 Demo" }) {
+  const [isContextOpen, setIsContextOpen] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [sendNotificationResult, setSendNotificationResult] = useState("");
+  const [copied, setCopied] = useState(false);
+
   const [start, setStart] = React.useState<boolean>(false);
   const [oreview, setPreview] = React.useState<boolean>(false);
   const [indexedAnswer, setIndex] = React.useState<number>(0);
@@ -73,20 +78,15 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
     });
   }, [setSelectedCategory, setIndex, selectedCategory]);
 
-  // const [isContextOpen, setIsContextOpen] = useState(false);
-  // const [txHash, setTxHash] = useState<string | null>(null);
-  // const [sendNotificationResult, setSendNotificationResult] = useState("");
-  // const [copied, setCopied] = useState(false);
-
-  // const { address, isConnected } = useAccount();
-  // const chainId = useChainId();
-  // const hasSolanaProvider = useHasSolanaProvider();
-  // let solanaWallet, solanaPublicKey, solanaSignMessage, solanaAddress;
-  // if (hasSolanaProvider) {
-  //   solanaWallet = useSolanaWallet();
-  //   ({ publicKey: solanaPublicKey, signMessage: solanaSignMessage } = solanaWallet);
-  //   solanaAddress = solanaPublicKey?.toBase58();
-  // }
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const hasSolanaProvider = useHasSolanaProvider();
+  let solanaWallet, solanaPublicKey, solanaSignMessage, solanaAddress;
+  if (hasSolanaProvider) {
+    solanaWallet = useSolanaWallet();
+    ({ publicKey: solanaPublicKey, signMessage: solanaSignMessage } = solanaWallet);
+    solanaAddress = solanaPublicKey?.toBase58();
+  }
 
   // useEffect(() => {
   //   console.log("isSDKLoaded", isSDKLoaded);
@@ -108,72 +108,66 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
   //     hash: txHash as `0x${string}`,
   //   });
 
-  // const {
-  //   signTypedData,
-  //   error: signTypedError,
-  //   isError: isSignTypedError,
-  //   isPending: isSignTypedPending,
-  // } = useSignTypedData();
+  const {
+    signTypedData,
+    error: signTypedError,
+    isError: isSignTypedError,
+    isPending: isSignTypedPending,
+  } = useSignTypedData();
 
   // const { disconnect } = useDisconnect();
   // const { connect, connectors } = useConnect();
 
-  // const {
-  //   switchChain,
-  //   error: switchChainError,
-  //   isError: isSwitchChainError,
-  //   isPending: isSwitchChainPending,
-  // } = useSwitchChain();
+  const {
+    switchChain,
+    error: switchChainError,
+    isError: isSwitchChainError,
+    isPending: isSwitchChainPending,
+  } = useSwitchChain();
 
-  // const nextChain = useMemo(() => {
-  //   if (chainId === base.id) {
-  //     return optimism;
-  //   } else if (chainId === optimism.id) {
-  //     return degen;
-  //   } else if (chainId === degen.id) {
-  //     return mainnet;
-  //   } else if (chainId === mainnet.id) {
-  //     return unichain;
-  //   } else {
-  //     return base;
-  //   }
-  // }, [chainId]);
+  const nextChain = useMemo(() => {
+    if (chainId === celoAlfajores.id) {
+      return celoAlfajores;
+    } else {
+      return celo;
+    }
+  }, [chainId]);
 
-  // const handleSwitchChain = useCallback(() => {
-  //   switchChain({ chainId: nextChain.id });
-  // }, [switchChain, nextChain.id]);
+  const handleSwitchChain = useCallback(() => {
+    switchChain({ chainId: nextChain.id });
+  }, [switchChain, nextChain.id]);
 
-  // const sendNotification = useCallback(async () => {
-  //   setSendNotificationResult("");
-  //   if (!notificationDetails || !context) {
-  //     return;
-  //   }
+  const sendNotification = useCallback(async () => {
+    setSendNotificationResult("");
+    if (!notificationDetails || !context) {
+      return;
+    }
 
-  //   try {
-  //     const response = await fetch("/api/send-notification", {
-  //       method: "POST",
-  //       mode: "same-origin",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         fid: context.user.fid,
-  //         notificationDetails,
-  //       }),
-  //     });
+    try {
+      const response = await fetch("/api/send-notification", {
+        method: "POST",
+        mode: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fid: context.user.fid,
+          notificationDetails,
+        }),
+      });
 
-  //     if (response.status === 200) {
-  //       setSendNotificationResult("Success");
-  //       return;
-  //     } else if (response.status === 429) {
-  //       setSendNotificationResult("Rate limited");
-  //       return;
-  //     }
+      if (response.status === 200) {
+        setSendNotificationResult("Success");
+        return;
+      } else if (response.status === 429) {
+        setSendNotificationResult("Rate limited");
+        return;
+      }
 
-  //     const data = await response.text();
-  //     setSendNotificationResult(`Error: ${data}`);
-  //   } catch (error) {
-  //     setSendNotificationResult(`Error: ${error}`);
-  //   }
-  // }, [context, notificationDetails]);
+      const data = await response.text();
+      setSendNotificationResult(`Error: ${data}`);
+    } catch (error) {
+      setSendNotificationResult(`Error: ${error}`);
+    }
+  }, [context, notificationDetails]);
 
   // const sendTx = useCallback(() => {
   //   sendTransaction(
@@ -190,22 +184,22 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
   //   );
   // }, [sendTransaction]);
 
-  // const signTyped = useCallback(() => {
-  //   signTypedData({
-  //     domain: {
-  //       name: "Frames v2 Demo",
-  //       version: "1",
-  //       chainId,
-  //     },
-  //     types: {
-  //       Message: [{ name: "content", type: "string" }],
-  //     },
-  //     message: {
-  //       content: "Hello from Frames v2!",
-  //     },
-  //     primaryType: "Message",
-  //   });
-  // }, [chainId, signTypedData]);
+  const signTyped = useCallback(() => {
+    signTypedData({
+      domain: {
+        name: "Learna",
+        version: "1",
+        chainId,
+      },
+      types: {
+        Message: [{ name: "content", type: "string" }],
+      },
+      message: {
+        content: "Welcome to Learna! A web3 quiz-based educative platform",
+      },
+      primaryType: "Message",
+    });
+  }, [chainId, signTypedData]);
 
   // const toggleContext = useCallback(() => {
   //   setIsContextOpen((prev) => !prev);
@@ -870,91 +864,7 @@ export default function Demo({ title }: { title?: string } = { title: "Frames v2
 //   );
 // }
 
-// function SignIn() {
-//   const [signingIn, setSigningIn] = useState(false);
-//   const [signingOut, setSigningOut] = useState(false);
-//   const [signInResult, setSignInResult] = useState<SignInCore.SignInResult>();
-//   const [signInFailure, setSignInFailure] = useState<string>();
-//   const { data: session, status } = useSession();
 
-//   const getNonce = useCallback(async () => {
-//     const nonce = await getCsrfToken();
-//     if (!nonce) throw new Error("Unable to generate nonce");
-//     return nonce;
-//   }, []);
-
-//   const handleSignIn = useCallback(async () => {
-//     try {
-//       setSigningIn(true);
-//       setSignInFailure(undefined);
-//       const nonce = await getNonce();
-//       const result = await sdk.actions.signIn({ nonce });
-//       setSignInResult(result);
-
-//       await signIn("credentials", {
-//         message: result.message,
-//         signature: result.signature,
-//         redirect: false,
-//       });
-//     } catch (e) {
-//       if (e instanceof SignInCore.RejectedByUser) {
-//         setSignInFailure("Rejected by user");
-//         return;
-//       }
-
-//       setSignInFailure("Unknown error");
-//     } finally {
-//       setSigningIn(false);
-//     }
-//   }, [getNonce]);
-
-//   const handleSignOut = useCallback(async () => {
-//     try {
-//       setSigningOut(true);
-//       await signOut({ redirect: false });
-//       setSignInResult(undefined);
-//     } finally {
-//       setSigningOut(false);
-//     }
-//   }, []);
-
-//   return (
-//     <>
-//       {status !== "authenticated" && (
-//         <Button onClick={handleSignIn} disabled={signingIn}>
-//           Sign In with Farcaster
-//         </Button>
-//       )}
-//       {status === "authenticated" && (
-//         <Button onClick={handleSignOut} disabled={signingOut}>
-//           Sign out
-//         </Button>
-//       )}
-//       {session && (
-//         <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-//           <div className="font-semibold text-gray-500 mb-1">Session</div>
-//           <div className="whitespace-pre">
-//             {JSON.stringify(session, null, 2)}
-//           </div>
-//         </div>
-//       )}
-//       {signInFailure && !signingIn && (
-//         <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-//           <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-//           <div className="whitespace-pre">{signInFailure}</div>
-//         </div>
-//       )}
-//       {signInResult && !signingIn && (
-//         <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-//           <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-//           <div className="whitespace-pre">
-//             {JSON.stringify(signInResult, null, 2)}
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   );
-// }
 
 // function ViewProfile() {
 //   const [fid, setFid] = useState("3");

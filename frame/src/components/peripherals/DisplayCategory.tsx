@@ -1,12 +1,14 @@
 import React from 'react';
-import { Button } from './ui/button';
+import { Button } from '~/components/ui/button';
 import CategoryAndLevel from './CategoryAndLevel';
 import Image from 'next/image';
 import { MotionDisplayWrapper } from './MotionDisplayWrapper';
+import useStorage from '../StorageContextProvider/useStorage';
 
-export default function DisplayCategories({handleStart, setSelectedQuizData} : {handleStart: () => void, setSelectedQuizData: (category:string, level: string) => void}) {
+export default function DisplayCategories() {
     const [selectedCategory, setSelectedCategory] = React.useState<string>('');
     const [difficultyLevel, setLevel] = React.useState<string>('');
+    const { handleStart, setSelectedQuizData } = useStorage();
 
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');

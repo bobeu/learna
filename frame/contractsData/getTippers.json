@@ -1,0 +1,38 @@
+{
+  "contractAddress": "0x7B5C41A863604aE9dC5471Af977cbB3Effa365A7",
+  "functionName": "getTippers",
+  "inputCount": 0,
+  "requireArgUpdate": false,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getTippers",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalTipped",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint64",
+              "name": "points",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lastTippedDate",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Learna.Tipper[]",
+          "name": "result",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
