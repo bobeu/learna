@@ -44,7 +44,7 @@ export default function UnregisterUsersForWeeklyEarning({args, openDrawer, toggl
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
             displayMessage='Setting up weekly reward'
-            lastStepInList='registerUsersForWeeklyEarning'
+            lastStepInList='unregisterUsersForWeeklyEarning'
         />
     )
 }

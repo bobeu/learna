@@ -5,16 +5,17 @@ import { config as dotconfig } from "dotenv";
 dotconfig();
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployments, getNamedAccounts} = hre;
+  	const {deployments, getNamedAccounts} = hre;
 	const {deploy} = deployments;
-	let {deployer, reserve } = await getNamedAccounts();
+	let {deployer, reserve, admin } = await getNamedAccounts();
 
+	console.log("Admin", admin);
 	/**
 	 * Deploy Ownership Manager
 	*/
 	const learna = await deploy("Learna", {
 		from: deployer,
-		args: [],
+		args: [admin],
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${learna.address}`);

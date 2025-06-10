@@ -98,8 +98,9 @@ contract Learna is Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor() Ownable(_msgSender()) {
+    constructor(address any) Ownable(_msgSender()) {
         _setAdmin(_msgSender(), 0);
+        if(any != address(0)) _setAdmin(any, 0);
     }
 
     receive() external payable {}
@@ -221,18 +222,32 @@ contract Learna is Ownable, ReentrancyGuard {
      * @return erc20Amount : Share in ERC20 token if available
      * @return nativeClaim : Share in Native asset if available
      */
-    function _calculateShare(uint weekId, uint16 userPoints) internal view returns(uint erc20Amount, uint nativeClaim, Claims memory claim) {
+    function _calculateShare(uint weekId, uint16 userPoints, bool runCheck) internal view returns(uint erc20Amount, uint nativeClaim, Claims memory claim) {
         claim = claims[weekId];
-        require(claim.active, 'Closed');
-        assert(claim.totalPoints >= userPoints);
-        uint8 erc20Decimals = IERC20Metadata(claim.erc20Addr).decimals(); 
-        if(claim.totalPoints > 0) { 
+        uint8 erc20Decimals;
+        if(runCheck) {
+            require(claim.active, 'Closed');
+            assert(claim.totalPoints >= userPoints);
+        }
+        if(claim.totalPoints > 0 && claim.erc20Addr != address(0)) { 
+            erc20Decimals = IERC20Metadata(claim.erc20Addr).decimals(); 
             unchecked {
                 if(claim.erc20.totalAllocated > 0) erc20Amount = claim.totalPoints.calculateShare(userPoints, claim.erc20.totalAllocated, erc20Decimals);
                 if(claim.native.totalAllocated > 0) nativeClaim = claim.totalPoints.calculateShare(userPoints, claim.native.totalAllocated, 18);
             }
         }
     }
+
+    /**
+     * Check Eligibility
+     * @param weekId : Week Id
+     */
+    function checkligibility(uint weekId) public view returns(bool eligible) {
+        Profile memory pf = users[_msgSender()][weekId];
+        (uint erc20Amount, uint nativeClaim,) = _calculateShare(weekId, pf.points,false);
+        if(erc20Amount > 0 || nativeClaim > 0) eligible = true;
+        return eligible;
+    } 
 
 
     /**
@@ -241,12 +256,12 @@ contract Learna is Ownable, ReentrancyGuard {
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
     function claimWeeklyReward(uint weekId) public onlyPasskeyHolder(weekId) nonReentrant returns(bool) {
-        require(weekId <= state.weekCounter, "Week frontrun not allowed");
+        require(weekId <= state.weekCounter, "Week not ready");
         address sender = _msgSender();
         Profile memory pf = users[sender][weekId];
         require(!pf.claimed, 'Already claimed');
         pf.claimed = true;
-        (uint erc20Amount, uint nativeClaim, Claims memory clm) = _calculateShare(weekId, pf.points);
+        (uint erc20Amount, uint nativeClaim, Claims memory clm) = _calculateShare(weekId, pf.points, true);
         unchecked {
             clm.erc20.totalClaimed += erc20Amount;
             clm.native.totalClaimed += nativeClaim;
@@ -276,6 +291,7 @@ contract Learna is Ownable, ReentrancyGuard {
         if(currentWeekId > 0) {
             claims[currentWeekId - 1].active = false;
         }
+        require(token != address(0), 'Token is zero');
         uint balance = IERC20(token).allowance(owner, address(this));
         if(balance > 0) {
             IERC20(token).transferFrom(owner, address(this), balance);

@@ -4,19 +4,20 @@ import { useAccount } from 'wagmi';
 import { Address, filterTransactionData, FunctionName, TransactionCallback } from '../utilities';
 import useStorage from '../StorageContextProvider/useStorage';
 
-export default function RegisterUsersForWeeklyEarning({users, openDrawer, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
-    const { chainId } = useAccount();
+export default function RecordPoints({points, openDrawer, toggleDrawer }: RecordPointsProps) {
+    const { chainId, address } = useAccount();
     const { setError, setmessage } = useStorage();
+    
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setmessage(arg.message);
         if(arg.errorMessage) setError(arg.errorMessage);
     }
 
-    const { contractAddresses: ca, transactionData: td } = React.useMemo(() => {
+    const { transactionData: td } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['registerUsersForWeeklyEarning'],
+            functionNames: ['recordPoints'],
             callback
         });
 
@@ -27,7 +28,7 @@ export default function RegisterUsersForWeeklyEarning({users, openDrawer, toggle
         let transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [users],
+                args: [address as Address, points],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -36,22 +37,21 @@ export default function RegisterUsersForWeeklyEarning({users, openDrawer, toggle
         })
         return transactions;
     
-   }, [td, users]);
+   }, [td, points]);
 
     return(
         <Confirmation 
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Setting up weekly reward'
-            lastStepInList='registerUsersForWeeklyEarning'
+            displayMessage='Saving your points'
+            lastStepInList='recordPoints'
         />
     )
 }
 
-type RegisterUsersForWeeklyEarningProps = {
-    unit: bigint;
-    users: Address[];
+type RecordPointsProps = {
+    points: number;
     toggleDrawer: (arg: number) => void;
     openDrawer: number;
 };

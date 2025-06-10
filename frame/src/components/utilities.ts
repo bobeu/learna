@@ -5,9 +5,8 @@ import globalContractData from "../../contractsData/global.json";
 import assert from "assert";
 import { getStepData } from "../../stepsData";
 
-
 export type Address = `0x${string}`;
-export type FunctionName = 'registerUsersForWeeklyEarning' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData';
+export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey';
 // export type TxnStatus = "Pending" | "Confirming" | "Confirmed" | "Reverted" | "Failed";
 export type TransactionCallback = (arg: TrxState) => void;
 export type TransactionData = {
@@ -55,7 +54,7 @@ export const toBN = (x: string | number | BigNumber | any) => {
  * @returns Formatted value.
  */
 export const formatValue = (arg: string | number | ethers.BigNumberish | bigint | undefined) => {
-    const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(6)
+    const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
     return {
       toStr: valueInBigNumber.toString(),
       toNum: valueInBigNumber.toNumber()

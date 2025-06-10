@@ -1,14 +1,14 @@
 "use client";
 
 import * as React  from 'react';
-import { QuizData, quizData, QuizDatum } from '~/dummyData';
-import { useCallback, useEffect, useMemo, useState } from "react";
+// import { QuizData, quizData, QuizDatum } from '~/dummyData';
+import { useCallback, useState } from "react";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, { SignIn as SignInCore, } from "@farcaster/frame-sdk";
 import { useSession } from "next-auth/react";
 import { Button } from '~/components/ui/button';
 
-function SignIn() {
+export default function SignIn() {
     const [signingIn, setSigningIn] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
     const [signInResult, setSignInResult] = useState<SignInCore.SignInResult>();

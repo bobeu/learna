@@ -1,7 +1,7 @@
 {
   "contractAddress": "0x4C2eEB112e6c4b84A3f0c45cb7410206716bfE77",
-  "functionName": "tip",
-  "inputCount": 0,
+  "functionName": "checkligibility",
+  "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
     {

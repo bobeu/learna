@@ -2,10 +2,14 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components//ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
+import RecordPoints from "../transactions/RecordPoints";
 
 const TOTAL_WEIGHT = 100;
 
 export default function Scores() {
+    const [openDrawer, setDrawer] = React.useState<number>(0);
+
+    const toggleDrawer = (arg: number) => setDrawer(arg);
     const { data, setpath } = useStorage();
     const { category, difficultyLevel, questions } = data;
 
@@ -68,9 +72,14 @@ export default function Scores() {
                 </div>
             </div>
             <div className="flex justify-center items-center gap-1 w-full">
-                <Button variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Get reward</Button>
+                <Button variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>
                 <Button onClick={() => setpath('selectategory')} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
             </div>
+            <RecordPoints 
+                openDrawer={openDrawer}
+                toggleDrawer={toggleDrawer}
+                points={totalScores}
+            />
         </MotionDisplayWrapper>
     );
 }

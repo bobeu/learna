@@ -3,8 +3,9 @@ import { Confirmation, type Transaction } from '../ActionButton/Confirmation';
 import { useAccount } from 'wagmi';
 import { Address, filterTransactionData, FunctionName, TransactionCallback } from '../utilities';
 import useStorage from '../StorageContextProvider/useStorage';
+import { zeroAddress } from 'viem';
 
-export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: claimProps) {
+export default function SortWeeklyReward({token, amountInERC20, owner, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
     const { chainId } = useAccount();
     const { setError, setmessage } = useStorage();
     const callback : TransactionCallback = (arg) => {
@@ -12,23 +13,30 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
         if(arg.errorMessage) setError(arg.errorMessage);
     }
 
-    const { contractAddresses: ca, transactionData: td } = React.useMemo(() => {
+    const { transactionData: td, args, contractAddress } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['claimWeeklyReward'],
+            functionNames: ['sortWeeklyReward'],
             callback
         });
 
-        return { ...filtered };
-    }, [chainId, callback]);
+        const contractAddress = filtered.contractAddresses.Learna as Address;
+        const args = [
+            token? token : filtered.contractAddresses.GrowToken as Address, 
+            owner? owner : zeroAddress, 
+            amountInERC20
+        ];
+
+        return { ...filtered, args, contractAddress };
+    }, [chainId, callback, token, amountInERC20, owner]);
 
     const getTransactions = React.useCallback(() => {
         let transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [weekId],
-                contractAddress: txObject.contractAddress as Address,
+                args,
+                contractAddress,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
             };
@@ -36,21 +44,23 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
         })
         return transactions;
     
-   }, [td, weekId]);
+   }, [td, args]);
 
     return(
         <Confirmation 
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Claiming weekly reward'
-            lastStepInList='claimWeeklyReward'
+            displayMessage='Setting up weekly reward'
+            lastStepInList='sortWeeklyReward'
         />
     )
 }
 
-type claimProps = {
-    weekId: bigint;
+type SortWeeklyRewardProps = {
+    token?: Address;
+    owner?: Address;
+    amountInERC20: bigint;
     toggleDrawer: (arg: number) => void;
     openDrawer: number;
 };

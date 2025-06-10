@@ -1,11 +1,17 @@
 {
-  "contractAddress": "0x7B5C41A863604aE9dC5471Af977cbB3Effa365A7",
+  "contractAddress": "0x4C2eEB112e6c4b84A3f0c45cb7410206716bfE77",
   "functionName": "claimWeeklyReward",
   "inputCount": 1,
-  "requireArgUpdate": false,
+  "requireArgUpdate": true,
   "abi": [
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "any",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -48,11 +54,6 @@
         {
           "components": [
             {
-              "internalType": "bool",
-              "name": "isApproved",
-              "type": "bool"
-            },
-            {
               "internalType": "uint256",
               "name": "amountClaimedInNative",
               "type": "uint256"
@@ -66,6 +67,26 @@
               "internalType": "bool",
               "name": "claimed",
               "type": "bool"
+            },
+            {
+              "internalType": "uint16",
+              "name": "points",
+              "type": "uint16"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "passKey",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "haskey",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint8",
+              "name": "totalQuizPerWeek",
+              "type": "uint8"
             }
           ],
           "indexed": false,
@@ -101,9 +122,28 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address[]",
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        }
+      ],
+      "name": "PasskeyGenerated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "users",
-          "type": "address[]"
+          "type": "address"
         },
         {
           "indexed": false,
@@ -121,14 +161,38 @@
         {
           "components": [
             {
-              "internalType": "uint256",
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "totalAllocated",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalClaimed",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Learna.Values",
               "name": "native",
-              "type": "uint256"
+              "type": "tuple"
             },
             {
-              "internalType": "uint256",
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "totalAllocated",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalClaimed",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Learna.Values",
               "name": "erc20",
-              "type": "uint256"
+              "type": "tuple"
             },
             {
               "internalType": "address",
@@ -136,9 +200,14 @@
               "type": "address"
             },
             {
-              "internalType": "uint256",
-              "name": "totalWeeklyClaimers",
-              "type": "uint256"
+              "internalType": "uint96",
+              "name": "totalPoints",
+              "type": "uint96"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
             }
           ],
           "indexed": false,
@@ -183,6 +252,25 @@
           "type": "uint256"
         }
       ],
+      "name": "checkligibility",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "eligible",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        }
+      ],
       "name": "claimWeeklyReward",
       "outputs": [
         {
@@ -196,31 +284,107 @@
     },
     {
       "inputs": [],
+      "name": "generateKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getData",
       "outputs": [
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "activeLearners",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekCounter",
-              "type": "uint256"
-            },
-            {
               "components": [
                 {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "totalTipped",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "points",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "lastTippedDate",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Learna.Tipper[]",
+                  "name": "tippers",
+                  "type": "tuple[]"
+                },
+                {
                   "internalType": "uint256",
-                  "name": "native",
+                  "name": "activeLearners",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "totalPoints",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "minimumToken",
                   "type": "uint256"
                 },
                 {
                   "internalType": "uint256",
-                  "name": "erc20",
+                  "name": "weekCounter",
                   "type": "uint256"
+                }
+              ],
+              "internalType": "struct Learna.State",
+              "name": "state",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "totalAllocated",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalClaimed",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Learna.Values",
+                  "name": "native",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "totalAllocated",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalClaimed",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct Learna.Values",
+                  "name": "erc20",
+                  "type": "tuple"
                 },
                 {
                   "internalType": "address",
@@ -228,9 +392,14 @@
                   "type": "address"
                 },
                 {
-                  "internalType": "uint256",
-                  "name": "totalWeeklyClaimers",
-                  "type": "uint256"
+                  "internalType": "uint96",
+                  "name": "totalPoints",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "active",
+                  "type": "bool"
                 }
               ],
               "internalType": "struct Learna.Claims[]",
@@ -241,36 +410,6 @@
           "internalType": "struct Learna.ReadData",
           "name": "data",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getTippers",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "totalTipped",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "points",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "lastTippedDate",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct Learna.Tipper[]",
-          "name": "result",
-          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -294,11 +433,6 @@
         {
           "components": [
             {
-              "internalType": "bool",
-              "name": "isApproved",
-              "type": "bool"
-            },
-            {
               "internalType": "uint256",
               "name": "amountClaimedInNative",
               "type": "uint256"
@@ -312,11 +446,50 @@
               "internalType": "bool",
               "name": "claimed",
               "type": "bool"
+            },
+            {
+              "internalType": "uint16",
+              "name": "points",
+              "type": "uint16"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "passKey",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "haskey",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint8",
+              "name": "totalQuizPerWeek",
+              "type": "uint8"
             }
           ],
           "internalType": "struct Learna.Profile",
           "name": "",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "hasPassKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -338,12 +511,41 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "points",
+          "type": "uint16"
+        }
+      ],
+      "name": "recordPoints",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address[]",
           "name": "_users",
           "type": "address[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
         }
       ],
-      "name": "registerUsersForWeeklyEarning",
+      "name": "removeUsersForWeeklyEarning",
       "outputs": [
         {
           "internalType": "bool",
@@ -358,6 +560,30 @@
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "flag",
+          "type": "uint8"
+        }
+      ],
+      "name": "setAdmin",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -413,30 +639,6 @@
       ],
       "name": "transferOwnership",
       "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_users",
-          "type": "address[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        }
-      ],
-      "name": "unregisterUsersForWeeklyEarning",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

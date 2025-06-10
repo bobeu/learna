@@ -2,7 +2,7 @@
   "contractAddress": "0x7B5C41A863604aE9dC5471Af977cbB3Effa365A7",
   "functionName": "unregisterUsersForWeeklyEarning",
   "inputCount": 2,
-  "requireArgUpdate": false,
+  "requireArgUpdate": true,
   "abi": [
     {
       "inputs": [],

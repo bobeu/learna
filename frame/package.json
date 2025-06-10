@@ -51,6 +51,7 @@
     "next-themes": "^0.4.6",
     "openai": "^5.1.0",
     "react": "^18",
+    "react-blockies": "^1.4.1",
     "react-dom": "^18",
     "sonner": "^2.0.5",
     "tailwind-merge": "^2.6.0",
@@ -62,6 +63,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
+    "@types/react-blockies": "^1.4.4",
     "@types/react-dom": "^18",
     "crypto": "^1.0.1",
     "eslint": "^8",

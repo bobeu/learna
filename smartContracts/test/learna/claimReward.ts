@@ -29,8 +29,11 @@ describe("Learna", function () {
         expect(nativeBalOfLearnerAfterTipping > nativeBalOfLearnerB4).to.be.true;
         expect(nativeBalOfLearnerAfterTipping === tipAmount).to.be.true;
       }
-
+      const isEligible = await learna.connect(signer1).checkligibility(weekId);
+      expect(isEligible).to.be.false;
       await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, owner:deployerAddr});
+      const isEligibleAfter = await learna.connect(signer1).checkligibility(weekId);
+      expect(isEligibleAfter).to.be.true;
       const { state: {weekCounter: newWeekId} } = await learna.getData();
       expect(newWeekId > weekId && newWeekId === 1n).to.be.true;
       const s1 = await claimWeeklyReward({growToken, learna, signer: signer1, weekId});

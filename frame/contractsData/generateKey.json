@@ -1,6 +1,6 @@
 {
   "contractAddress": "0x4C2eEB112e6c4b84A3f0c45cb7410206716bfE77",
-  "functionName": "tip",
+  "functionName": "generateKey",
   "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
