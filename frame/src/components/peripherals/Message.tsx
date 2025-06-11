@@ -17,6 +17,7 @@ export default function Message() {
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
     const inclusiveNone = (message: string) => message.endsWith('.none');
+    
     return(
         <React.Fragment>
             {

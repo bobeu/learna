@@ -1,5 +1,5 @@
 import React from 'react';
-import { Confirmation, type Transaction } from '../ActionButton/Confirmation';
+import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { Address, filterTransactionData, FunctionName, TransactionCallback } from '../utilities';
 import useStorage from '../StorageContextProvider/useStorage';
@@ -44,7 +44,7 @@ export default function UnregisterUsersForWeeklyEarning({args, openDrawer, toggl
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
             displayMessage='Setting up weekly reward'
-            lastStepInList='unregisterUsersForWeeklyEarning'
+            setDone={false}
         />
     )
 }

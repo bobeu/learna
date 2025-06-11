@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react";
-import {type DataContextProps} from './simpliDataContext';
+import {type DataContextProps} from './storageContext';
 
 export interface RandoAppProviderProps {
     value: DataContextProps;

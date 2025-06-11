@@ -3,15 +3,35 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components//ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
 import RecordPoints from "../transactions/RecordPoints";
+import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
+import { 
+    type Address, 
+    filterTransactionData, 
+    type TransactionCallback,
+    type Profile
+} from "../utilities";
 
 const TOTAL_WEIGHT = 100;
 
 export default function Scores() {
     const [openDrawer, setDrawer] = React.useState<number>(0);
 
+    const chainId = useChainId();
+    const config = useConfig();
+    const account = useAccount().address as Address;
     const toggleDrawer = (arg: number) => setDrawer(arg);
-    const { data, setpath } = useStorage();
+    const { data, setpath, setError, setmessage, weekId, setscores } = useStorage();
     const { category, difficultyLevel, questions } = data;
+    const callback : TransactionCallback = (arg) => {
+        if(arg.message) setmessage(arg.message);
+        if(arg.errorMessage) setError(arg.errorMessage);
+    }
+
+    // Back to review page and clear the previously selected quiz data
+    const exit = () => {
+        setpath('selectcategory');
+        // clearData();
+    }
 
     const { 
         totalScores,
@@ -25,6 +45,7 @@ export default function Scores() {
         const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
         const totalAnsweredIncorrectly = questionSize - totalAnsweredCorrectly.length;
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
+        setscores(totalScores);
 
         return{
             totalScores,
@@ -33,8 +54,43 @@ export default function Scores() {
             totalAnsweredCorrectly,
             totalAnsweredIncorrectly,
         }
-    }, [questions]);
+    }, [questions, setscores]);
 
+    // Build the transactions to run
+    const { readTxObject } = React.useMemo(() => {
+        const { contractAddresses: ca, transactionData: td} = filterTransactionData({
+            chainId,
+            filter: true,
+            functionNames: ['getUserData'],
+            callback
+        });
+
+        const learna = ca.Learna as Address;
+        const readArgs = [[account, weekId]];
+        const addresses = [learna, learna];
+        const readTxObject = td.map((item, i) => {
+            return{
+                abi: item.abi,
+                functionName: item.functionName,
+                address: addresses[i],
+                args: readArgs[i]
+            }
+        });
+
+        return { readTxObject };
+    }, [chainId, account, weekId, callback]);
+
+    // Fetch user data 
+    const { data: result } = useReadContracts({
+        config,
+        contracts: readTxObject
+    });
+
+    const handleSaveScores = () => {
+        if(!result || !result?.[0].result) return alert('Please check your connection');
+        let profile = result?.[0]?.result as Profile;
+        !profile.haskey? setpath('generateuserkey') : toggleDrawer(1);
+    }
 
     return(
         <MotionDisplayWrapper className="space-y-4 font-mono">
@@ -68,17 +124,16 @@ export default function Scores() {
             <div className="flex justify-center">
                 <div className="flex flex-col justify-center items-center space-y-2 bg-cyan-500/50 h-[150px] w-[150px] rounded-full text-sm place-items-center">
                     <h3>Scores</h3>
-                    <h3 className="text-4xl">{`${totalScores}%`}</h3>
+                    <h3 className="text-4xl">{`${totalScores || 0}%`}</h3>
                 </div>
             </div>
             <div className="flex justify-center items-center gap-1 w-full">
-                <Button variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>
-                <Button onClick={() => setpath('selectategory')} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
+                <Button onClick={handleSaveScores} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>
+                <Button onClick={exit} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
             </div>
             <RecordPoints 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                points={totalScores}
             />
         </MotionDisplayWrapper>
     );

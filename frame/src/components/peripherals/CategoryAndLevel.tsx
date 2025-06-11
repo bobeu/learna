@@ -30,12 +30,12 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
     return (
         <div className="space-y-2">
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-white1 border border-green1/30 dark:border-white1/30 text-green1/50 dark:text-orange-200 focus:ring-0 `}>
+                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/10`}>
                     <h3>{category && category !== ''? category : 'Select a category'}</h3>
                     { showCategory? <ChevronDown /> : <ChevronRight />}
                 </Button>
                 <div hidden={!showCategory} className="absolute w-full border font-medium rounded-lg bg-white p-2 space-y-2 z-50">
-                <h3 className="pl-4 pb-2 text-cyan-700 text-sm border-b">Categories</h3>
+                    <h3 className="pl-4 pb-2 text-cyan-700 text-sm border-b">Categories</h3>
                     <div>
                         {
                             categories.map((category) => (
@@ -48,7 +48,7 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
                 </div>
             </div>
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-white1 border border-green1/30 dark:border-white1/30 text-green1/50 dark:text-orange-200 focus:ring-0 `}>
+                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-cyan-500/5`}>
                     <h3>{level && level !== ''? level : 'Choose a level'}</h3>
                     { showLevel? <ChevronDown /> : <ChevronRight />}
                 </Button>
@@ -68,49 +68,3 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
         </div>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-{/* <div className="place-items-center">
-<Select>
-    <SelectTrigger className=" ">
-        <SelectValue placeholder="Select a category" />
-    </SelectTrigger>
-    <SelectContent>
-        <SelectGroup>
-            <SelectLabel className="text-cyan-900">Categories</SelectLabel>
-            {
-                categories.map((category) => (
-                    <SelectItem key={category} className="text-cyan-700" onClick={() => setCategory(category)} value={category}>{category}</SelectItem>
-                ))
-            }
-        </SelectGroup>
-    </SelectContent>
-</Select>
-</div>
-<div className="place-items-center">
-<Select>
-    <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Choose level" />
-    </SelectTrigger>
-    <SelectContent>
-        <SelectGroup>
-            <SelectLabel className="text-cyan-900">Difficulty levels</SelectLabel>
-            {
-                difficultyLevels.map((level) => (
-                    <SelectItem key={level} className="text-cyan-700" onClick={() =>  setDifficultyLevel(level)} value={level}>{level}</SelectItem>
-                ))
-            }
-        </SelectGroup>
-    </SelectContent>
-</Select>
-</div> */}

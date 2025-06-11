@@ -70,25 +70,24 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet"
 
-export default function Drawer({title, description, children} : {title?: string, description?: string, children: React.ReactNode}) {
+export default function Drawer({openDrawer, toggleDrawer, title, children} : {openDrawer: boolean, title?: string, toggleDrawer: (arg:number) => void, children: React.ReactNode}) {
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline">Open</Button>
-      </SheetTrigger>
+    <Sheet open={openDrawer} >
       <SheetContent side={'bottom'}>
-        <SheetHeader>
-            { title && <SheetTitle>Edit profile</SheetTitle> }
-            { description && <SheetDescription>{description}</SheetDescription> }
+        <SheetHeader className="font-mono mb-4">
+          { title && <SheetTitle>{title}</SheetTitle> }
         </SheetHeader>
-        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+        <div className="grid flex-1 auto-rows-min gap-6 mb-2">
             { children }
         </div>
         <SheetFooter>
-          <Button type="submit">Save changes</Button>
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
+          <Button 
+            onClick={() => toggleDrawer(0)}
+            className="bg-orange-500/30 font-mono" 
+            variant="outline"
+          >
+            Close
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

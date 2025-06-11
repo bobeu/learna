@@ -8,7 +8,7 @@ import useStorage from '../StorageContextProvider/useStorage';
 export default function DisplayCategories() {
     const [selectedCategory, setSelectedCategory] = React.useState<string>('');
     const [difficultyLevel, setLevel] = React.useState<string>('');
-    const { handleStart, setSelectedQuizData } = useStorage();
+    const { handleStart, setpath, setSelectedQuizData } = useStorage();
 
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');
@@ -51,7 +51,7 @@ export default function DisplayCategories() {
                     setDifficultyLevel={setDifficultyLevel}
                 />
             </div>
-            <div className='flex justify-center p-6'>
+            <div className='flex justify-center p-'>
                 <div className='place-items-center shadow-lg shadow-cyan-300/20 h-[180px] w-[180px] p-4 bg-cyan-400/10 rounded-full'>
                     <Image 
                         src="/readytoTakeQuiz.svg"
@@ -61,8 +61,9 @@ export default function DisplayCategories() {
                     />
                 </div>
             </div>
-            <div className='w-full flex justify-center'>
-                <Button variant={'outline'} className='w-full bg-cyan-500/80 hover:bg-opacity-70' onClick={start}>Start</Button>
+            <div className='w-full flex flex-col justify-center gap-1'>
+                <Button variant={'outline'} className='w-full bg-cyan-500' onClick={start}>Start</Button>
+                <Button variant={'outline'} className='w-full bg-orange-500/30' onClick={() => setpath('home')}>Exit</Button>
             </div>
         </MotionDisplayWrapper>
     )

@@ -1,4 +1,4 @@
-import { formatEther } from "viem";
+import { formatEther, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsData/global.json";
@@ -6,8 +6,51 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 
 export type Address = `0x${string}`;
-export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey';
+export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData';
 // export type TxnStatus = "Pending" | "Confirming" | "Confirmed" | "Reverted" | "Failed";
+
+interface Values {
+  totalAllocated: bigint;
+  totalClaimed: bigint;
+}
+
+export interface Claims {
+  native: Values;
+  erc20: Values;
+  erc20Addr: Address;
+  totalPoints: bigint;
+  active: boolean;
+}
+
+export interface Profile {
+  amountClaimedInNative: bigint;
+  amountClaimedInERC20: bigint;
+  claimed: boolean;
+  points: number;
+  passKey: string;
+  haskey: boolean;
+  totalQuizPerWeek: number;
+}
+
+export interface State {
+  tippers: Readonly<Tipper[]>;
+  activeLearners: bigint; 
+  totalPoints: bigint;
+  minimumToken: bigint;
+  weekCounter: bigint;
+}
+
+interface Tipper {
+  totalTipped: bigint;
+  points: number;
+  lastTippedDate: bigint;
+}
+
+export interface ReadData {
+  state: State;
+  claims: Readonly<Claims[]>;
+}
+
 export type TransactionCallback = (arg: TrxState) => void;
 export type TransactionData = {
     contractAddress: string;
@@ -29,6 +72,44 @@ export type FilterTransactionDataProps = {
     filter: boolean;
 }
 
+export const mockProfile : Profile = {
+  amountClaimedInNative: 0n,
+  amountClaimedInERC20: 0n,
+  claimed: false,
+  points: 0,
+  passKey: "0x",
+  haskey: false,
+  totalQuizPerWeek: 0
+}
+
+export const mockReadData : ReadData = {
+  state: {
+    activeLearners : 0n,
+    minimumToken: 0n,
+    totalPoints: 0n,
+    weekCounter: 0n,
+    tippers: []
+  },
+  claims: [
+    {
+      active: false,
+      erc20: {totalAllocated: 0n, totalClaimed: 0n},
+      erc20Addr: zeroAddress,
+      native: {totalAllocated: 0n, totalClaimed: 0n},
+      totalPoints: 0n
+    }
+  ]
+}
+
+export const emptyQuizData = {
+  category: '', 
+  data: {
+    category: '',
+    id: 0,
+    difficultyLevel: '',
+    questions: []
+  }
+}
 /**
  * @dev Converts an argument to a bigInt value
  * @param arg : Argument to convert;

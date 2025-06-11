@@ -4,7 +4,17 @@ import { Button } from '~/components/ui/button';
 import useStorage from '../StorageContextProvider/useStorage';
 
 export default function DisplayQuiz() {
-    const { setpath, indexedAnswer, selectedQuizData, handleSelectAnswer } = useStorage();
+    const { setpath, clearData, indexedAnswer, showFinishButton, currentPath, selectedQuizData, handleSelectAnswer } = useStorage();
+    const handleViewScores = () => {
+        setpath('scores');
+        // clearData();
+    };
+
+    const cancel = () => {
+        // clearData();
+        setpath('selectategory');
+    };
+
     return(
         <MotionDisplayWrapper>
             <div className='space-y-4'>
@@ -49,9 +59,16 @@ export default function DisplayQuiz() {
                             )
                         )
                     }
-                    <div className='flex justify-center items-center pt-4'>
-                        <Button onClick={() => setpath('selectategory')} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Cancel</Button>
-                    </div>
+                </MotionDisplayWrapper>
+                <MotionDisplayWrapper className='flex flex-col gap-2 justify-center items-center pt-4'>
+                    <Button onClick={cancel} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Cancel</Button>
+                    {
+                        showFinishButton && 
+                            <div hidden={currentPath === 'scores' || currentPath === 'selectategory'} className='w-full place-items-center space-y-2'>
+                                { currentPath !== 'review' && <Button variant={'outline'} onClick={() => setpath('review') } className='w-full font-mono bg-gray-300/30'>Review</Button> }
+                                { currentPath !== 'scores' && <Button variant={'outline'} onClick={handleViewScores} className='w-full font-mono bg-cyan-500/50'>View my scores</Button> }
+                            </div>
+                    }
                 </MotionDisplayWrapper>
             </div>
         </MotionDisplayWrapper>

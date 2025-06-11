@@ -4,12 +4,15 @@ import { Button } from "~/components/ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
 
 export default function Review() {
-    const { data: {category, questions, difficultyLevel }, } = useStorage();
+    const { data: {category, questions, difficultyLevel }, setpath } = useStorage();
+    const backToQuiz = () => setpath('quiz');
+    const viewScores = () => setpath('scores');
+
     return(
         <MotionDisplayWrapper>
             <div className='space-y-4 max-w-[300px] overflow-auto'>
                 <div className='space-y-4'>
-                    <Button variant={'outline'} className='font-mono text-xs py-2'>Back</Button>
+                    {/* <Button variant={'outline'} className='font-mono text-xs py-2'>Back</Button> */}
                     <div className='space-y-2'>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3>Category</h3>
@@ -56,6 +59,10 @@ export default function Review() {
                         )
                     }
                 </MotionDisplayWrapper>
+                <div className="place-items-center space-y-2">
+                    <Button onClick={backToQuiz} variant={'outline'} className="w-full bg-orange-500/30">Back</Button>
+                    <Button onClick={viewScores} variant={'outline'} className="w-full bg-cyan-500/30">View Scores</Button>
+                </div>
             </div>
         </MotionDisplayWrapper>
     );

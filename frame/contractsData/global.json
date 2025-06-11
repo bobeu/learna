@@ -9,7 +9,8 @@
     "getTippers",
     "getUserData",
     "owner",
-    "generateKey"
+    "generateKey",
+    "getData"
   ],
   "chainName": {
     "42220": "celo",

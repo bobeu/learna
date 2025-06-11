@@ -53,6 +53,7 @@ contract Learna is Ownable, ReentrancyGuard {
         uint totalTipped;
         uint64 points;
         uint lastTippedDate;
+        address id;
     }
 
     struct TipperData {
@@ -100,6 +101,7 @@ contract Learna is Ownable, ReentrancyGuard {
 
     constructor(address any) Ownable(_msgSender()) {
         _setAdmin(_msgSender(), 0);
+        state.minimumToken = 1e16;
         if(any != address(0)) _setAdmin(any, 0);
     }
 
@@ -342,8 +344,13 @@ contract Learna is Ownable, ReentrancyGuard {
             }
         }
         state.tippers[td.index].points += point;
+        if(state.tippers[td.index].id == address(0)) state.tippers[td.index].id = _msgSender();  
 
         return true;
+    }
+
+    function setMinimumToken(uint newToken) public onlyOwner returns(bool) {
+        state.minimumToken = newToken;
     }
     // Get user's data
     function getUserData(address user, uint weekId) public view returns(Profile memory) {

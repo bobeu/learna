@@ -12,11 +12,11 @@ import { parseUnits } from "viem";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
-        ({ getTransactions, back, toggleDrawer, lastStepInList, displayMessage, optionalDisplay, actionButtonText}) => 
+        ({ getTransactions, back, openDrawer, toggleDrawer, setDone, displayMessage, optionalDisplay, actionButtonText}) => 
 {   
     const [loading, setLoading] = React.useState<boolean>(false);
 
-    const { setmessage, setError } = useStorage();
+    const { setmessage, setError, setpath, setTransactionDone } = useStorage();
     const { address, isConnected } = useAccount();
     const config = useConfig(); 
     const account = address as Address;
@@ -29,29 +29,26 @@ export const Confirmation :
     };
 
     // Wait for sometime before resetting the state after completing a transaction
-    const setCompletion = async() => {
+    const setCompletion = (done: boolean) => {
         setLoading(false);
-        setTimeout(() => {
+        const timeoutObj = setTimeout(() => {
             handleCloseDrawer();
-            back?.();
+            setTransactionDone(done);
+            if(!done) setpath('profile');
         }, 6000);
-        clearTimeout(6000);
+        clearTimeout(timeoutObj);
     };
 
     // Call this function when transaction successfully completed
     const onSuccess = (data: Address, variables: any) => {
-        if(variables.functionName === lastStepInList){
-            setmessage(`Completed with hash: /n ${data}`);
-            setCompletion();
-        } else {
-            setmessage(`Completed ${variables.functionName} request with: ${data.substring(0, 8)}...`);
-        }
+        setmessage(`Completed request with: ${data.substring(0, 8)}...`);
+        setCompletion(setDone);
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
         setError(error.message);
-        setCompletion();
+        setCompletion(setDone);
     }
 
     const { writeContractAsync, } = useWriteContract({
@@ -65,11 +62,11 @@ export const Confirmation :
         mutation: { 
             onSuccess: (hash) => {
                 setmessage(`Delegation completed with hash: /n ${hash}`);
-                setCompletion();
+                // setCompletion();
             },
             onError(error) {
                 setError(error.message);
-                setCompletion();
+                setCompletion(false);
             },
         }
     })
@@ -95,9 +92,9 @@ export const Confirmation :
                 value_ = result?.value;
                 execute = result?.proceed;
             }
-            // console.log("FuncName", functionName);
-            // console.log("address", address);
-            // console.log("Args", args);
+            console.log("FuncName", functionName);
+            console.log("address", address);
+            console.log("Args", args);
             if(execute === 1) {
                 setmessage(`Broadcasting...`);
                 const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
@@ -140,15 +137,14 @@ export const Confirmation :
 
     return (
         <Drawer 
+            openDrawer={openDrawer === 1}
+            toggleDrawer={toggleDrawer}
             title={ !loading? (displayMessage || 'Transaction request') : 'Transaction sent' }
         >
             <div className="bg-white1 dark:bg-green1/90 space-y-4 text-green1/90 dark:text-orange-300 text-center">
                 { optionalDisplay && optionalDisplay }
-                {/* {
-                    isGetFinance && !loading && <SelectComponent data='convertible' callback={setConvertible} label="Asset holding" placeholder="Which asset are you holding?"/>
-                }  */}
                 <Message />
-                <Button variant={'outline'} disabled={loading} className="w-full max-w-sm dark:text-orange-200" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : actionButtonText || 'Proceed'}</Button>
+                { !loading && <Button variant={'outline'} disabled={loading} className="w-full max-w-sm dark:text-orange-200" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : actionButtonText || 'Proceed'}</Button>}
             </div>
         </Drawer>
     );
@@ -172,5 +168,5 @@ export interface ConfirmationProps {
     displayMessage?: string;
     actionButtonText?: string;
     getTransactions: () => Transaction[];
-    lastStepInList: FunctionName;
+    setDone: boolean;
 }

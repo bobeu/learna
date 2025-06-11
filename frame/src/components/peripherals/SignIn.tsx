@@ -1,12 +1,15 @@
 "use client";
 
+import '@rainbow-me/rainbowkit/styles.css'
 import * as React  from 'react';
-// import { QuizData, quizData, QuizDatum } from '~/dummyData';
 import { useCallback, useState } from "react";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, { SignIn as SignInCore, } from "@farcaster/frame-sdk";
 import { useSession } from "next-auth/react";
 import { Button } from '~/components/ui/button';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
+
 
 export default function SignIn() {
     const [signingIn, setSigningIn] = useState(false);
@@ -14,6 +17,8 @@ export default function SignIn() {
     const [signInResult, setSignInResult] = useState<SignInCore.SignInResult>();
     const [signInFailure, setSignInFailure] = useState<string>();
     const { data: session, status } = useSession();
+
+    const { isConnected } = useAccount()
   
     const getNonce = useCallback(async () => {
       const nonce = await getCsrfToken();
@@ -57,9 +62,10 @@ export default function SignIn() {
     }, []);
   
     return (
-      <>
+      <React.Fragment>
+        <ConnectButton />
         {status !== "authenticated" && (
-          <Button onClick={handleSignIn} disabled={signingIn}>
+          <Button variant={'outline'} className="w-full mt-1 bg-cyan-500" onClick={handleSignIn} disabled={signingIn}>
             Sign In with Farcaster
           </Button>
         )}
@@ -90,6 +96,6 @@ export default function SignIn() {
             </div>
           </div>
         )}
-      </>
+      </React.Fragment>
     );
   }
