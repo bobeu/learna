@@ -22,8 +22,9 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
         });
 
         const contractAddress = filtered.contractAddresses.Learna as Address;
+        const growToken = filtered.contractAddresses.GrowToken as Address;
         const args = [
-            token? token : filtered.contractAddresses.GrowToken as Address, 
+            token? token === zeroAddress? growToken : token : growToken, 
             owner? owner : zeroAddress, 
             amountInERC20
         ];
@@ -38,7 +39,7 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
                 args,
                 contractAddress,
                 functionName: txObject.functionName as FunctionName,
-                requireArgUpdate: txObject.requireArgUpdate
+                requireArgUpdate: false
             };
             return transaction;
         })
@@ -51,8 +52,7 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Setting up weekly reward'
-            setDone={false}
+            setDone={true}
         />
     )
 }
@@ -61,6 +61,6 @@ type SortWeeklyRewardProps = {
     token?: Address;
     owner?: Address;
     amountInERC20: bigint;
-    toggleDrawer: (arg: number) => void;
-    openDrawer: number;
+    toggleDrawer: () => void;
+    openDrawer: boolean;
 };

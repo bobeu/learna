@@ -12,10 +12,11 @@ import { Utils } from "./Utils.sol";
 contract Learna is Ownable, ReentrancyGuard {
     using Utils for uint96;
 
-    event ClaimedWeeklyReward(address indexed user, Profile profile);
+    event ClaimedWeeklyReward(address indexed user, Profile profile, Claim claim);
     event RegisteredForWeeklyEarning(address indexed users, uint weekId);
     event UnregisteredForWeeklyEarning(address[] indexed users, uint weekId);
-    event Sorted(Claims _claims, uint _weekId);
+    event Sorted(Claim _claim, uint _weekId, uint newWeekId);
+    event Closed(Claim _claim, uint _weekId);
     event PasskeyGenerated(address indexed sender, uint weekId);
 
     struct Values {
@@ -23,15 +24,15 @@ contract Learna is Ownable, ReentrancyGuard {
         uint totalClaimed;
     }
 
-    // Claims data
-    struct Claims {
+    // Claim data
+    struct Claim {
         Values native;
         Values erc20;
         address erc20Addr;
-        uint96 totalPoints;
-        bool active;
+        uint64 claimActiveUntil;
+        uint64 transitionDate;
     }
-
+               
     // User's profile data
     struct Profile {
         uint amountClaimedInNative;
@@ -46,7 +47,7 @@ contract Learna is Ownable, ReentrancyGuard {
     // Readonly data
     struct ReadData {
         State state;
-        Claims[] claims;
+        WeekData[] wd;
     }
 
     struct Tipper {
@@ -62,12 +63,18 @@ contract Learna is Ownable, ReentrancyGuard {
     }
 
     struct State {
-        Tipper[] tippers;
-        uint activeLearners; 
-        uint96 totalPoints;
         uint minimumToken;
+        uint64 transitionInterval; 
         uint weekCounter;
     }
+
+    struct WeekData {
+        Tipper[] tippers;
+        Claim claim;
+        uint activeLearners; 
+        uint96 totalPoints;
+        uint64 transitionInterval;
+    } 
 
     // Other state variables
     State private state;
@@ -82,10 +89,10 @@ contract Learna is Ownable, ReentrancyGuard {
     mapping(address user => mapping(uint weekId => Profile)) private users;
 
     // Admin access role
-    mapping(address => bool) private isAdmin;
+    mapping(address => uint8) private isAdmin;
 
     //weekly claims
-    mapping(uint weekId => Claims) private claims;
+    mapping(uint weekId => WeekData) private weekData;
 
     // Only registered users
     modifier onlyPasskeyHolder(uint weekId) {
@@ -95,32 +102,40 @@ contract Learna is Ownable, ReentrancyGuard {
 
     // Only Admin
     modifier onlyAdmin {
-        require(isAdmin[_msgSender()], 'Only admin');
+        require(isAdmin[_msgSender()] > 0, 'Only admin');
         _;
     }
 
-    constructor(address any) Ownable(_msgSender()) {
-        _setAdmin(_msgSender(), 0);
+    constructor(address[] memory any, uint64 transitionInterval) Ownable(_msgSender()) {
         state.minimumToken = 1e16;
-        if(any != address(0)) _setAdmin(any, 0);
+        state.transitionInterval = transitionInterval;
+        weekData[0].claim.transitionDate = _now() + transitionInterval;
+        weekData[0].claim.claimActiveUntil = (_now() + transitionInterval + transitionInterval);
+        for(uint i = 0; i < any.length; i++) {
+            if(any[i] != address(0)) _setAdmin(any[i], 1); 
+        }
     }
 
     receive() external payable {}
 
+    // Return the current unix time stamp on the network
+    function _now() internal view returns(uint64 result) {
+        result = uint64(block.timestamp);
+    } 
+
     // Users are required to generate a key every week in order to qualify for the weekly payout
     function generateKey() public payable returns(bool) {
         State memory st = state;
+        uint weekId = st.weekCounter;
         require(msg.value >= st.minimumToken, "Insufficient token");
         address sender = _msgSender();
         unchecked {
-            state.activeLearners ++;
+            weekData[weekId].activeLearners += 1;
         }
-        uint weekId = st.weekCounter;
         Profile memory pf = users[sender][weekId];
         require(!pf.haskey, 'User already owns a passkey');
-        bytes32 hashKey = keccak256(abi.encodePacked(sender, weekId));
         pf.haskey = true;
-        pf.passKey = hashKey;
+        pf.passKey = keccak256(abi.encodePacked(sender, weekId, pf.haskey));
         users[sender][weekId] = pf;
 
         emit PasskeyGenerated(sender, weekId);
@@ -138,10 +153,11 @@ contract Learna is Ownable, ReentrancyGuard {
 
     // Approve or deactivate admin
     function _setAdmin(address target, uint8 flag) internal {
-        isAdmin[target] = flag == 0? true : false;
+        isAdmin[target] = flag;
     }
  
     // Approve or deactivate admin
+    // 0 will remove admin. Any number greater than 0 will approve admin
     function setAdmin(address target, uint8 flag) public onlyOwner returns(bool) {
         _setAdmin(target, flag); 
         return true;
@@ -161,7 +177,7 @@ contract Learna is Ownable, ReentrancyGuard {
         if(user != address(0)) {
             unchecked {
                 users[user][weekId].points += points;
-                state.totalPoints += points;
+                weekData[weekId].totalPoints += points;
                 users[user][weekId].totalQuizPerWeek += 1;
             }
         }
@@ -224,18 +240,24 @@ contract Learna is Ownable, ReentrancyGuard {
      * @return erc20Amount : Share in ERC20 token if available
      * @return nativeClaim : Share in Native asset if available
      */
-    function _calculateShare(uint weekId, uint16 userPoints, bool runCheck) internal view returns(uint erc20Amount, uint nativeClaim, Claims memory claim) {
-        claim = claims[weekId];
+    function _calculateShare(uint weekId, uint16 userPoints, bool runCheck) internal view returns(uint erc20Amount, uint nativeClaim, Claim memory clm) {
+        WeekData memory wd = weekData[weekId];
+        clm = wd.claim;
         uint8 erc20Decimals;
         if(runCheck) {
-            require(claim.active, 'Closed');
-            assert(claim.totalPoints >= userPoints);
+            if(wd.transitionInterval > 0) {
+                if(clm.claimActiveUntil > 0) {
+                    require(_now() <= clm.claimActiveUntil, 'Claim closed');
+                }
+
+            }
+            assert(wd.totalPoints >= userPoints);
         }
-        if(claim.totalPoints > 0 && claim.erc20Addr != address(0)) { 
-            erc20Decimals = IERC20Metadata(claim.erc20Addr).decimals(); 
+        if(wd.totalPoints > 0 && clm.erc20Addr != address(0)) { 
+            erc20Decimals = IERC20Metadata(clm.erc20Addr).decimals(); 
             unchecked {
-                if(claim.erc20.totalAllocated > 0) erc20Amount = claim.totalPoints.calculateShare(userPoints, claim.erc20.totalAllocated, erc20Decimals);
-                if(claim.native.totalAllocated > 0) nativeClaim = claim.totalPoints.calculateShare(userPoints, claim.native.totalAllocated, 18);
+                if(clm.erc20.totalAllocated > 0) erc20Amount = wd.totalPoints.calculateShare(userPoints, clm.erc20.totalAllocated, erc20Decimals);
+                if(clm.native.totalAllocated > 0) nativeClaim = wd.totalPoints.calculateShare(userPoints, clm.native.totalAllocated, 18);
             }
         }
     }
@@ -251,7 +273,6 @@ contract Learna is Ownable, ReentrancyGuard {
         return eligible;
     } 
 
-
     /**
      * @dev claim reward
      * @param weekId : Week id for the specific week user want to withdraw from
@@ -261,19 +282,27 @@ contract Learna is Ownable, ReentrancyGuard {
         require(weekId <= state.weekCounter, "Week not ready");
         address sender = _msgSender();
         Profile memory pf = users[sender][weekId];
+        WeekData memory wd = weekData[weekId];
         require(!pf.claimed, 'Already claimed');
-        pf.claimed = true;
-        (uint erc20Amount, uint nativeClaim, Claims memory clm) = _calculateShare(weekId, pf.points, true);
+        require(wd.claim.erc20.totalAllocated > || wd.claim.native.totalAllocated > 0, "Week not sorted");
+        
+        (uint erc20Amount, uint nativeClaim, Claim memory clm) = _calculateShare(weekId, pf.points, true);
         unchecked {
-            clm.erc20.totalClaimed += erc20Amount;
-            clm.native.totalClaimed += nativeClaim;
+            weekData[weekId].claim.erc20.totalClaimed += erc20Amount;
+            weekData[weekId].claim.native.totalClaimed += nativeClaim;
         }
         users[sender][weekId] = Profile(nativeClaim, erc20Amount, true, pf.points, pf.passKey, pf.haskey, pf.totalQuizPerWeek);
         if(erc20Amount > 0) _claimErc20(sender, erc20Amount, IERC20(clm.erc20Addr));
         if(nativeClaim > 0) _claimNativeToken(sender, nativeClaim);
  
-        emit ClaimedWeeklyReward(sender, users[sender][weekId]);
-        return true;
+        emit ClaimedWeeklyReward(sender, users[sender][weekId], _getClaim(weekId));
+        return true; 
+    }
+
+    // Transition into new week
+    function _transitionToNewWeek() internal returns(uint newWeekId) { 
+        state.weekCounter ++; 
+        newWeekId = state.weekCounter;
     }
 
     /**
@@ -286,72 +315,105 @@ contract Learna is Ownable, ReentrancyGuard {
     */
     function sortWeeklyReward(address token, address owner, uint amountInERC20) public onlyAdmin returns(bool) {
         State memory st = state;
-        uint currentWeekId = st.weekCounter;
-        unchecked {
-            state.weekCounter ++;
-        }
-        if(currentWeekId > 0) {
-            claims[currentWeekId - 1].active = false;
-        }
-        require(token != address(0), 'Token is zero');
-        uint balance = IERC20(token).allowance(owner, address(this));
-        if(balance > 0) {
-            IERC20(token).transferFrom(owner, address(this), balance);
-        } else {
-            balance = IGrowToken(token).allocate(amountInERC20);
-            require(balance == amountInERC20, 'Allocation failed');
-        }
-        claims[currentWeekId] = Claims({
-            native: Values(address(this).balance, 0),
-            erc20: Values(balance, 0),
-            erc20Addr: token,
-            totalPoints: st.totalPoints,
-            active: true
-        });
-        emit Sorted(claims[currentWeekId], currentWeekId);
+        uint pastWeekId = st.weekCounter;
+        WeekData memory wd = weekData[pastWeekId];
+        if(wd.claim.transitionDate > 0) {
+            if(_now() >= wd.claim.transitionDate) {
+                uint newWeekId = _transitionToNewWeek();
+                assert(newWeekId > pastWeekId);
+                unchecked {
+                    weekData[newWeekId].claim.transitionDate = _now() + st.transitionInterval;
+                    weekData[newWeekId].claim.claimActiveUntil = (_now() + st.transitionInterval + st.transitionInterval);
+                }
+                // _resetState(); 
+                require(token != address(0), 'Token is zero');
+                uint balance = IERC20(token).allowance(owner, address(this));
+                if(balance > 0) {
+                    IERC20(token).transferFrom(owner, address(this), balance);
+                } else {
+                    balance = IGrowToken(token).allocate(amountInERC20);
+                    require(balance == amountInERC20, 'Allocation failed');
+                }
 
+                weekData[pastWeekId].claim = Claim({
+                    native: Values(address(this).balance, 0),
+                    erc20: Values(balance, 0),
+                    erc20Addr: token,
+                    claimActiveUntil: wd.claim.claimActiveUntil, 
+                    transitionDate: wd.claim.transitionDate
+                });
+    
+                emit Sorted(_getClaim(pastWeekId), pastWeekId, newWeekId);
+            } 
+        }         
         return true;
+    }
+
+    // Fetch the claim data from the weekData
+    function _getClaim(uint weekId) internal view returns(Claim memory _claim) {
+        _claim = weekData[weekId].claim;
     }
 
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
         data.state = state;
-        Claims[] memory _claims = new Claims[](data.state.weekCounter);
-        if(data.state.weekCounter > 0) {
-            for(uint i = 0; i < data.state.weekCounter; i++) {
-                Claims memory _c = claims[i];
-                _claims[i] = _c;
+        uint weekId = data.state.weekCounter;
+        WeekData[] memory wd = new WeekData[](weekId);
+        data.wd = wd;
+        if(weekId > 0) {
+            wd = new WeekData[](weekId + 1);
+            weekId += 1;
+            for(uint i = 0; i < weekId; i++) {
+                wd[i] = weekData[i];
             }
-            data.claims = _claims;
+        } else {
+            wd = new WeekData[](1);
+            wd[0] = weekData[0]; 
         }
+        data.wd = wd;
+        return data;
     } 
 
         // set tips to the learna contract. Tippers earn points
     function tip() public payable returns(bool) {
-        TipperData memory td = isTipper[_msgSender()];
-        if(!td.exist) {
-            td.exist = true;
-            td.index = state.tippers.length;
-            state.tippers.push();
-        }
+        address sender = _msgSender();
+        TipperData memory td = isTipper[sender];
         uint amount = msg.value;
-        uint minimumTip = 50 ether;
-        uint64 point;
-        if(amount >= 0) {
+        uint weekId = state.weekCounter;
+        if(amount > 0) {
+            if(!td.exist) {
+                td.exist = true;
+                td.index = weekData[weekId].tippers.length;
+                isTipper[sender] = td;
+                weekData[weekId].tippers.push();
+            }
+            uint minimumTip = 50 ether;
+            uint64 point;
             unchecked {
-                state.tippers[td.index].totalTipped += amount;
+                weekData[weekId].tippers[td.index].totalTipped += amount;
                 if(amount >= minimumTip) point = uint64(amount / minimumTip);
             }
-        }
-        state.tippers[td.index].points += point;
-        if(state.tippers[td.index].id == address(0)) state.tippers[td.index].id = _msgSender();  
+            weekData[weekId].tippers[td.index].points += point;
+            if(weekData[weekId].tippers[td.index].id == address(0)) weekData[weekId].tippers[td.index].id = _msgSender();  
 
+        }
+        // State memory st = state;
+
+        return true; 
+    }
+
+    // Set minimum payable token by users when signing up
+    function setMinimumToken(uint newToken) public onlyAdmin  returns(bool) {
+        state.minimumToken = newToken;
+        return true; 
+    }
+
+    // Set minimum payable token by users when signing up
+    function setTransitionInterval(uint64 newInternal) public onlyAdmin returns(bool) {
+        state.minimumToken = newInternal;
         return true;
     }
-
-    function setMinimumToken(uint newToken) public onlyOwner returns(bool) {
-        state.minimumToken = newToken;
-    }
+    
     // Get user's data
     function getUserData(address user, uint weekId) public view returns(Profile memory) {
         return users[user][weekId];

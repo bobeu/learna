@@ -8,6 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts} = hre;
 	const {deploy} = deployments;
 	let {deployer, reserve, admin } = await getNamedAccounts();
+	const transitionInterval = 24 * 60* 60;
 
 	console.log("Admin", admin);
 	/**
@@ -15,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	*/
 	const learna = await deploy("Learna", {
 		from: deployer,
-		args: [admin],
+		args: [[admin, deployer], 0],
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${learna.address}`);

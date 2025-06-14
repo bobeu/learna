@@ -6,23 +6,23 @@ import useStorage from '../StorageContextProvider/useStorage';
 
 export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsProps) {
     const { chainId, address } = useAccount();
-    const { setError, setmessage, totalScore } = useStorage();
+    const { setError, setmessage, scoresParam } = useStorage();
     
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setmessage(arg.message);
         if(arg.errorMessage) setError(arg.errorMessage);
     }
 
-    const { transactionData: td } = React.useMemo(() => {
+    const { transactionData: td, totalScore } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['recordPoints'],
             callback
         });
-
-        return { ...filtered };
-    }, [chainId, callback]);
+        const totalScore = scoresParam.totalScores;
+        return { ...filtered, totalScore };
+    }, [chainId, callback, scoresParam]);
 
     const getTransactions = React.useCallback(() => {
         let transactions = td.map((txObject) => {
@@ -45,13 +45,12 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Saving your points'
             setDone={false}
         />
     )
 }
 
 type RecordPointsProps = {
-    toggleDrawer: (arg: number) => void;
-    openDrawer: number;
+    toggleDrawer: () => void;
+    openDrawer: boolean;
 };

@@ -14,14 +14,13 @@ import {
 const TOTAL_WEIGHT = 100;
 
 export default function Scores() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
     const chainId = useChainId();
     const config = useConfig();
     const account = useAccount().address as Address;
-    const toggleDrawer = (arg: number) => setDrawer(arg);
-    const { data, setpath, setError, setmessage, weekId, setscores } = useStorage();
-    const { category, difficultyLevel, questions } = data;
+    const toggleDrawer = () => setDrawer(!openDrawer);
+    const { setpath, setError, setmessage, weekId, scoresParam } = useStorage();
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setmessage(arg.message);
         if(arg.errorMessage) setError(arg.errorMessage);
@@ -35,26 +34,17 @@ export default function Scores() {
 
     const { 
         totalScores,
-            questionSize,
-            weightPerQuestion,
-            totalAnsweredCorrectly,
-            totalAnsweredIncorrectly,
-    } = React.useMemo(() => {
-        const questionSize = questions.length;
-        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / questionSize);
-        const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
-        const totalAnsweredIncorrectly = questionSize - totalAnsweredCorrectly.length;
-        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        setscores(totalScores);
+        questionSize,
+        weightPerQuestion,
+        totalAnsweredCorrectly,
+        totalAnsweredIncorrectly,
+        category,
+        difficultyLevel
 
-        return{
-            totalScores,
-            questionSize,
-            weightPerQuestion,
-            totalAnsweredCorrectly,
-            totalAnsweredIncorrectly,
-        }
-    }, [questions, setscores]);
+    } = React.useMemo(() => {
+       const scores = scoresParam;
+        return{ ...scores}
+    }, [scoresParam]);
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -89,7 +79,7 @@ export default function Scores() {
     const handleSaveScores = () => {
         if(!result || !result?.[0].result) return alert('Please check your connection');
         let profile = result?.[0]?.result as Profile;
-        !profile.haskey? setpath('generateuserkey') : toggleDrawer(1);
+        !profile.haskey? setpath('generateuserkey') : setDrawer(true);
     }
 
     return(

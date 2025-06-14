@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x4C2eEB112e6c4b84A3f0c45cb7410206716bfE77",
+  "contractAddress": "0xdFb9C2595C38f2275f1adb5d8a71c8b29A7bad0e",
   "functionName": "getData",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -10,6 +10,28 @@
       "outputs": [
         {
           "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "minimumToken",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "transitionInterval",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "weekCounter",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Learna.State",
+              "name": "state",
+              "type": "tuple"
+            },
             {
               "components": [
                 {
@@ -28,11 +50,72 @@
                       "internalType": "uint256",
                       "name": "lastTippedDate",
                       "type": "uint256"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "id",
+                      "type": "address"
                     }
                   ],
                   "internalType": "struct Learna.Tipper[]",
                   "name": "tippers",
                   "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "uint256",
+                          "name": "totalAllocated",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "totalClaimed",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct Learna.Values",
+                      "name": "native",
+                      "type": "tuple"
+                    },
+                    {
+                      "components": [
+                        {
+                          "internalType": "uint256",
+                          "name": "totalAllocated",
+                          "type": "uint256"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "totalClaimed",
+                          "type": "uint256"
+                        }
+                      ],
+                      "internalType": "struct Learna.Values",
+                      "name": "erc20",
+                      "type": "tuple"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "erc20Addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "claimActiveUntil",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "transitionDate",
+                      "type": "uint64"
+                    }
+                  ],
+                  "internalType": "struct Learna.Claim",
+                  "name": "claim",
+                  "type": "tuple"
                 },
                 {
                   "internalType": "uint256",
@@ -45,74 +128,13 @@
                   "type": "uint96"
                 },
                 {
-                  "internalType": "uint256",
-                  "name": "minimumToken",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "weekCounter",
-                  "type": "uint256"
+                  "internalType": "uint64",
+                  "name": "transitionInterval",
+                  "type": "uint64"
                 }
               ],
-              "internalType": "struct Learna.State",
-              "name": "state",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "totalAllocated",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "totalClaimed",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Learna.Values",
-                  "name": "native",
-                  "type": "tuple"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "totalAllocated",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "totalClaimed",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct Learna.Values",
-                  "name": "erc20",
-                  "type": "tuple"
-                },
-                {
-                  "internalType": "address",
-                  "name": "erc20Addr",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint96",
-                  "name": "totalPoints",
-                  "type": "uint96"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "active",
-                  "type": "bool"
-                }
-              ],
-              "internalType": "struct Learna.Claims[]",
-              "name": "claims",
+              "internalType": "struct Learna.WeekData[]",
+              "name": "wd",
               "type": "tuple[]"
             }
           ],

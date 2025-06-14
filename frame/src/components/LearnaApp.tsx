@@ -1,6 +1,5 @@
 import React from 'react';
 import { Path, quizData, QuizDatum } from '~/dummyData';
-// import { Button } from './ui/button';
 import { MotionDisplayWrapper } from './peripherals/MotionDisplayWrapper';
 import Review from './peripherals/Review';
 import Scores from './peripherals/Scores';
@@ -16,33 +15,40 @@ import {
     mockReadData, 
     type ReadData, 
     type TransactionCallback, 
-    emptyQuizData 
+    emptyQuizData, 
+    ScoresReturn,
+    ScoresParam,
+    mockScoresParam
 } from './utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
+import { zeroAddress } from 'viem';
+
+const TOTAL_WEIGHT = 100;
 
 export default function LearnaApp() {
     const [currentPath, setPath] = React.useState<Path>('home');
+    const [currentUser, setUser] = React.useState<Address>(zeroAddress);
     const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
     const [firstTransactionDone, setFirstTransactionDone] = React.useState<boolean>(false);
     const [indexedAnswer, setIndex] = React.useState<number>(0);
-    const [totalScore, setScores] = React.useState<number>(0);
-    const [messages, setMessage] = React.useState<string[]>([]);
+    const [messages, setMessage] = React.useState<string>('');
+    const [scoresParam, setScoresParam] = React.useState<ScoresParam>(mockScoresParam);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
     const [selectedQuizData, setQuizData] = React.useState<{category: string, data: QuizDatum}>(emptyQuizData);
     
     const { context } = useFrame();
     const chainId = useChainId();
     const config = useConfig();
-    const { isConnected } = useAccount();
-    const setmessage = (arg: string) => arg === ''? setMessage([]) : setMessage((prev) => [...prev, arg]);
+    const { isConnected, address } = useAccount();
+    const setmessage = (arg: string) => setMessage(arg);
     const setError = (arg:string) => setErrorMessage(arg);
     const goToProfile = () => setPath('profile');
     const goToStats = () => setPath('stats');
 
     const callback : TransactionCallback = (arg) => {
-        if(arg.message) setmessage(arg.message);
+        if(arg.message) setMessage(arg.message);
         if(arg.errorMessage) setError(arg.errorMessage);
     }
 
@@ -51,13 +57,14 @@ export default function LearnaApp() {
         const { contractAddresses: ca, transactionData: td } = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['getData'],
+            functionNames: ['getData', 'owner'],
             callback
         });
 
         const learna = ca.Learna as Address;
-        const readArgs = [[]];
-        const addresses = [learna];
+        const readArgs = [[], []];
+        const addresses = [learna, learna];
+
         // console.log("Abi", td);
         const readTxObject = td.map((item, i) => {
             return{
@@ -84,19 +91,20 @@ export default function LearnaApp() {
     });
 
     // Memoize the fetched data to avoid unneccessary re-rendering
-    const { weekId, state, pastClaims } = React.useMemo(() => {
+    const { weekId, state, weekData, owner } = React.useMemo(() => {
         const data = result?.[0]?.result as ReadData || mockReadData;
-        const weekId = data.state.weekCounter; 
+        const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
-        const pastClaims = [...data.claims];
+        const owner = result?.[1]?.result as Address || zeroAddress;
+        const weekData = [...data.wd];
 
         return {
             weekId,
             state,
-            pastClaims
+            owner,
+            weekData
         }
     }, [result]);
-
 
     // Clear selected quiz data
     const clearData = React.useCallback(() => {
@@ -112,16 +120,31 @@ export default function LearnaApp() {
                 setQuizData({category: selected, data: filtered[0]});
             }
     }, [quizData, setQuizData]);
-
-    // Update the scores state
-    const setscores = React.useCallback((arg: number) => {
-        setScores(arg);
-    }, [setScores]);
     
     // Transaction done is updated when the confirmation component is done with the first set of transaction
     const setTransactionDone = React.useCallback((arg: boolean) => {
         setFirstTransactionDone(arg);
     }, [setFirstTransactionDone]);
+
+    const calculateAndSaveScores = () => {
+        const { category, difficultyLevel, questions } = selectedQuizData.data;
+        const questionSize = questions.length;
+        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / questionSize);
+        const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalAnsweredIncorrectly = questionSize - totalAnsweredCorrectly.length;
+        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
+        const param = {
+            category,
+            difficultyLevel,
+            totalScores,
+            questionSize,
+            weightPerQuestion,
+            totalAnsweredCorrectly,
+            totalAnsweredIncorrectly,
+        }
+        setScoresParam(param);
+
+    };
     
     // Update the quiz data each time an user selects an answer
     const handleSelectAnswer = React.useCallback(({label, value} : {label: string, value: string}) => {
@@ -135,9 +158,9 @@ export default function LearnaApp() {
         });
         setIndex((prev) => {
             let newIndex = prev + 1;
-            if(newIndex === (questionSize)) {
-                // setPreview(true);
+            if(newIndex === questionSize) {
                 newIndex = prev;
+                calculateAndSaveScores();
                 setShowFinishButton(true);
             }
             return newIndex;
@@ -186,6 +209,14 @@ export default function LearnaApp() {
         }
     }, [setPath, currentPath]);
 
+    React.useEffect(() => {
+        if(address && address !== zeroAddress && address !== currentUser) {
+            console.log("Ueer address changed to: ", address, 'from', currentUser);
+            setUser(address); 
+        }
+        if(currentPath === 'scores' || currentPath === 'selectcategory') setQuizData(emptyQuizData);
+    }, [address, currentPath, currentUser, setUser, setQuizData]);
+
     return(
         <StorageContextProvider
             value={{
@@ -201,15 +232,18 @@ export default function LearnaApp() {
                 currentPath,
                 messages,
                 state,
-                totalScore,
-                pastClaims,
+                // totalScore,
+                weekData,
                 weekId,
+                owner,
                 refetch,
                 setError,
                 callback,
-                setscores,
+                // setscores,
                 setmessage,
                 errorMessage,
+                scoresParam,
+                // calculateScores,
                 firstTransactionDone,
                 showFinishButton
             }}

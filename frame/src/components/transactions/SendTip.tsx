@@ -44,7 +44,6 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Tipping...'
             setDone={false}
         />
     )
@@ -52,6 +51,6 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
 
 type claimProps = {
     amount: bigint;
-    toggleDrawer: (arg: number) => void;
-    openDrawer: number;
+    toggleDrawer: () => void;
+    openDrawer: boolean;
 };

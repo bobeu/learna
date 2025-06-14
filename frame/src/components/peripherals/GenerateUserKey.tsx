@@ -6,9 +6,9 @@ import GenerateKey from "../transactions/GenerateKey";
 import RecordPoints from "../transactions/RecordPoints";
 
 export default function GenerateUserKey() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
-    const toggleDrawer = (arg:number) => setDrawer(arg);
+    const toggleDrawer = () => setDrawer(!openDrawer);
     const { setpath, firstTransactionDone  } = useStorage();
     const backToScores = () => setpath('scores');
 
@@ -17,7 +17,7 @@ export default function GenerateUserKey() {
      * i.e generateKey is completed, automatically move to recordPoints.
      */
     React.useEffect(() => {
-        if(firstTransactionDone) toggleDrawer(1);
+        if(firstTransactionDone) setDrawer(true);
     }, [firstTransactionDone]);
     
     return(

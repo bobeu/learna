@@ -20,6 +20,7 @@ describe("Learna", function () {
         balanceOfLeanerB4Tipped,
         balanceOfLeanerAfterTipped 
       } = await sendTip({learna, signer: signer1, tipAmount});
+      // console.log("Tipperssentip: ", tippers);
       expect(tippers.length === 1).to.be.true;
       expect(tippers?.[0].points).to.be.eq(1n);
       if(balanceOfLeanerAfterTipped && balanceOfLeanerB4Tipped) {

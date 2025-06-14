@@ -4,25 +4,21 @@ import { useAccount, useConfig, useReadContracts } from 'wagmi';
 import { 
     type Address, 
     filterTransactionData, 
-    formatValue, 
     type FunctionName, 
     type TransactionCallback, 
     type Profile } from '../utilities';
 import useStorage from '../StorageContextProvider/useStorage';
 import { MotionDisplayWrapper } from '../peripherals/MotionDisplayWrapper';
-import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 import { Button } from '~/components/ui/button';
-import { Spinner } from '../peripherals/Spinner';
-import ClaimWeeklyReward from './ClaimWeeklyReward';
 import { parseUnits } from "viem";
 
 const VALUE = parseUnits('1', 16);
 export default function GenerateKey() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
-    const [claimDrawerOpen, setClaimDrawer] = React.useState<number>(0);
+    const [openDrawer, setDrawer] = React.useState<boolean>(false);
+    // const [claimDrawerOpen, setClaimDrawer] = React.useState<boolean>(false);
 
-    const toggleDrawer = (arg: number) => setDrawer(arg); 
-    const toggleClaimDrawer = (arg: number) => setClaimDrawer(arg); 
+    const toggleDrawer = () => setDrawer(!openDrawer); 
+    // const toggleClaimDrawer = () => setClaimDrawer(!claimDrawerOpen); 
     const { chainId, address } = useAccount();
     const account = address as Address;
     const config = useConfig();
@@ -100,7 +96,7 @@ export default function GenerateKey() {
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate,
                 refetchArgs,
-                // value: VALUE
+                value: VALUE
             };
             return transaction;
         })
@@ -110,13 +106,12 @@ export default function GenerateKey() {
     return(
         <MotionDisplayWrapper>
             <div className='w-full place-items-center'>
-                <Button onClick={() => toggleDrawer(1)} variant={'outline'} className="w-full bg-cyan-500/30 text-cyan-700">Generate Key</Button>
+                <Button onClick={toggleDrawer} variant={'outline'} className="w-full bg-cyan-500/30 text-cyan-700">Generate Key</Button>
             </div>
             <Confirmation 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
-                displayMessage='Generate passkey'
                 setDone={true}
             />
         </MotionDisplayWrapper>

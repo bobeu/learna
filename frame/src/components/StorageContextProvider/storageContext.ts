@@ -1,10 +1,10 @@
 import { Path, QuizDatum } from "~/dummyData";
-import { Claims, State, TransactionCallback } from "../utilities";
+import { Address, ScoresParam, State, TransactionCallback, WeekData } from "../utilities";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { ReadContractsErrorType } from "wagmi/actions";
 
 export interface DataContextProps {
-    messages: string[];
+    messages: string;
     setmessage: (arg: string) => void;
     showFinishButton: boolean;
     errorMessage: string;
@@ -28,11 +28,11 @@ export interface DataContextProps {
         status: "failure";
     })[], ReadContractsErrorType>>;
     clearData: () => void;
-    setscores: (arg: number) => void;
     setTransactionDone: (arg: boolean) => void;
     firstTransactionDone: boolean;
     state: State;
-    totalScore: number;
-    pastClaims: Claims[];
+    owner: Address;
+    weekData: WeekData[];
     weekId: bigint;
+    scoresParam: ScoresParam;
 }

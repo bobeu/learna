@@ -12,48 +12,52 @@ import { parseUnits } from "viem";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
-        ({ getTransactions, back, openDrawer, toggleDrawer, setDone, displayMessage, optionalDisplay, actionButtonText}) => 
+        ({ getTransactions, openDrawer, toggleDrawer}) => 
 {   
     const [loading, setLoading] = React.useState<boolean>(false);
+    const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { setmessage, setError, setpath, setTransactionDone } = useStorage();
+    const { setmessage, setError, setpath, setTransactionDone, refetch } = useStorage();
     const { address, isConnected } = useAccount();
     const config = useConfig(); 
     const account = address as Address;
 
     // Reset the messages and error messages in state, and close the drawer when transaction is completed
     const handleCloseDrawer = () => {
+        toggleDrawer();
         setmessage('');
         setError('');
-        toggleDrawer(0);
     };
 
     // Wait for sometime before resetting the state after completing a transaction
-    const setCompletion = (done: boolean) => {
+    const setCompletion = () => {
         setLoading(false);
-        const timeoutObj = setTimeout(() => {
-            handleCloseDrawer();
-            setTransactionDone(done);
-            if(!done) setpath('profile');
-        }, 6000);
-        clearTimeout(timeoutObj);
+        setIsCompleted(true);
+        refetch().then((res) => {console.log(res.isSuccess)})
     };
 
     // Call this function when transaction successfully completed
-    const onSuccess = (data: Address, variables: any) => {
-        setmessage(`Completed request with: ${data.substring(0, 8)}...`);
-        setCompletion(setDone);
+    const onSuccess = (hash: Address) => {
+        setmessage(`Completed request with hash: ${hash.substring(0, 8)}...`);
+        setCompletion();
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
         setError(error.message);
-        setCompletion(setDone);
+        setCompletion();
     }
 
     const { writeContractAsync, } = useWriteContract({
         config, 
-        mutation: { onError, onSuccess }
+        mutation: { 
+            onError: (error) => onError(error), 
+            onSuccess: (hash, variables) => {
+                const functionName = variables.functionName as FunctionName;
+                onSuccess(hash);
+                if(functionName === 'generateKey') setTransactionDone(true);
+            }
+        }
     });
 
     // Prepare send transaction
@@ -62,11 +66,10 @@ export const Confirmation :
         mutation: { 
             onSuccess: (hash) => {
                 setmessage(`Delegation completed with hash: /n ${hash}`);
-                // setCompletion();
             },
             onError(error) {
                 setError(error.message);
-                setCompletion(false);
+                setCompletion();
             },
         }
     })
@@ -81,70 +84,76 @@ export const Confirmation :
         if(!isConnected) return setError('Please connect wallet');
         setLoading(true);
         const transactions = getTransactions();
+        console.log("account11",account);
         for( let i = 0; i < transactions.length; i++) {
-            const {abi, value, functionName, refetchArgs, requireArgUpdate, contractAddress: address, args: inArgs} = transactions[i];
-            let args = inArgs;
-            let value_ = value;
-            let execute : number | undefined = 1;
-            if(requireArgUpdate) {
-                const result = await refetchArgs?.(functionName);
-                args = result?.args || [];
-                value_ = result?.value;
-                execute = result?.proceed;
-            }
-            console.log("FuncName", functionName);
-            console.log("address", address);
-            console.log("Args", args);
-            if(execute === 1) {
-                setmessage(`Broadcasting...`);
-                const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
-                switch (functionName) {
-                    case 'recordPoints':
-                        const hash = await sendTransactionAsync({
-                            account,
-                            to: viemAccountObj.address,
-                            value: parseUnits('2', 16)
-                        });
-                        await waitForTransactionReceipt(config, {hash, confirmations: 2});
-                        const hash_ = await writeContractAsync({
-                            abi,
-                            functionName,
-                            address,
-                            account: viemAccountObj,
-                            args,
-                            value: value_
-                        });
-                        await waitForTransactionReceipt(config, {hash: hash_, confirmations: 2});
-                        break;
-                
-                    default:
-                        const resultHash = await writeContractAsync({
-                            abi,
-                            functionName,
-                            address,
-                            account,
-                            args,
-                            value: value_
-                        });
-                        await waitForTransactionReceipt(config, { hash: resultHash, confirmations: 2 });
-                        break;
-                }
-            } else {
-                setmessage(`${functionName} was completed!`);
+            const {abi, value, functionName, contractAddress: address, args} = transactions[i];
+            setmessage(`Broadcasting...`);
+            switch (functionName) {
+                case 'recordPoints':
+                    const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+                    const hash = await sendTransactionAsync({
+                        account,
+                        to: viemAccountObj.address,
+                        value: parseUnits('2', 16)
+                    });
+                    await waitForTransactionReceipt(config, {hash, confirmations: 2});
+                    const hash_ = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address,
+                        account: viemAccountObj,
+                        args,
+                        value
+                    });
+                    await waitForTransactionReceipt(config, {hash: hash_, confirmations: 2});
+                    break;
+                case 'sortWeeklyReward':
+                    const hash1 = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address,
+                        account,
+                        args,
+                        value
+                    });
+                    await waitForTransactionReceipt(config, {hash: hash1, confirmations: 2});
+                    break;
+            
+                default:
+                    const resultHash = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address,
+                        account,
+                        args,
+                        value
+                    });
+                    await waitForTransactionReceipt(config, { hash: resultHash, confirmations: 2 });
+                    break;
             }
         }
     }
 
+    React.useEffect(() => {
+        if(completed){
+            const timeoutObj = setTimeout(() => {
+                handleCloseDrawer();
+                setIsCompleted(false);
+                setpath('profile'); 
+            }, 6000);
+            clearTimeout(timeoutObj);
+        }
+    }, [completed, handleCloseDrawer, setIsCompleted, setpath]);
+
     return (
         <Drawer 
-            openDrawer={openDrawer === 1}
+            openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
-            title={ !loading? (displayMessage || 'Transaction request') : 'Transaction sent' }
+            title={ !loading? 'Transaction request' : 'Transaction sent' }
         >
             <div className="bg-white1 dark:bg-green1/90 space-y-4 text-green1/90 dark:text-orange-300 text-center">
-                { optionalDisplay && optionalDisplay }
                 <Message />
-                { !loading && <Button variant={'outline'} disabled={loading} className="w-full max-w-sm dark:text-orange-200" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : actionButtonText || 'Proceed'}</Button>}
+                <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm dark:text-orange-200" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );
@@ -161,12 +170,8 @@ export type Transaction = {
 };
 
 export interface ConfirmationProps {
-    toggleDrawer: (arg: number) => void;
-    openDrawer: number;
-    back?: () => void;
-    optionalDisplay?: React.ReactNode;
-    displayMessage?: string;
-    actionButtonText?: string;
+    toggleDrawer: () => void;
+    openDrawer: boolean;
     getTransactions: () => Transaction[];
     setDone: boolean;
 }

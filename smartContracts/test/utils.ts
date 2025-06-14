@@ -1,4 +1,6 @@
+import { parseUnits } from "viem";
 import type { Address, GrowToken, Learna, Null, Signer } from "./types";
+import { Learna as Learn } from "../typechain-types";
   
 /**
  * @dev Sort weekly earning i.e Set amount to distribute for the week with all necessary paramters
@@ -76,7 +78,7 @@ export async function claimWeeklyReward(x: {learna: Learna, weekId: bigint, sign
 export async function getPassKey(x: {learna: Learna, signer: Signer}) {
   const { learna, signer } = x;
   const address = await signer.getAddress();
-  await learna.connect(signer).generateKey();
+  await learna.connect(signer).generateKey({value: parseUnits('1', 16)});
   const data = await learna.getData();
   return await learna.getUserData(address, data.state.weekCounter);
 }
@@ -109,13 +111,17 @@ export async function unregisterUsersForWeeklyEarning(x: {user: Address, weekId:
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function sendTip(x: {signer: Signer, tipAmount: bigint, learna: Learna}) {
+export async function sendTip(x: {signer: Signer, tipAmount: bigint, learna: Learna}): Promise<{tippers: Learn.TipperStructOutput[], balanceOfLeanerB4Tipped?: bigint, balanceOfLeanerAfterTipped?: bigint}> {
   const { signer, learna, tipAmount} = x;
   const learnaAddr = await learna.getAddress();
   const balanceOfLeanerB4Tipped = await signer.provider?.getBalance(learnaAddr);
   await learna.connect(signer).tip({value: tipAmount});
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
-  const tippers = (await learna.getData()).state.tippers;
+  let tippers : Learn.TipperStructOutput[] = [];
+  let wd : Learn.WeekDataStructOutput[] = [];
+  wd = (await learna.getData()).wd;
+  console.log("WkD", wd)
+  if(wd && wd.length > 0) tippers = wd[0].tippers;
   return {
     tippers,
     balanceOfLeanerB4Tipped,

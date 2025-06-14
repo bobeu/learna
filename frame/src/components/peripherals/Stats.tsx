@@ -2,84 +2,172 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
-import { Address, filterTransactionData, formatValue, Profile as ProfileType, TransactionCallback } from "../utilities";
-import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
+import { Address, formatValue, getTimeFromEpoch, WeekData } from "../utilities";
+import { useAccount, useChainId, useConfig } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
-import GenerateKey from "../transactions/GenerateKey";
-import ClaimWeeklyReward from "../transactions/ClaimWeeklyReward";
+import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
+import { zeroAddress } from "viem";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "~/components/ui/carousel";
+import CollapsibleComponent from "./Collapsible";
 
-export default function Stats() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
+function Stat({weekData} : {weekData: WeekData}) {
+    const { 
+        activeLearners, 
+        claim: { claimActiveUntil, erc20, erc20Addr, native, transitionDate },
+        tippers, 
+        totalPoints, 
+        transitionInterval } = weekData;
 
-    const chainId = useChainId();
-    const config = useConfig();
-    const toggleDrawer = (arg:number) => setDrawer(arg);
-    const account = useAccount().address as Address;
-    const {  
-        setpath, 
-        weekId, 
-        setmessage, 
-        setError, 
-        pastClaims, 
-        state: { activeLearners, minimumToken, tippers, totalPoints }
-    } = useStorage();
-
-    const backToHome = () => setpath('home');
-    const handleClaim = () => setDrawer(1);
-
-    // const callback : TransactionCallback = (arg) => {
-    //     if(arg.message) setmessage(arg.message);
-    //     if(arg.errorMessage) setError(arg.errorMessage);
-    // }
-    
+    const intervalBeforeSorted = transitionInterval > 0? transitionInterval / 360 : transitionInterval;
     return(
-        <MotionDisplayWrapper className="space-y-2 font-mono">
-            <h3 className="text-center text-2xl ">{`Stats ${weekId.toString()}`}</h3>
-            <div className="space-y-2">
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Current Week</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{weekId.toString() || 0}</h3>
-                </div>
+        <MotionDisplayWrapper>
+            <div className=" space-y-2" key={claimActiveUntil}>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Active users</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{activeLearners.toString() || 0}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{activeLearners.toString() || '0'}</h3>
                 </div>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Minimum token</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{minimumToken.toString() || 0}</h3>
-                </div> 
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Total Points</h3>
                     <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{totalPoints.toString() || '0'}</h3>
                 </div>
-            </div>
-            <div>
-                <div>
-                    {
-                        tippers && tippers.length > 0 && <div className="space-y-4">
-                            <h3 className="font-bold text-sm">Tippers</h3>
-                            <div className="space-y-2">
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">Minimum interval before sorted</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{intervalBeforeSorted || '0'}</h3>
+                </div>
+                <div className="space-y-2">
+                    <h3 className="text-sm font-semibold">Payout data</h3>
+                    <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">Time until claim close</h3>
+                        <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                    </div>
+                    <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">Time until sorted</h3>
+                        <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{getTimeFromEpoch(transitionDate)}</h3>
+                    </div>
+                    <div className='border p-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">Token address</h3>
+                        <AddressWrapper account={erc20Addr} size={4} display/> 
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-semibold">ERC20 token claims</h3>
+                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                            <h3 className="w-[50%]">Total allocated</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(erc20.totalAllocated.toString()).toStr || '0'}</h3>
+                        </div>
+                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                            <h3 className="w-[50%]">Total claimed</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(erc20.totalClaimed.toString()).toStr || '0'}</h3>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-semibold">{"Claims in $Celo"}</h3>
+                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                            <h3 className="w-[50%]">Total allocated</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(native.totalAllocated.toString()).toStr || '0'}</h3>
+                        </div>
+                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                            <h3 className="w-[50%]">Total claimed</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(native.totalClaimed.toString()).toStr || '0'}</h3>
+                        </div>
+                    </div>
+                </div>
+                {
+                    (tippers && tippers.length > 0) &&  <div className="space-y-2 border p-4 rounded-xl">
+                        <h3 className="text-sm font-semibold">Tippers</h3>
+                        <Carousel className="w-full max-w-xs relative">
+                            <CarouselContent>
                                 {
-                                    tippers.map(({points, totalTipped}) => (
-                                        <div className="p-4 border border-cyan-500/10 ">
-                                            <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                                                <h3 className="w-[50%]">Amount</h3>
-                                                <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(totalTipped?.toString()).toStr || '0'}</h3>
+                                    tippers.map(({id, lastTippedDate, points, totalTipped}) => (
+                                        <CarouselItem key={id}>
+                                            <div className="place-items-center text-center font-mono">
+                                                <h3 className="text-sm h-[60px] p3 rounded-t-xl">
+                                                    <AddressWrapper account={id} size={4} display/>
+                                                </h3>
+                                                <div className="w-full space-y-2 h-fit text-xs">
+                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                        <h3 className="w-[50%]">Amount tipped</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(totalTipped.toString()).toStr || '0'}</h3>
+                                                    </div>
+                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                        <h3 className="w-[50%]">Date tipped</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{getTimeFromEpoch(lastTippedDate)}</h3>
+                                                    </div>
+                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                        <h3 className="w-[50%]">Point earned</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{points || '0'}</h3>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                                                <h3 className="w-[50%]">Points earned</h3>
-                                                <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{points|| '0'}</h3>
-                                            </div>
-                                        </div>
+                                        </CarouselItem>
                                     ))
                                 }
-                            </div>
-
-                        </div>
-                    }
-                </div>
+                            </CarouselContent>
+                            <CarouselPrevious className="absolute -left-4 bg-cyan-900 text-cyan-50"/>
+                            <CarouselNext className="absolute -right-4 bg-cyan-900 text-cyan-50"/>
+                        </Carousel>
+                    </div>
+                }
             </div>
-           
+        </MotionDisplayWrapper>
+    )
+}
+
+export default function Stats() {
+    const [openDrawer, setDrawer] = React.useState<number>(0);
+
+    // const chainId = useChainId();
+    // const config = useConfig();
+    const toggleDrawer = (arg:number) => setDrawer(arg);
+    const account = useAccount().address as Address || zeroAddress;
+    const {  
+        setpath, 
+        weekData,
+        owner,
+        state: { minimumToken, transitionInterval, weekCounter }
+    } = useStorage();
+
+    const backToHome = () => setpath('home');
+
+    return(
+        <MotionDisplayWrapper className="space-y-2 font-mono">
+            <div className="space-y-2 bg-cyan-300/5 p-4 rounded-xl">
+                <h3 className="text-sm font-bold ">{`Current week ${weekCounter.toString()}`}</h3>
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">Current Week</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{weekCounter.toString() || 0}</h3>
+                </div>
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">Transition interval</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{transitionInterval || 0}</h3>
+                </div>
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">Minimum token</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{`${formatValue(minimumToken.toString()).toStr || 0} Celo`}</h3>
+                </div> 
+            </div>
+            
+            <div className="space-y-2 bg-cyan-300/5 p-4 rounded-xl">
+                <h3 className="text-sm font-semibold">Week Data</h3>
+                {
+                    weekData.length && weekData.map((wkd, index) => (
+                        <CollapsibleComponent 
+                            key={index}
+                            header={`Week ${index}`}
+                            id={index}
+                        >
+                            <Stat weekData={wkd}/>
+                        </CollapsibleComponent>
+                    ))
+                }
+                
+            </div>
+            { (account.toLowerCase() === owner.toLowerCase()) && <SortWeeklyPayout />  }
             <div className="flex justify-center items-center gap-1 w-full">
                 {/* <Button disabled={disableClaimButton} onClick={handleClaim} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Claim</Button> */}
                 <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>

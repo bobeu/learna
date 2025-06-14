@@ -9,7 +9,8 @@ import { zeroAddress } from "viem";
  */
 async function deployLearna(deployer: Signer) : Promise<Learna> {
   const LearnaContract = await ethers.getContractFactory("Learna");
-  return (await LearnaContract.connect(deployer).deploy(zeroAddress)).waitForDeployment();
+  const deployerAddr = await deployer.getAddress();
+  return (await LearnaContract.connect(deployer).deploy([deployerAddr], 0)).waitForDeployment();
 }
 
 /**
@@ -29,7 +30,7 @@ export async function deployContracts(getSigners_: () => Signers) {
   const deployerAddr = await deployer.getAddress() as Address;
   const reserveAddr = await reserve.getAddress() as Address;
   const signer1Addr = await signer1.getAddress() as Address;
-  const signer2Addr = await signer2.getAddress() as Address
+  const signer2Addr = await signer2.getAddress() as Address;
   // const signers = [deployerAddr, reserveAddr, signer2Addr, signer1Addr] as Address[];
 
   const learna = await deployLearna(deployer);

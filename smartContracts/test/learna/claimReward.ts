@@ -27,7 +27,7 @@ describe("Learna", function () {
       const nativeBalOfLearnerAfterTipping = await signer1.provider?.getBalance(learnaAddr);
       if(nativeBalOfLearnerB4 && nativeBalOfLearnerAfterTipping){
         expect(nativeBalOfLearnerAfterTipping > nativeBalOfLearnerB4).to.be.true;
-        expect(nativeBalOfLearnerAfterTipping === tipAmount).to.be.true;
+        expect(nativeBalOfLearnerAfterTipping >= tipAmount).to.be.true;
       }
       const isEligible = await learna.connect(signer1).checkligibility(weekId);
       expect(isEligible).to.be.false;

@@ -6,20 +6,19 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 
 export type Address = `0x${string}`;
-export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData';
-// export type TxnStatus = "Pending" | "Confirming" | "Confirmed" | "Reverted" | "Failed";
+export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
 
 interface Values {
   totalAllocated: bigint;
   totalClaimed: bigint;
 }
 
-export interface Claims {
+export interface Claim {
   native: Values;
   erc20: Values;
   erc20Addr: Address;
-  totalPoints: bigint;
-  active: boolean;
+  claimActiveUntil: number;
+  transitionDate: number;
 }
 
 export interface Profile {
@@ -32,23 +31,30 @@ export interface Profile {
   totalQuizPerWeek: number;
 }
 
-export interface State {
-  tippers: Readonly<Tipper[]>;
-  activeLearners: bigint; 
-  totalPoints: bigint;
-  minimumToken: bigint;
-  weekCounter: bigint;
-}
-
 interface Tipper {
   totalTipped: bigint;
   points: number;
   lastTippedDate: bigint;
+  id: Address;
 }
+
+export interface State {
+  minimumToken: bigint;
+  weekCounter: bigint;
+  transitionInterval: number; 
+}
+
+export interface WeekData {
+  tippers: Readonly<Tipper[]>;
+  claim: Claim;
+  activeLearners: bigint; 
+  totalPoints: bigint;
+  transitionInterval: number;
+} 
 
 export interface ReadData {
   state: State;
-  claims: Readonly<Claims[]>;
+  wd: Readonly<WeekData[]>;
 }
 
 export type TransactionCallback = (arg: TrxState) => void;
@@ -82,23 +88,116 @@ export const mockProfile : Profile = {
   totalQuizPerWeek: 0
 }
 
+export interface ScoresParam {
+  category: string;
+  difficultyLevel: string;
+  totalScores: number;
+  questionSize: number;
+  weightPerQuestion: number;
+  totalAnsweredCorrectly: {
+      quest: string;
+      options: Array<{
+          label: string;
+          value: string;
+      }>;
+      correctAnswer: {
+          label: string;
+          value: string;
+      };
+      userAnswer?: {
+          label: string;
+          value: string;
+      };
+  }[];
+  totalAnsweredIncorrectly: number;
+}
+
+export const mockScoresParam : ScoresParam =  {
+  category: '',
+  difficultyLevel: '',
+  totalScores: 0,
+  questionSize: 0,
+  weightPerQuestion: 0,
+  totalAnsweredCorrectly: [{
+      quest: '',
+      options: [{
+          label: '',
+          value: '',
+      }],
+      correctAnswer: {
+          label: '',
+          value: '',
+      },
+      userAnswer: {
+          label: '',
+          value: '',
+      },
+  }],
+  totalAnsweredIncorrectly: 0
+}
+
+export type ScoresReturn = () => ScoresParam;
+
 export const mockReadData : ReadData = {
   state: {
-    activeLearners : 0n,
     minimumToken: 0n,
-    totalPoints: 0n,
     weekCounter: 0n,
-    tippers: []
+    transitionInterval: 0
   },
-  claims: [
+  wd: [
     {
-      active: false,
-      erc20: {totalAllocated: 0n, totalClaimed: 0n},
-      erc20Addr: zeroAddress,
-      native: {totalAllocated: 0n, totalClaimed: 0n},
-      totalPoints: 0n
-    }
-  ]
+      activeLearners: 0n,
+      totalPoints: 0n,
+      transitionInterval: 0,
+      claim: {
+        native: { totalAllocated: 0n, totalClaimed: 0n},
+        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
+        erc20Addr: zeroAddress,
+        claimActiveUntil: 0,
+        transitionDate: 0
+      },
+      tippers: [
+        {
+          id: zeroAddress,
+          lastTippedDate: 0n,
+          points: 0,
+          totalTipped: 0n,
+        },
+        {
+          id: `0x${'0'.repeat(41)}1`,
+          lastTippedDate: 0n,
+          points: 0,
+          totalTipped: 0n,
+        },
+      ]
+    },
+    {
+      activeLearners: 0n,
+      totalPoints: 0n,
+      transitionInterval: 0,
+      claim: {
+        native: { totalAllocated: 0n, totalClaimed: 0n},
+        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
+        erc20Addr: zeroAddress,
+        claimActiveUntil: 0,
+        transitionDate: 0
+      },
+      tippers: [
+        {
+          id: zeroAddress,
+          lastTippedDate: 0n,
+          points: 0,
+          totalTipped: 0n,
+        },
+        {
+          id: `0x${'0'.repeat(41)}1`,
+          lastTippedDate: 0n,
+          points: 0,
+          totalTipped: 0n,
+        },
+      ]
+    },
+  ] 
 }
 
 export const emptyQuizData = {
@@ -119,6 +218,18 @@ export const toBigInt = (x: string | number | ethers.BigNumberish | bigint | und
   if(!x) return 0n;
   return BigInt(toBN(x).toString());
 } 
+
+/**
+ * @dev Converts onchain timestamp to a date object
+ * @param arg : onchain time in seconds;
+ * @returns Date string object
+*/
+export function getTimeFromEpoch(onchainUnixTime: number | bigint) {
+  const toNumber = toBN(onchainUnixTime.toString()).toNumber()
+  var date = new Date(toNumber * 1000);
+  return (toNumber === 0? 'Not Set' : `${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-US")}`);
+}
+
 
 /**
  * @dev Converts an argument to a Big Number value

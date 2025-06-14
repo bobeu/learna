@@ -22,19 +22,19 @@ export default function Message() {
         <React.Fragment>
             {
                 display && 
-                    <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-red-400' : 'border-green1/20 dark:border-white1/10'} rounded-lg p-4 text-xs text-left font-semibold text-green1/90 dark:text-white1`}>
-                        {
+                    <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-red-400' : 'border-cyan-500/20'} rounded-lg p-4 text-xs space-y-2 `}>
+                        <MotionDisplayWrapper className={`w-full flex justify-start gap-2 pl-1`}>
+                            { inclusiveNone(messages)? <h3>X</h3> : <h3 className="font-mono font-semibold">O</h3> }
+                            <h1 className="max-w-sm overflow-auto">{ inclusiveNone(messages)? messages.replace('.none', '') : messages }</h1>
+                        </MotionDisplayWrapper>
+                        {/* {
                             messages.length > 0 && messages.map((message, index) => (
-                                <MotionDisplayWrapper key={index} className={`w-full flex justify-start gap-2`}>
-                                    { inclusiveNone(message)? <h3>X</h3> : <h3>O</h3> }
-                                    <h1 className="max-w-sm overflow-auto">{ inclusiveNone(message)? message.replace('.none', '') : message }</h1>
-                                </MotionDisplayWrapper>
                             ))
-                        }
+                        } */}
                         {
-                            isError && <MotionDisplayWrapper className={`w-full flex justify-start gap-2 text-red-400`}>
+                            isError && <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
                                 <Error />
-                                <h1 className="max-w-sm overflow-auto">{ errorMessage }</h1>
+                                <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
                             </MotionDisplayWrapper>
                         }
                     </MotionDisplayWrapper>

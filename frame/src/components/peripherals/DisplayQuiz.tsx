@@ -4,15 +4,13 @@ import { Button } from '~/components/ui/button';
 import useStorage from '../StorageContextProvider/useStorage';
 
 export default function DisplayQuiz() {
-    const { setpath, clearData, indexedAnswer, showFinishButton, currentPath, selectedQuizData, handleSelectAnswer } = useStorage();
+    const { setpath, indexedAnswer, showFinishButton, currentPath, selectedQuizData, handleSelectAnswer } = useStorage();
     const handleViewScores = () => {
         setpath('scores');
-        // clearData();
     };
 
     const cancel = () => {
-        // clearData();
-        setpath('selectategory');
+        setpath('selectcategory');
     };
 
     return(
@@ -64,7 +62,7 @@ export default function DisplayQuiz() {
                     <Button onClick={cancel} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Cancel</Button>
                     {
                         showFinishButton && 
-                            <div hidden={currentPath === 'scores' || currentPath === 'selectategory'} className='w-full place-items-center space-y-2'>
+                            <div hidden={currentPath === 'scores' || currentPath === 'selectcategory'} className='w-full place-items-center space-y-2'>
                                 { currentPath !== 'review' && <Button variant={'outline'} onClick={() => setpath('review') } className='w-full font-mono bg-gray-300/30'>Review</Button> }
                                 { currentPath !== 'scores' && <Button variant={'outline'} onClick={handleViewScores} className='w-full font-mono bg-cyan-500/50'>View my scores</Button> }
                             </div>

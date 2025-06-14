@@ -43,7 +43,6 @@ export default function UnregisterUsersForWeeklyEarning({args, openDrawer, toggl
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            displayMessage='Setting up weekly reward'
             setDone={false}
         />
     )
@@ -52,6 +51,6 @@ export default function UnregisterUsersForWeeklyEarning({args, openDrawer, toggl
 type RegisterUsersForWeeklyEarningProps = {
     unit: bigint;
     args: any[];
-    toggleDrawer: (arg: number) => void;
-    openDrawer: number;
+    toggleDrawer: () => void;
+    openDrawer: boolean;
 };

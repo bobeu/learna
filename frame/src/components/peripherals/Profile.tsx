@@ -2,23 +2,24 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
-import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, TransactionCallback } from "../utilities";
+import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, toBN, TransactionCallback } from "../utilities";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
 import ClaimWeeklyReward from "../transactions/ClaimWeeklyReward";
+import CollapsibleComponent from "./Collapsible";
 
-export default function Profile() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
+function ProfileComponent({weekId} : {weekId: bigint}) {
+    const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
     const chainId = useChainId();
     const config = useConfig();
-    const toggleDrawer = (arg:number) => setDrawer(arg);
-    const account = useAccount().address as Address;
-    const {  setpath, weekId, setmessage, setError } = useStorage();
+    const toggleDrawer = () => setDrawer(!openDrawer);
+    const { address, isConnected } = useAccount();
+    const account = address as Address;
+    const {  setmessage, setError } = useStorage();
 
-    const backToHome = () => setpath('home');
-    const handleClaim = () => setDrawer(1);
+    const handleClaim = () => setDrawer(true);
 
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setmessage(arg.message);
@@ -51,24 +52,25 @@ export default function Profile() {
     // Fetch user data 
     const { data } = useReadContracts({
         config,
-        contracts: readTxObject
+        contracts: readTxObject,
+        allowFailure: true,
+        query: {
+            enabled: !!isConnected,
+            refetchOnReconnect: 'always', 
+            refetchInterval: 5000,
+            refetchOnMount: 'always',
+
+        }
     });
 
     const profile = data?.[0]?.result as ProfileType || mockProfile;
     const isElibigle = data?.[1]?.result as boolean;
-    const disableClaimButton = profile?.claimed || !profile?.haskey || !isElibigle;
+    const disableClaimButton = profile?.claimed || !profile?.haskey || isElibigle;
     const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, totalQuizPerWeek } = profile;
-
-    // const { amountClaimedInERC20, disableClaimButton, amountClaimedInNative, haskey, passKey, points, totalQuizPerWeek } = React.useMemo(() => {
-    //     const profile = data?.[0]?.result as ProfileType;
-    //     const isElibigle = data?.[1]?.result as boolean;
-    //     const disableClaimButton = profile?.claimed || !profile?.haskey || !isElibigle;
-    //     return { ...profile, disableClaimButton };
-    // }, [data]);
     
     return(
-        <MotionDisplayWrapper className="space-y-4 font-mono">
-            <h3 className="text-center text-2xl ">{`My Info in week ${weekId.toString()}`}</h3>
+        <MotionDisplayWrapper className="space-y-2 font-mono">
+            <h3 className="font-semibold">{`Week ${weekId.toString()} data`}</h3>
             <div className="space-y-2">
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Total attempted quiz</h3>
@@ -87,11 +89,11 @@ export default function Profile() {
                     }
                 </div> 
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">{`Amount of Celo claimed`}</h3>
+                    <h3 className="w-[50%]">Amount of GROW Token claimed</h3>
                     <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">{`Amount of GROW Token claimed`}</h3>
+                    <h3 className="w-[50%]">{`Amount of Celo claimed`}</h3>
                     <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
                 </div>
             </div>
@@ -103,7 +105,6 @@ export default function Profile() {
             </div>
             <div className="flex justify-center items-center gap-1 w-full">
                 <Button disabled={disableClaimButton} onClick={handleClaim} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Claim</Button>
-                <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
             </div>
             <ClaimWeeklyReward 
                 openDrawer={openDrawer}
@@ -112,4 +113,38 @@ export default function Profile() {
             />
         </MotionDisplayWrapper>
     );
+}
+
+
+export default function Profile() {
+    const { weekId, setpath } = useStorage();
+    const backToHome = () => setpath('home');
+
+    const weekIds = React.useMemo(() => {
+        const wkId = toBN(weekId.toString()).toNumber();
+        const weekIds = [...Array(wkId === 0? 1 : wkId + 1).keys()];
+        return weekIds;
+    }, [weekId]);
+
+    return(
+        <div className="space-y-2">
+            {
+                weekIds.map((wkId) => (
+                    <MotionDisplayWrapper 
+                        key={wkId}
+                        
+                    >
+                        <CollapsibleComponent
+                            header={`Week ${wkId}`}
+                            id={wkId}
+                        >
+                            <ProfileComponent weekId={BigInt(wkId)} />
+                        </CollapsibleComponent>
+                    </MotionDisplayWrapper>
+                ))
+            }
+            <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
+        </div>
+    )
+
 }
