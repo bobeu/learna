@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xdFb9C2595C38f2275f1adb5d8a71c8b29A7bad0e",
+  "contractAddress": "0x9761496D5a1968B0320bb0059e4D0fDA29861805",
   "functionName": "generateKey",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -8,13 +8,18 @@
       "inputs": [
         {
           "internalType": "address[]",
-          "name": "any",
+          "name": "admins",
           "type": "address[]"
         },
         {
           "internalType": "uint64",
           "name": "transitionInterval",
           "type": "uint64"
+        },
+        {
+          "internalType": "enum Learna.Mode",
+          "name": "_mode",
+          "type": "uint8"
         }
       ],
       "stateMutability": "nonpayable",
@@ -164,76 +169,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "totalAllocated",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "totalClaimed",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Learna.Values",
-              "name": "native",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "totalAllocated",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "totalClaimed",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Learna.Values",
-              "name": "erc20",
-              "type": "tuple"
-            },
-            {
-              "internalType": "address",
-              "name": "erc20Addr",
-              "type": "address"
-            },
-            {
-              "internalType": "uint64",
-              "name": "claimActiveUntil",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint64",
-              "name": "transitionDate",
-              "type": "uint64"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct Learna.Claim",
-          "name": "_claim",
-          "type": "tuple"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "_weekId",
-          "type": "uint256"
-        }
-      ],
-      "name": "Closed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "previousOwner",
@@ -367,6 +302,53 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "tipper",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalTipped",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint64",
+              "name": "points",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lastTippedDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "id",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Learna.Tipper",
+          "name": "data",
+          "type": "tuple"
+        }
+      ],
+      "name": "Tipped",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "address[]",
           "name": "users",
@@ -394,7 +376,7 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "eligible",
+          "name": "",
           "type": "bool"
         }
       ],

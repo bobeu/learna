@@ -8,7 +8,7 @@ import RecordPoints from "../transactions/RecordPoints";
 export default function GenerateUserKey() {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
-    const toggleDrawer = () => setDrawer(!openDrawer);
+    const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const { setpath, firstTransactionDone  } = useStorage();
     const backToScores = () => setpath('scores');
 

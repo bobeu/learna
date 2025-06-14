@@ -1,6 +1,7 @@
 import React from "react";
 import useStorage from "../StorageContextProvider/useStorage";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
+import Image from "next/image";
 
 const Error = () => {
     return (
@@ -12,7 +13,7 @@ const Error = () => {
     );
 }
 
-export default function Message() {
+export default function Message({completed} : {completed: boolean}) {
     const { messages, errorMessage } = useStorage();
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
@@ -23,19 +24,29 @@ export default function Message() {
             {
                 display && 
                     <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-red-400' : 'border-cyan-500/20'} rounded-lg p-4 text-xs space-y-2 `}>
-                        <MotionDisplayWrapper className={`w-full flex justify-start gap-2 pl-1`}>
-                            { inclusiveNone(messages)? <h3>X</h3> : <h3 className="font-mono font-semibold">O</h3> }
-                            <h1 className="max-w-sm overflow-auto">{ inclusiveNone(messages)? messages.replace('.none', '') : messages }</h1>
-                        </MotionDisplayWrapper>
-                        {/* {
-                            messages.length > 0 && messages.map((message, index) => (
-                            ))
-                        } */}
                         {
-                            isError && <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
-                                <Error />
-                                <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
-                            </MotionDisplayWrapper>
+                            completed? 
+                                <MotionDisplayWrapper className="bg-cyan-500/30 flex justify-center p-4 rounded-xl">
+                                    <Image 
+                                        src={'/thankYou.svg'}
+                                        alt="Completed"
+                                        width={150}
+                                        height={150}
+                                    />
+                                </MotionDisplayWrapper> : 
+                            
+                                <div>
+                                    <MotionDisplayWrapper className={`w-full flex justify-start gap-2 pl-1`}>
+                                        { inclusiveNone(messages)? <h3>X</h3> : <h3 className="font-mono font-semibold">O</h3> }
+                                        <h1 className="max-w-sm overflow-auto">{ inclusiveNone(messages)? messages.replace('.none', '') : messages }</h1>
+                                    </MotionDisplayWrapper>
+                                    {
+                                        isError && <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
+                                            <Error />
+                                            <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
+                                        </MotionDisplayWrapper>
+                                    }
+                                </div>
                         }
                     </MotionDisplayWrapper>
             }

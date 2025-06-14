@@ -51,6 +51,6 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
 
 type claimProps = {
     amount: bigint;
-    toggleDrawer: () => void;
+    toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
 };

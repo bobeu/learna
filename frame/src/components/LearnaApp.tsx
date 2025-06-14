@@ -24,6 +24,7 @@ import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import { zeroAddress } from 'viem';
+import SendTip from './peripherals/SendTip';
 
 const TOTAL_WEIGHT = 100;
 
@@ -46,6 +47,7 @@ export default function LearnaApp() {
     const setError = (arg:string) => setErrorMessage(arg);
     const goToProfile = () => setPath('profile');
     const goToStats = () => setPath('stats');
+    const goToTip = () => setPath('sendtip');
 
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setMessage(arg.message);
@@ -197,6 +199,9 @@ export default function LearnaApp() {
                 case 'stats':
                     result = <Stats />;
                     break;
+                case 'sendtip':
+                    result = <SendTip />;
+                    break;
                 default:
                     break;
             }
@@ -260,6 +265,11 @@ export default function LearnaApp() {
                 <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-400/10 p-2 mb-2 rounded-xl '>
                     <h1 className='h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic text-2xl font-black text-cyan-800'>L</span><span className='font-mono text-xs'>earna</span></h1>
                     <div className='flex justify-between items-center gap-1'>
+                        <button onClick={goToTip} className='h-[40px] w-[40px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                            </svg>
+                        </button>
                         <button onClick={goToStats} className='h-[40px] w-[40px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />

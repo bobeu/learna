@@ -3,7 +3,6 @@
 import * as React  from 'react';
 import { QuizData, quizData, QuizDatum } from '~/dummyData';
 import { useCallback, useEffect, useMemo, useState } from "react";
-// import { Input } from "./ui/input";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
   SignIn as SignInCore,

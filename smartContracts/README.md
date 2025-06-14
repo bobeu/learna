@@ -35,5 +35,36 @@ Learna contract deployed to: 0xdFb9C2595C38f2275f1adb5d8a71c8b29A7bad0e
 deploying "GrowToken" (tx: 0x426de36b55fbf6fd48043e8a3960ca5a216624bf168992efbc20e57f216c6111)...: deployed at 0xC92dE8aeDE6799c30D874bF273aB74A4eea01A35 with 794345 gas
 GrowToken deployed to: 0xC92dE8aeDE6799c30D874bF273aB74A4eea01A35
 Done in 34.11s. -->
+<!-- 
+$ hardhat deploy --network alfajores --export deployments/contracts.json
+Nothing to compile
+No need to generate any newer typings.
+Admin 0xC0f6Ef6C8A58fB431015D4D2d7e0925718EaC010
+deploying "Learna" (tx: 0x9eacfa70316d52c396509a9a29680a32b22588960cb2da9fbdf097e61c4775f3)...: deployed at 0x262EE780B100e9D2e3Cb1C7F86C4fA001b710FC7 with 2601865 gas
+Learna contract deployed to: 0x262EE780B100e9D2e3Cb1C7F86C4fA001b710FC7
+deploying "GrowToken" (tx: 0xeac0b47f1be49dc21099fe7bb17334a26ad79b558e507358bc3e8a97008e139d)...: deployed at 0x3824d0DaD2C9aE91dD9d96fc9c0295ef53d82D87 with 794321 gas
+GrowToken deployed to: 0x3824d0DaD2C9aE91dD9d96fc9c0295ef53d82D87
+Done in 65.88s. -->
+
+<!-- Testnet
+deployer 0xD7c271d20c9E323336bFC843AEb8deC23B346352
+reusing "Learna" at 0x4AeDfE7137012679837bd7284d80FAfdC72513c6
+Learna contract deployed to: 0x4AeDfE7137012679837bd7284d80FAfdC72513c6
+reusing "GrowToken" at 0x0D42E9B84d11Ea4A66660E167546632619633799
+GrowToken deployed to: 0x0D42E9B84d11Ea4A66660E167546632619633799
+🔄 Syncing contracts data to Next App...
+✅ Data synchronization completed!
+Done in 28.43s. -->
 
 
+<!-- Nothing to compile
+No need to generate any newer typings.
+Mode 1
+deployer 0xa1f70ffA4322E3609dD905b41f17Bf3913366bC1
+deploying "Learna" (tx: 0xbcc0f66b38658faae3252dbdbfa5458ecd973ffb57347da7a1bb8aceb2af8193)...: deployed at 0x9761496D5a1968B0320bb0059e4D0fDA29861805 with 2827477 gas
+Learna contract deployed to: 0x9761496D5a1968B0320bb0059e4D0fDA29861805
+deploying "GrowToken" (tx: 0xdd970aa0df26683148cf6bbc712bbff7e4870f409305493e0e920eba5c00df91)...: deployed at 0x800B1666d554e249FCCf5f0855455F43a140d2e5 with 794345 gas
+GrowToken deployed to: 0x800B1666d554e249FCCf5f0855455F43a140d2e5
+🔄 Syncing contracts data to Next App...
+✅ Data synchronization completed!
+Done in 48.95s -->

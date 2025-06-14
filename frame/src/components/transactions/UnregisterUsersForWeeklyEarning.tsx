@@ -51,6 +51,6 @@ export default function UnregisterUsersForWeeklyEarning({args, openDrawer, toggl
 type RegisterUsersForWeeklyEarningProps = {
     unit: bigint;
     args: any[];
-    toggleDrawer: () => void;
+    toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
 };

@@ -59,7 +59,7 @@ export default function Review() {
                         )
                     }
                 </MotionDisplayWrapper>
-                <div className="place-items-center space-y-2">
+                <div className=" space-y-2">
                     <Button onClick={backToQuiz} variant={'outline'} className="w-full bg-orange-500/30">Back</Button>
                     <Button onClick={viewScores} variant={'outline'} className="w-full bg-cyan-500/30">View Scores</Button>
                 </div>

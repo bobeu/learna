@@ -24,7 +24,7 @@ export default function Home() {
                     variant={'outline'} 
                     className="w-full mt-1 bg-cyan-500"
                 >
-                    Let me in
+                    Get started
                 </Button>
             </div>
         </MotionDisplayWrapper>

@@ -10,7 +10,8 @@
     "getUserData",
     "owner",
     "generateKey",
-    "getData"
+    "getData",
+    "approve"
   ],
   "chainName": {
     "42220": "celo",
@@ -21,7 +22,10 @@
     42220
   ],
   "paths": {
-    "42220": [],
+    "42220": [
+      "deployments\\celo\\GrowToken.json",
+      "deployments\\celo\\Learna.json"
+    ],
     "44787": [
       "deployments\\alfajores\\GrowToken.json",
       "deployments\\alfajores\\Learna.json"
@@ -30,11 +34,13 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "GrowToken": "0xC92dE8aeDE6799c30D874bF273aB74A4eea01A35",
-      "Learna": "0xdFb9C2595C38f2275f1adb5d8a71c8b29A7bad0e"
+      "GrowToken": "0x0D42E9B84d11Ea4A66660E167546632619633799",
+      "Learna": "0x4AeDfE7137012679837bd7284d80FAfdC72513c6"
     },
     {
-      "stablecoin": "0x0000000000000000000000000000000000000000"
+      "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
+      "GrowToken": "0x800B1666d554e249FCCf5f0855455F43a140d2e5",
+      "Learna": "0x9761496D5a1968B0320bb0059e4D0fDA29861805"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import Drawer from './Drawer';
 import { Button } from "~/components/ui/button";
-import { useAccount, useConfig, useWriteContract, useSendTransaction } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
 import { Address, FunctionName } from "~/components/utilities";
 import useStorage from "~/components/StorageContextProvider/useStorage";
@@ -20,11 +20,12 @@ export const Confirmation :
     const { setmessage, setError, setpath, setTransactionDone, refetch } = useStorage();
     const { address, isConnected } = useAccount();
     const config = useConfig(); 
+    // const chainId = useChainId();
     const account = address as Address;
 
     // Reset the messages and error messages in state, and close the drawer when transaction is completed
     const handleCloseDrawer = () => {
-        toggleDrawer();
+        toggleDrawer(false);
         setmessage('');
         setError('');
     };
@@ -72,7 +73,13 @@ export const Confirmation :
                 setCompletion();
             },
         }
-    })
+    });
+
+    const waitForConfirmation = async(hash: `0x${string}`, setDone: boolean) => {
+        const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
+        setmessage(`Completed in ${receipt.blockNumber.toString()} block with transaction hash: ${receipt.transactionHash.substring(0, 8)}...`);
+        if((receipt.status === 'success') && setDone) setIsCompleted(true);
+    } 
 
     /**
      * @dev Broadcast transaction to the blockchain and wait for confirmation up to 2 confirmation blocks
@@ -90,25 +97,43 @@ export const Confirmation :
             setmessage(`Broadcasting...`);
             switch (functionName) {
                 case 'recordPoints':
-                    const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
-                    const hash = await sendTransactionAsync({
-                        account,
-                        to: viemAccountObj.address,
-                        value: parseUnits('2', 16)
-                    });
-                    await waitForTransactionReceipt(config, {hash, confirmations: 2});
-                    const hash_ = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address,
-                        account: viemAccountObj,
-                        args,
-                        value
-                    });
-                    await waitForTransactionReceipt(config, {hash: hash_, confirmations: 2});
+                    setmessage("Delegating transaction call to an admin");
+                    // const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+                    // const hash = await sendTransactionAsync({
+                    //     account,
+                    //     to: viemAccountObj.address,
+                    //     value: parseUnits('2', 16)
+                    // });
+                    // await waitForConfirmation(hash, false);
+                    // setmessage("Now saving your points...");
+                    // const hash1 = await writeContractAsync({
+                    //     abi,
+                    //     functionName,
+                    //     address,
+                    //     account: viemAccountObj,
+                    //     args,
+                    //     value
+                    // });
+                    // await waitForConfirmation(hash1, true);
                     break;
+                case 'tip':
+                    console.log("ADDRESS", address);
+                    console.log("abi", abi);
+                    console.log("functionName", functionName);
+                    console.log("args", args);
+                    if(value && value > 0) {
+                        const hash3 = await writeContractAsync({
+                            abi,
+                            functionName,
+                            address,
+                            account,
+                            args,
+                            value
+                        });
+                        await waitForConfirmation(hash3, true);
+                    }
                 case 'sortWeeklyReward':
-                    const hash1 = await writeContractAsync({
+                    const hash4 = await writeContractAsync({
                         abi,
                         functionName,
                         address,
@@ -116,11 +141,12 @@ export const Confirmation :
                         args,
                         value
                     });
-                    await waitForTransactionReceipt(config, {hash: hash1, confirmations: 2});
+                    await waitForConfirmation(hash4, true);
                     break;
             
                 default:
-                    const resultHash = await writeContractAsync({
+                    console.log("account", account);
+                    const hash5 = await writeContractAsync({
                         abi,
                         functionName,
                         address,
@@ -128,7 +154,7 @@ export const Confirmation :
                         args,
                         value
                     });
-                    await waitForTransactionReceipt(config, { hash: resultHash, confirmations: 2 });
+                    await waitForConfirmation(hash5, true);
                     break;
             }
         }
@@ -151,9 +177,9 @@ export const Confirmation :
             toggleDrawer={toggleDrawer}
             title={ !loading? 'Transaction request' : 'Transaction sent' }
         >
-            <div className="bg-white1 dark:bg-green1/90 space-y-4 text-green1/90 dark:text-orange-300 text-center">
-                <Message />
-                <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm dark:text-orange-200" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
+            <div className="space-y-4 text-center">
+                <Message completed={completed} />
+                <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );
@@ -170,8 +196,12 @@ export type Transaction = {
 };
 
 export interface ConfirmationProps {
-    toggleDrawer: () => void;
+    toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
     getTransactions: () => Transaction[];
     setDone: boolean;
 }
+
+const displayMessages = [
+    {}
+]

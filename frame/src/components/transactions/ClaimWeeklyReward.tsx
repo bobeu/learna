@@ -50,6 +50,6 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
 
 type claimProps = {
     weekId: bigint;
-    toggleDrawer: () => void;
+    toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
 };

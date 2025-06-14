@@ -2,6 +2,8 @@ import { ethers } from "hardhat";
 import type { Address,  GrowToken, Learna, Signer, Signers } from "./types";
 import { zeroAddress } from "viem";
 
+enum Mode { LOCAL, LIVE }
+
 /**
  * Deploys and return an instance of the Escape contract.
  * @param deployer : Deployer address
@@ -10,7 +12,7 @@ import { zeroAddress } from "viem";
 async function deployLearna(deployer: Signer) : Promise<Learna> {
   const LearnaContract = await ethers.getContractFactory("Learna");
   const deployerAddr = await deployer.getAddress();
-  return (await LearnaContract.connect(deployer).deploy([deployerAddr], 0)).waitForDeployment();
+  return (await LearnaContract.connect(deployer).deploy([deployerAddr], 0, Mode.LOCAL)).waitForDeployment();
 }
 
 /**

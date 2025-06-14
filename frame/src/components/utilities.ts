@@ -6,7 +6,7 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 
 export type Address = `0x${string}`;
-export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
+export type FunctionName = 'checkligibility' | 'recordPoints' | 'unregisterUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
 
 interface Values {
   totalAllocated: bigint;
@@ -273,7 +273,6 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
     const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
     let transactionData : TransactionData[] = [];
     const index = chainIds.indexOf(chainId || chainIds[0]);
-    const isCelo = chainId === chainIds[0];
     if(filter) {
       assert(functionNames !== undefined, "FunctionNames not provided");
       functionNames.forEach((functionName) => {
@@ -291,6 +290,5 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
       transactionData,
       approvedFunctions,
       contractAddresses: contractAddresses[index],
-      isCelo  
     }
 }

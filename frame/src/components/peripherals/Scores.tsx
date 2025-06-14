@@ -19,7 +19,7 @@ export default function Scores() {
     const chainId = useChainId();
     const config = useConfig();
     const account = useAccount().address as Address;
-    const toggleDrawer = () => setDrawer(!openDrawer);
+    const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const { setpath, setError, setmessage, weekId, scoresParam } = useStorage();
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setmessage(arg.message);

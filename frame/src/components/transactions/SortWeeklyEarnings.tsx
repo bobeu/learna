@@ -61,6 +61,6 @@ type SortWeeklyRewardProps = {
     token?: Address;
     owner?: Address;
     amountInERC20: bigint;
-    toggleDrawer: () => void;
+    toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
 };

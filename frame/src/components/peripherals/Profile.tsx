@@ -14,7 +14,7 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
 
     const chainId = useChainId();
     const config = useConfig();
-    const toggleDrawer = () => setDrawer(!openDrawer);
+    const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const { address, isConnected } = useAccount();
     const account = address as Address;
     const {  setmessage, setError } = useStorage();

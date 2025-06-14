@@ -21,7 +21,7 @@ export type QuizDatum = {
 };
 
 export type QuizData = Array<QuizDatum>;
-export type Path = 'selectcategory' | 'review' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
+export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
 export type DisplayQuizProps = {
     indexedAnswer: number;
     selectedQuizData: {category: string, data: QuizDatum};

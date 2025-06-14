@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xdFb9C2595C38f2275f1adb5d8a71c8b29A7bad0e",
+  "contractAddress": "0x9761496D5a1968B0320bb0059e4D0fDA29861805",
   "functionName": "getUserData",
   "inputCount": 2,
   "requireArgUpdate": true,

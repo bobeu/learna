@@ -15,10 +15,8 @@ import { parseUnits } from "viem";
 const VALUE = parseUnits('1', 16);
 export default function GenerateKey() {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
-    // const [claimDrawerOpen, setClaimDrawer] = React.useState<boolean>(false);
 
-    const toggleDrawer = () => setDrawer(!openDrawer); 
-    // const toggleClaimDrawer = () => setClaimDrawer(!claimDrawerOpen); 
+    const toggleDrawer = (arg:boolean) => setDrawer(arg); 
     const { chainId, address } = useAccount();
     const account = address as Address;
     const config = useConfig();
@@ -106,7 +104,7 @@ export default function GenerateKey() {
     return(
         <MotionDisplayWrapper>
             <div className='w-full place-items-center'>
-                <Button onClick={toggleDrawer} variant={'outline'} className="w-full bg-cyan-500/30 text-cyan-700">Generate Key</Button>
+                <Button onClick={() => toggleDrawer(true)} variant={'outline'} className="w-full bg-cyan-500/30 text-cyan-700">Generate Key</Button>
             </div>
             <Confirmation 
                 openDrawer={openDrawer}

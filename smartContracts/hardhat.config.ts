@@ -7,6 +7,7 @@ import "@nomicfoundation/hardhat-viem";
 
 dotconfig();
 const PRIVATE_KEY = process.env.PRIVATE_KEY_CROSS_0xD7c;
+const PRIVATE_KEY_MAINNET = process.env.PRIVATE_KEY_MAIN_0xa1f;
 // const API_KEY = process.env.ALCHEMY_API_KEY;
 
 const config: HardhatUserConfig = {
@@ -18,7 +19,7 @@ const config: HardhatUserConfig = {
       chainId: 44787,
     },
     celo: {
-      accounts: [`${PRIVATE_KEY}`],
+      accounts: [`${PRIVATE_KEY_MAINNET}`],
       url: 'https://forno.celo.org',
     },
   },
@@ -53,12 +54,12 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
       44787: `privatekey://${PRIVATE_KEY}`,
-      42220: `privatekey://${PRIVATE_KEY}`,
+      42220: `privatekey://${PRIVATE_KEY_MAINNET}`,
     },
     reserve: {
       default: 0,
       44787: `privatekey://${PRIVATE_KEY}`,
-      42220: `privatekey://${PRIVATE_KEY}`
+      42220: `privatekey://${PRIVATE_KEY_MAINNET}`
     },
     admin: {
       default: 0,
