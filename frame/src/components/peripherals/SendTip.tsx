@@ -4,9 +4,7 @@ import { Button } from "~/components/ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
 import Image from "next/image";
 import { Input } from "~/components/ui/input";
-import Drawer from "./Confirmation/Drawer";
-import { useAccount, useChainId, useSendTransaction, useWriteContract } from "wagmi";
-import Message from "./Message";
+import { useChainId, } from "wagmi";
 import { Address, filterTransactionData, FunctionName, toBigInt } from "../utilities";
 import { Confirmation, type Transaction } from "./Confirmation";
 import { parseUnits } from "viem";
@@ -15,6 +13,7 @@ export default function SendTip() {
     const [ showSendCelo, setShowSendCelo ] = React.useState<boolean>(false);
     const [ openDrawer, setDrawer ] = React.useState<boolean>(false);
     const [ celoAmount, setCeloAmount ] = React.useState<string>('0');
+
     const { setpath } = useStorage();
     const toggleDrawer = () => setDrawer(!openDrawer);
     const backToHome = () => setpath('home');
@@ -56,7 +55,7 @@ export default function SendTip() {
                 </div>
                 {
                     !showSendCelo && 
-                        <MotionDisplayWrapper className="flex flex-col justify-center items-center text-center gap-4 text- font-semibold bg-purple-500/50 text-cyan-700 rounded-xl p-4">
+                        <MotionDisplayWrapper className="flex flex-col justify-center items-center text-center gap-4 text- font-semibold bg-purple-500/10 text-cyan-700 rounded-xl p-4">
                             <h3>Support us by sending tip in Celo. Our system is decentralized and transparent. </h3>
                             <Image 
                                 src={'/support.svg'}
@@ -87,7 +86,7 @@ export default function SendTip() {
                 }
                 <div className=" space-y-2">
                     <Button disabled={showSendCelo} onClick={() => setShowSendCelo(true)} variant={'outline'} className="w-full bg-purple-500/50">Send Celo</Button>
-                    <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/30">Exit</Button>
+                    <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50">Exit</Button>
                 </div>
             </div>
             <Confirmation 
@@ -95,6 +94,7 @@ export default function SendTip() {
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
                 setDone
+                lastStepInList="tip"
             />
         </MotionDisplayWrapper>
     );

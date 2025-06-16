@@ -7,7 +7,8 @@ import useStorage from "../StorageContextProvider/useStorage";
 
 export default function CollapsibleComponent({ header, id, children} : {id: number, header: string, children: React.ReactNode}) {
   const { weekId } = useStorage();
-  const [isOpen, setIsOpen] = React.useState(BigInt(id) === weekId? true: false);
+  // const [isOpen, setIsOpen] = React.useState(BigInt(id) === weekId? true: false);
+  const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
   return (
     <Collapsible

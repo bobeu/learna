@@ -2,7 +2,7 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../StorageContextProvider/useStorage";
-import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, toBN, TransactionCallback } from "../utilities";
+import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, toBN, } from "../utilities";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
@@ -17,17 +17,13 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
     const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const { address, isConnected } = useAccount();
     const account = address as Address;
-    const {  setmessage, setError } = useStorage();
-
     const handleClaim = () => setDrawer(true);
+    const { getFunctions } = useStorage();
 
-    const callback : TransactionCallback = (arg) => {
-        if(arg.message) setmessage(arg.message);
-        if(arg.errorMessage) setError(arg.errorMessage);
-    }
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
+        const { callback } = getFunctions();
         const { contractAddresses: ca, transactionData: td} = filterTransactionData({
             chainId,
             filter: true,
@@ -47,7 +43,7 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
             }
         });
         return { readTxObject };
-    }, [chainId, account, weekId, callback]);
+    }, [chainId, account, weekId, getFunctions]);
 
     // Fetch user data 
     const { data } = useReadContracts({

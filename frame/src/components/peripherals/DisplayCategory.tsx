@@ -8,37 +8,21 @@ import useStorage from '../StorageContextProvider/useStorage';
 export default function DisplayCategories() {
     const [selectedCategory, setSelectedCategory] = React.useState<string>('');
     const [difficultyLevel, setLevel] = React.useState<string>('');
-    const { handleStart, setpath, setSelectedQuizData } = useStorage();
+
+    const { setpath, setSelectedQuizData } = useStorage();
+    // const { setSelectedQuizData } = getFunctions();
 
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');
         if(difficultyLevel === '') return alert('Please pick a level');
-        handleStart();
+        setSelectedQuizData(selectedCategory, difficultyLevel);
     }
 
     // Update the category when user selects one
-    const filterCatgeory = React.useCallback(
-        (selected: string) => {
-            // console.log("Selected", selected)
-            setSelectedCategory(selected);
-        }
-        ,[setSelectedCategory]
-    );
+    const filterCatgeory = (selected: string) => setSelectedCategory(selected);
 
     // Update the difficulty level for the user whether beginner, intermediate or advance
-    const  setDifficultyLevel = React.useCallback(
-        (selected: string) => {
-            setLevel(selected);
-        }
-        ,[setLevel]
-    );
-
-    // Automatically update the quiz data to display whenever user selectes a new category 
-    React.useEffect(() => {
-        if(selectedCategory !== '' && difficultyLevel !== ''){
-            setSelectedQuizData(selectedCategory, difficultyLevel);
-        }
-    }, [setSelectedQuizData, selectedCategory, difficultyLevel]);
+    const  setDifficultyLevel = (selected: string) => setLevel(selected);
 
     return( 
         <MotionDisplayWrapper className='space-y-6'>

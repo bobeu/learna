@@ -3,49 +3,58 @@ import Drawer from './Drawer';
 import { Button } from "~/components/ui/button";
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { Address, FunctionName } from "~/components/utilities";
+import { Address, FunctionName, getDivviReferralUtilities } from "~/components/utilities";
 import useStorage from "~/components/StorageContextProvider/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
 import { parseUnits } from "viem";
+import { celo } from "viem/chains";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
-        ({ getTransactions, openDrawer, toggleDrawer}) => 
+        ({ getTransactions, lastStepInList, openDrawer, back, toggleDrawer}) => 
 {   
     const [loading, setLoading] = React.useState<boolean>(false);
     const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { setmessage, setError, setpath, setTransactionDone, refetch } = useStorage();
+    const { errorMessage, messages, refetch, getFunctions } = useStorage();
     const { address, isConnected } = useAccount();
     const config = useConfig(); 
-    // const chainId = useChainId();
+    const chainId = useChainId();
     const account = address as Address;
+    const { callback } = getFunctions();
 
     // Reset the messages and error messages in state, and close the drawer when transaction is completed
-    const handleCloseDrawer = () => {
-        toggleDrawer(false);
-        setmessage('');
-        setError('');
-    };
+    // const handleCloseDrawer = () => {
+    //     callback({message: '', errorMessage: ''});
+    //     toggleDrawer(false);
+    // };
 
     // Wait for sometime before resetting the state after completing a transaction
     const setCompletion = () => {
         setLoading(false);
-        setIsCompleted(true);
-        refetch().then((res) => {console.log(res.isSuccess)})
+        refetch().then((res) => {console.log(res.isSuccess)});
+        const timeoutObj = setTimeout(() => {
+            // handleCloseDrawer();
+            setIsCompleted(true);
+            back?.();
+        }, 6000);
+        return clearTimeout(timeoutObj);
     };
 
     // Call this function when transaction successfully completed
-    const onSuccess = (hash: Address) => {
-        setmessage(`Completed request with hash: ${hash.substring(0, 8)}...`);
-        setCompletion();
+    const onSuccess = (hash: Address, variables: { functionName: string; } | undefined) => {
+        callback({message: `Completed request with hash: ${hash.substring(0, 8)}...`});
+        const functionName = variables?.functionName as FunctionName;
+        if(functionName === lastStepInList){
+            setCompletion();
+        }
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
-        setError(error.message);
+        callback({errorMessage: error.message});
         setCompletion();
     }
 
@@ -53,11 +62,7 @@ export const Confirmation :
         config, 
         mutation: { 
             onError: (error) => onError(error), 
-            onSuccess: (hash, variables) => {
-                const functionName = variables.functionName as FunctionName;
-                onSuccess(hash);
-                if(functionName === 'generateKey') setTransactionDone(true);
-            }
+            onSuccess
         }
     });
 
@@ -66,10 +71,10 @@ export const Confirmation :
         config,
         mutation: { 
             onSuccess: (hash) => {
-                setmessage(`Delegation completed with hash: /n ${hash}`);
+                callback({message: `Delegation completed with hash: ${hash.substring(0, 8)}...`});
             },
             onError(error) {
-                setError(error.message);
+                callback({errorMessage: error.message});
                 setCompletion();
             },
         }
@@ -77,7 +82,7 @@ export const Confirmation :
 
     const waitForConfirmation = async(hash: `0x${string}`, setDone: boolean) => {
         const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
-        setmessage(`Completed in ${receipt.blockNumber.toString()} block with transaction hash: ${receipt.transactionHash.substring(0, 8)}...`);
+        callback({message: `Completed in ${receipt.blockNumber.toString()} block with transaction hash: ${receipt.transactionHash.substring(0, 8)}...`});
         if((receipt.status === 'success') && setDone) setIsCompleted(true);
     } 
 
@@ -88,33 +93,33 @@ export const Confirmation :
      * @returns void
      */
     const handleSendTransaction = async() => {
-        if(!isConnected) return setError('Please connect wallet');
+        if(!isConnected) return callback({errorMessage: 'Please connect wallet'});
         setLoading(true);
         const transactions = getTransactions();
         console.log("account11",account);
         for( let i = 0; i < transactions.length; i++) {
             const {abi, value, functionName, contractAddress: address, args} = transactions[i];
-            setmessage(`Broadcasting...`);
+            callback({message: 'Broadcasting...'});
             switch (functionName) {
                 case 'recordPoints':
-                    setmessage("Delegating transaction call to an admin");
-                    // const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
-                    // const hash = await sendTransactionAsync({
-                    //     account,
-                    //     to: viemAccountObj.address,
-                    //     value: parseUnits('2', 16)
-                    // });
-                    // await waitForConfirmation(hash, false);
-                    // setmessage("Now saving your points...");
-                    // const hash1 = await writeContractAsync({
-                    //     abi,
-                    //     functionName,
-                    //     address,
-                    //     account: viemAccountObj,
-                    //     args,
-                    //     value
-                    // });
-                    // await waitForConfirmation(hash1, true);
+                    callback({message: 'Delegating transaction call to an admin'});
+                    const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+                    const hash = await sendTransactionAsync({
+                        account,
+                        to: viemAccountObj.address,
+                        value: parseUnits('2', 16)
+                    });
+                    await waitForConfirmation(hash, false);
+                    callback({message: "Now saving your points..."});
+                    const hash1 = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address,
+                        account: viemAccountObj,
+                        args,
+                        value
+                    });
+                    await waitForConfirmation(hash1, true);
                     break;
                 case 'tip':
                     console.log("ADDRESS", address);
@@ -145,31 +150,27 @@ export const Confirmation :
                     break;
             
                 default:
-                    console.log("account", account);
+                    const { getDataSuffix, submitReferralData } = getDivviReferralUtilities();
+                    const useDivvi = chainId === celo.id && functionName === 'generateKey';
+                    const dataSuffix = useDivvi? getDataSuffix() : undefined;
                     const hash5 = await writeContractAsync({
                         abi,
                         functionName,
                         address,
                         account,
                         args,
-                        value
+                        value,
+                        dataSuffix
                     });
                     await waitForConfirmation(hash5, true);
+                    if(useDivvi) {
+                        const result = await submitReferralData(hash5, chainId);
+                        console.log("Divvi Ref result:", result.statusText);
+                    }
                     break;
             }
         }
     }
-
-    React.useEffect(() => {
-        if(completed){
-            const timeoutObj = setTimeout(() => {
-                handleCloseDrawer();
-                setIsCompleted(false);
-                setpath('profile'); 
-            }, 6000);
-            clearTimeout(timeoutObj);
-        }
-    }, [completed, handleCloseDrawer, setIsCompleted, setpath]);
 
     return (
         <Drawer 
@@ -178,7 +179,17 @@ export const Confirmation :
             title={ !loading? 'Transaction request' : 'Transaction sent' }
         >
             <div className="space-y-4 text-center">
-                <Message completed={completed} />
+                <Message 
+                    completed={completed} 
+                    // closeDrawer={() => toggleDrawer(false)} 
+                    parentMessage={messages}
+                    parentErrorMessage={errorMessage}
+                    setCompletion={() => setIsCompleted(false)}
+                    closeDrawer={() => {
+                        toggleDrawer(false);
+                        back?.();
+                    }} 
+                />
                 <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
@@ -199,9 +210,7 @@ export interface ConfirmationProps {
     toggleDrawer: (arg:boolean) => void;
     openDrawer: boolean;
     getTransactions: () => Transaction[];
+    back?: () => void;
     setDone: boolean;
+    lastStepInList: FunctionName;
 }
-
-const displayMessages = [
-    {}
-]

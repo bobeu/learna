@@ -5,7 +5,6 @@ import {
     type Address, 
     filterTransactionData, 
     type FunctionName, 
-    type TransactionCallback, 
     type Profile } from '../utilities';
 import useStorage from '../StorageContextProvider/useStorage';
 import { MotionDisplayWrapper } from '../peripherals/MotionDisplayWrapper';
@@ -13,18 +12,14 @@ import { Button } from '~/components/ui/button';
 import { parseUnits } from "viem";
 
 const VALUE = parseUnits('1', 16);
-export default function GenerateKey() {
+export default function GenerateKey({ callback } : {callback: () => void}) {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
     const toggleDrawer = (arg:boolean) => setDrawer(arg); 
     const { chainId, address } = useAccount();
     const account = address as Address;
     const config = useConfig();
-    const { setError, setmessage, weekId } = useStorage();
-    const callback : TransactionCallback = (arg) => {
-        if(arg.message) setmessage(arg.message);
-        if(arg.errorMessage) setError(arg.errorMessage);
-    }
+    const { weekId } = useStorage();
 
     // Build the transactions to run
     const { readTxObject, mutate } = React.useMemo(() => {
@@ -32,14 +27,12 @@ export default function GenerateKey() {
             chainId,
             filter: true,
             functionNames: ['checkligibility', 'getUserData'],
-            callback
         });
 
         const mutate = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['generateKey'],
-            callback
         });
 
         const learna = ca.Learna as Address;
@@ -55,7 +48,7 @@ export default function GenerateKey() {
         });
 
         return { readTxObject, mutate };
-    }, [chainId, weekId, account, callback]);
+    }, [chainId, weekId, account]);
 
     // Fetch the user's profile
     const { data, isLoading, isPending, refetch } = useReadContracts({
@@ -111,6 +104,8 @@ export default function GenerateKey() {
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
                 setDone={true}
+                lastStepInList='generateKey'
+                back={callback}
             />
         </MotionDisplayWrapper>
     )

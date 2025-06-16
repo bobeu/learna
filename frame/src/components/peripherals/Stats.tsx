@@ -26,7 +26,6 @@ function Stat({weekData} : {weekData: WeekData}) {
 
     // const intervalBeforeSorted = transitionInterval > 0? transitionInterval / 360 : transitionInterval;
     const interval = toBN(transitionInterval.toString()).toNumber();
-    // console.log("Intervak", interval)
 
     return(
         <MotionDisplayWrapper>
@@ -122,11 +121,6 @@ function Stat({weekData} : {weekData: WeekData}) {
 }
 
 export default function Stats() {
-    const [openDrawer, setDrawer] = React.useState<number>(0);
-
-    // const chainId = useChainId();
-    // const config = useConfig();
-    const toggleDrawer = (arg:number) => setDrawer(arg);
     const account = useAccount().address as Address || zeroAddress;
     const {  
         setpath, 
@@ -137,7 +131,6 @@ export default function Stats() {
 
     const backToHome = () => setpath('home');
     const interval = toBN(transitionInterval.toString()).toNumber();
-    // console.log("Intervak", interval)
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">

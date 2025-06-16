@@ -3,6 +3,7 @@ export type QuizDatum = {
     category: string;
     id: number,
     difficultyLevel: string;
+    taken: boolean;
     questions: Array<{
         quest: string;
         options: Array<{
@@ -29,13 +30,14 @@ export type DisplayQuizProps = {
     handleSelectAnswer: (arg: {label: string, value: string}) => void;
 }
 
-export const categories = ['solidity', 'vyper', 'wagmi', 'ethersJs', 'web3Js', 'ReactJs'];
+export const categories = ['solidity', 'vyper', 'wagmi', 'ethersjs', 'web3js', 'reactjs'];
 export const difficultyLevels = ['beginner', 'intermediate', 'advance'];
 export const quizData : QuizData = [
     {
         category: 'solidity',
         id: 0,
         difficultyLevel: 'beginner',
+        taken: false,
         questions: [
             {
                 quest: 'What is Solidity programming?',
@@ -160,6 +162,139 @@ export const quizData : QuizData = [
                 correctAnswer: {
                     label: 'c',
                     value: 'bytes64'
+                }
+            }
+        ],
+    },
+    {
+        category: 'reactjs',
+        id: 0,
+        difficultyLevel: 'beginner',
+        taken: false,
+        questions: [
+            {
+                quest: 'Is reacjJS a programming language?',
+                options: [
+                    {
+                        label: 'a',
+                        value: 'No'
+                    },
+                    {
+                        label: 'b',
+                        value: 'Yes'
+                    },
+                    {
+                        label: 'c',
+                        value: 'Somewhat no'
+                    },
+                    {
+                        label: 'd',
+                        value: "I'm indifferent"
+                    },
+                ],
+                correctAnswer: {
+                    label: 'b',
+                    value: 'Yes'
+                }
+            },
+            {
+                quest: 'Which of the following syntaxes is correct in ReactJS?',
+                options: [
+                    {
+                        label: 'a',
+                        value: 'const myName = Joy;'
+                    },
+                    {
+                        label: 'b',
+                        value: "const myName = 'Joy';"
+                    },
+                    {
+                        label: 'c',
+                        value: "const 2 = 'Joy';"
+                    },
+                    {
+                        label: 'd',
+                        value: 'const myName = var;'
+                    },
+                ],
+                correctAnswer: {
+                    label: 'b',
+                    value: "const myName = 'Joy';"
+                }
+            },
+            {
+                quest: "What is the function of the 'useState' hook? ",
+                options: [
+                    {
+                        label: 'a',
+                        value: 'For changing variables in state'
+                    },
+                    {
+                        label: 'b',
+                        value: 'For holding variables in state'
+                    },
+                    {
+                        label: 'c',
+                        value: 'For persisting data in application memory'
+                    },
+                    {
+                        label: 'd',
+                        value: 'For holding stale data in storage'
+                    },
+                ],
+                correctAnswer: {
+                    label: 'c',
+                    value: 'For persisting data in application memory'
+                }
+            },
+            {
+                quest: "'useCallback' is _____ in ReactJS?",
+                options: [
+                    {
+                        label: 'a',
+                        value: 'a component'
+                    },
+                    {
+                        label: 'b',
+                        value: 'a state persister'
+                    },
+                    {
+                        label: 'c',
+                        value: 'a hook'
+                    },
+                    {
+                        label: 'd',
+                        value: 'a constructor'
+                    },
+                ],
+                correctAnswer: {
+                    label: 'c',
+                    value: 'a hook'
+                }
+            },
+            {
+                quest: 'Which of the following teams created ReactJS?',
+                options: [
+                    {
+                        label: 'a',
+                        value: 'Facebook team'
+                    },
+                    {
+                        label: 'b',
+                        value: 'Amazon team'
+                    },
+                    {
+                        label: 'c',
+                        value: 'Google team'
+                    },
+                    {
+                        label: 'd',
+                        value: 'Bitcoin team'
+                    },
+                ],
+                correctAnswer: {
+                    label: 'a',
+                    value: 'Facebook team'
                 }
             }
         ],

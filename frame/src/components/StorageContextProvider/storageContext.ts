@@ -5,19 +5,15 @@ import { ReadContractsErrorType } from "wagmi/actions";
 
 export interface DataContextProps {
     messages: string;
-    setmessage: (arg: string) => void;
     showFinishButton: boolean;
     errorMessage: string;
     currentPath: Path;
-    setError: (arg: string) => void;
     handleStart: () => void;
-    callback: TransactionCallback;
-    setSelectedQuizData: (category:string, level: string) => void;
-    indexedAnswer: number;
+    questionIndex: number;
     selectedQuizData: {category: string, data: QuizDatum};
     data: QuizDatum;
+    quizCompleted: boolean;
     setpath: (arg: Path) => void;
-    handleSelectAnswer: (arg: {label: string, value: string}) => void;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
         result: unknown;
@@ -27,12 +23,24 @@ export interface DataContextProps {
         result?: undefined;
         status: "failure";
     })[], ReadContractsErrorType>>;
-    clearData: () => void;
-    setTransactionDone: (arg: boolean) => void;
-    firstTransactionDone: boolean;
+    // firstTransactionDone: boolean;
     state: State;
     owner: Address;
     weekData: WeekData[];
     weekId: bigint;
-    scoresParam: ScoresParam;
+    setSelectedQuizData: (selected: string, level: string) => void;
+    handleSelectAnswer: ({ label, value }: {
+        label: string;
+        value: string;
+    }) => void;
+    getFunctions: () => {
+        closeQuizComplettion: () => void,
+        setmessage: (arg: string) => void;
+        clearData: () => void;
+        callback: TransactionCallback;
+        setError: (arg: string) => void;
+        // setTransactionDone: (arg: boolean) => void;
+        
+    },
+    
 }

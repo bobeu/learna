@@ -1,14 +1,4 @@
 import * as React from "react"
-
-// import {
-//   Select,
-//   SelectContent,
-//   SelectGroup,
-//   SelectItem,
-//   SelectLabel,
-//   SelectTrigger,
-//   SelectValue,
-// } from "~/components/ui/select"
 import { categories, difficultyLevels } from "~/dummyData"
 import { Button } from "~/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
