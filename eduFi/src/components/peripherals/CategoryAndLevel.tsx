@@ -20,16 +20,16 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
     return (
         <div className="space-y-2">
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/10`}>
+                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/10 text-purple-500`}>
                     <h3>{category && category !== ''? category : 'Select a category'}</h3>
                     { showCategory? <ChevronDown /> : <ChevronRight />}
                 </Button>
                 <div hidden={!showCategory} className="absolute w-full border font-medium rounded-lg bg-white p-2 space-y-2 z-50">
-                    <h3 className="pl-4 pb-2 text-cyan-700 text-sm border-b">Categories</h3>
+                    <h3 className="pl-4 pb-2 text-purple-900 text-sm border-b">Categories</h3>
                     <div>
                         {
                             categories.map((category) => (
-                                <Button variant={'ghost'} key={category} className="w-full flex justify-start text-cyan-500" onClick={() => handleSetCategory(category)}>
+                                <Button variant={'ghost'} key={category} className="w-full flex justify-start text-cyan-700 hover:text-purple-800" onClick={() => handleSetCategory(category)}>
                                     {category}
                                 </Button>
                             ))
@@ -38,7 +38,7 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
                 </div>
             </div>
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-cyan-500/5`}>
+                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-cyan-500/5 text-purple-600`}>
                     <h3>{level && level !== ''? level : 'Choose a level'}</h3>
                     { showLevel? <ChevronDown /> : <ChevronRight />}
                 </Button>

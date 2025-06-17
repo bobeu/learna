@@ -9,13 +9,14 @@ export default function Home() {
     const { setpath } = useStorage();
     
     return(
-        <MotionDisplayWrapper className="space-y-2 font-mono">
-            <h3 className="text-center text-2xl">{'Welcome!'}</h3>
-            <div>
-                <h3 className="text-center">Learna is platform that rewards you for improving your knowledge base</h3>
+        <MotionDisplayWrapper className="space-y-4 font-mono mt-4">
+            <h3 className="text-cente text-xl text-purple-900">{'Learning just got better!'}</h3>
+            <div className="border bg-purple-500/10 text-center rounded-xl p-4 text-purple-800 font-bold">
+                <h3 className="">{"Learn! Improve! Earn! Have fun!"}</h3>
+                <h3 className="text-xs">{"With us, there is no dull moment"}</h3>
             </div>
-            <div className="space-y-">
-                <h3 className="text-sm italic pl-4">How it works</h3>
+            <div className="bg-cyan-500/5 w-full p-4 rounded-xl place-items-center">
+                <h3 className="w-full text-sm text-start text-purple-800 italic pl-4">How it works</h3>
                 <Swipeable />
                 <SignIn />
                 <Button 

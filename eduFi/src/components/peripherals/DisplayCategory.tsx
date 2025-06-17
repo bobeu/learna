@@ -10,7 +10,6 @@ export default function DisplayCategories() {
     const [difficultyLevel, setLevel] = React.useState<string>('');
 
     const { setpath, setSelectedQuizData } = useStorage();
-    // const { setSelectedQuizData } = getFunctions();
 
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');
@@ -25,8 +24,8 @@ export default function DisplayCategories() {
     const  setDifficultyLevel = (selected: string) => setLevel(selected);
 
     return( 
-        <MotionDisplayWrapper className='space-y-6'>
-            <h1 className='text-center text-sm font-medium'>{`To start the quiz, please choose your preferences`}</h1>
+        <MotionDisplayWrapper className='space-y-4 mt-4'>
+            <h1 className='text-sm font-medium '>{`To start the quiz, please set your preferences`}</h1>
             <div className=''>
                 <CategoryAndLevel 
                     category={selectedCategory}

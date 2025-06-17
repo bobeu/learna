@@ -123,15 +123,15 @@ export default function Scores() {
                                 <h3 className="text-4xl">{`${sc.totalScores || 0}%`}</h3>
                             </div>
                         </div>
-                        <div className="w-full grid grid-cols-1">
+                        <div className="w-full grid grid-cols-1 gap-2">
                             <div className="flex justify-between items-center ">
                                 <Button onClick={handleSaveScores} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>
                                 <Button onClick={exit} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
                             </div>
-                            <div className="flex flex-cols justify-between items-center gap-2 border">
-                                <h3>Celebrate your achievement</h3>
+                            <div className="place-items-center">
+                                <h3 className="w-2/4 text-xs p-4">Celebrate your achievement</h3>
                                 <Button onClick={handleSaveScores} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">
-                                    Share with friends or in feed
+                                    Share
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
                                     </svg>

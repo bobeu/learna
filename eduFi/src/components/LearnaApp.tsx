@@ -172,9 +172,6 @@ export default function LearnaApp() {
             case 'home':
                 result = <Home />;
                 break;
-            // case 'generateuserkey':
-            //     result = <GenerateUserKey />;
-            //     break;
             case 'profile':
                 result = <Profile />;
                 break;
@@ -237,7 +234,6 @@ export default function LearnaApp() {
                 setSelectedQuizData, 
                 handleSelectAnswer,
                 errorMessage,
-                // firstTransactionDone,
                 showFinishButton
             }}
         >
@@ -251,7 +247,7 @@ export default function LearnaApp() {
                 className="relative md:w-[424px] md:h-[695px] mx-auto"
             >
                 <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-400/10 p-2 mb-2 rounded-xl '>
-                    <h1 className='h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic text-2xl font-black text-purple-700'>L</span><span className='font-mono text-xs'>earna</span></h1>
+                    <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic absolute left-[4px] text-x font-black text-purple-700'>Edu</span><span className='font-mono text-[10px] absolute top-[12px] right-[3px]'>caster</span></h1>
                     <div className='flex justify-between items-center gap-1'>
                         <button onClick={() => setPath('sendtip')} className={`h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-purple-500/30 text-cyan-700' : 'bg-cyan-500/30 text-purple-700'} rounded-full font-mono`}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">

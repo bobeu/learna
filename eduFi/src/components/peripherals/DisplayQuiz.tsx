@@ -39,14 +39,14 @@ export default function DisplayQuiz() {
                                 <MotionDisplayWrapper key={quest}>
                                     <div className={`${i === questionIndex? 'block' : 'hidden'} w-full place-items-center`}>
                                         <div className='w-full space-y-4'>
-                                            <h1 className='font-mono border-b pb-2 bg-cyan-500/20 p-4 rounded-lg max-w-full overflow-auto text-stone-900'>{`${i + 1}. ${quest}`}</h1>
+                                            <h1 className='font-mono border-b pb-2 bg-cyan-500/70 p-4 rounded-lg max-w-full overflow-auto text-purple-900'>{`${i + 1}. ${quest}`}</h1>
                                             <div className='w-full max-w-full overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg'>
                                                 {
                                                     options.map(({label, value}) => (
                                                         <div 
                                                             onClick={() => handleSelectAnswer({label, value})} 
                                                             key={value} 
-                                                            className={`w-full flex justify-start items-baseline ${userAnswer?.label === label? 'bg-cyan-500/80' : ''} gap-4 p-4 cursor-pointer text-cyan-900 text-sm hover:bg-cyan-500/40`}
+                                                            className={`w-full flex justify-start items-baseline ${userAnswer?.label === label? 'bg-cyan-500/80' : ''} gap-4 p-4 cursor-pointer text-cyan-900 text-sm hover:bg-cyan-500/20`}
                                                         >
                                                             <h3 className="font-semibold italic">{`(${label}). `}</h3>
                                                             <h3 className='font-mono max-w-full overflow-auto'>{value}</h3>
