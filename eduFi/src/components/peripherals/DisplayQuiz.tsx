@@ -10,7 +10,7 @@ export default function DisplayQuiz() {
     const { setpath, quizCompleted, handleSelectAnswer, questionIndex, showFinishButton, currentPath, selectedQuizData, getFunctions } = useStorage();
     const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * selectedQuizData.data.questions.length);
     const [count, setCount] = React.useState<boolean>(true);
-    var intervalId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout; 
 
     const { closeQuizComplettion, clearData } = getFunctions();
     const handleViewScores = () => {

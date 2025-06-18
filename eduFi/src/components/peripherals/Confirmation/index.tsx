@@ -101,7 +101,8 @@ export const Confirmation :
     const runTransaction = async(arg: Transaction) => {
         const { abi, functionName, args, contractAddress} = arg;
         const { getDataSuffix, submitReferralData } = getDivviReferralUtilities();
-        const useDivvi = chainId === celo.id && functionName === 'generateKey';
+        // const useDivvi = chainId === celo.id && functionName === 'generateKey';
+        const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
         callback({message: 'Delegating transaction call to an admin'});
         const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
