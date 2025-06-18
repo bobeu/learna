@@ -13,14 +13,17 @@ import {
 export function Swipeable() {
   return (
     <Carousel 
-        className="w-full max-w-xs relative"
+        className="w-full relative "
     >
-      <CarouselContent>
+      <CarouselContent className="">
         {carouselContent.map(({id, imageName, imageUrl, text}) => (
-          <CarouselItem key={id}>
-            <div className="h-[310px] place-items-center text-center">
-                <h3 className="text-sm h-[160px] pt-4 px-4 rounded-t-xl bg-cyan-500/20">{ text }</h3>
-                <div className="bg-cyan-500/50 w-full h-[150px] flex justify-center p-4 rounded-b-xl">
+          <CarouselItem key={id} className="">
+            <div className="h-[310px] place-items-cente text-center">
+                <h3 className="text-sm h-[160px] pt-4 px-4 rounded-t-xl bg-cyan-500/10 ">
+                  <h3 className="font-semibold">{`Step ${id + 1}`}</h3>
+                  { text }
+                </h3>
+                <div className="w-full h-[150px] flex justify-center p-4 rounded-b-xl bg-cyan-500/50">
                     <Image 
                         src={imageUrl}
                         alt={imageName}
@@ -33,8 +36,8 @@ export function Swipeable() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="absolute -left-4 bg-cyan-900 text-cyan-50"/>
-      <CarouselNext className="absolute -right-4 bg-cyan-900 text-cyan-50"/>
+      <CarouselPrevious className="absolute left-0 bg-cyan-900 text-cyan-50"/>
+      <CarouselNext className="absolute right-0 bg-cyan-900 text-cyan-50"/>
     </Carousel>
   )
 }
@@ -48,7 +51,7 @@ const carouselContent = [
     },
     {
         id: 1,
-        text: "Select a category of your choice. Ex. Solidity. Pick your experience from the difficulty level. Ex. Beginner. You will receive questions based on the level you have selected.",
+        text: "Select a category of your choice. Ex. Solidity. Pick your experience from the level dropdown. Ex. Beginner. You will receive questions based on the level you have selected.",
         imageUrl: './selectCategory.svg',
         imageName: 'selectCategory'
     },

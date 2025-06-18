@@ -1,7 +1,7 @@
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
-import useStorage from "../StorageContextProvider/useStorage";
+import useStorage from "../hooks/useStorage";
 import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, toBN, } from "../utilities";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";

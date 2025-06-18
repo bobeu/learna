@@ -29,9 +29,10 @@ export interface DataContextProps {
     weekData: WeekData[];
     weekId: bigint;
     setSelectedQuizData: (selected: string, level: string) => void;
-    handleSelectAnswer: ({ label, value }: {
-        label: string;
-        value: string;
+    handleSelectAnswer: ({ label, value, userSelect }: {
+        label?: string;
+        value?: string;
+        userSelect: boolean;
     }) => void;
     getFunctions: () => {
         closeQuizComplettion: () => void,

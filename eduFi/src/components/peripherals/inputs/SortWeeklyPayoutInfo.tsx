@@ -5,7 +5,7 @@ import { parseUnits, zeroAddress } from 'viem';
 import { MotionDisplayWrapper } from '../MotionDisplayWrapper';
 import { Button } from '~/components/ui/button';
 import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
-import useStorage from '~/components/StorageContextProvider/useStorage';
+import useStorage from '~/components/hooks/useStorage';
 
 interface ContentType { 
     tag: InputTag, 

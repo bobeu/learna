@@ -7,6 +7,7 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 
+export const TOTAL_WEIGHT = 100;
 export type Address = `0x${string}`;
 export type FunctionName = 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
 
@@ -111,6 +112,7 @@ export interface ScoresParam {
           value: string;
       };
   }[];
+  noAnswer: number;
   totalAnsweredIncorrectly: number;
 }
 
@@ -120,6 +122,7 @@ export const mockScoresParam : ScoresParam =  {
   totalScores: 0,
   questionSize: 0,
   weightPerQuestion: 0,
+  noAnswer: 0,
   totalAnsweredCorrectly: [{
       quest: '',
       options: [{

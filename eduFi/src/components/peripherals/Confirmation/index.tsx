@@ -5,8 +5,8 @@ import Drawer from './Drawer';
 import { Button } from "~/components/ui/button";
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { Address, FunctionName, getDivviReferralUtilities } from "~/components/utilities";
-import useStorage from "~/components/StorageContextProvider/useStorage";
+import { Address, FunctionName, getDivviReferralUtilities, TOTAL_WEIGHT } from "~/components/utilities";
+import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
@@ -20,12 +20,21 @@ export const Confirmation :
     const [loading, setLoading] = React.useState<boolean>(false);
     const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { errorMessage, messages, refetch, getFunctions } = useStorage();
+    const { errorMessage, messages, selectedQuizData, refetch, getFunctions } = useStorage();
     const { address, isConnected } = useAccount();
     const config = useConfig(); 
     const chainId = useChainId();
     const account = address as Address;
     const { callback } = getFunctions();
+
+    const getScores = () => {
+        const { questions } = selectedQuizData.data;
+        const questionSize = questions.length;
+        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / questionSize);
+        const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
+       return totalScores;
+    }
 
     // Reset the messages and error messages in state, and close the drawer when transaction is completed
     // const handleCloseDrawer = () => {
@@ -86,7 +95,38 @@ export const Confirmation :
         const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
         callback({message: `Completed in ${receipt.blockNumber.toString()} block with transaction hash: ${receipt.transactionHash.substring(0, 8)}...`});
         if((receipt.status === 'success') && setDone) setIsCompleted(true);
+        return receipt.transactionHash;
     } 
+
+    const runTransaction = async(arg: Transaction) => {
+        const { abi, functionName, args, contractAddress} = arg;
+        const { getDataSuffix, submitReferralData } = getDivviReferralUtilities();
+        // const useDivvi = chainId === celo.id && functionName === 'generateKey';
+        const useDivvi = chainId === celo.id;
+        const dataSuffix = useDivvi? getDataSuffix() : undefined;
+        callback({message: 'Delegating transaction call to an admin'});
+        const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+        const hash = await sendTransactionAsync({
+            account,
+            to: viemAccountObj.address,
+            value: parseUnits('2', 16)
+        });
+        let resultHash = await waitForConfirmation(hash, false);
+        callback({message: "Now saving your points..."});
+        const hash1 = await writeContractAsync({
+            abi,
+            functionName,
+            address: contractAddress,
+            account: viemAccountObj,
+            args,
+            dataSuffix
+        });
+        resultHash = await waitForConfirmation(hash1, true);
+        if(useDivvi) {
+            const result = await submitReferralData(resultHash, chainId);
+            console.log("Divvi Ref result:", result, "\n resultHash", resultHash);
+        }
+    }
 
     /**
      * @dev Broadcast transaction to the blockchain and wait for confirmation up to 2 confirmation blocks
@@ -99,35 +139,15 @@ export const Confirmation :
         setLoading(true);
         const transactions = getTransactions();
         console.log("account11",account);
+
         for( let i = 0; i < transactions.length; i++) {
             const {abi, value, functionName, contractAddress: address, args} = transactions[i];
             callback({message: 'Broadcasting...'});
             switch (functionName) {
                 case 'recordPoints':
-                    callback({message: 'Delegating transaction call to an admin'});
-                    const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
-                    const hash = await sendTransactionAsync({
-                        account,
-                        to: viemAccountObj.address,
-                        value: parseUnits('2', 16)
-                    });
-                    await waitForConfirmation(hash, false);
-                    callback({message: "Now saving your points..."});
-                    const hash1 = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address,
-                        account: viemAccountObj,
-                        args,
-                        value
-                    });
-                    await waitForConfirmation(hash1, true);
+                    await runTransaction({abi, contractAddress: address, args, functionName, requireArgUpdate: false});
                     break;
                 case 'tip':
-                    console.log("ADDRESS", address);
-                    console.log("abi", abi);
-                    console.log("functionName", functionName);
-                    console.log("args", args);
                     if(value && value > 0) {
                         const hash3 = await writeContractAsync({
                             abi,
@@ -150,25 +170,14 @@ export const Confirmation :
                     });
                     await waitForConfirmation(hash4, true);
                     break;
+                case 'generateKey':
+                    const totalScores = getScores();
+                    if(totalScores > 0) {
+                        await runTransaction({abi, contractAddress: address, args: [account, totalScores], functionName, requireArgUpdate: false});
+                    }
+                    break;
             
                 default:
-                    const { getDataSuffix, submitReferralData } = getDivviReferralUtilities();
-                    const useDivvi = chainId === celo.id && functionName === 'generateKey';
-                    const dataSuffix = useDivvi? getDataSuffix() : undefined;
-                    const hash5 = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address,
-                        account,
-                        args,
-                        value,
-                        dataSuffix
-                    });
-                    await waitForConfirmation(hash5, true);
-                    if(useDivvi) {
-                        const result = await submitReferralData(hash5, chainId);
-                        console.log("Divvi Ref result:", result.statusText);
-                    }
                     break;
             }
         }

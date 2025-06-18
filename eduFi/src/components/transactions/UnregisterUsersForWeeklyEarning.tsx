@@ -2,7 +2,7 @@ import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { Address, filterTransactionData, FunctionName } from '../utilities';
-import useStorage from '../StorageContextProvider/useStorage';
+import useStorage from '../hooks/useStorage';
 
 export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawer, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();

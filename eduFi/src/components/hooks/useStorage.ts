@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataContext } from '.';
+import { DataContext } from '../StorageContextProvider';
 
 export default function useStorage(){
     const context = React.useContext(DataContext);

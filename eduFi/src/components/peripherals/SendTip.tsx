@@ -1,7 +1,7 @@
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
-import useStorage from "../StorageContextProvider/useStorage";
+import useStorage from "../hooks/useStorage";
 import Image from "next/image";
 import { Input } from "~/components/ui/input";
 import { useChainId, } from "wagmi";
@@ -44,7 +44,7 @@ export default function SendTip() {
 
     return(
         <MotionDisplayWrapper>
-            <div className='space-y-4 max-w-[300px] overflow-auto'>
+            <div className='space-y-4 overflow-auto'>
                 <div className="relative flex justify-between items-center text-cyan-600 bg-cyan-300/10 rounded-xl p-2 gap-2">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">

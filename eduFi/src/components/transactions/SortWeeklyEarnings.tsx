@@ -2,7 +2,7 @@ import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { Address, filterTransactionData, FunctionName } from '../utilities';
-import useStorage from '../StorageContextProvider/useStorage';
+import useStorage from '../hooks/useStorage';
 import { zeroAddress } from 'viem';
 
 export default function SortWeeklyReward({token, amountInERC20, owner, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
