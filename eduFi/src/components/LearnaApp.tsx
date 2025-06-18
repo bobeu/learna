@@ -58,17 +58,19 @@ export default function LearnaApp() {
     };
 
     // Update the quiz data each time an user selects an answer
-    const handleSelectAnswer = ({label, value} : {label: string, value: string}) => {
+    const handleSelectAnswer = ({label, value, userSelect} : {label?: string, value?: string, userSelect: boolean}) => {
         const data = selectedQuizData;
         const questionSize = data.data.questions.length;
-        setQuizData(({data, category}) => {
-            data.questions[questionIndex].userAnswer = {label, value};
-            if(!data.taken) data.taken = true;
-            return {
-                category,
-                data
-            }
-        });
+        if(userSelect) {
+            setQuizData(({data, category}) => {
+                data.questions[questionIndex].userAnswer = {label: label!, value: value!};
+                if(!data.taken) data.taken = true;
+                return {
+                    category,
+                    data
+                }
+            });
+        }
         setIndex((prev) => {
             let newIndex = prev + 1;
             if(newIndex === questionSize) {
@@ -244,7 +246,7 @@ export default function LearnaApp() {
                     paddingLeft: context?.client.safeAreaInsets?.left ?? 10,
                     paddingRight: context?.client.safeAreaInsets?.right ?? 10,
                 }}
-                className="relative md:w-[424px] md:h-[695px] mx-auto"
+                className="relative  md:w-[424px] md:h-[695px] mx-auto"
             >
                 <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-400/10 p-2 mb-2 rounded-xl '>
                     <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic absolute left-[4px] text-x font-black text-purple-700'>Edu</span><span className='font-mono text-[10px] absolute top-[12px] right-[3px]'>caster</span></h1>

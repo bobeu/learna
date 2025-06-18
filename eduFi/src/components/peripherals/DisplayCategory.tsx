@@ -3,14 +3,13 @@ import { Button } from '~/components/ui/button';
 import CategoryAndLevel from './CategoryAndLevel';
 import Image from 'next/image';
 import { MotionDisplayWrapper } from './MotionDisplayWrapper';
-import useStorage from '../StorageContextProvider/useStorage';
+import useStorage from '../hooks/useStorage';
 
 export default function DisplayCategories() {
     const [selectedCategory, setSelectedCategory] = React.useState<string>('');
     const [difficultyLevel, setLevel] = React.useState<string>('');
 
-    const { setpath, setSelectedQuizData } = useStorage();
-
+    const { setpath, setSelectedQuizData, getFunctions } = useStorage();
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');
         if(difficultyLevel === '') return alert('Please pick a level');
@@ -23,6 +22,9 @@ export default function DisplayCategories() {
     // Update the difficulty level for the user whether beginner, intermediate or advance
     const  setDifficultyLevel = (selected: string) => setLevel(selected);
 
+    React.useEffect(() => {
+        getFunctions().clearData();
+    }, []);
     return( 
         <MotionDisplayWrapper className='space-y-4 mt-4'>
             <h1 className='text-sm font-medium '>{`To start the quiz, please set your preferences`}</h1>

@@ -6,7 +6,7 @@ import {
     filterTransactionData, 
     type FunctionName, 
     type Profile } from '../utilities';
-import useStorage from '../StorageContextProvider/useStorage';
+import useStorage from '../hooks/useStorage';
 import { MotionDisplayWrapper } from '../peripherals/MotionDisplayWrapper';
 import { Button } from '~/components/ui/button';
 import { parseUnits } from "viem";

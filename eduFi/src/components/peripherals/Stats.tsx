@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import CollapsibleComponent from "./Collapsible";
 import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
-import useStorage from "../StorageContextProvider/useStorage";
+import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { Address, formatValue, getTimeFromEpoch, WeekData, toBN } from "../utilities";
 import {

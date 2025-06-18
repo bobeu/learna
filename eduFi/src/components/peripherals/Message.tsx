@@ -1,5 +1,5 @@
 import React from "react";
-import useStorage from "../StorageContextProvider/useStorage";
+import useStorage from "../hooks/useStorage";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import Image from "next/image";
 
