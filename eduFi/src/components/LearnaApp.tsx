@@ -24,6 +24,7 @@ import Stats from './peripherals/Stats';
 import { zeroAddress } from 'viem';
 import SendTip from './peripherals/SendTip';
 import { Spinner } from './peripherals/Spinner';
+import { ContextWrapper } from './ContextWrapper';
 
 export default function LearnaApp() {
     const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
@@ -35,12 +36,46 @@ export default function LearnaApp() {
     const [quizCompleted, setQuizCompletion] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
     const [selectedQuizData, setQuizData] = React.useState<{category: string, data: QuizDatum}>(emptyQuizData);
+    const [sendNotificationResult, setSendNotificationResult] = React.useState<string>("");
     
-    const { context } = useFrame();
+    const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult, openUrl, close } = useFrame();
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address } = useAccount();
     const setpath = (arg: Path) => setPath(arg);
+
+    const sendNotification = React.useCallback(async () => {
+        setSendNotificationResult("");
+        if (!notificationDetails || !context) {
+          return;
+        }
+    
+        try {
+          const response = await fetch("/api/send-notification", {
+            method: "POST",
+            mode: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fid: context.user.fid,
+              notificationDetails,
+            }),
+          });
+    
+          if (response.status === 200) {
+            setSendNotificationResult("Success");
+            return;
+          } else if (response.status === 429) {
+            setSendNotificationResult("Rate limited");
+            return;
+          }
+    
+          const data = await response.text();
+          setSendNotificationResult(`Error: ${data}`);
+        } catch (error) {
+          setSendNotificationResult(`Error: ${error}`);
+        }
+    }, [context, notificationDetails]);
+    
 
     // Update quiz data whenever an update to category is received
     const setSelectedQuizData = (selected: string, level: string) => {
@@ -190,15 +225,15 @@ export default function LearnaApp() {
     }
     // 424x695px
 
-    React.useEffect(() => {
-      const load = async () => {
-        await sdk.actions.ready();
-        setIsLoaded(true);
-      };
-      if (sdk && !isLoaded) {
-        load();
-      }
-    }, [isLoaded]);
+    // React.useEffect(() => {
+    //   const load = async () => {
+    //     await sdk.actions.ready();
+    //     // setIsLoaded(true);
+    //   };
+    //   if (sdk && !isSDKLoaded) {
+    //     load();
+    //   }
+    // }, [isSDKLoaded]);
 
     React.useEffect(() => {
         if(address && address !== zeroAddress && address !== currentUser) {
@@ -208,14 +243,6 @@ export default function LearnaApp() {
         if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
     }, [address, currentPath, currentUser, setUser, setQuizData]);
     
-    if(!isLoaded) {
-        return (
-            <MotionDisplayWrapper className='flex justify-center items-center'>
-                <Spinner color="cyan" />
-            </MotionDisplayWrapper>
-        )
-    }
-
     return(
         <StorageContextProvider
             value={{
@@ -235,19 +262,12 @@ export default function LearnaApp() {
                 getFunctions,
                 setSelectedQuizData, 
                 handleSelectAnswer,
+                sendNotification,
                 errorMessage,
                 showFinishButton
             }}
         >
-            <div 
-                style={{
-                    paddingTop: context?.client.safeAreaInsets?.top ?? 10,
-                    paddingBottom: context?.client.safeAreaInsets?.bottom ?? 10,
-                    paddingLeft: context?.client.safeAreaInsets?.left ?? 10,
-                    paddingRight: context?.client.safeAreaInsets?.right ?? 10,
-                }}
-                className="relative  md:w-[424px] md:h-[695px] mx-auto"
-            >
+            <ContextWrapper className={undefined}>
                 <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-400/10 p-2 mb-2 rounded-xl '>
                     <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic absolute left-[4px] text-x font-black text-purple-700'>Edu</span><span className='font-mono text-[10px] absolute top-[12px] right-[3px]'>caster</span></h1>
                     <div className='flex justify-between items-center gap-1'>
@@ -271,7 +291,7 @@ export default function LearnaApp() {
                 <MotionDisplayWrapper className='space-y-4 font-mono'>
                     { renderChildren() }
                 </MotionDisplayWrapper>
-            </div>
+            </ContextWrapper>
         </StorageContextProvider>
     );
 }

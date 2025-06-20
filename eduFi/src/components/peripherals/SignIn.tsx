@@ -7,7 +7,7 @@ import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, { SignIn as SignInCore, } from "@farcaster/frame-sdk";
 import { useSession } from "next-auth/react";
 import { Button } from '~/components/ui/button';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+// import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function SignIn() {
     const [signingIn, setSigningIn] = useState(false);
@@ -29,7 +29,7 @@ export default function SignIn() {
         setSigningIn(true);
         setSignInFailure(undefined);
         const nonce = await getNonce();
-        const result = await sdk.actions.signIn({ nonce });
+        const result = await sdk.actions.signIn({ nonce, acceptAuthAddress: true});
         setSignInResult(result);
   
         await signIn("credentials", {
@@ -61,7 +61,7 @@ export default function SignIn() {
   
     return (
       <React.Fragment>
-        <ConnectButton />
+        {/* <ConnectButton /> */}
         {status !== "authenticated" && (
           <Button variant={'outline'} className="w-full mt-1 bg-cyan-500" onClick={handleSignIn} disabled={signingIn}>
             Sign In with Farcaster
@@ -97,3 +97,39 @@ export default function SignIn() {
       </React.Fragment>
     );
   }
+
+
+
+//   import React, { useState, useEffect } from "react";
+// import { sdk } from "@farcaster/frame-sdk";
+ 
+// export function App() {
+//   const [user, setUser] = useState<{ fid: number }>();
+ 
+//   useEffect(() => {
+//     (async () => {
+//       const res = await sdk.quickAuth.fetch(`${BACKEND_ORIGIN}/me`);
+//       if (res.ok) {
+//         setUser(await res.json());
+//         sdk.actions.ready()
+//       }
+//     })()
+//   }, [])
+ 
+//   // The splash screen will be shown, don't worry about rendering yet.
+//   if (!user) {
+//     return null;
+//   }
+ 
+//   return (
+//     <div>
+//       hello, {user.fid}
+//     </div>
+//   )
+// }
+
+// import { preconnect } from 'react-dom';
+ 
+// function AppRoot() {
+//   preconnect("https://auth.farcaster.xyz");
+// }

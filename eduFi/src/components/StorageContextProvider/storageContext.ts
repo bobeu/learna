@@ -14,6 +14,7 @@ export interface DataContextProps {
     data: QuizDatum;
     quizCompleted: boolean;
     setpath: (arg: Path) => void;
+    sendNotification: () => Promise<void>;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
         result: unknown;
