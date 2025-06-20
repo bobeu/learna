@@ -105,7 +105,7 @@ export const Confirmation :
         const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
         callback({message: 'Delegating transaction call to an admin'});
-        const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+        const viemAccountObj = privateKeyToAccount(process.env.ADMIN_0xC0F as Address);
         const hash = await sendTransactionAsync({
             account,
             to: viemAccountObj.address,
