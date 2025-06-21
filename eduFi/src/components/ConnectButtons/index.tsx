@@ -1,7 +1,6 @@
 import React from "react";
 import { useAccount, useConfig, useConnect, useSwitchChain } from "wagmi";
 import { Button } from "../ui/button";
-import sdk from "@farcaster/frame-sdk";
 import { celo } from "wagmi/chains";
 
 interface ButtonProps {

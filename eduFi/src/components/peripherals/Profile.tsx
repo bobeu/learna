@@ -77,7 +77,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
             totalQuizPerWeek,
             disableClaimButton
         }
-    }, []);
+    }, [data]);
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">

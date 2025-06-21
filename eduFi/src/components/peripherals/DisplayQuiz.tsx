@@ -7,10 +7,11 @@ import Review from './Review';
 const MAX_TIME_PER_QUESTION_IN_SECS = 30;
 
 export default function DisplayQuiz() {
+    const intervalId = React.useRef<string | number | NodeJS.Timeout | undefined>(undefined)
     const { setpath, quizCompleted, handleSelectAnswer, questionIndex, showFinishButton, currentPath, selectedQuizData, getFunctions } = useStorage();
     const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * selectedQuizData.data.questions.length);
     const [count, setCount] = React.useState<boolean>(true);
-    let intervalId: NodeJS.Timeout; 
+    // let intervalId: NodeJS.Timeout; 
 
     const { closeQuizComplettion, clearData } = getFunctions();
     const handleViewScores = () => {
@@ -33,18 +34,18 @@ export default function DisplayQuiz() {
         const fiftyPercent = Math.floor(timeLeft / 2);
         const questions = selectedQuizData.data.questions.filter((_, index) => index === questionIndex);
         return { questions, fiftyPercent, twentyFivePercent }
-    }, [questionIndex, selectedQuizData]);
+    }, [questionIndex, selectedQuizData, timeLeft]);
 
     // Update the timer
     React.useEffect(() => {
-        intervalId = setInterval(() => {
+        intervalId.current = setInterval(() => {
             if(count) setTimeLeft(timeLeft > 0? timeLeft - 1 : timeLeft);
             if(timeLeft === 0) {
                 setCount(false);
             }
         }, 1000);
 
-        return () => clearInterval(intervalId);
+        return () => clearInterval(intervalId.current);
     }, [count, timeLeft, setTimeLeft]);
 
     return(

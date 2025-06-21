@@ -11,7 +11,7 @@ import { useAccount } from "wagmi";
 
 export default function Home() {
     const { setpath } = useStorage();
-    const { isSDKLoaded, isInMiniApp, actions, context } = useMiniApp();
+    const { isSDKLoaded, isInMiniApp, actions } = useMiniApp();
     const { getFunctions } = useStorage();
     const { isConnected } = useAccount();
 

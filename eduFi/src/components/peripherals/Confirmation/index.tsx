@@ -5,7 +5,7 @@ import Drawer from './Drawer';
 import { Button } from "~/components/ui/button";
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { Address, FunctionName, getCastText, getDivviReferralUtilities, TOTAL_WEIGHT } from "~/components/utilities";
+import { Address, FunctionName, getCastText, getDivviReferralUtilities, toBN, TOTAL_WEIGHT } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
@@ -23,22 +23,27 @@ export const Confirmation :
     const [loading, setLoading] = React.useState<boolean>(false);
     const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { errorMessage, messages, selectedQuizData, refetch, getFunctions } = useStorage();
+    const { errorMessage, messages, weekId: wkId, selectedQuizData, refetch, getFunctions } = useStorage();
     const { address, isConnected } = useAccount();
+
     const config = useConfig(); 
     const chainId = useChainId();
     const account = address as Address;
     const { user } = useNeynarContext();
     const { callback, setmessage } = getFunctions();
 
-    const getScores = () => {
+    const { totalScores, weekId} = React.useMemo(() => {
         const { questions } = selectedQuizData.data;
         const questionSize = questions.length;
         const weightPerQuestion = Math.floor(TOTAL_WEIGHT / questionSize);
         const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-       return totalScores;
-    }
+        const weekId = toBN(wkId.toString()).toNumber();
+        return {
+            totalScores,
+            weekId
+        };
+    }, []);
 
     // Reset the messages and error messages in state, and close the drawer when transaction is completed
     // const handleCloseDrawer = () => {
@@ -80,7 +85,8 @@ export const Confirmation :
         callback({message: `Completed request with hash: ${hash.substring(0, 8)}...`});
         const functionName = variables?.functionName as FunctionName;
         if(functionName === lastStepInList){
-            setCompletion();
+            puublishCast(functionName, functionName === 'sortWeeklyReward'? weekId - 1 : weekId)
+            .then(() => setCompletion());
         }
     };
 
@@ -192,7 +198,6 @@ export const Confirmation :
                     await waitForConfirmation(hash4, true);
                     break;
                 case 'generateKey':
-                    const totalScores = getScores();
                     if(totalScores > 0) {
                         await runTransaction({abi, contractAddress: address, args: [account, totalScores], functionName, requireArgUpdate: false});
                     }
