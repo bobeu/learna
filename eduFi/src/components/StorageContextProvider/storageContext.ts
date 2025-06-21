@@ -3,6 +3,11 @@ import { Address, State, TransactionCallback, WeekData } from "../utilities";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { ReadContractsErrorType } from "wagmi/actions";
 
+export interface NeynaDataContextProps {
+    isAuthenticated: boolean;
+    setIsAuthenticated: () => void;
+};
+
 export interface DataContextProps {
     messages: string;
     showFinishButton: boolean;
@@ -14,7 +19,7 @@ export interface DataContextProps {
     data: QuizDatum;
     quizCompleted: boolean;
     setpath: (arg: Path) => void;
-    sendNotification: () => Promise<void>;
+    // sendNotification: () => Promise<void>;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
         result: unknown;

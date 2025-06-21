@@ -43,20 +43,20 @@ export default function SendTip() {
     }, [showSendCelo, chainId, celoAmount]);
 
     return(
-        <MotionDisplayWrapper>
+        <MotionDisplayWrapper className="font-mono">
             <div className='space-y-4 overflow-auto'>
-                <div className="relative flex justify-between items-center text-cyan-600 bg-cyan-300/10 rounded-xl p-2 gap-2">
+                <div className="relative flex justify-between items-center border text-cyan-600 bg-cyan-300/10 rounded-xl p-2 gap-2">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                         </svg>
                     </span>
-                    <h3 className="text-[10px] text-center">Tokens or Coins sent as support are shared as payout to all active users</h3>
+                    <h3 className="text-sm text-center">Tokens or Coins sent as support are shared as payout to all active users</h3>
                 </div>
                 {
                     !showSendCelo && 
-                        <MotionDisplayWrapper className="flex flex-col justify-center items-center text-center gap-4 text- font-semibold bg-purple-500/10 text-cyan-700 rounded-xl p-4">
-                            <h3>Support us by sending tip in Celo. Our system is decentralized and transparent. </h3>
+                        <MotionDisplayWrapper className="flex flex-col justify-center items-center text-center text-2xl gap-4 font-semibold bg-purple-500/10 text-purple-700 rounded-xl p-4">
+                            <h3>Support and encourage Learners through tip in Celo. Our system is decentralized and transparent. </h3>
                             <Image 
                                 src={'/support.svg'}
                                 alt="support image"
@@ -85,7 +85,7 @@ export default function SendTip() {
                     </MotionDisplayWrapper>
                 }
                 <div className=" space-y-2">
-                    <Button disabled={showSendCelo} onClick={() => setShowSendCelo(true)} variant={'outline'} className="w-full bg-purple-500/50">Send Celo</Button>
+                    <Button disabled={showSendCelo} onClick={() => setShowSendCelo(true)} variant={'outline'} className="w-full bg-cyan-500/80">Send Celo</Button>
                     <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50">Exit</Button>
                 </div>
             </div>

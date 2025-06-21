@@ -6,6 +6,7 @@ import globalContractData from "../../contractsData/global.json";
 import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
+import { CAST_MESSAGES } from "~/lib/constants";
 
 export const TOTAL_WEIGHT = 100;
 export type Address = `0x${string}`;
@@ -322,4 +323,9 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
       approvedFunctions,
       contractAddresses: contractAddresses[index],
     }
+}
+
+export function getCastText(task: FunctionName, weekId: number) {
+  const filtered = CAST_MESSAGES.filter(({key}) => key === task);
+  return filtered?.[0]?.handler(weekId) || '';
 }

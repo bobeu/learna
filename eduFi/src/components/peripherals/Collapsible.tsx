@@ -13,8 +13,8 @@ export default function CollapsibleComponent({ header, children} : { header: str
       onOpenChange={setIsOpen}
       className="flex flex-col gap-2"
     >
-      <CollapsibleTrigger asChild className="max-w-sm">
-        <Button variant="outline" className={`flex justify-between items-center ${isOpen? 'bg-cyan-500' : ''}`}>
+      <CollapsibleTrigger asChild>
+        <Button variant="outline" className={`flex justify-between items-center ${isOpen? 'bg-cyan-500/50' : 'bg-purple-500/10'}`}>
           <h4>{isOpen? 'Close' : header}</h4>
           <ChevronsUpDown />
           <span className="sr-only">Toggle</span>
@@ -26,3 +26,4 @@ export default function CollapsibleComponent({ header, children} : { header: str
     </Collapsible>
   )
 }
+ 

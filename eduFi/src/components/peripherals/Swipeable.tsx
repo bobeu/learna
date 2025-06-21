@@ -20,10 +20,10 @@ export function Swipeable() {
           <CarouselItem key={id} className="">
             <div className="h-[310px] place-items-cente text-center">
                 <h3 className="text-sm h-[160px] pt-4 px-4 rounded-t-xl bg-cyan-500/10 ">
-                  <h3 className="font-semibold">{`Step ${id + 1}`}</h3>
+                  <p className="font-semibold">{`Step ${id + 1}`}</p>
                   { text }
                 </h3>
-                <div className="w-full h-[150px] flex justify-center p-4 rounded-b-xl bg-cyan-500/50">
+                <div className="w-full h-[150px] flex justify-center p-4 rounded-b-xl bg-cyan-500/70">
                     <Image 
                         src={imageUrl}
                         alt={imageName}

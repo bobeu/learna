@@ -32,25 +32,25 @@ function Stat({weekData} : {weekData: WeekData}) {
             <div className=" space-y-2" key={claimActiveUntil}>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Active users</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-purple-500 w-[50%] text-center'>{activeLearners.toString() || '0'}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{activeLearners.toString() || '0'}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Total Points</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{totalPoints.toString() || '0'}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalPoints.toString() || '0'}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Minimum interval before sorted</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{`${interval || '0'} Minutes`}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${interval || '0'} Minutes`}</h3>
                 </div>
                 <div className="space-y-2">
                     <h3 className="text-sm font-semibold">Payout data</h3>
                     <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                         <h3 className="w-[50%]">Time until claim close</h3>
-                        <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                        <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(claimActiveUntil)}</h3>
                     </div>
                     <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                         <h3 className="w-[50%]">Time until sorted</h3>
-                        <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{getTimeFromEpoch(transitionDate)}</h3>
+                        <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(transitionDate)}</h3>
                     </div>
                     <div className='border p-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                         <h3 className="w-[50%]">Token address</h3>
@@ -60,22 +60,22 @@ function Stat({weekData} : {weekData: WeekData}) {
                         <h3 className="text-sm font-semibold">ERC20 token claims</h3>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%]">Total allocated</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{formatValue(erc20.totalAllocated.toString()).toStr || '0'}</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(erc20.totalAllocated.toString()).toStr || '0'}</h3>
                         </div>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%]">Total claimed</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{formatValue(erc20.totalClaimed.toString()).toStr || '0'}</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(erc20.totalClaimed.toString()).toStr || '0'}</h3>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-sm font-semibold">{"Claims in $Celo"}</h3>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%]">Total allocated</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{formatValue(native.totalAllocated.toString()).toStr || '0'}</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(native.totalAllocated.toString()).toStr || '0'}</h3>
                         </div>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%]">Total claimed</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{formatValue(native.totalClaimed.toString()).toStr || '0'}</h3>
+                            <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(native.totalClaimed.toString()).toStr || '0'}</h3>
                         </div>
                     </div>
                 </div>
@@ -94,15 +94,15 @@ function Stat({weekData} : {weekData: WeekData}) {
                                                 <div className="w-full space-y-2 h-fit text-xs">
                                                     <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
                                                         <h3 className="w-[50%]">Amount tipped</h3>
-                                                        <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{formatValue(totalTipped.toString()).toStr || '0'}</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(totalTipped.toString()).toStr || '0'}</h3>
                                                     </div>
                                                     <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
                                                         <h3 className="w-[50%]">Date tipped</h3>
-                                                        <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{getTimeFromEpoch(lastTippedDate)}</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(lastTippedDate)}</h3>
                                                     </div>
                                                     <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
                                                         <h3 className="w-[50%]">Point earned</h3>
-                                                        <h3 className='bg-cyan-500/20 p-4 text-purple-600 w-[50%] text-center'>{points || '0'}</h3>
+                                                        <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || '0'}</h3>
                                                     </div>
                                                 </div>
                                             </div>
@@ -138,15 +138,15 @@ export default function Stats() {
                 <h3 className="text-sm font-bold ">{`Current week ${weekCounter.toString()}`}</h3>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Current Week</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{weekCounter.toString() || 0}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{weekCounter.toString() || 0}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Transition interval</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{`${interval / 60 || 0} Minutes`}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${interval / 60 || 0} Minutes`}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Minimum token</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{`${formatValue(minimumToken.toString()).toStr || 0} Celo`}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${formatValue(minimumToken.toString()).toStr || 0} Celo`}</h3>
                 </div> 
             </div>
             
