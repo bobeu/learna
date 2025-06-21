@@ -52,7 +52,7 @@ export default function Home() {
                 <h3 className="w-full text-start ">How it works</h3>
                 <Swipeable />
                 <ConnectButtons />
-                { !isConnected && <Button { ...buttonProps({onClick: () => setpath('selectcategory')}) }>Get started</Button> }
+                { isConnected && <Button { ...buttonProps({onClick: () => setpath('selectcategory')}) }>Get started</Button> }
             </MotionDisplayWrapper>
         
 
