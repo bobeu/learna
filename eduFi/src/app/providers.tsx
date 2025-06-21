@@ -96,8 +96,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+// import type { Session } from "next-auth";
+// import { SessionProvider } from "next-auth/react";
 import { MiniAppProvider } from "@neynar/react";
 import NeynaAppContext from "~/components/StorageContextProvider/AppContext";
 // import { SafeFarcasterSolanaProvider } from "~/components/providers/SafeFarcasterSolanaProvider";

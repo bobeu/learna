@@ -24,7 +24,7 @@ export default function DisplayCategories() {
 
     React.useEffect(() => {
         getFunctions().clearData();
-    }, []);
+    }, [getFunctions]);
     return( 
         <MotionDisplayWrapper className='space-y-4 mt-4'>
             <h1 className='text-sm font-medium '>{`To start the quiz, please set your preferences`}</h1>

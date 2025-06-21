@@ -47,14 +47,15 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
 async function loadEnvLocal() {
   try {
     if (fs.existsSync('.env.local')) {
-      const { loadLocal } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'loadLocal',
-          message: 'Found .env.local, likely created by the install script - would you like to load its values?',
-          default: false
-        }
-      ]);
+      const loadLocal = false;
+      // const { loadLocal } = await inquirer.prompt([
+      //   {
+      //     type: 'confirm',
+      //     name: 'loadLocal',
+      //     message: 'Found .env.local, likely created by the install script - would you like to load its values?',
+      //     default: false
+      //   }
+      // ]);
 
       if (loadLocal) {
         console.log('Loading values from .env.local...');
@@ -195,53 +196,56 @@ async function main() {
     await loadEnvLocal();
 
     // Get domain from user
-    const { domain } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'domain',
-        message: 'Enter the domain where your mini app will be deployed (e.g., example.com):',
-        validate: async (input) => {
-          try {
-            await validateDomain(input);
-            return true;
-          } catch (error) {
-            return error.message;
-          }
-        }
-      }
-    ]);
+    const domain = 'learna.vercel.app';
+    // const { domain } = await inquirer.prompt([
+    //   {
+    //     type: 'input',
+    //     name: 'domain',
+    //     message: 'Enter the domain where your mini app will be deployed (e.g., example.com):',
+    //     validate: async (input) => {
+    //       try {
+    //         await validateDomain(input);
+    //         return true;
+    //       } catch (error) {
+    //         return error.message;
+    //       }
+    //     }
+    //   }
+    // ]);
 
     // Get frame name from user
-    const { frameName } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'frameName',
-        message: 'Enter the name for your mini app (e.g., My Cool Mini App):',
-        default: process.env.NEXT_PUBLIC_FRAME_NAME,
-        validate: (input) => {
-          if (input.trim() === '') {
-            return 'Mini app name cannot be empty';
-          }
-          return true;
-        }
-      }
-    ]);
+    const frameName = 'eduFi'
+    // const { frameName } = await inquirer.prompt([
+    //   {
+    //     type: 'input',
+    //     name: 'frameName',
+    //     message: 'Enter the name for your mini app (e.g., My Cool Mini App):',
+    //     default: process.env.NEXT_PUBLIC_FRAME_NAME,
+    //     validate: (input) => {
+    //       if (input.trim() === '') {
+    //         return 'Mini app name cannot be empty';
+    //       }
+    //       return true;
+    //     }
+    //   }
+    // ]);
 
     // Get button text from user
-    const { buttonText } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'buttonText',
-        message: 'Enter the text for your mini app button:',
-        default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Mini App',
-        validate: (input) => {
-          if (input.trim() === '') {
-            return 'Button text cannot be empty';
-          }
-          return true;
-        }
-      }
-    ]);
+    const buttonText = 'open';
+    // const { buttonText } = await inquirer.prompt([
+    //   {
+    //     type: 'input',
+    //     name: 'buttonText',
+    //     message: 'Enter the text for your mini app button:',
+    //     default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Mini App',
+    //     validate: (input) => {
+    //       if (input.trim() === '') {
+    //         return 'Button text cannot be empty';
+    //       }
+    //       return true;
+    //     }
+    //   }
+    // ]);
 
     // Get Neynar configuration
     let neynarApiKey = process.env.NEYNAR_API_KEY;
