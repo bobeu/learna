@@ -8,10 +8,14 @@ import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
 import ClaimWeeklyReward from "../transactions/ClaimWeeklyReward";
 import CollapsibleComponent from "./Collapsible";
+import { useMiniApp, } from "@neynar/react";
+// import { INeynarAuthenticatedUser } from "@neynar/react/dist/types/common";
+import { zeroAddress } from "viem";
+import { UserContext } from "@farcaster/frame-core/dist/context";
 
-function ProfileComponent({weekId} : {weekId: bigint}) {
+function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
-
+    
     const chainId = useChainId();
     const config = useConfig();
     const toggleDrawer = (arg:boolean) => setDrawer(arg);
@@ -19,7 +23,6 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
     const account = address as Address;
     const handleClaim = () => setDrawer(true);
     const { getFunctions } = useStorage();
-
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -59,38 +62,63 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
         }
     });
 
-    const profile = data?.[0]?.result as ProfileType || mockProfile;
-    const isElibigle = data?.[1]?.result as boolean;
-    const disableClaimButton = profile?.claimed || !profile?.haskey || isElibigle;
-    const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, totalQuizPerWeek } = profile;
-    
+    const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, disableClaimButton, totalQuizPerWeek } = React.useMemo(() => {
+        const profile = data?.[0]?.result as ProfileType || mockProfile;
+        const isElibigle = data?.[1]?.result as boolean;
+        const disableClaimButton = profile?.claimed || !profile?.haskey || isElibigle;
+        const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, totalQuizPerWeek } = profile;
+        return {
+            isElibigle,
+            amountClaimedInERC20,
+            amountClaimedInNative,
+            haskey,
+            passKey,
+            points,
+            totalQuizPerWeek,
+            disableClaimButton
+        }
+    }, []);
+
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
             <h3 className="font-semibold">{`Week ${weekId.toString()} data`}</h3>
             <div className="space-y-2">
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">Account</h3>
+                    { 
+                        haskey? <AddressWrapper account={zeroAddress} size={4} display={false} copyIconSize={'sm'} overrideClassName="w-[50%] p-4"/>
+                        :<h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>No Account detected</h3>
+                    }
+                </div> 
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                    <h3 className="w-[50%]">FID</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{user?.fid || 'NA'}</h3>
+                </div>
+                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Total attempted quiz</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Points earned</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{points || 0}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || 0}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">PassKey</h3>
                     { 
-                        haskey? <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>
+                        haskey? <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>
                             <AddressWrapper account={passKey} size={4} display={false} copyIconSize={'sm'} />
-                        </h3> : <GenerateKey />
+                        </h3> : <div className='bg-cyan-500/20 p-1 text-cyan-900 font-bold w-[50%] text-center'>
+                            <GenerateKey />
+                        </div>
                     }
                 </div> 
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Amount of GROW Token claimed</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
+                    <h3 className="w-[50%]">{"$GROW claimed"}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
                 </div>
                 <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">{`Amount of Celo claimed`}</h3>
-                    <h3 className='bg-cyan-500/20 p-4 text-orange-600 w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
+                    <h3 className="w-[50%]">{`$Celo claimed`}</h3>
+                    <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
                 </div>
             </div>
             <div className="flex justify-center">
@@ -115,6 +143,7 @@ function ProfileComponent({weekId} : {weekId: bigint}) {
 export default function Profile() {
     const { weekId, setpath } = useStorage();
     const backToHome = () => setpath('home');
+    const { context } = useMiniApp();
 
     const weekIds = React.useMemo(() => {
         const wkId = toBN(weekId.toString()).toNumber();
@@ -124,6 +153,13 @@ export default function Profile() {
 
     return(
         <div className="space-y-2">
+            {/* {
+                !user && 
+                    <div className="w-full flex justify-between items-center gap-2 bg-cyan-500/10 p-4 rounded-xl">
+                       <h3>Not Signed In</h3>
+                       <NeynarAuthButton />
+                    </div>
+            } */}
             {
                 weekIds.map((wkId) => (
                     <MotionDisplayWrapper 
@@ -131,7 +167,7 @@ export default function Profile() {
                         
                     >
                         <CollapsibleComponent header={`Week ${wkId}`}>
-                            <ProfileComponent weekId={BigInt(wkId)} />
+                            <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
                         </CollapsibleComponent>
                     </MotionDisplayWrapper>
                 ))

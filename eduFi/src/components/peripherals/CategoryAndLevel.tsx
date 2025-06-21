@@ -20,7 +20,7 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
     return (
         <div className="space-y-2">
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/10 text-purple-500`}>
+                <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/30`}>
                     <h3>{category && category !== ''? category : 'Select a category'}</h3>
                     { showCategory? <ChevronDown /> : <ChevronRight />}
                 </Button>
@@ -38,7 +38,7 @@ export default function CategoryAndLevel( {category, level, setCategory, setDiff
                 </div>
             </div>
             <div className="relative w-full flex flex-col">
-                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-cyan-500/5 text-purple-600`}>
+                <Button variant={'outline'} onClick={() => setShowLevel(!showLevel)} className={`w-full flex justify-between bg-cyan-500/20`}>
                     <h3>{level && level !== ''? level : 'Choose a level'}</h3>
                     { showLevel? <ChevronDown /> : <ChevronRight />}
                 </Button>

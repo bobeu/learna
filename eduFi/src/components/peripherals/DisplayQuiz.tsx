@@ -53,12 +53,12 @@ export default function DisplayQuiz() {
                 <div className=''>
                     <div className='space-y-2'>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3>Category</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-cyan-700'>{selectedQuizData.category}</h3>
+                            <h3 className="w-[50%] ">Category</h3>
+                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{selectedQuizData.category}</h3>
                         </div>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3>Difficulty level</h3>
-                            <h3 className='bg-cyan-500/20 p-4 text-orange-600'>{selectedQuizData.data.difficultyLevel}</h3>
+                            <h3 className="w-[50%]">Difficulty level</h3>
+                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{selectedQuizData.data.difficultyLevel}</h3>
                         </div>
                     </div>
                 </div>

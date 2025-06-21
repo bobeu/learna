@@ -5,9 +5,9 @@ import Review from './peripherals/Review';
 import Scores from './peripherals/Scores';
 import DisplayCategories from './peripherals/DisplayCategory';
 import DisplayQuiz from './peripherals/DisplayQuiz';
-import { useFrame } from './providers/FrameProvider';
+// import { useFrame } from './providers/FrameProvider';
 import { StorageContextProvider } from './StorageContextProvider';
-import { sdk } from '@farcaster/frame-sdk';
+// import { sdk } from '@farcaster/frame-sdk';
 import Home from './peripherals/Home';
 import { 
     type Address, 
@@ -23,11 +23,17 @@ import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import { zeroAddress } from 'viem';
 import SendTip from './peripherals/SendTip';
-import { Spinner } from './peripherals/Spinner';
-import { ContextWrapper } from './ContextWrapper';
+// import { Spinner } from './peripherals/Spinner';
+// import { ContextWrapper } from './LayoutContext';
+// import { NeynarContextProvider, Theme } from '@neynar/react';
+// import AppContext from './StorageContextProvider/AppContext';
+import { useNeynarContext } from '@neynar/react';
+import Image from 'next/image';
+import { LayoutContext } from './LayoutContext';
+// import NeynaAppContext from './StorageContextProvider/AppContext';
 
-export default function LearnaApp() {
-    const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
+export default function Educaster() {
+    // const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
     const [currentPath, setPath] = React.useState<Path>('home');
     const [currentUser, setUser] = React.useState<Address>(zeroAddress);
     const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
@@ -36,46 +42,15 @@ export default function LearnaApp() {
     const [quizCompleted, setQuizCompletion] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
     const [selectedQuizData, setQuizData] = React.useState<{category: string, data: QuizDatum}>(emptyQuizData);
-    const [sendNotificationResult, setSendNotificationResult] = React.useState<string>("");
+    // const [sendNotificationResult, setSendNotificationResult] = React.useState<string>("");
     
-    const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult, openUrl, close } = useFrame();
+    // const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult, openUrl, close } = useFrame();
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address } = useAccount();
+    const { user } = useNeynarContext();
     const setpath = (arg: Path) => setPath(arg);
 
-    const sendNotification = React.useCallback(async () => {
-        setSendNotificationResult("");
-        if (!notificationDetails || !context) {
-          return;
-        }
-    
-        try {
-          const response = await fetch("/api/send-notification", {
-            method: "POST",
-            mode: "same-origin",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fid: context.user.fid,
-              notificationDetails,
-            }),
-          });
-    
-          if (response.status === 200) {
-            setSendNotificationResult("Success");
-            return;
-          } else if (response.status === 429) {
-            setSendNotificationResult("Rate limited");
-            return;
-          }
-    
-          const data = await response.text();
-          setSendNotificationResult(`Error: ${data}`);
-        } catch (error) {
-          setSendNotificationResult(`Error: ${error}`);
-        }
-    }, [context, notificationDetails]);
-    
 
     // Update quiz data whenever an update to category is received
     const setSelectedQuizData = (selected: string, level: string) => {
@@ -185,56 +160,55 @@ export default function LearnaApp() {
         }
     });
 
-    const data = result?.[0]?.result as ReadData || mockReadData;
-    const weekId = data.state.weekCounter; // Current week Id
-    const state = data.state;
-    const owner = result?.[1]?.result as Address || zeroAddress;
-    const weekData = [...data.wd];
-        
-    const renderChildren = () => {
-        let result = <></>
+    const { weekId, state, owner, weekData } = React.useMemo(() => {
+        const data = result?.[0]?.result as ReadData || mockReadData;
+        const weekId = data.state.weekCounter; // Current week Id
+        const state = data.state;
+        const owner = result?.[1]?.result as Address || zeroAddress;
+        const weekData = [...data.wd];
+
+        return {
+            weekId,
+            state,
+            owner,
+            weekData
+        }
+    }, [result]);
+
+    const node = React.useMemo(() => {
+        let node = <></>
         switch (currentPath) {
             case 'selectcategory':
-                result = <DisplayCategories />;
+                node = <DisplayCategories />;
                 break;
             case 'review':
-                result = <Review />;
+                node = <Review />;
                 break;
             case 'scores':
-                result = <Scores />;
+                node = <Scores />;
                 break;
             case 'quiz':
-                result = <DisplayQuiz />;
+                node = <DisplayQuiz />;
                 break;
             case 'home':
-                result = <Home />;
+                node = <Home />;
                 break;
             case 'profile':
-                result = <Profile />;
+                node = <Profile />;
                 break;
             case 'stats':
-                result = <Stats />;
+                node = <Stats />;
                 break;
             case 'sendtip':
-                result = <SendTip />;
+                node = <SendTip />;
                 break;
             default:
                 break;
         }
-        return result;
-    }
-    // 424x695px
+        return node;
+    }, [currentPath]);
 
-    // React.useEffect(() => {
-    //   const load = async () => {
-    //     await sdk.actions.ready();
-    //     // setIsLoaded(true);
-    //   };
-    //   if (sdk && !isSDKLoaded) {
-    //     load();
-    //   }
-    // }, [isSDKLoaded]);
-
+    // Update the state whenever user's connected address changes
     React.useEffect(() => {
         if(address && address !== zeroAddress && address !== currentUser) {
             console.log("Ueer address changed to: ", address, 'from', currentUser);
@@ -242,6 +216,18 @@ export default function LearnaApp() {
         }
         if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
     }, [address, currentPath, currentUser, setUser, setQuizData]);
+
+    // // Add Educaster to miniApp when the app is mounted
+    // React.useEffect(() => {
+    //     const add = async () => {
+    //       try {
+    //         await sdk.actions.addMiniApp();
+    //       } catch (err) {
+    //         console.error("Failed to add mini app:", err);
+    //       }
+    //     };
+    //     add();
+    //   }, []);
     
     return(
         <StorageContextProvider
@@ -262,40 +248,46 @@ export default function LearnaApp() {
                 getFunctions,
                 setSelectedQuizData, 
                 handleSelectAnswer,
-                sendNotification,
+                // sendNotification,
                 errorMessage,
                 showFinishButton
             }}
         >
-            <ContextWrapper className={undefined}>
-                <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-400/10 p-2 mb-2 rounded-xl '>
-                    <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-cyan-500/30 rounded-full font-mono'><span className='italic absolute left-[4px] text-x font-black text-purple-700'>Edu</span><span className='font-mono text-[10px] absolute top-[12px] right-[3px]'>caster</span></h1>
-                    <div className='flex justify-between items-center gap-1'>
-                        <button onClick={() => setPath('sendtip')} className={`h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-purple-500/30 text-cyan-700' : 'bg-cyan-500/30 text-purple-700'} rounded-full font-mono`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                            </svg>
-                        </button>
-                        <button onClick={() => setPath('stats')} className={`h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'stats'? 'bg-purple-500/30 text-cyan-700' : 'bg-cyan-500/30 text-purple-700'} rounded-full font-mono`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                            </svg>
-                        </button>
-                        <button onClick={() => setPath('profile')} className={`h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'profile'? 'bg-purple-500/30 text-cyan-700' : 'bg-cyan-500/30 text-purple-700'} rounded-full font-mono`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                            </svg>
-                        </button>
-                    </div>
-                </MotionDisplayWrapper>
-                <MotionDisplayWrapper className='space-y-4 font-mono'>
-                    { renderChildren() }
-                </MotionDisplayWrapper>
-            </ContextWrapper>
+            <LayoutContext>
+                <main>
+                    <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-2 mb-2 rounded-xl '>
+                        <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-white rounded-full font-mono italic text-2xl'><span className='absolute left-[19px] font-black text-purple-700 rotate-180'>E</span><span className='font-mono absolute right-[21px] bottom-4'>C</span></h1>
+                        <div className=''>
+                            <button onClick={() => setPath('sendtip')} className={`absolute top-8 right-[110px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setPath('stats')} className={` absolute top-8 right-[65px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'stats'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setPath('profile')} className={`absolute top-8 right-[20px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'profile'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                                {
+                                    user? 
+                                        <Image 
+                                            src={`${user.pfp_url!}`}
+                                            alt={`${user.display_name}`}
+                                            width={40}
+                                            height={40}
+                                            className='rounded-full'
+                                        /> : 
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                }
+                            </button>
+                        </div>
+                    </MotionDisplayWrapper>
+                    <MotionDisplayWrapper>{ node }</MotionDisplayWrapper>
+                </main>
+            </LayoutContext>
         </StorageContextProvider>
     );
 }
-
-
-// https://optimistic.etherscan.io/tx/0x7ea2005e07e57df95616b3957fb30e7468170e1a42ef6f184956584884666e8d
-// https://optimistic.etherscan.io/address/0xEdb51A8C390fC84B1c2a40e0AE9C9882Fa7b7277#events

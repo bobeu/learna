@@ -5,13 +5,16 @@ import Drawer from './Drawer';
 import { Button } from "~/components/ui/button";
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { Address, FunctionName, getDivviReferralUtilities, TOTAL_WEIGHT } from "~/components/utilities";
+import { Address, FunctionName, getCastText, getDivviReferralUtilities, TOTAL_WEIGHT } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
 import { parseUnits } from "viem";
 import { celo } from "viem/chains";
+import { useNeynarContext } from "@neynar/react";
+import axios, { AxiosError } from "axios";
+import { ErrorRes } from "@neynar/nodejs-sdk/build/api";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
@@ -25,7 +28,8 @@ export const Confirmation :
     const config = useConfig(); 
     const chainId = useChainId();
     const account = address as Address;
-    const { callback } = getFunctions();
+    const { user } = useNeynarContext();
+    const { callback, setmessage } = getFunctions();
 
     const getScores = () => {
         const { questions } = selectedQuizData.data;
@@ -41,6 +45,23 @@ export const Confirmation :
     //     callback({message: '', errorMessage: ''});
     //     toggleDrawer(false);
     // };
+
+    const puublishCast = async (task: FunctionName, weekId: number) => {
+        const text = getCastText(task, weekId)
+        try {
+            if(text !== '') {
+                const response = await axios.post<{ message: string }>("/api/cast", {
+                  signerUuid: user?.signer_uuid,
+                  text,
+                });
+                console.log("Response: ", response.data.message);
+                setmessage('Your task was pubished'.concat(response.data.message));
+            }
+        } catch (err) {
+          const { message } = (err as AxiosError).response?.data as ErrorRes;
+          alert(message);
+        }
+      };
 
     // Wait for sometime before resetting the state after completing a transaction
     const setCompletion = () => {

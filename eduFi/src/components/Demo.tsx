@@ -845,3 +845,225 @@
 // //     </Toggle>
 // //   )
 // // }
+
+
+
+
+
+
+"use client";
+
+import { useState } from "react";
+import {
+  useSendTransaction,
+  useAccount,
+  useBalance,
+  useConnect,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+} from "wagmi";
+import Image from "next/image";
+import backgroundImage from "@/public/assets/bg.webp";
+
+import { parseEther, parseUnits, encodeFunctionData } from "viem";
+import { UserRejectedRequestError } from "viem";
+import { celo } from "wagmi/chains";
+import { useRef, useEffect } from "react";
+import { runGame } from "@/components/GameFunction";
+import { useScoreContext } from "@/components/providers/ScoreContext";
+import { addUserScore } from "@/lib/dbFunctions";
+import { useFrame } from "@/components/providers/FrameProvider";
+import { createScoreToken } from "@/lib/gameAuth";
+import { getDataSuffix, submitReferral } from "@divvi/referral-sdk";
+import { config } from "@/components/providers/WagmiProvider";
+import sdk from "@farcaster/frame-sdk";
+import FlappyRocketGameABI from "@/ABI/FlappyRocket.json";
+
+const FlappyRocketGameAddress = "0x883D06cc70BE8c3E018EA35f7BB7671B044b4Beb";
+
+export default function App() {
+  const { isConnected, chainId, address } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { data: hash } = useSendTransaction();
+  const { status } = useWaitForTransactionReceipt({
+    hash,
+  });
+  const { switchChain } = useSwitchChain();
+  const [error, setError] = useState<string>("");
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const showGameRef = useRef(false);
+  const isProcessingRef = useRef(false);
+  const errorRef = useRef<string>("");
+  const { scores, topScores, refetchScores } = useScoreContext();
+  const scoresRef = useRef({ scores: scores, topScores: topScores });
+  const { context } = useFrame();
+  // Setup transaction sending
+  const { sendTransactionAsync } = useSendTransaction({ config });
+
+  const endGame = () => {
+    showGameRef.current = false;
+  };
+
+  const { data: balance } = useBalance({
+    address,
+  });
+
+   useEffect(() => {
+    const add = async () => {
+      try {
+        await sdk.actions.addMiniApp();
+      } catch (err) {
+        console.error("Failed to add mini app:", err);
+      }
+    };
+    add();
+  }, []);
+  
+  const handleSubmit = async () => {
+    console.log("handleSubmit called");
+    setError("");
+    errorRef.current = "";
+    if (!isConnected) return setError("Please connect your wallet first");
+    isProcessingRef.current = true;
+
+    try {
+      await switchChain({ chainId: celo.id });
+      if (chainId !== celo.id) {
+        console.error("Network switch to celo failed");
+        throw new Error("Please complete the network switch to Celo");
+      }
+
+      console.log("Balance:", balance);
+
+      // Step 1: Generate the Divvi data suffix
+      let dataSuffix;
+          priority
+          quality={85}
+          className="object-cover"
+        />
+      </div>
+      <div className="relative z-10 h-full w-full">
+        {!isGameStarted && (
+          <div className="font-vt323 flex flex-col items-center justify-center p-8 min-w-[350px] h-screen relative z-10 box-border">
+            <h1 className="font-press-start text-4xl text-white [text-shadow:_3px_3px_0_#000]">
+              FLAPPY ROCKET
+              <span className="block text-sm font-vt323 text-gray-300">
+                Powered by Celo
+              </span>
+            </h1>
+            <h2 className="text-gray-200 text-base md:text-base mb-8 tracking-wide text-center [text-shadow:_2px_2px_0_#000]">
+              Weekly competition!
+            </h2>
+
+            <div style={{ width: "100%", marginBottom: "2rem" }}>
+              {!isConnected ? (
+                <div style={{ textAlign: "center" }}>
+                  <p
+                    style={{
+                      color: "#cbd5e1",
+                      marginBottom: "1.5rem",
+                      fontSize: "1.3rem",
+                    }}
+                  >
+                    Connect your wallet
+                  </p>
+                  <button
+                    className="font-vt323 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl mb-2
+             transition-all duration-200 ease-in-out
+             hover:border-2 hover:border-white hover:-translate-y-0.5 hover:shadow-lg
+             active:scale-95 active:bg-white/10 active:border-2 active:border-white/80
+             relative overflow-hidden"
+                    onClick={() => connect({ connector: connectors[0] })}
+                  >
+                    CONNECT WALLET
+                  </button>
+                </div>
+              ) : chainId !== celo.id ? (
+                <div style={{ textAlign: "center" }}>
+                  <p
+                    style={{
+                      color: "#cbd5e1",
+                      marginBottom: "1.5rem",
+                      fontSize: "1.3rem",
+                    }}
+                  >
+                    Switch to Celo network
+                  </p>
+                  <button
+                    type="button"
+                    className="font-vt323 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl mb-2
+             transition-all duration-200 ease-in-out
+             hover:border-2 hover:border-white hover:-translate-y-0.5 hover:shadow-lg
+             active:scale-95 active:bg-white/10 active:border-2 active:border-white/80
+             relative overflow-hidden"
+                    onClick={() => switchChain?.({ chainId: celo.id })}
+                  >
+                    SWITCH TO CELO
+                  </button>
+                </div>
+              ) : !isGameStarted ? (
+                <div>
+                  <button
+                    className="font-vt323 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xl mb-2
+             transition-all duration-200 ease-in-out
+             hover:border-2 hover:border-white hover:-translate-y-0.5 hover:shadow-lg
+             active:scale-95 active:bg-white/10 active:border-2 active:border-white/80
+             relative overflow-hidden"
+                    onClick={() => setIsGameStarted(true)}
+                  >
+                    Load Game
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                marginTop: 16,
+                marginBottom: 24,
+                color: "#fff",
+                fontSize: "1.2rem",
+                textAlign: "center",
+                lineHeight: "1.5",
+                maxWidth: "400px",
+                textShadow: "1px 1px 0 #000",
+              }}
+            >
+              Compete for weekly rewards on the Celo blockchain.
+              <br />
+              Play → Score → Win!
+            </div>
+
+            {error && (
+              <div
+                style={{
+                  color: "#ff6b6b",
+                  marginTop: "1.2rem",
+                  textAlign: "center",
+                  fontSize: "1.1rem",
+                  textShadow: "1px 1px 0 #000",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "100%",
+                  padding: "0 1rem",
+                }}
+                title={error}
+              >
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+        {isGameStarted && (
+          <canvas
+            ref={canvasRef}
+            style={{
+              zIndex: 100,
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

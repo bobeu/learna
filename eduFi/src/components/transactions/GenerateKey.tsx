@@ -96,9 +96,7 @@ export default function GenerateKey({ callback } : {callback?: () => void}) {
 
     return(
         <MotionDisplayWrapper>
-            <div className='w-full place-items-center'>
-                <Button onClick={() => toggleDrawer(true)} variant={'outline'} className="w-full bg-cyan-500/30 text-cyan-700">Generate Key</Button>
-            </div>
+            <Button onClick={() => toggleDrawer(true)} variant={'ghost'} className="text-cyan-900 font-bold ">Generate Key</Button>
             <Confirmation 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
