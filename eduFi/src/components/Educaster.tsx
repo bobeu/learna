@@ -110,7 +110,7 @@ export default function Educaster() {
     const getFunctions = React.useCallback(() => {
         const setmessage = (arg: string) => setMessage(arg);
         const setError = (arg:string) => setErrorMessage(arg);
-        const toggleLoading = (arg: boolean) => setLoading(!loading);
+        const toggleLoading = (arg: boolean) => setLoading(arg);
         const setcompletedTask = (arg: FunctionName) => setCompletedTask(arg);
         const clearData = () => {
             setQuizData(emptyQuizData);
@@ -134,7 +134,7 @@ export default function Educaster() {
             callback,
             setError,
         }
-    }, [setQuizData, setQuizCompletion, setIndex, setErrorMessage, setMessage]);
+    }, [setLoading, setQuizCompletion, setIndex, setErrorMessage, setMessage]);
 
     // Build read transactions data
     const { readTxObject } = React.useMemo(() => {
@@ -229,10 +229,9 @@ export default function Educaster() {
     React.useEffect(() => {
         setQuestionId([]);
         const { clearData, callback } = getFunctions();
-        clearData(),
+        clearData();
         callback({message:'', errorMessage: ''});
-        // if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
-    }, [address]);
+    }, [address, getFunctions]);
 
     // Update the sccores everytime a question is selected
     React.useEffect(() => {

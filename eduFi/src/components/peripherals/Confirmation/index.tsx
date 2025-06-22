@@ -24,7 +24,7 @@ export const Confirmation :
 {   
     const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { errorMessage, messages, weekId: wkId, data, loading, refetch, getFunctions } = useStorage();
+    const { weekId: wkId, data, loading, refetch, getFunctions } = useStorage();
     const { address, isConnected } = useAccount();
 
     const config = useConfig(); 
@@ -140,7 +140,7 @@ export const Confirmation :
         if(functionName === 'recordPoints') {
             callback({message: 'Delegating transaction call to an admin'});
             // console.log("process.env.ADMIN_0xC0F", process.env.NEXT_PUBLIC_ADMIN_0xC0F)
-            const viemAccountObj = privateKeyToAccount(process.env.ADMIN_0xC0F as Address);
+            const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
             hash = await sendTransactionAsync({
                 account,
                 to: viemAccountObj.address,

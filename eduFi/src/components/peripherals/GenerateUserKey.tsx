@@ -16,7 +16,7 @@ export default function GenerateUserKey({exit} : {exit: () => void}) {
             if(!openDrawer && taskCompleted === 'generateKey') setDrawer(true);
         }, 1000);
         return () => clearTimeout(timeoutId);
-    }, [taskCompleted, openDrawer, setDrawer]);
+    }, [taskCompleted, openDrawer, resetMessages, setDrawer]);
 
     const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const callback = () => setDrawer(true);

@@ -9,7 +9,6 @@ import GenerateKey from "../transactions/GenerateKey";
 import ClaimWeeklyReward from "../transactions/ClaimWeeklyReward";
 import CollapsibleComponent from "./Collapsible";
 import { useMiniApp, } from "@neynar/react";
-// import { INeynarAuthenticatedUser } from "@neynar/react/dist/types/common";
 import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
 

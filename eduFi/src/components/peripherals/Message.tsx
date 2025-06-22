@@ -29,7 +29,7 @@ export default function Message({completed, setCompletion, closeDrawer} : {compl
                 if(currentPath !== 'profile') setpath('profile');
             }
         }
-    }, [completed, currentPath, setCompletion, closeDrawer, clearData, setpath]);
+    }, [completed, taskCompleted, currentPath, setCompletion, closeDrawer, clearData, setpath]);
     
     return(
         <React.Fragment>
