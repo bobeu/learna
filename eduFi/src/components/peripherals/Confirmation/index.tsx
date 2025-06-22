@@ -68,16 +68,16 @@ export const Confirmation :
     const setCompletion = (functionName: FunctionName) => {
         toggleLoading(false);
         refetch().then((res) => {console.log(res.isSuccess)});
-        if(functionName === 'generateKey') {
+        // if(functionName === 'generateKey') {
+        //     setIsCompleted(true);
+        // } else {
+        // }
+        const timeoutObj = setTimeout(() => {
             setIsCompleted(true);
-        } else {
-            const timeoutObj = setTimeout(() => {
-                setIsCompleted(true);
-                callback({message: '', errorMessage: ''});
-                back?.();
-            }, 6000);
-            return clearTimeout(timeoutObj);
-        }
+            callback({message: '', errorMessage: ''});
+            back?.();
+        }, 6000);
+        return clearTimeout(timeoutObj);
     };
 
     // Call this function when transaction successfully completed
@@ -139,6 +139,7 @@ export const Confirmation :
         console.log("functionName", functionName);
         if(functionName === 'recordPoints') {
             callback({message: 'Delegating transaction call to an admin'});
+            // console.log("process.env.ADMIN_0xC0F", process.env.NEXT_PUBLIC_ADMIN_0xC0F)
             const viemAccountObj = privateKeyToAccount(process.env.ADMIN_0xC0F as Address);
             hash = await sendTransactionAsync({
                 account,
@@ -176,7 +177,7 @@ export const Confirmation :
                 setmessage('Publishing cast...');
                 await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
             }
-            console.log("Divvi Ref result:", result, "\n resultHash", hash);
+            // console.log("Divvi Ref result:", result, "\n resultHash", hash);
         }
     }
 

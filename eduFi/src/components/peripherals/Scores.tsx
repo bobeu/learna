@@ -4,7 +4,7 @@ import { Button } from "~/components//ui/button";
 import useStorage from "../hooks/useStorage";
 import RecordPoints from "../transactions/RecordPoints";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
-import { type Address, filterTransactionData, mockScoresParam, type Profile, ScoresParam, TOTAL_WEIGHT } from "../utilities";
+import { type Address, filterTransactionData, type Profile, } from "../utilities";
 import GenerateUserKey from "./GenerateUserKey";
 import Drawer from "./Confirmation/Drawer";
 
@@ -59,7 +59,6 @@ export default function Scores() {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
     const [showWarningBeforeExit, setShowWarning] = React.useState<boolean>(false);
     const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
-    const [sc, setScores] = React.useState<ScoresParam>(mockScoresParam);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -68,33 +67,22 @@ export default function Scores() {
     const backToScores = () => setShowGenerateUserKey(false);
     const { setpath, weekId, getFunctions, data } = useStorage();
     const { clearData, callback,  } = getFunctions();
-    
+    const { 
+        category,
+        noAnswer,
+        difficultyLevel,
+        totalScores,
+        questionSize,
+        weightPerQuestion,
+        totalAnsweredCorrectly,
+        totalAnsweredIncorrectly,
+    } = data.scoreParam;
+
     // Back to review page and clear the previously selected quiz data
     const exit = () => {
         clearData();
-        setScores(mockScoresParam);
         setpath('selectcategory');
     }
-
-    React.useEffect(() => {
-        const { category, difficultyLevel, totalQuestions, data: questionsAtempted, } = data;
-        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
-        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
-        const totalAnsweredIncorrectly = totalQuestions - totalAnsweredCorrectly.length;
-        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        const noAnswer = questionsAtempted.filter(({userAnswer,}) => (!userAnswer || !userAnswer?.label));
-        setScores({
-            category,
-            noAnswer: noAnswer.length,
-            difficultyLevel,
-            totalScores,
-            questionSize: totalQuestions,
-            weightPerQuestion,
-            totalAnsweredCorrectly,
-            totalAnsweredIncorrectly,
-        });
-    }, [data, setScores]);
-
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -142,37 +130,37 @@ export default function Scores() {
                         <div className="space-y-2">
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Total questions</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.questionSize}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{questionSize}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Weight per question</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.weightPerQuestion}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{weightPerQuestion}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Category</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.category}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{category}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Difficulty Level</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.difficultyLevel}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{difficultyLevel}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Correct answers</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.totalAnsweredCorrectly.length}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalAnsweredCorrectly.length}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Incorrect answers</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.totalAnsweredIncorrectly}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalAnsweredIncorrectly}</h3>
                             </div>
                             <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                                 <h3 className="w-[50%] bg-pruple-500/10">Missed</h3>
-                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{sc.noAnswer}</h3>
+                                <h3 className='bg-cyan-500/20 p-4 text-cyan-900 font-bold w-[50%] text-center'>{noAnswer}</h3>
                             </div>
                         </div>
                         <div className="flex justify-center">
                             <div className="flex flex-col justify-center items-center space-y-2 bg-cyan-500/50 h-[150px] w-[150px] rounded-full text-sm place-items-center">
                                 <h3>Scores</h3>
-                                <h3 className="text-4xl font-black">{`${sc.totalScores || 0}%`}</h3>
+                                <h3 className="text-4xl font-black">{`${totalScores || 0}%`}</h3>
                             </div>
                         </div>
                         <div className="w-full grid grid-cols-1 gap-2">

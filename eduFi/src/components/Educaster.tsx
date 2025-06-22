@@ -1,5 +1,5 @@
 import React from 'react';
-import { Data, Path, quizData, SelectedData } from '~/dummyData';
+import { quizData } from '~/dummyData';
 import { MotionDisplayWrapper } from './peripherals/MotionDisplayWrapper';
 import Review from './peripherals/Review';
 import Scores from './peripherals/Scores';
@@ -14,11 +14,15 @@ import {
     type ReadData, 
     type TransactionCallback, 
     emptyQuizData, 
-    TrxState,
-    SelectedQuizData,
+    type TrxState,
+    type SelectedQuizData,
     mockSelectedData,
-    HandleSelectAnswerProps,
-    FunctionName
+    type HandleSelectAnswerProps,
+    type FunctionName,
+    TOTAL_WEIGHT,
+    type Data, 
+    type Path, 
+    type SelectedData
 } from './utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import Profile from './peripherals/Profile';
@@ -33,7 +37,6 @@ export default function Educaster() {
     const dataRef = React.useRef<SelectedQuizData>(emptyQuizData);
     const selectedDataRef = React.useRef<SelectedData>(mockSelectedData);
     const [currentPath, setPath] = React.useState<Path>('home');
-    const [currentUser, setUser] = React.useState<Address>(zeroAddress);
     const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
     const [questionIndex, setIndex] = React.useState<number>(0);
     const [messages, setMessage] = React.useState<string>('');
@@ -90,7 +93,6 @@ export default function Educaster() {
             }
         });
         const questionSize = dataRef.current.data.questions.length;
-
         setIndex((prev) => {
             let newIndex = prev + 1;
             if(newIndex === questionSize) {
@@ -225,12 +227,34 @@ export default function Educaster() {
 
     // Update the state whenever user's connected address changes
     React.useEffect(() => {
-        if(address && address !== zeroAddress && address !== currentUser) {
-            console.log("Ueer address changed to: ", address, 'from', currentUser);
-            setUser(address); 
+        setQuestionId([]);
+        const { clearData, callback } = getFunctions();
+        clearData(),
+        callback({message:'', errorMessage: ''});
+        // if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
+    }, [address]);
+
+    // Update the sccores everytime a question is selected
+    React.useEffect(() => {
+        const { category, difficultyLevel, totalQuestions, data: questionsAtempted, } = selectedDataRef.current;
+        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
+        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalAnsweredIncorrectly = totalQuestions - totalAnsweredCorrectly.length;
+        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
+        const noAnswer = questionsAtempted.filter(({userAnswer,}) => (!userAnswer || !userAnswer?.label));
+        const scoreParam = {
+            category,
+            noAnswer: noAnswer.length,
+            difficultyLevel,
+            totalScores,
+            questionSize: totalQuestions,
+            weightPerQuestion,
+            totalAnsweredCorrectly,
+            totalAnsweredIncorrectly,
         }
-        if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
-    }, [address, currentPath, currentUser, setUser, setQuizData]);
+        selectedDataRef.current.scoreParam = scoreParam;
+
+    }, [questionIndex, selectedDataRef]);
 
     // // Add Educaster to miniApp when the app is mounted
     // React.useEffect(() => {
@@ -265,7 +289,6 @@ export default function Educaster() {
                 getFunctions,
                 setSelectedQuizData, 
                 handleSelectAnswer,
-                // sendNotification,
                 errorMessage,
                 showFinishButton
             }}

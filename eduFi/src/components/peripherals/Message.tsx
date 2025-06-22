@@ -14,7 +14,7 @@ const Error = () => {
 }
 
 export default function Message({completed, setCompletion, closeDrawer} : {completed: boolean, closeDrawer: () => void, setCompletion: () => void}) {
-    const { currentPath, messages, errorMessage, setpath, getFunctions } = useStorage();
+    const { currentPath, messages, errorMessage, taskCompleted, setpath, getFunctions } = useStorage();
     const { clearData } = getFunctions();
 
     const isError = errorMessage.length > 0;
@@ -25,7 +25,9 @@ export default function Message({completed, setCompletion, closeDrawer} : {compl
         if(completed) {
             closeDrawer();
             clearData();
-            if(currentPath !== 'profile') setpath('profile');
+            if(taskCompleted !== 'generateKey'){
+                if(currentPath !== 'profile') setpath('profile');
+            }
         }
     }, [completed, currentPath, setCompletion, closeDrawer, clearData, setpath]);
     

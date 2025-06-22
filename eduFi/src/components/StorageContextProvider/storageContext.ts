@@ -1,5 +1,4 @@
-import { Path, QuizDatum, SelectedData } from "~/dummyData";
-import { Address, FunctionName, HandleSelectAnswerProps, State, TransactionCallback, WeekData } from "../utilities";
+import { Address, FunctionName, HandleSelectAnswerProps, State, TransactionCallback, WeekData, Path, QuizDatum, SelectedData } from "../utilities";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { ReadContractsErrorType } from "wagmi/actions";
 
