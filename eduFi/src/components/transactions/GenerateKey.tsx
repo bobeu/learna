@@ -1,11 +1,7 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount, useConfig, useReadContracts } from 'wagmi';
-import { 
-    type Address, 
-    filterTransactionData, 
-    type FunctionName, 
-    type Profile } from '../utilities';
+import { type Address, filterTransactionData, type FunctionName, type Profile } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { MotionDisplayWrapper } from '../peripherals/MotionDisplayWrapper';
 import { Button } from '~/components/ui/button';
