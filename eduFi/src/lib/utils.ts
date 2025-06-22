@@ -35,7 +35,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getSecretEnvVars() {
-  const seedPhrase = process.env.SEED_PHRASE;
+  const seedPhrase = process.env.SEED_PHRASE as string;
   const fid = process.env.FID;
   
   if (!seedPhrase || !fid) {
