@@ -8,8 +8,7 @@ export const APP_TAGS = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
 export const SCREENSHOT_URLS = [
     `${APP_URL}/screenshot1.png`,
     `${APP_URL}/screenshot2.png`,
-    `${APP_URL}/screenshot3.png`,
-    `${APP_URL}/screenshot4.png`,
+    `${APP_URL}/screenshot3.png`
 ];
 export const APP_ICON_URL = `${APP_URL}/icon.png`;
 export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
