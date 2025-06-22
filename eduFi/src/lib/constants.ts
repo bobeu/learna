@@ -19,6 +19,7 @@ export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
+export const FRAME_METADATA = process.env.FRAME_METADATA;
 
 export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string}[] = [
     {

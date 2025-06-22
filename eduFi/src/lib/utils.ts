@@ -17,8 +17,7 @@ interface MiniAppMetadata {
   description?: string;
   primaryCategory?: string;
   tags?: string[];
-  screenshotUrls: string[],
-  requiredChains: string[];
+  screenshotUrls: string[]
 };
 
 interface MiniAppManifest {
@@ -122,7 +121,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
   }
 
   return {
-    accountAssociation,
+    accountAssociation: accountAssociation,
     frame: {
       version: "1",
       name: APP_NAME ?? "Educaster",
@@ -136,10 +135,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       description: APP_DESCRIPTION,
       primaryCategory: APP_PRIMARY_CATEGORY,
       tags: APP_TAGS,
-      screenshotUrls: SCREENSHOT_URLS,
-      requiredChains: [
-        "eip155:42220"
-      ],
+      screenshotUrls: SCREENSHOT_URLS
     },
   };
 }
