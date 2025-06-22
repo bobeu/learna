@@ -1,17 +1,17 @@
-# Educaster
+## Educaster
 
 An open-source quiz-based platform that rewards developers for learning and participating in the web3 network.
 
-# Problems
+## Problems
 Consistent learning has become a paramount and an essential key to success in any field most especially in the technology space. The system and method of learning play a crucial role in the journey of many. Due to fast-changing technologies, it's hard to keep abreast of information, and reading long-worded, near-endless materials and their enormous existence is becoming tough for every developer who needs to consistently update their knowledge base.
 
-# Solution
+## Solution
 With the advent of artificial intelligence, learning has become easier. Our solution leverages AI to provide intuitive, simple, fun, and rewarding methods of learning for developers looking to update their knowledge base such as Quizzes. Our idea was birthed from the Farcaster quiz hackathon to build a Farcaster-based mini-app on the Celo Blockchain that uses AI to generate engaging quizzes with different difficulty levels including other personalized learning method we will introduce in the future.
 
-# Mission
+## Mission
 Our mission is to create a fun, engaging, and rewarding learning path for every web3 and web2 developers looking to transition into the web3 world.
 
-# How it works
+## How it works
 
 As a user, when you visit the landing page,
 - You can immediate start a quiz but we recomment that you connect your wallet first. If you're a Farcaster user, you will be connected to wallet inside the Farcaster app.
@@ -21,7 +21,7 @@ As a user, when you visit the landing page,
 - Every week end, check your reward eligibility on your profile. If you are, you will see a green light to proceed to claim. `Happy QUIZZING` .
 
 
-# Architecture (How we build it)
+## Architecture (How we build it)
 
 Educaster is a mobile-first react-based application built for the web3 and web2 audiences with higher preference for the former. By design, it is in three sections:
 
@@ -41,16 +41,16 @@ Educaster is a mobile-first react-based application built for the web3 and web2 
 - Divvi sdk: For integrating Divvi referral reward system
 - Shadcn: Simple UI components
 
-# Smart contracts information (Celo mainnet)
+## Smart contracts information (Celo mainnet)
 - Grow token smart contract deployed at __[0x800B1666d554e249FCCf5f0855455F43a140d2e5]()__ 
 - Factory contract (main app logic) deployed at __[0x9761496D5a1968B0320bb0059e4D0fDA29861805]()__ 
 
-# Site
+## Site
 - [Interact with Educaster here](https://learna.vercel.app)
 
 __[Here is a demo on how to use the app]()__
 
-# How to run
+## How to run
 To run the project, please follow these steps:
 
 ```
