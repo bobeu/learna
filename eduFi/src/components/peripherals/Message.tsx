@@ -13,32 +13,23 @@ const Error = () => {
     );
 }
 
-export default function Message({completed, parentMessage, parentErrorMessage, setCompletion, closeDrawer} : {completed: boolean, parentMessage: string, parentErrorMessage: string, closeDrawer: () => void, setCompletion: () => void}) {
-    const { currentPath, setpath, getFunctions } = useStorage();
+export default function Message({completed, setCompletion, closeDrawer} : {completed: boolean, closeDrawer: () => void, setCompletion: () => void}) {
+    const { currentPath, messages, errorMessage, taskCompleted, setpath, getFunctions } = useStorage();
     const { clearData } = getFunctions();
-    const [message, setMessage] = React.useState<string>(parentMessage);
-    const [error, setError] = React.useState<string>(parentErrorMessage);
 
-    const isError = error.length > 0;
-    const display = message.length > 0 || error.length > 0;
+    const isError = errorMessage.length > 0;
+    const display = messages.length > 0 || errorMessage.length > 0;
     const inclusiveNone = (message: string) => message.endsWith('.none');
 
     React.useEffect(() => {
         if(completed) {
             closeDrawer();
-            if(message !== '') setMessage('');
-            if(error) setError('');
             clearData();
-            if(currentPath !== 'profile') setpath('profile');
-            const timeoutObj = setTimeout(() => {
-                setCompletion();
-            }, 4000);
-            clearTimeout(timeoutObj);
-        } else {
-            setMessage(parentMessage);
-            setError(parentErrorMessage);
+            if(taskCompleted !== 'generateKey'){
+                if(currentPath !== 'profile') setpath('profile');
+            }
         }
-    }, [completed, currentPath, error, message, setCompletion, parentMessage, parentErrorMessage, closeDrawer, clearData, setpath]);
+    }, [completed, currentPath, setCompletion, closeDrawer, clearData, setpath]);
     
     return(
         <React.Fragment>
@@ -58,13 +49,13 @@ export default function Message({completed, parentMessage, parentErrorMessage, s
                             
                                 <div>
                                     <MotionDisplayWrapper className={`w-full flex justify-start gap-2 pl-1`}>
-                                        { inclusiveNone(message)? <h3>X</h3> : <h3 className="font-mono font-semibold">O</h3> }
-                                        <h1 className="max-w-sm overflow-auto">{ inclusiveNone(message)? message.replace('.none', '') : message }</h1>
+                                        { inclusiveNone(messages)? <h3>X</h3> : <h3 className="font-mono font-semibold">O</h3> }
+                                        <h1 className="max-w-sm overflow-auto">{ inclusiveNone(messages)? messages.replace('.none', '') : messages }</h1>
                                     </MotionDisplayWrapper>
                                     {
                                         isError && <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
                                             <Error />
-                                            <h1 className="max-w-sm overflow-auto">{ error.length > 50? 'Trasaction Failed' : error }</h1>
+                                            <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
                                         </MotionDisplayWrapper>
                                     }
                                 </div>

@@ -3,6 +3,7 @@ import { MotionDisplayWrapper } from './MotionDisplayWrapper';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import Review from './Review';
+import { HandleSelectAnswerProps } from '../utilities';
 
 const MAX_TIME_PER_QUESTION_IN_SECS = 30;
 
@@ -10,8 +11,7 @@ export default function DisplayQuiz() {
     const intervalId = React.useRef<string | number | NodeJS.Timeout | undefined>(undefined)
     const { setpath, quizCompleted, handleSelectAnswer, questionIndex, showFinishButton, currentPath, selectedQuizData, getFunctions } = useStorage();
     const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * selectedQuizData.data.questions.length);
-    const [count, setCount] = React.useState<boolean>(true);
-    // let intervalId: NodeJS.Timeout; 
+    const [count, setCount] = React.useState<boolean>(false);
 
     const { closeQuizComplettion, clearData } = getFunctions();
     const handleViewScores = () => {
@@ -24,9 +24,9 @@ export default function DisplayQuiz() {
         setpath('selectcategory');
     };
 
-    const selectAnswer = ({label, value} : {label?:string, value?:string}) => {
+    const selectAnswer = (arg : HandleSelectAnswerProps) => {
         setCount(false); 
-        handleSelectAnswer({label, value, userSelect: true});
+        handleSelectAnswer(arg);
     }
 
     const {questions, fiftyPercent, twentyFivePercent } = React.useMemo(() => {
@@ -36,8 +36,13 @@ export default function DisplayQuiz() {
         return { questions, fiftyPercent, twentyFivePercent }
     }, [questionIndex, selectedQuizData, timeLeft]);
 
+    React.useEffect(() => {
+        setCount(true);
+    }, []);
+
     // Update the timer
     React.useEffect(() => {
+
         intervalId.current = setInterval(() => {
             if(count) setTimeLeft(timeLeft > 0? timeLeft - 1 : timeLeft);
             if(timeLeft === 0) {
@@ -82,7 +87,7 @@ export default function DisplayQuiz() {
                     </div>
                     {
                         !quizCompleted && questions && questions.length > 0 && questions
-                            .map(({options, quest: question, userAnswer}, index) => (
+                            .map(({options, quest: question, userAnswer, correctAnswer}, index) => (
                                 <MotionDisplayWrapper key={index}> 
                                     <div className={`w-full place-items-center`}>
                                         <div className='w-full space-y-4'>
@@ -91,7 +96,7 @@ export default function DisplayQuiz() {
                                                 {
                                                     options.map(({label, value}) => (
                                                         <div 
-                                                            onClick={() => selectAnswer({label, value})} 
+                                                            onClick={() => selectAnswer({options, correctAnswer, question, userAnswer: {label, value}, userSelect: true})} 
                                                             key={value} 
                                                             className={`w-full flex justify-start items-baseline ${userAnswer?.label === label? 'bg-cyan-500/30 font-semibold' : ''} gap-4 p-4 cursor-pointer text-cyan-900 text-sm hover:bg-cyan-500/20`}
                                                         >
@@ -113,7 +118,6 @@ export default function DisplayQuiz() {
                     {
                         showFinishButton && 
                             <div hidden={currentPath === 'scores' || currentPath === 'selectcategory'} className='w-full place-items-center space-y-2'>
-                                {/* { currentPath !== 'review' && <Button variant={'outline'} onClick={() => setpath('review') } className='w-full font-mono bg-gray-300/30'>Review</Button> } */}
                                 { currentPath !== 'scores' && <Button variant={'outline'} onClick={handleViewScores} className='w-full font-mono bg-cyan-500/50'>View my scores</Button> }
                             </div>
                     }

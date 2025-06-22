@@ -1,34 +1,4 @@
-
-export type QuizDatum = {
-    category: string;
-    id: number,
-    difficultyLevel: string;
-    taken: boolean;
-    questions: Array<{
-        quest: string;
-        options: Array<{
-            label: string;
-            value: string;
-        }>;
-        correctAnswer: {
-            label: string;
-            value: string;
-        };
-        userAnswer?: {
-            label: string;
-            value: string;
-        };
-    }>;
-};
-
-export type QuizData = Array<QuizDatum>;
-export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
-export type DisplayQuizProps = {
-    indexedAnswer: number;
-    selectedQuizData: {category: string, data: QuizDatum};
-    setpath: (arg: Path) => void;
-    handleSelectAnswer: (arg: {label: string, value: string}) => void;
-}
+import type { QuizData } from "./components/utilities";
 
 export const categories = ['solidity', 'vyper', 'wagmi', 'ethersjs', 'web3js', 'reactjs'];
 export const difficultyLevels = ['beginner', 'intermediate', 'advance'];
@@ -38,6 +8,7 @@ export const quizData : QuizData = [
         id: 0,
         difficultyLevel: 'beginner',
         taken: false,
+        identifier: '0x41solidity',
         questions: [
             {
                 quest: 'What is Solidity programming?',
@@ -171,6 +142,7 @@ export const quizData : QuizData = [
         id: 0,
         difficultyLevel: 'beginner',
         taken: false,
+        identifier: '0x42solidity',
         questions: [
             {
                 quest: 'Is reacjJS a programming language?',

@@ -1,13 +1,11 @@
 import React from 'react';
-import { Path, quizData, QuizDatum } from '~/dummyData';
+import { quizData } from '~/dummyData';
 import { MotionDisplayWrapper } from './peripherals/MotionDisplayWrapper';
 import Review from './peripherals/Review';
 import Scores from './peripherals/Scores';
 import DisplayCategories from './peripherals/DisplayCategory';
 import DisplayQuiz from './peripherals/DisplayQuiz';
-// import { useFrame } from './providers/FrameProvider';
 import { StorageContextProvider } from './StorageContextProvider';
-// import { sdk } from '@farcaster/frame-sdk';
 import Home from './peripherals/Home';
 import { 
     type Address, 
@@ -16,51 +14,66 @@ import {
     type ReadData, 
     type TransactionCallback, 
     emptyQuizData, 
-    TrxState
+    type TrxState,
+    type SelectedQuizData,
+    mockSelectedData,
+    type HandleSelectAnswerProps,
+    type FunctionName,
+    TOTAL_WEIGHT,
+    type Data, 
+    type Path, 
+    type SelectedData
 } from './utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import { zeroAddress } from 'viem';
 import SendTip from './peripherals/SendTip';
-// import { Spinner } from './peripherals/Spinner';
-// import { ContextWrapper } from './LayoutContext';
-// import { NeynarContextProvider, Theme } from '@neynar/react';
-// import AppContext from './StorageContextProvider/AppContext';
 import { useNeynarContext } from '@neynar/react';
 import Image from 'next/image';
 import { LayoutContext } from './LayoutContext';
-// import NeynaAppContext from './StorageContextProvider/AppContext';
 
 export default function Educaster() {
-    // const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
+    const dataRef = React.useRef<SelectedQuizData>(emptyQuizData);
+    const selectedDataRef = React.useRef<SelectedData>(mockSelectedData);
     const [currentPath, setPath] = React.useState<Path>('home');
-    const [currentUser, setUser] = React.useState<Address>(zeroAddress);
     const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
     const [questionIndex, setIndex] = React.useState<number>(0);
     const [messages, setMessage] = React.useState<string>('');
     const [quizCompleted, setQuizCompletion] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
-    const [selectedQuizData, setQuizData] = React.useState<{category: string, data: QuizDatum}>(emptyQuizData);
-    // const [sendNotificationResult, setSendNotificationResult] = React.useState<string>("");
-    
-    // const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult, openUrl, close } = useFrame();
+    const [questionsTaken, setQuestionId] = React.useState<string[]>([]);
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const [taskCompleted, setCompletedTask] = React.useState<FunctionName>('');
+
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address } = useAccount();
     const { user } = useNeynarContext();
     const setpath = (arg: Path) => setPath(arg);
-
+    const setQuizData = (arg:SelectedQuizData) => dataRef.current = arg;
+    const setSelectedDataRef = ({category, level, totalQuestions, singleData} : {category?: string, level?: string, totalQuestions?: number, singleData?: Data}) => {
+        if(category) selectedDataRef.current.category = category;
+        if(level) selectedDataRef.current.difficultyLevel = level;
+        if(totalQuestions) selectedDataRef.current.totalQuestions = totalQuestions;
+        if(singleData) selectedDataRef.current.data.push(singleData);
+    }
 
     // Update quiz data whenever an update to category is received
     const setSelectedQuizData = (selected: string, level: string) => {
         const filtered = quizData.filter(({category, difficultyLevel}) => category === selected && level === difficultyLevel);
         if(filtered.length > 0) {
-            if(selected !== selectedQuizData.category && level !== selectedQuizData.data.difficultyLevel) {
+            const data = filtered[0];
+            if(questionsTaken.includes(data.identifier)) {
+                return alert('You already taken this quiz. Please select a different question');
+            } else {
+                setQuestionId((prev) => [...prev, data.identifier]);
+            }
+            if(selected !== dataRef?.current?.category && level !== dataRef?.current?.data.difficultyLevel) {
                 setQuizData({category: selected, data: filtered[0]});
+                setSelectedDataRef({category:selected, level, totalQuestions: filtered[0].questions.length});
                 setpath('quiz');
             } else {
-                // setPath('selectcategory');
                 alert(`You have completed ${selected} category with ${level} level. Please choose different parameters`);
             }
             
@@ -68,19 +81,18 @@ export default function Educaster() {
     };
 
     // Update the quiz data each time an user selects an answer
-    const handleSelectAnswer = ({label, value, userSelect} : {label?: string, value?: string, userSelect: boolean}) => {
-        const data = selectedQuizData;
-        const questionSize = data.data.questions.length;
-        if(userSelect) {
-            setQuizData(({data, category}) => {
-                data.questions[questionIndex].userAnswer = {label: label!, value: value!};
-                if(!data.taken) data.taken = true;
-                return {
-                    category,
-                    data
-                }
-            });
-        }
+    const handleSelectAnswer = ({userSelect, question, userAnswer, correctAnswer, options} : HandleSelectAnswerProps) => {
+        setSelectedDataRef({
+            singleData: {
+                question,
+                userSelect,
+                userAnswer: userSelect? userAnswer! : {label: '', value: ''},
+                correctAnswer,
+                isCorrect: userAnswer?.label === correctAnswer.label,
+                options
+            }
+        });
+        const questionSize = dataRef.current.data.questions.length;
         setIndex((prev) => {
             let newIndex = prev + 1;
             if(newIndex === questionSize) {
@@ -98,8 +110,11 @@ export default function Educaster() {
     const getFunctions = React.useCallback(() => {
         const setmessage = (arg: string) => setMessage(arg);
         const setError = (arg:string) => setErrorMessage(arg);
+        const toggleLoading = (arg: boolean) => setLoading(!loading);
+        const setcompletedTask = (arg: FunctionName) => setCompletedTask(arg);
         const clearData = () => {
             setQuizData(emptyQuizData);
+            setSelectedDataRef(mockSelectedData);
             setIndex(0);
         }
         const closeQuizComplettion = () => setQuizCompletion(false);
@@ -113,6 +128,8 @@ export default function Educaster() {
             // setTransactionDone,
             closeQuizComplettion,
             setmessage,
+            setcompletedTask,
+            toggleLoading,
             clearData,
             callback,
             setError,
@@ -210,12 +227,34 @@ export default function Educaster() {
 
     // Update the state whenever user's connected address changes
     React.useEffect(() => {
-        if(address && address !== zeroAddress && address !== currentUser) {
-            console.log("Ueer address changed to: ", address, 'from', currentUser);
-            setUser(address); 
+        setQuestionId([]);
+        const { clearData, callback } = getFunctions();
+        clearData(),
+        callback({message:'', errorMessage: ''});
+        // if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
+    }, [address]);
+
+    // Update the sccores everytime a question is selected
+    React.useEffect(() => {
+        const { category, difficultyLevel, totalQuestions, data: questionsAtempted, } = selectedDataRef.current;
+        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
+        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalAnsweredIncorrectly = totalQuestions - totalAnsweredCorrectly.length;
+        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
+        const noAnswer = questionsAtempted.filter(({userAnswer,}) => (!userAnswer || !userAnswer?.label));
+        const scoreParam = {
+            category,
+            noAnswer: noAnswer.length,
+            difficultyLevel,
+            totalScores,
+            questionSize: totalQuestions,
+            weightPerQuestion,
+            totalAnsweredCorrectly,
+            totalAnsweredIncorrectly,
         }
-        if(currentPath === 'selectcategory') setQuizData(emptyQuizData);
-    }, [address, currentPath, currentUser, setUser, setQuizData]);
+        selectedDataRef.current.scoreParam = scoreParam;
+
+    }, [questionIndex, selectedDataRef]);
 
     // // Add Educaster to miniApp when the app is mounted
     // React.useEffect(() => {
@@ -233,11 +272,13 @@ export default function Educaster() {
         <StorageContextProvider
             value={{
                 handleStart: () => setpath('quiz'),
-                data: selectedQuizData.data,
+                data: selectedDataRef.current,
                 questionIndex,
-                selectedQuizData,
+                loading,
+                selectedQuizData: dataRef.current,
                 setpath,
                 quizCompleted,
+                taskCompleted,
                 currentPath,
                 messages,
                 state,
@@ -248,7 +289,6 @@ export default function Educaster() {
                 getFunctions,
                 setSelectedQuizData, 
                 handleSelectAnswer,
-                // sendNotification,
                 errorMessage,
                 showFinishButton
             }}

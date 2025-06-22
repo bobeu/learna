@@ -10,7 +10,62 @@ import { CAST_MESSAGES } from "~/lib/constants";
 
 export const TOTAL_WEIGHT = 100;
 export type Address = `0x${string}`;
-export type FunctionName = 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
+export type FunctionName = '' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
+export interface SelectedQuizData {category: string, data: QuizDatum}
+export interface QuizDatum {
+  category: string;
+  id: number,
+  difficultyLevel: string;
+  identifier: string;
+  taken: boolean;
+  questions: Array<{
+      quest: string;
+      options: Array<{
+          label: string;
+          value: string;
+      }>;
+      correctAnswer: {
+          label: string;
+          value: string;
+      };
+      userAnswer?: {
+          label: string;
+          value: string;
+      };
+  }>;
+};
+
+export interface Answer {
+  label: string;
+  value: string;
+}
+
+export interface Data {
+  question: string;
+  userAnswer: Answer;
+  correctAnswer: Answer;
+  quizHash?: string;
+  userSelect: boolean;
+  isCorrect: boolean;
+  options: Array<Answer>;
+};
+
+export interface SelectedData {
+  category: string;
+  difficultyLevel: string;
+  data: Array<Data>;
+  totalQuestions: number;
+  scoreParam: ScoresParam;
+}
+
+export type QuizData = Array<QuizDatum>;
+export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
+export type DisplayQuizProps = {
+  indexedAnswer: number;
+  selectedQuizData: {category: string, data: QuizDatum};
+  setpath: (arg: Path) => void;
+  handleSelectAnswer: (arg: {label: string, value: string}) => void;
+}
 
 interface Values {
   totalAllocated: bigint;
@@ -82,6 +137,14 @@ export type FilterTransactionDataProps = {
     filter: boolean;
 }
 
+export interface HandleSelectAnswerProps {
+  userAnswer?: Answer; 
+  correctAnswer: Answer; 
+  question: string;
+  userSelect: boolean;
+  options: Array<Answer>;
+}
+
 export const mockProfile : Profile = {
   amountClaimedInNative: 0n,
   amountClaimedInERC20: 0n,
@@ -98,21 +161,7 @@ export interface ScoresParam {
   totalScores: number;
   questionSize: number;
   weightPerQuestion: number;
-  totalAnsweredCorrectly: {
-      quest: string;
-      options: Array<{
-          label: string;
-          value: string;
-      }>;
-      correctAnswer: {
-          label: string;
-          value: string;
-      };
-      userAnswer?: {
-          label: string;
-          value: string;
-      };
-  }[];
+  totalAnsweredCorrectly: Data[];
   noAnswer: number;
   totalAnsweredIncorrectly: number;
 }
@@ -124,23 +173,17 @@ export const mockScoresParam : ScoresParam =  {
   questionSize: 0,
   weightPerQuestion: 0,
   noAnswer: 0,
-  totalAnsweredCorrectly: [{
-      quest: '',
-      options: [{
-          label: '',
-          value: '',
-      }],
-      correctAnswer: {
-          label: '',
-          value: '',
-      },
-      userAnswer: {
-          label: '',
-          value: '',
-      },
-  }],
+  totalAnsweredCorrectly: [],
   totalAnsweredIncorrectly: 0
 }
+
+export const mockSelectedData : SelectedData = {
+  category: '',
+  difficultyLevel: '',
+  data: [],
+  totalQuestions: 0,
+  scoreParam: mockScoresParam
+};
 
 export type ScoresReturn = () => ScoresParam;
 
@@ -206,14 +249,15 @@ export const mockReadData : ReadData = {
   ] 
 }
 
-export const emptyQuizData = {
+export const emptyQuizData : SelectedQuizData = {
   category: '', 
   data: {
     category: '',
     id: 0,
     difficultyLevel: '',
     taken: false,
-    questions: []
+    questions: [],
+    identifier: ""
   }
 }
 /**

@@ -96,11 +96,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-// import type { Session } from "next-auth";
-// import { SessionProvider } from "next-auth/react";
 import { MiniAppProvider } from "@neynar/react";
 import NeynaAppContext from "~/components/StorageContextProvider/AppContext";
-// import { SafeFarcasterSolanaProvider } from "~/components/providers/SafeFarcasterSolanaProvider";
 
 const WagmiProvider = dynamic(
   () => import("~/components/providers/WagmiProvider"),
@@ -111,19 +108,12 @@ const WagmiProvider = dynamic(
 
 export function Providers({ children } : {children: React.ReactNode}) {
   return (
-    <NeynaAppContext>
-      <WagmiProvider>
-        <MiniAppProvider analyticsEnabled={true}>
+    <WagmiProvider>
+      <MiniAppProvider analyticsEnabled={true}>
+        <NeynaAppContext>
           {children}
-        </MiniAppProvider>
-      </WagmiProvider>
-    </NeynaAppContext>
+        </NeynaAppContext>
+      </MiniAppProvider>
+    </WagmiProvider>
   );
 }
-
-    // <SessionProvider session={session}>
-    // </SessionProvider>
-// const solanaEndpoint = process.env.SOLANA_RPC_ENDPOINT || "https://solana-rpc.publicnode.com";
-          // <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
-          // </SafeFarcasterSolanaProvider>
-          // { session, children }: { session: Session | null, children: React.ReactNode }

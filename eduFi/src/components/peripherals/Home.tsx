@@ -3,17 +3,13 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components//ui/button";
 import useStorage from "../hooks/useStorage";
 import { Swipeable } from "./Swipeable";
-// import SignIn from "./SignIn";
 import { useMiniApp } from '@neynar/react';
-// import { NeynarAuthButton } from "@neynar/react";
 import ConnectButtons, { buttonProps } from "../ConnectButtons";
-import { useAccount } from "wagmi";
 
 export default function Home() {
     const { setpath } = useStorage();
     const { isSDKLoaded, isInMiniApp, actions } = useMiniApp();
     const { getFunctions } = useStorage();
-    const { isConnected } = useAccount();
 
     // Add Educaster to user's list of miniApps
     const handleAddMiniApp = async () => {
@@ -28,10 +24,10 @@ export default function Home() {
     return(
         <React.Fragment>
             <MotionDisplayWrapper className="w-full font-mono space-y-2 ">
-                <div className="text-cyan-900 pt-4 border rounded-xl pb-4 bg-cyan-500/10">
-                    <h3 className="w-full text-center text-3xl font-bold">{'Learning just got better'}</h3>
-                    <h3 className="w-full text-center font-semibold text-purple-800">{"Learn! Earn! Have fun!"}</h3>
-                    <h3 className="w-full text-center text-xs text-purple-700">{"With Educaster, no dull moment"}</h3>
+                <div className="text-white pt-4 border rounded-xl py-4 px-2 bg-cyan-500/80">
+                    <h3 className="w-full text-center text-2xl font-bold">{'Learning just got better'}</h3>
+                    <h3 className="w-full text-center font-semibold text-white">{"Learn! Grow! Earn! Have fun!"}</h3>
+                    <h3 className="w-full text-center text-xs text-white">{"With Educaster, learning is fun"}</h3>
                 </div>
                 <div className="p-4 bg-cyan-500/10 border rounded-xl text-cyan-600 font-semibold">
                     <h3 className="w-full flex justify-between gap-1 ">
@@ -47,12 +43,17 @@ export default function Home() {
                     </div>
                 </div>
             </MotionDisplayWrapper>
-            <MotionDisplayWrapper className="space-y-4  mt-4 font-mono">
+            <MotionDisplayWrapper className="space-y-2  mt-4 font-mono">
                 { !isInMiniApp && <Button onClick={handleAddMiniApp}>Add Educaster to miniApps</Button>}
-                <h3 className="w-full text-start ">How it works</h3>
-                <Swipeable />
+                <div className="p-4 border rounded-lg space-y-2">
+                    <h3>Quickstart</h3>
+                    <Swipeable />
+                </div>
                 <ConnectButtons />
-                { isConnected && <Button { ...buttonProps({onClick: () => setpath('selectcategory')}) }>Get started</Button> }
+                <div className="border rounded-lg p-4 space-y-1">
+                    <h3>Pick a learning path</h3>
+                    <Button { ...buttonProps({onClick: () => setpath('selectcategory')}) }>Quiz</Button>
+                </div>
             </MotionDisplayWrapper>
         
 

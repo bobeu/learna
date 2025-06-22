@@ -14,7 +14,7 @@ interface ButtonProps {
 export const  buttonProps = ({onClick, overrideClassName, disabled} : {onClick: React.MouseEventHandler<HTMLButtonElement> | undefined, disabled?: boolean, overrideClassName?: string}) : ButtonProps => {
     return {
         onClick,
-        className: `w-full bg-cyan-500/50 font-mono ${overrideClassName}`,
+        className: `w-full bg-cyan-500/80 font-mono ${overrideClassName}`,
         variant: 'outline',
         disabled: disabled && disabled
     }
@@ -43,12 +43,12 @@ export default function ConnectButtons() {
     return(
         <React.Fragment>
             {
-                !isConnected && <div className="w-full place-items-center text-start mb-4 font-mono">
-                    <h3 className="w-full  ">Connect any of the following wallets</h3>
-                    <div className="w-full flex flex-col gap-[6px]">
-                        <Button {...buttonProps({onClick: () => handleConnect(0), disabled })} >Farcaster wallet</Button>
-                        <Button {...buttonProps({onClick: () => handleConnect(1), disabled })}>Coinbase Wallet</Button>
-                        <Button {...buttonProps({onClick: () => handleConnect(2), disabled })}>Metamask</Button>
+                !isConnected && <div className="w-full space-y-2 font-mono">
+                    {/* <h3>Connect any of the following wallets</h3> */}
+                    <div className="w-full flex flex-col border rounded-lg p-4">
+                        <Button {...buttonProps({onClick: () => handleConnect(0), disabled })}>Connect Farcaster wallet</Button>
+                        <Button {...buttonProps({onClick: () => handleConnect(1), disabled })}>Connect Coinbase Wallet</Button>
+                        <Button {...buttonProps({onClick: () => handleConnect(2), disabled })}>Use Metamask</Button>
                     </div>
                 </div>
             }
