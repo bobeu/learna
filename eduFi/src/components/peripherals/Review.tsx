@@ -3,19 +3,18 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 
 export default function Review() {
-    const { data: { questions }, } = useStorage();
+    const { data: selectedData, } = useStorage();
     return(
-        <MotionDisplayWrapper>
+        <MotionDisplayWrapper className="font-mono">
             <div className='space-y-2 overflow-auto'> 
-                <h3 className="font-semibold ">Review your answers</h3>
+                <h3>Your responses</h3>
                 <MotionDisplayWrapper className="rounded-lg max-h-[400px] overflow-auto space-y-2">
                     {
-                        questions
-                            .map(({options, quest, userAnswer, correctAnswer}, i) => (
-                                <div key={quest}>
+                        selectedData.data?.map(({correctAnswer, question, userAnswer, options }, i) => (
+                                <div key={question}>
                                     <div className={`w-full place-items-center`}>
                                         <div className='w-full space-y-4 border border-opacity-10 rounded-lg'>
-                                            <h1 className='font-mono p-4 bg-cyan-500/50 rounded-t-lg max-w-full overflow-auto '>{`${i + 1}. ${quest}`}</h1>
+                                            <h1 className='font-mono p-4 bg-cyan-500/50 rounded-t-lg max-w-full overflow-auto '>{`${i + 1}. ${question}`}</h1>
                                             <div className='w-full max-w-full overflow-auto grid grid-cols-1 '>
                                                 {
                                                     options.map(({label, value}) => (

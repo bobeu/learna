@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
-import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
+import { APP_BUTTON_TEXT, APP_DESCRIPTION, SCREENSHOT_URLS, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
 interface MiniAppMetadata {
@@ -17,6 +17,8 @@ interface MiniAppMetadata {
   description?: string;
   primaryCategory?: string;
   tags?: string[];
+  screenshotUrls: string[],
+  requiredChains: string[];
 };
 
 interface MiniAppManifest {
@@ -123,7 +125,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
     accountAssociation,
     frame: {
       version: "1",
-      name: APP_NAME ?? "Neynar Starter Kit",
+      name: APP_NAME ?? "Educaster",
       iconUrl: APP_ICON_URL,
       homeUrl: APP_URL,
       imageUrl: APP_OG_IMAGE_URL,
@@ -134,6 +136,10 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       description: APP_DESCRIPTION,
       primaryCategory: APP_PRIMARY_CATEGORY,
       tags: APP_TAGS,
+      screenshotUrls: SCREENSHOT_URLS,
+      requiredChains: [
+        "eip155:42220"
+      ],
     },
   };
 }

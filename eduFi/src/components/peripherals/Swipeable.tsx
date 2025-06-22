@@ -18,7 +18,7 @@ export function Swipeable() {
       <CarouselContent className="">
         {carouselContent.map(({id, imageName, imageUrl, text}) => (
           <CarouselItem key={id} className="">
-            <div className="h-[310px] place-items-cente text-center">
+            <div className="h-[320px] place-items-cente text-center">
                 <h3 className="text-sm h-[160px] pt-4 px-4 rounded-t-xl bg-cyan-500/10 ">
                   <p className="font-semibold">{`Step ${id + 1}`}</p>
                   { text }

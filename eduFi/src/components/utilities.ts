@@ -7,11 +7,12 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
+import { Answer, Data, QuizDatum, SelectedData } from "~/dummyData";
 
 export const TOTAL_WEIGHT = 100;
 export type Address = `0x${string}`;
-export type FunctionName = 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
-
+export type FunctionName = '' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
+export interface SelectedQuizData {category: string, data: QuizDatum}
 interface Values {
   totalAllocated: bigint;
   totalClaimed: bigint;
@@ -82,6 +83,14 @@ export type FilterTransactionDataProps = {
     filter: boolean;
 }
 
+export interface HandleSelectAnswerProps {
+  userAnswer?: Answer; 
+  correctAnswer: Answer; 
+  question: string;
+  userSelect: boolean;
+  options: Array<Answer>;
+}
+
 export const mockProfile : Profile = {
   amountClaimedInNative: 0n,
   amountClaimedInERC20: 0n,
@@ -98,24 +107,17 @@ export interface ScoresParam {
   totalScores: number;
   questionSize: number;
   weightPerQuestion: number;
-  totalAnsweredCorrectly: {
-      quest: string;
-      options: Array<{
-          label: string;
-          value: string;
-      }>;
-      correctAnswer: {
-          label: string;
-          value: string;
-      };
-      userAnswer?: {
-          label: string;
-          value: string;
-      };
-  }[];
+  totalAnsweredCorrectly: Data[];
   noAnswer: number;
   totalAnsweredIncorrectly: number;
 }
+
+export const mockSelectedData : SelectedData = {
+  category: '',
+  difficultyLevel: '',
+  data: [],
+  totalQuestions: 0
+};
 
 export const mockScoresParam : ScoresParam =  {
   category: '',
@@ -124,21 +126,7 @@ export const mockScoresParam : ScoresParam =  {
   questionSize: 0,
   weightPerQuestion: 0,
   noAnswer: 0,
-  totalAnsweredCorrectly: [{
-      quest: '',
-      options: [{
-          label: '',
-          value: '',
-      }],
-      correctAnswer: {
-          label: '',
-          value: '',
-      },
-      userAnswer: {
-          label: '',
-          value: '',
-      },
-  }],
+  totalAnsweredCorrectly: [],
   totalAnsweredIncorrectly: 0
 }
 
@@ -206,14 +194,15 @@ export const mockReadData : ReadData = {
   ] 
 }
 
-export const emptyQuizData = {
+export const emptyQuizData : SelectedQuizData = {
   category: '', 
   data: {
     category: '',
     id: 0,
     difficultyLevel: '',
     taken: false,
-    questions: []
+    questions: [],
+    identifier: ""
   }
 }
 /**

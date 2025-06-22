@@ -1,8 +1,10 @@
+import { randomUUID, UUID } from "crypto";
 
-export type QuizDatum = {
+export interface QuizDatum {
     category: string;
     id: number,
     difficultyLevel: string;
+    identifier: string;
     taken: boolean;
     questions: Array<{
         quest: string;
@@ -21,6 +23,28 @@ export type QuizDatum = {
     }>;
 };
 
+export interface Answer {
+    label: string;
+    value: string;
+}
+
+export interface Data {
+    question: string;
+    userAnswer: Answer;
+    correctAnswer: Answer;
+    quizHash?: string;
+    userSelect: boolean;
+    isCorrect: boolean;
+    options: Array<Answer>;
+};
+
+export interface SelectedData {
+    category: string;
+    difficultyLevel: string;
+    data: Array<Data>;
+    totalQuestions: number;
+}
+
 export type QuizData = Array<QuizDatum>;
 export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
 export type DisplayQuizProps = {
@@ -38,6 +62,7 @@ export const quizData : QuizData = [
         id: 0,
         difficultyLevel: 'beginner',
         taken: false,
+        identifier: '0x41solidity',
         questions: [
             {
                 quest: 'What is Solidity programming?',
@@ -171,6 +196,7 @@ export const quizData : QuizData = [
         id: 0,
         difficultyLevel: 'beginner',
         taken: false,
+        identifier: '0x42solidity',
         questions: [
             {
                 quest: 'Is reacjJS a programming language?',

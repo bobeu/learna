@@ -5,6 +5,12 @@ export const APP_NAME = process.env.NEXT_PUBLIC_MINI_APP_NAME;
 export const APP_DESCRIPTION = process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION;
 export const APP_PRIMARY_CATEGORY = process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY;
 export const APP_TAGS = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
+export const SCREENSHOT_URLS = [
+    `${APP_URL}/screenshot1.png`,
+    `${APP_URL}/screenshot2.png`,
+    `${APP_URL}/screenshot3.png`,
+    `${APP_URL}/screenshot4.png`,
+];
 export const APP_ICON_URL = `${APP_URL}/icon.png`;
 export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
 export const APP_SPLASH_URL = `${APP_URL}/splash.png`;

@@ -12,72 +12,72 @@ import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
 import { parseUnits } from "viem";
 import { celo } from "viem/chains";
-import { useNeynarContext } from "@neynar/react";
-import axios, { AxiosError } from "axios";
-import { ErrorRes } from "@neynar/nodejs-sdk/build/api";
+// import { useNeynarContext } from "@neynar/react";
+// import axios, { AxiosError } from "axios";
+// import { ErrorRes } from "@neynar/nodejs-sdk/build/api";
+import sdk from "@farcaster/frame-sdk";
+import { APP_URL } from "~/lib/constants";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
         ({ getTransactions, lastStepInList, openDrawer, back, toggleDrawer}) => 
 {   
-    const [loading, setLoading] = React.useState<boolean>(false);
     const [completed, setIsCompleted] = React.useState<boolean>(false);
 
-    const { errorMessage, messages, weekId: wkId, selectedQuizData, refetch, getFunctions } = useStorage();
+    const { errorMessage, messages, weekId: wkId, data, loading, refetch, getFunctions } = useStorage();
     const { address, isConnected } = useAccount();
 
     const config = useConfig(); 
     const chainId = useChainId();
     const account = address as Address;
-    const { user } = useNeynarContext();
-    const { callback, setmessage } = getFunctions();
+    const { callback, setmessage, toggleLoading, setcompletedTask } = getFunctions();
 
     const { totalScores, weekId} = React.useMemo(() => {
-        const { questions } = selectedQuizData.data;
-        const questionSize = questions.length;
-        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / questionSize);
-        const totalAnsweredCorrectly = questions.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const { totalQuestions, data: questionsAtempted, } = data;
+        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
+        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
         const weekId = toBN(wkId.toString()).toNumber();
         return {
             totalScores,
             weekId
         };
-    }, []);
+    }, [data]);
 
-    // Reset the messages and error messages in state, and close the drawer when transaction is completed
-    // const handleCloseDrawer = () => {
-    //     callback({message: '', errorMessage: ''});
-    //     toggleDrawer(false);
-    // };
-
-    const puublishCast = async (task: FunctionName, weekId: number) => {
-        const text = getCastText(task, weekId)
+    const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
+        let text = altText;
+        if(task) text = getCastText(task, weekId);
         try {
             if(text !== '') {
-                const response = await axios.post<{ message: string }>("/api/cast", {
-                  signerUuid: user?.signer_uuid,
-                  text,
-                });
-                console.log("Response: ", response.data.message);
-                setmessage('Your task was pubished'.concat(response.data.message));
+                const response = await sdk.actions.composeCast({text, embeds: [APP_URL]})
+                // const response = await axios.post<{ message: string }>("/api/cast", {
+                //   signerUuid: user?.signer_uuid,
+                //   text,
+                // });
+                console.log("Response: ", response);
+                setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
             }
         } catch (err) {
-          const { message } = (err as AxiosError).response?.data as ErrorRes;
-          alert(message);
+        //   const { message } = (err as AxiosError).response?.data as ErrorRes;
+          setmessage("Casting failed");
+          alert('Casting failed');
         }
       };
 
     // Wait for sometime before resetting the state after completing a transaction
-    const setCompletion = () => {
-        setLoading(false);
+    const setCompletion = (functionName: FunctionName) => {
+        toggleLoading(false);
         refetch().then((res) => {console.log(res.isSuccess)});
-        const timeoutObj = setTimeout(() => {
-            // handleCloseDrawer();
+        if(functionName === 'generateKey') {
             setIsCompleted(true);
-            back?.();
-        }, 6000);
-        return clearTimeout(timeoutObj);
+        } else {
+            const timeoutObj = setTimeout(() => {
+                setIsCompleted(true);
+                callback({message: '', errorMessage: ''});
+                back?.();
+            }, 6000);
+            return clearTimeout(timeoutObj);
+        }
     };
 
     // Call this function when transaction successfully completed
@@ -85,15 +85,20 @@ export const Confirmation :
         callback({message: `Completed request with hash: ${hash.substring(0, 8)}...`});
         const functionName = variables?.functionName as FunctionName;
         if(functionName === lastStepInList){
-            puublishCast(functionName, functionName === 'sortWeeklyReward'? weekId - 1 : weekId)
-            .then(() => setCompletion());
+            setcompletedTask(functionName);
+            publishCast(functionName === 'sortWeeklyReward'? weekId - 1 : weekId, '', functionName)
+            .then(() => setCompletion(functionName))
+            .catch((error: any) => {
+                console.log("Publish error: ", error);
+                setCompletion(functionName);
+            })
         }
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
         callback({errorMessage: error.message});
-        setCompletion();
+        setCompletion('');
     }
 
     const { writeContractAsync, } = useWriteContract({
@@ -113,7 +118,7 @@ export const Confirmation :
             },
             onError(error) {
                 callback({errorMessage: error.message});
-                setCompletion();
+                setCompletion('');
             },
         }
     });
@@ -126,32 +131,52 @@ export const Confirmation :
     } 
 
     const runTransaction = async(arg: Transaction) => {
-        const { abi, functionName, args, contractAddress} = arg;
+        const { abi, functionName, args, contractAddress, value} = arg;
         const { getDataSuffix, submitReferralData } = getDivviReferralUtilities();
-        // const useDivvi = chainId === celo.id && functionName === 'generateKey';
         const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
-        callback({message: 'Delegating transaction call to an admin'});
-        const viemAccountObj = privateKeyToAccount(process.env.ADMIN_0xC0F as Address);
-        const hash = await sendTransactionAsync({
-            account,
-            to: viemAccountObj.address,
-            value: parseUnits('2', 16)
-        });
-        let resultHash = await waitForConfirmation(hash, false);
-        callback({message: "Now saving your points..."});
-        const hash1 = await writeContractAsync({
-            abi,
-            functionName,
-            address: contractAddress,
-            account: viemAccountObj,
-            args,
-            dataSuffix
-        });
-        resultHash = await waitForConfirmation(hash1, true);
+        let hash : Address = '0x';
+        console.log("functionName", functionName);
+        if(functionName === 'recordPoints') {
+            callback({message: 'Delegating transaction call to an admin'});
+            const viemAccountObj = privateKeyToAccount(process.env.ADMIN_0xC0F as Address);
+            hash = await sendTransactionAsync({
+                account,
+                to: viemAccountObj.address,
+                value: parseUnits('2', 16)
+            });
+            hash = await waitForConfirmation(hash, false);
+            callback({message: "Now saving your points..."});
+            hash = await writeContractAsync({
+                abi,
+                functionName,
+                address: contractAddress,
+                account: viemAccountObj,
+                args,
+                dataSuffix
+            });
+            hash = await waitForConfirmation(hash, true);
+        } else {
+            hash = await writeContractAsync({
+                abi,
+                functionName,
+                address: contractAddress,
+                account,
+                args: [],
+                dataSuffix,
+                value
+
+            });
+            hash = await waitForConfirmation(hash, true);
+            
+        }
         if(useDivvi) {
-            const result = await submitReferralData(resultHash, chainId);
-            console.log("Divvi Ref result:", result, "\n resultHash", resultHash);
+            const result = await submitReferralData(hash, chainId);
+            if(result.status === 200) {
+                setmessage('Publishing cast...');
+                await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
+            }
+            console.log("Divvi Ref result:", result, "\n resultHash", hash);
         }
     }
 
@@ -163,7 +188,7 @@ export const Confirmation :
      */
     const handleSendTransaction = async() => {
         if(!isConnected) return callback({errorMessage: 'Please connect wallet'});
-        setLoading(true);
+        toggleLoading(true);
         const transactions = getTransactions();
         console.log("account11",account);
 
@@ -172,7 +197,8 @@ export const Confirmation :
             callback({message: 'Broadcasting...'});
             switch (functionName) {
                 case 'recordPoints':
-                    await runTransaction({abi, contractAddress: address, args, functionName, requireArgUpdate: false});
+                    const recordArgs = [account, totalScores];
+                    await runTransaction({abi, contractAddress: address, args: recordArgs, functionName, requireArgUpdate: false});
                     break;
                 case 'tip':
                     if(value && value > 0) {
@@ -198,9 +224,7 @@ export const Confirmation :
                     await waitForConfirmation(hash4, true);
                     break;
                 case 'generateKey':
-                    if(totalScores > 0) {
-                        await runTransaction({abi, contractAddress: address, args: [account, totalScores], functionName, requireArgUpdate: false});
-                    }
+                    await runTransaction({abi, value, contractAddress: address, args: [account, totalScores], functionName, requireArgUpdate: false});
                     break;
             
                 default:
@@ -219,15 +243,13 @@ export const Confirmation :
                 <Message 
                     completed={completed} 
                     // closeDrawer={() => toggleDrawer(false)} 
-                    parentMessage={messages}
-                    parentErrorMessage={errorMessage}
                     setCompletion={() => setIsCompleted(false)}
                     closeDrawer={() => {
                         toggleDrawer(false);
                         back?.();
                     }} 
                 />
-                <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
+                <Button variant={'outline'} disabled={loading || completed} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"cyan"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );

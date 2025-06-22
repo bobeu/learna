@@ -3,9 +3,20 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import GenerateKey from "../transactions/GenerateKey";
 import RecordPoints from "../transactions/RecordPoints";
+import useStorage from "../hooks/useStorage";
 
-export default function GenerateUserKey({totalScore, exit} : {totalScore: number, exit: () => void}) {
+export default function GenerateUserKey({exit} : {exit: () => void}) {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
+    const { taskCompleted, getFunctions } = useStorage();
+    const { callback: resetMessages } = getFunctions();
+
+    React.useEffect(() => {
+        resetMessages({message: '', errorMessage: ''});
+        const timeoutId = setTimeout(() => {
+            if(!openDrawer && taskCompleted === 'generateKey') setDrawer(true);
+        }, 1000);
+        return () => clearTimeout(timeoutId);
+    }, [taskCompleted, openDrawer, setDrawer]);
 
     const toggleDrawer = (arg:boolean) => setDrawer(arg);
     const callback = () => setDrawer(true);
@@ -21,7 +32,6 @@ export default function GenerateUserKey({totalScore, exit} : {totalScore: number
             <RecordPoints 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                totalScore={totalScore}
             />
         </MotionDisplayWrapper>
     );
