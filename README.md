@@ -1,5 +1,7 @@
 ## Educaster
 
+![image](https://github.com/user-attachments/assets/1d8cccbf-4707-4624-8f35-76002977708a)
+
 An open-source quiz-based platform that rewards developers for learning and participating in the web3 network.
 
 ## Problems
