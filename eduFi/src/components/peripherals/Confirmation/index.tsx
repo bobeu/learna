@@ -54,7 +54,11 @@ export const Confirmation :
                 //   text,
                 // });
                 // console.log("Response: ", response);
-                setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+                if(response?.cast?.hash) {
+                    setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+                } else{
+                    setmessage('Cast publish failed!');
+                }
             }
         } catch (err) {
         //   const { message } = (err as AxiosError).response?.data as ErrorRes;
