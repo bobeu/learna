@@ -49,8 +49,6 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            setDone={true}
-            lastStepInList='sortWeeklyReward'
         />
     )
 }

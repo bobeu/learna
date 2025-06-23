@@ -40,8 +40,6 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            setDone={false}
-            lastStepInList='claimWeeklyReward'
         />
     )
 }

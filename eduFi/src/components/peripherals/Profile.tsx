@@ -107,7 +107,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                         haskey? <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>
                             <AddressWrapper account={passKey} size={4} display={false} copyIconSize={'sm'} />
                         </h3> : <div className='bg-cyan-500/60 rounded-r-lg p-1 text-cyan-900 font-bold w-[50%] text-center'>
-                            <GenerateKey />
+                            <GenerateKey functionName={'generateKey'} />
                         </div>
                     }
                 </div> 

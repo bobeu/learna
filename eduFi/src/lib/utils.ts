@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-// import { mnemonicToAccount } from 'viem/accounts';
 import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
@@ -17,6 +16,7 @@ interface MiniAppMetadata {
   description?: string;
   primaryCategory?: string;
   tags?: string[];
+  requiredChains?:string[]; 
 };
 
 interface MiniAppManifest {
@@ -81,8 +81,7 @@ export async function getMiniAppMetadata(): Promise<MiniAppManifest> {
   }
 
   // Get the domain from the URL (without https:// prefix)
-  const domain = new URL(APP_URL).hostname;
-  console.log('Using domain for manifest:', domain);
+  // const domain = new URL(APP_URL).hostname;
 
   const secretEnvVars = getSecretEnvVars();
   if (!secretEnvVars) {
@@ -137,7 +136,10 @@ export async function getMiniAppMetadata(): Promise<MiniAppManifest> {
       webhookUrl: APP_WEBHOOK_URL,
       description: APP_DESCRIPTION,
       primaryCategory: APP_PRIMARY_CATEGORY,
-      tags: APP_TAGS
+      tags: APP_TAGS,
+      requiredChains: [
+        'eip155:42220'
+      ]
     },
   };
 }

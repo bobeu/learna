@@ -6,7 +6,6 @@ import { getMiniAppEmbedMetadata } from "~/lib/utils";
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
-  console.log("JSON.stringify(getMiniAppEmbedMetadata())", JSON.stringify(getMiniAppEmbedMetadata()));
   return {
     title: APP_NAME,
     openGraph: {
