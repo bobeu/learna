@@ -90,7 +90,7 @@ export default function Educaster() {
         });
         const questionSize = dataRef.current.data.questions.length;
         setIndex((prev) => {
-            let next = prev + 1;
+            const next = prev + 1;
             if(next === questionSize){
                 // next = prev;
                 setQuizCompletion(true);

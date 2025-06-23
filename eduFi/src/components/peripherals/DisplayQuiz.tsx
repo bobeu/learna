@@ -41,12 +41,12 @@ export default function DisplayQuiz() {
             resetQuestionIndex();
         }
         return { questions, fiftyPercent, twentyFivePercent }
-    }, [questionIndex, selectedQuizData, timeLeft]);
+    }, [questionIndex, selectedQuizData, timeLeft, resetQuestionIndex]);
 
     React.useEffect(() => {
         setCount(true);
         clearSelectedData();
-    }, []);
+    }, [clearSelectedData]);
 
     // Update the timer
     React.useEffect(() => {

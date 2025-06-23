@@ -2,7 +2,6 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import GenerateKey from "../transactions/GenerateKey";
-import useStorage from "../hooks/useStorage";
 
 export default function GenerateUserKey({exit} : {exit: () => void}) {
     return(

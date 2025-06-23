@@ -22,8 +22,8 @@ export default function Message() {
     const inclusiveNone = (message: string) => message.endsWith('.none');
 
     React.useEffect(() => {
-        if(messages !== '') setmessage('');
-        if(errorMessage !== '') setError('');
+        setmessage('');
+        setError('');
     }, []);
 
     React.useEffect(() => {
