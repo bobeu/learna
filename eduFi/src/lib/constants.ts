@@ -20,7 +20,7 @@ export const APP_WEBHOOK_URL = process.env.NEXT_PUBLIC_NEYNAR_API_KEY && process
     : `${APP_URL}/api/webhook`;
 export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
 export const MINI_APP_METADATA = process.env.NEXT_PUBLIC_MINI_APP_METADATA;
-console.log("MINI_APP_METADATA", MINI_APP_METADATA)
+// console.log("MINI_APP_METADATA", MINI_APP_METADATA)
 
 export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string}[] = [
     {
