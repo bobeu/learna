@@ -17,7 +17,6 @@ interface MiniAppMetadata {
   description?: string;
   primaryCategory?: string;
   tags?: string[];
-  screenshotUrls: string[]
 };
 
 interface MiniAppManifest {
@@ -35,7 +34,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getSecretEnvVars() {
   const seedPhrase = process.env.SEED_PHRASE as string;
-  const fid = process.env.NEXT_PUBLIC_FID;
+  const fid = process.env.FID;
   
   if (!seedPhrase || !fid) {
     return null;
@@ -65,15 +64,15 @@ export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   };
 }
 
-export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
+export async function getMiniAppMetadata(): Promise<MiniAppManifest> {
   // First check for MINI_APP_METADATA in .env and use that if it exists
-  if (process.env.NEXT_PUBLIC_MINI_APP_METADATA) {
+  if (process.env.MINI_APP_METADATA) {
     try {
-      const metadata = JSON.parse(process.env.NEXT_PUBLIC_MINI_APP_METADATA);
+      const metadata = JSON.parse(process.env.MINI_APP_METADATA);
       console.log('Using pre-signed mini app metadata from environment');
       return metadata;
     } catch (error) {
-      console.warn('Failed to parse NEXT_PUBLIC_MINI_APP_METADATA from environment:', error);
+      console.warn('Failed to parse MINI_APP_METADATA from environment:', error);
     }
   }
 
@@ -90,38 +89,42 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
     console.warn('No seed phrase or FID found in environment variables -- generating unsigned metadata');
   }
 
-  let accountAssociation;
-  if (secretEnvVars) {
-    // Generate account from seed phrase
-    const account = mnemonicToAccount(secretEnvVars.seedPhrase);
-    const custodyAddress = account.address;
+  // let accountAssociation;
+  // if (secretEnvVars) {
+  //   // Generate account from seed phrase
+  //   const account = mnemonicToAccount(secretEnvVars.seedPhrase);
+  //   const custodyAddress = account.address;
 
-    const header = {
-      fid: parseInt(secretEnvVars.fid),
-      type: 'custody',
-      key: custodyAddress,
-    };
-    const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
+  //   const header = {
+  //     fid: parseInt(secretEnvVars.fid),
+  //     type: 'custody',
+  //     key: custodyAddress,
+  //   };
+  //   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
 
-    const payload = {
-      domain
-    };
-    const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64url');
+  //   const payload = {
+  //     domain
+  //   };
+  //   const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64url');
 
-    const signature = await account.signMessage({ 
-      message: `${encodedHeader}.${encodedPayload}`
-    });
-    const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
+  //   const signature = await account.signMessage({ 
+  //     message: `${encodedHeader}.${encodedPayload}`
+  //   });
+  //   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
-    accountAssociation = {
-      header: encodedHeader,
-      payload: encodedPayload,
-      signature: encodedSignature
-    };
-  }
+  //   accountAssociation = {
+  //     header: encodedHeader,
+  //     payload: encodedPayload,
+  //     signature: encodedSignature
+  //   };
+  // }
 
   return {
-    accountAssociation: accountAssociation,
+    accountAssociation:  {
+      header: "eyJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4M0EwMTA5MDVEY0Q3MkY0YTc4YTc3ZjU2MzYwMTc4MEFGQWU1NjUyRiIsImZpZCI6OTQwOTI5fQ==",
+      payload: "eyJkb21haW4iOiJsZWFybmEudmVyY2VsLmFwcCJ9",
+      signature: "MHhhOTY0ZmVmZWIzMmU3YmU3YTczYWRmNDlhNmVkMzdjM2E2ODRiNzA5ZTc1MWQ4Nzk3YWFjNzhkNzVjZDY4MDM5MzU5YTlhYzM5YzRiZDUxMWJjYjcyYjMwMmI4Yzc5YTgyODQ0ZTE5MmNjOGZiYjVmODY2ZGJhZWU2YWFjMGU1ODFj"
+    },
     frame: {
       version: "1",
       name: APP_NAME ?? "Educaster",
@@ -134,8 +137,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       webhookUrl: APP_WEBHOOK_URL,
       description: APP_DESCRIPTION,
       primaryCategory: APP_PRIMARY_CATEGORY,
-      tags: APP_TAGS,
-      screenshotUrls: SCREENSHOT_URLS
+      tags: APP_TAGS
     },
   };
 }
