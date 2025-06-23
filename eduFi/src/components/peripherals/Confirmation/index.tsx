@@ -87,11 +87,12 @@ export const Confirmation :
 
         await refetch();
         callback({message: '', errorMessage: ''});
+        toggleLoading(false);
         const timeoutObj = setTimeout(() => {
-            toggleLoading(false);
             setcompletedTask('');
+            toggleDrawer(false);
         }, 4000);
-        return clearTimeout(timeoutObj);
+        clearTimeout(timeoutObj);
     };
 
     // When error occurred, run this function
