@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getFarcasterMetadata } from '../../../lib/utils';
+import { getMiniAppMetadata } from '../../../lib/utils';
 
 export async function GET() {
   try {
-    const config = await getFarcasterMetadata();
+    const config = await getMiniAppMetadata();
     return NextResponse.json(config);
   } catch (error) {
     console.error('Error generating metadata:', error);
