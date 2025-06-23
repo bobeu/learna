@@ -13,9 +13,9 @@ const Error = () => {
     );
 }
 
-export default function Message() {
+export default function Message({toggleDrawer} : {toggleDrawer: (arg: boolean) => void}) {
     const { currentPath, messages, errorMessage, taskCompleted, setpath, getFunctions } = useStorage();
-    const { clearData, setError, setmessage, toggleLoading } = getFunctions();
+    const { clearData, setError, setmessage, } = getFunctions();
 
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
@@ -28,11 +28,11 @@ export default function Message() {
 
     React.useEffect(() => {
         if(taskCompleted === '') {
-            toggleLoading(false);
+            toggleDrawer(false);
             clearData();
             if(currentPath !== 'profile') setpath('profile');
         }
-    }, [taskCompleted, currentPath, toggleLoading, clearData, setpath]);
+    }, [taskCompleted, currentPath, toggleDrawer, clearData, setpath]);
     
     return(
         <React.Fragment>

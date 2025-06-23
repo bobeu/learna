@@ -53,8 +53,12 @@ export const Confirmation :
                 //   signerUuid: user?.signer_uuid,
                 //   text,
                 // });
-                console.log("Response: ", response);
-                setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+                // console.log("Response: ", response);
+                if(response?.cast?.hash) {
+                    setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+                } else{
+                    setmessage('Cast publish failed!');
+                }
             }
         } catch (err) {
         //   const { message } = (err as AxiosError).response?.data as ErrorRes;
@@ -84,9 +88,10 @@ export const Confirmation :
         await refetch();
         callback({message: '', errorMessage: ''});
         const timeoutObj = setTimeout(() => {
+            toggleLoading(false);
             setcompletedTask('');
         }, 4000);
-        clearTimeout(timeoutObj);
+        return clearTimeout(timeoutObj);
     };
 
     // When error occurred, run this function
@@ -261,7 +266,7 @@ export const Confirmation :
             title={ !loading? 'Transaction request' : 'Transaction sent' }
         >
             <div className="space-y-4 text-center">
-                <Message />
+                <Message toggleDrawer={toggleDrawer} />
                 <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"cyan"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
