@@ -35,7 +35,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getSecretEnvVars() {
   const seedPhrase = process.env.SEED_PHRASE as string;
-  const fid = process.env.FID;
+  const fid = process.env.NEXT_PUBLIC_FID;
   
   if (!seedPhrase || !fid) {
     return null;
@@ -67,13 +67,13 @@ export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
 
 export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
   // First check for MINI_APP_METADATA in .env and use that if it exists
-  if (process.env.MINI_APP_METADATA) {
+  if (process.env.NEXT_PUBLIC_MINI_APP_METADATA) {
     try {
-      const metadata = JSON.parse(process.env.MINI_APP_METADATA);
+      const metadata = JSON.parse(process.env.NEXT_PUBLIC_MINI_APP_METADATA);
       console.log('Using pre-signed mini app metadata from environment');
       return metadata;
     } catch (error) {
-      console.warn('Failed to parse MINI_APP_METADATA from environment:', error);
+      console.warn('Failed to parse NEXT_PUBLIC_MINI_APP_METADATA from environment:', error);
     }
   }
 

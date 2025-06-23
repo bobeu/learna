@@ -15,11 +15,11 @@ export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
 export const APP_SPLASH_URL = `${APP_URL}/splash.png`;
 export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
 export const APP_BUTTON_TEXT = process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT;
-export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
-    ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
+export const APP_WEBHOOK_URL = process.env.NEXT_PUBLIC_NEYNAR_API_KEY && process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID 
+    ? `https://api.neynar.com/f/app/${process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
-export const FRAME_METADATA = process.env.FRAME_METADATA;
+export const MINI_APP_METADATA = process.env.NEXT_PUBLIC_MINI_APP_METADATA;
 
 export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string}[] = [
     {
