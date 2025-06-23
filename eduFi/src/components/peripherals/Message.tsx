@@ -13,23 +13,26 @@ const Error = () => {
     );
 }
 
-export default function Message({completed, setCompletion, closeDrawer} : {completed: boolean, closeDrawer: () => void, setCompletion: () => void}) {
+export default function Message() {
     const { currentPath, messages, errorMessage, taskCompleted, setpath, getFunctions } = useStorage();
-    const { clearData } = getFunctions();
+    const { clearData, setError, setmessage, toggleLoading } = getFunctions();
 
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
     const inclusiveNone = (message: string) => message.endsWith('.none');
 
     React.useEffect(() => {
-        if(completed) {
-            closeDrawer();
+        setmessage('');
+        setError('');
+    }, []);
+
+    React.useEffect(() => {
+        if(taskCompleted === '') {
+            toggleLoading(false);
             clearData();
-            if(taskCompleted !== 'generateKey'){
-                if(currentPath !== 'profile') setpath('profile');
-            }
+            if(currentPath !== 'profile') setpath('profile');
         }
-    }, [completed, taskCompleted, currentPath, setCompletion, closeDrawer, clearData, setpath]);
+    }, [taskCompleted, currentPath, toggleLoading, clearData, setpath]);
     
     return(
         <React.Fragment>
@@ -37,7 +40,7 @@ export default function Message({completed, setCompletion, closeDrawer} : {compl
                 display && 
                     <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-red-400' : 'border-cyan-500/20'} rounded-lg p-4 text-xs space-y-2 `}>
                         {
-                            completed? 
+                            taskCompleted === ''? 
                                 <MotionDisplayWrapper className="bg-cyan-500/30 flex justify-center p-4 rounded-xl">
                                     <Image 
                                         src={'/thankYou.svg'}

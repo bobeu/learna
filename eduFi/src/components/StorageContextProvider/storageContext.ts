@@ -36,7 +36,9 @@ export interface DataContextProps {
     setSelectedQuizData: (selected: string, level: string) => void;
     handleSelectAnswer: (arg: HandleSelectAnswerProps) => void;
     getFunctions: () => {
+        clearSelectedData: () => SelectedData;
         closeQuizComplettion: () => void,
+        resetQuestionIndex: () => void,
         setmessage: (arg: string) => void;
         clearData: () => void;
         callback: TransactionCallback;

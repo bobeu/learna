@@ -13,45 +13,51 @@ export default function DisplayQuiz() {
     const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * selectedQuizData.data.questions.length);
     const [count, setCount] = React.useState<boolean>(false);
 
-    const { closeQuizComplettion, clearData } = getFunctions();
+    const { closeQuizComplettion, clearData, resetQuestionIndex, clearSelectedData } = getFunctions();
     const handleViewScores = () => {
         closeQuizComplettion();
         setpath('scores');
     }
     const cancel = () => {
         clearData();
-        setCount(true);
+        // setCount(true);
         setpath('selectcategory');
     };
 
     const selectAnswer = (arg : HandleSelectAnswerProps) => {
-        setCount(false); 
+        if(count === false) return alert('Time Up');
         handleSelectAnswer(arg);
     }
 
     const {questions, fiftyPercent, twentyFivePercent } = React.useMemo(() => {
         const twentyFivePercent = Math.floor(timeLeft / 4);
         const fiftyPercent = Math.floor(timeLeft / 2);
-        const questions = selectedQuizData.data.questions.filter((_, index) => index === questionIndex);
+        let questions: { quest: string; options: Array<{ label: string; value: string; }>; correctAnswer: { label: string; value: string; }; userAnswer?: { label: string; value: string; }; }[] = [];
+        if(questionIndex < selectedQuizData.data.questions.length) {
+            questions = selectedQuizData.data.questions.filter((_, index) => index === questionIndex);
+
+        } else {
+            setCount(false);
+            resetQuestionIndex();
+        }
         return { questions, fiftyPercent, twentyFivePercent }
-    }, [questionIndex, selectedQuizData, timeLeft]);
+    }, [questionIndex, selectedQuizData, timeLeft, resetQuestionIndex]);
 
     React.useEffect(() => {
         setCount(true);
-    }, []);
+        clearSelectedData();
+    }, [clearSelectedData]);
 
     // Update the timer
     React.useEffect(() => {
-
         intervalId.current = setInterval(() => {
             if(count) setTimeLeft(timeLeft > 0? timeLeft - 1 : timeLeft);
             if(timeLeft === 0) {
                 setCount(false);
             }
         }, 1000);
-
         return () => clearInterval(intervalId.current);
-    }, [count, timeLeft, setTimeLeft]);
+    }, [count, timeLeft, setTimeLeft, setCount]);
 
     return(
         <MotionDisplayWrapper>
@@ -91,7 +97,7 @@ export default function DisplayQuiz() {
                                 <MotionDisplayWrapper key={index}> 
                                     <div className={`w-full place-items-center`}>
                                         <div className='w-full space-y-4'>
-                                            <h3 className='font-mono bg-cyan-500/50 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${index + 1}. ${question}`}</h3>
+                                            <h3 className='font-mono bg-cyan-500/50 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${questionIndex + 1}. ${question}`}</h3>
                                             <div className='w-full max-w-full overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg'>
                                                 {
                                                     options.map(({label, value}) => (
@@ -122,6 +128,7 @@ export default function DisplayQuiz() {
                             </div>
                     }
                 </MotionDisplayWrapper>
+
             </div>
         </MotionDisplayWrapper>
     );

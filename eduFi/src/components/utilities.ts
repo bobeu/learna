@@ -10,7 +10,7 @@ import { CAST_MESSAGES } from "~/lib/constants";
 
 export const TOTAL_WEIGHT = 100;
 export type Address = `0x${string}`;
-export type FunctionName = '' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner';
+export type FunctionName = '' | 'runall' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner' ;
 export interface SelectedQuizData {category: string, data: QuizDatum}
 export interface QuizDatum {
   category: string;

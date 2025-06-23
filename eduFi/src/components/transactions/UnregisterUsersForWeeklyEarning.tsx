@@ -40,8 +40,6 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            setDone={false}
-            lastStepInList='removeUsersForWeeklyEarning'
         />
     )
 }

@@ -35,8 +35,6 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            setDone={false}
-            lastStepInList='recordPoints'
         />
     )
 }

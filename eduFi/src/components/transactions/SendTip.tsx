@@ -41,8 +41,6 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            setDone={false}
-            lastStepInList='tip'
         />
     )
 }

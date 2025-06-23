@@ -160,7 +160,7 @@ export default function Scores() {
                         <div className="flex justify-center">
                             <div className="flex flex-col justify-center items-center space-y-2 bg-cyan-500/50 h-[150px] w-[150px] rounded-full text-sm place-items-center">
                                 <h3>Scores</h3>
-                                <h3 className="text-4xl font-black">{`${totalScores || 0}%`}</h3>
+                                <h3 className="text-4xl font-black">{`${totalScores === Infinity? 0 : totalScores}%`}</h3>
                             </div>
                         </div>
                         <div className="w-full grid grid-cols-1 gap-2">

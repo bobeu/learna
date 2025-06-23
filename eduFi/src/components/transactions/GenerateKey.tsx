@@ -8,7 +8,7 @@ import { Button } from '~/components/ui/button';
 import { parseUnits } from "viem";
 
 const VALUE = parseUnits('1', 16);
-export default function GenerateKey({ callback } : {callback?: () => void}) {
+export default function GenerateKey({functionName} : {functionName: FunctionName}) {
     const [openDrawer, setDrawer] = React.useState<boolean>(false);
 
     const toggleDrawer = (arg:boolean) => setDrawer(arg); 
@@ -28,7 +28,7 @@ export default function GenerateKey({ callback } : {callback?: () => void}) {
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['generateKey'],
+            functionNames: [functionName],
         });
 
         const learna = ca.Learna as Address;
@@ -44,7 +44,7 @@ export default function GenerateKey({ callback } : {callback?: () => void}) {
         });
 
         return { readTxObject, mutate };
-    }, [chainId, weekId, account]);
+    }, [chainId, weekId, account, functionName]);
 
     // Fetch the user's profile
     const { refetch } = useReadContracts({
@@ -97,9 +97,6 @@ export default function GenerateKey({ callback } : {callback?: () => void}) {
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
-                setDone={true}
-                lastStepInList='generateKey'
-                back={callback}
             />
         </MotionDisplayWrapper>
     )

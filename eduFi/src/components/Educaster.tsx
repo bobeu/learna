@@ -67,16 +67,12 @@ export default function Educaster() {
             if(questionsTaken.includes(data.identifier)) {
                 return alert('You already taken this quiz. Please select a different question');
             } else {
+                selectedDataRef.current.data = [];
                 setQuestionId((prev) => [...prev, data.identifier]);
-            }
-            if(selected !== dataRef?.current?.category && level !== dataRef?.current?.data.difficultyLevel) {
                 setQuizData({category: selected, data: filtered[0]});
                 setSelectedDataRef({category:selected, level, totalQuestions: filtered[0].questions.length});
                 setpath('quiz');
-            } else {
-                alert(`You have completed ${selected} category with ${level} level. Please choose different parameters`);
             }
-            
         }
     };
 
@@ -94,16 +90,14 @@ export default function Educaster() {
         });
         const questionSize = dataRef.current.data.questions.length;
         setIndex((prev) => {
-            let newIndex = prev + 1;
-            if(newIndex === questionSize) {
-                // newIndex = prev;
-                newIndex = 0;
+            const next = prev + 1;
+            if(next === questionSize){
+                // next = prev;
                 setQuizCompletion(true);
                 setShowFinishButton(true);
             }
-            return newIndex;
+            return next;
         });
-        
     };
 
     //Prepare utility functions to be used across child components
@@ -111,11 +105,15 @@ export default function Educaster() {
         const setmessage = (arg: string) => setMessage(arg);
         const setError = (arg:string) => setErrorMessage(arg);
         const toggleLoading = (arg: boolean) => setLoading(arg);
+        const resetQuestionIndex = () => setIndex(0);
+        const clearSelectedData = () => selectedDataRef.current = mockSelectedData;
         const setcompletedTask = (arg: FunctionName) => setCompletedTask(arg);
         const clearData = () => {
             setQuizData(emptyQuizData);
             setSelectedDataRef(mockSelectedData);
             setIndex(0);
+            setMessage('');
+            setErrorMessage('');
         }
         const closeQuizComplettion = () => setQuizCompletion(false);
         // const setTransactionDone = (arg: boolean) => setFirstTransactionDone(arg);
@@ -125,8 +123,9 @@ export default function Educaster() {
         };
 
         return {
-            // setTransactionDone,
+            clearSelectedData,
             closeQuizComplettion,
+            resetQuestionIndex,
             setmessage,
             setcompletedTask,
             toggleLoading,
@@ -254,18 +253,6 @@ export default function Educaster() {
         selectedDataRef.current.scoreParam = scoreParam;
 
     }, [questionIndex, selectedDataRef]);
-
-    // // Add Educaster to miniApp when the app is mounted
-    // React.useEffect(() => {
-    //     const add = async () => {
-    //       try {
-    //         await sdk.actions.addMiniApp();
-    //       } catch (err) {
-    //         console.error("Failed to add mini app:", err);
-    //       }
-    //     };
-    //     add();
-    //   }, []);
     
     return(
         <StorageContextProvider
@@ -295,7 +282,14 @@ export default function Educaster() {
             <LayoutContext>
                 <main>
                     <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-2 mb-2 rounded-xl '>
-                        <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-white rounded-full font-mono italic text-2xl'><span className='absolute left-[19px] font-black text-purple-700 rotate-180'>E</span><span className='font-mono absolute right-[21px] bottom-4'>C</span></h1>
+                        <Image 
+                            src={'/icon4.png'}
+                            alt={'Educaster logo'}
+                            width={70}
+                            height={70}
+                            className="rounded-xl"
+                        />
+                        {/* <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-white rounded-full font-mono italic text-2xl'><span className='absolute left-[19px] font-black text-purple-700 rotate-180'>E</span><span className='font-mono absolute right-[21px] bottom-4'>C</span></h1> */}
                         <div className=''>
                             <button onClick={() => setPath('sendtip')} className={`absolute top-8 right-[110px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
