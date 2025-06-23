@@ -93,8 +93,6 @@ export default function SendTip() {
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
-                setDone
-                lastStepInList="tip"
             />
         </MotionDisplayWrapper>
     );

@@ -41,7 +41,7 @@ export const Confirmation :
             totalScores,
             weekId
         };
-    }, [data]);
+    }, [data, wkId]);
 
     const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
         let text = altText;
