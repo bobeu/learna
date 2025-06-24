@@ -45,11 +45,11 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
      * @dev Allocate token to the learna contract
      * @param amount : Amount to allocate
      */
-    function allocate(uint amount) external returns(uint) {
+    function allocate(uint amount) external returns(bool) {
         address approvedSpender = mainContract;
         require(_msgSender() == approvedSpender, 'Only main'); 
         _transfer(address(this), approvedSpender, amount);
-        return balanceOf(approvedSpender);
+        return true;
     }
 
 }

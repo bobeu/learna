@@ -3,5 +3,5 @@
 pragma solidity 0.8.24;
 
 interface IGrowToken {
-    function allocate(uint amount) external returns(uint);
+    function allocate(uint amount) external returns(bool);
 }

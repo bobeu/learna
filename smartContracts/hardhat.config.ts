@@ -65,6 +65,11 @@ const config: HardhatUserConfig = {
       default: 0,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
+    },
+    admin2: {
+      default: 0,
+      44787: `privatekey://${PRIVATE_KEY as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
     }
   },
 

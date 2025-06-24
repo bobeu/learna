@@ -6,8 +6,8 @@ const { zeroAddress } = require('viem');
 
 // Configuration - directory files
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
-const REACT_DATA_PATH = '../frame/contractsData';
-const GLOBAL_OUTPUT_PATH = '../frame/contractsData/global.json';
+const REACT_DATA_PATH = '../eduFi/contractsData';
+const GLOBAL_OUTPUT_PATH = '../eduFi/contractsData/global.json';
 const approvedFunctions = ['checkligibility', 'recordPoints', 'removeUsersForWeeklyEarning', 'claimWeeklyReward', 'sortWeeklyReward', 'tip', 'getTippers', 'getUserData', 'owner', 'generateKey', 'getData', 'approve'];
 const readFunctions = ['getTippers', 'getUserData', 'owner', 'getData', 'checkligibility'];
 const functionsRequireArgUpdate = approvedFunctions;
