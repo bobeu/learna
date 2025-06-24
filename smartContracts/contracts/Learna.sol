@@ -364,8 +364,7 @@ contract Learna is Ownable, ReentrancyGuard {
         if(allowance > 0) {
             IERC20(token).transferFrom(owner, address(this), allowance);
         } else {
-            allowance = IGrowToken(token).allocate(amountInERC20);
-            require(allowance == amountInERC20, 'Allocation failed');
+            require(IGrowToken(token).allocate(amountInERC20), 'Allocation failed');
         }
         (uint256 nativeBalance, uint256 erc20Balance) = _getBalanceAfterDevShare(token);
         weekData[pastWeekId].claim = Claim({

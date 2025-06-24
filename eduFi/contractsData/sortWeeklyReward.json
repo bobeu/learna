@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x9761496D5a1968B0320bb0059e4D0fDA29861805",
+  "contractAddress": "0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB",
   "functionName": "sortWeeklyReward",
   "inputCount": 3,
   "requireArgUpdate": true,

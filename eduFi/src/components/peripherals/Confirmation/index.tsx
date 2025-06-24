@@ -222,10 +222,8 @@ export const Confirmation :
                     abi,
                     functionName,
                     address: contractAddress,
-                    account,
-                    args,
-                    dataSuffix,
-                    value
+                    account: account,
+                    args
     
                 });
                 hash = await waitForConfirmation(hash, '');

@@ -7,10 +7,9 @@ enum Mode { LOCAL, LIVE }
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts, network} = hre;
 	const {deploy} = deployments;
-	let {deployer, reserve, admin } = await getNamedAccounts();
+	let {deployer, reserve, admin, admin2 } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
-	// const transitionInterval = 24 * 60* 60; // 24 hours
-	const transitionInterval = 5 * 60; //5mins 
+	const transitionInterval = 7 * (24 * 60 * 60); //7 days 
 	const networkName = network.name
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 
@@ -21,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	*/
 	const learna = await deploy("Learna", {
 		from: deployer,
-		args: [[admin, deployer], transitionInterval, mode],
+		args: [[admin, admin2, deployer], transitionInterval, mode],
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${learna.address}`);
