@@ -1,5 +1,4 @@
 import claimWeeklyReward from "./contractsData/claimWeeklyReward.json";
-import getTippers from "./contractsData/getTippers.json";
 import getUserData from "./contractsData/getUserData.json";
 import generateKey from "./contractsData/generateKey.json";
 import getData from "./contractsData/getData.json";
@@ -20,7 +19,6 @@ const steps = [
     { key: 'generateKey', value: { ...generateKey } },
     { key: 'getData', value: { ...getData } },
     { key: 'checkligibility', value: { ...checkligibility } },
-    { key: 'getTippers', value: { ...getTippers } },
     { key: 'claimWeeklyReward', value: { ...claimWeeklyReward } },
 ];
 
