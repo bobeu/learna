@@ -28,7 +28,7 @@ export default function GenerateKey({functionName} : {functionName: FunctionName
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: [functionName],
+            functionNames: ['generateKey'],
         });
 
         const learna = ca.Learna as Address;
@@ -80,7 +80,7 @@ export default function GenerateKey({functionName} : {functionName: FunctionName
                 abi: txObject.abi,
                 args: [],
                 contractAddress: txObject.contractAddress as Address,
-                functionName: txObject.functionName as FunctionName,
+                functionName: functionName === 'runall'? functionName : 'generateKey',
                 requireArgUpdate: txObject.requireArgUpdate,
                 refetchArgs,
                 value: VALUE
