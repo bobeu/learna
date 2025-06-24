@@ -1,6 +1,8 @@
 ## Educaster
 
 An open-source quiz-based platform that rewards users for learning and participating in the web3 network.
+=======
+![image](https://github.com/user-attachments/assets/1d8cccbf-4707-4624-8f35-76002977708a)
 
 ## Problems
 Consistent learning has become a paramount and an essential key to success in any field most especially in the technology space. The system and method of learning play a crucial role in the journey of many. Due to fast-changing technologies, it's hard to keep abreast of information, and reading long-worded, near-endless materials and their enormous existence is becoming tough for everyone looking to consistently update their knowledge base.
