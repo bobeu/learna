@@ -40,6 +40,6 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
 }
 
 type RecordPointsProps = {
-    toggleDrawer: (arg:boolean) => void;
-    openDrawer: boolean;
+    toggleDrawer: (arg:number) => void;
+    openDrawer: number;
 };

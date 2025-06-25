@@ -7,8 +7,7 @@ import { zeroAddress } from 'viem';
 
 export default function SortWeeklyReward({token, amountInERC20, owner, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
     const { chainId } = useAccount();
-    const { getFunctions } = useStorage();
-    const { callback } = getFunctions();
+    const { callback } = useStorage();
 
     const { transactionData: td, args, contractAddress } = React.useMemo(() => {
         const filtered = filterTransactionData({
@@ -57,6 +56,6 @@ type SortWeeklyRewardProps = {
     token?: Address;
     owner?: Address;
     amountInERC20: bigint;
-    toggleDrawer: (arg:boolean) => void;
-    openDrawer: boolean;
+    toggleDrawer: (arg:number) => void;
+    openDrawer: number;
 };

@@ -9,28 +9,29 @@ import GenerateUserKey from "./GenerateUserKey";
 import Drawer from "./Confirmation/Drawer";
 
 interface WarnBeforeClearScoresAndDataProps {
-    openDrawer: boolean; 
-    toggleDrawer: (arg: boolean) => void
+    openDrawer: number; 
+    toggleDrawer: (arg: number) => void
     saveScore: () => void;
     exit: () => void;
 }
 
 function WarnBeforeClearScoresAndData({openDrawer, exit, toggleDrawer, saveScore}: WarnBeforeClearScoresAndDataProps) {
     const handleSaveScore = () => {
-        toggleDrawer(false);
+        toggleDrawer(0);
         saveScore();
     }
 
     const handleExit = () => {
-        toggleDrawer(false);
+        toggleDrawer(0);
         exit();
     }
 
     return(
         <Drawer
             openDrawer={openDrawer}
-            toggleDrawer={toggleDrawer}
+            setDrawerState={() => toggleDrawer(0)}
             title={"Are you sure want to exit?"}
+            onClickAction={() => toggleDrawer(0)}          
         >
             <div 
                 className="font-mono space-y-4 w md:flex flex-col justify-center md:w-[424px] md:h-[695px]"
@@ -56,17 +57,16 @@ function WarnBeforeClearScoresAndData({openDrawer, exit, toggleDrawer, saveScore
 }
 
 export default function Scores() {
-    const [openDrawer, setDrawer] = React.useState<boolean>(false);
-    const [showWarningBeforeExit, setShowWarning] = React.useState<boolean>(false);
+    const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [showWarningBeforeExit, setShowWarning] = React.useState<number>(0);
     const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
 
     const chainId = useChainId();
     const config = useConfig();
     const account = useAccount().address as Address;
-    const toggleDrawer = (arg:boolean) => setDrawer(arg);
+    const toggleDrawer = (arg:number) => setDrawer(arg);
     const backToScores = () => setShowGenerateUserKey(false);
-    const { setpath, weekId, getFunctions, data } = useStorage();
-    const { clearData, callback,  } = getFunctions();
+    const { setpath, clearData, callback, weekId, dataRef} = useStorage();
     const { 
         category,
         noAnswer,
@@ -76,7 +76,7 @@ export default function Scores() {
         weightPerQuestion,
         totalAnsweredCorrectly,
         totalAnsweredIncorrectly,
-    } = data.scoreParam;
+    } = dataRef.current.scoreParam;
 
     // Back to review page and clear the previously selected quiz data
     const exit = () => {
@@ -118,7 +118,7 @@ export default function Scores() {
         if(!result || !result?.[0].result) return alert('Please check your connection');
         const profile = result?.[0]?.result as Profile;
         if(!profile.haskey) setShowGenerateUserKey(true);
-        else setDrawer(true);
+        else setDrawer(1);
     }
 
     return(
@@ -173,7 +173,7 @@ export default function Scores() {
                                         </svg>
                                     </span>
                                 </Button>
-                                <Button onClick={() => setShowWarning(true)} variant={'outline'} className="w-2/4 bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
+                                <Button onClick={() => setShowWarning(1)} variant={'outline'} className="w-2/4 bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
                             </div>
                             <div className="place-items-center">
                                 <Button onClick={handleSaveScores} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>

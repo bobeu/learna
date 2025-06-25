@@ -4,27 +4,30 @@ import CategoryAndLevel from './CategoryAndLevel';
 import Image from 'next/image';
 import { MotionDisplayWrapper } from './MotionDisplayWrapper';
 import useStorage from '../hooks/useStorage';
+import { Category, DifficultyLevel } from '../utilities';
 
 export default function DisplayCategories() {
-    const [selectedCategory, setSelectedCategory] = React.useState<string>('');
-    const [difficultyLevel, setLevel] = React.useState<string>('');
+    const [selectedCategory, setSelectedCategory] = React.useState<Category>('');
+    const [difficultyLevel, setLevel] = React.useState<DifficultyLevel>('');
 
-    const { setpath, setSelectedQuizData, getFunctions } = useStorage();
+    const { setpath, clearData, setSelectedQuizData } = useStorage();
     const start = () => {
         if(selectedCategory === '') return alert('Please pick a category');
         if(difficultyLevel === '') return alert('Please pick a level');
         setSelectedQuizData(selectedCategory, difficultyLevel);
     }
 
-    // Update the category when user selects one
-    const filterCatgeory = (selected: string) => setSelectedCategory(selected);
+    const getCallbacks = React.useCallback(() => {
+        const pickCategory = (selected: Category) => setSelectedCategory(selected);
+        const  pickLevel = (selected: DifficultyLevel) => setLevel(selected);
+        return { pickCategory, pickLevel}
+    }, [setSelectedCategory, setLevel]);
 
-    // Update the difficulty level for the user whether beginner, intermediate or advance
-    const  setDifficultyLevel = (selected: string) => setLevel(selected);
 
     React.useEffect(() => {
-        getFunctions().clearData();
-    }, [getFunctions]);
+        clearData();
+    }, [clearData]);
+
     return( 
         <MotionDisplayWrapper className='space-y-4 mt-4'>
             <h1 className='text-sm font-medium '>{`To start the quiz, please set your preferences`}</h1>
@@ -32,8 +35,7 @@ export default function DisplayCategories() {
                 <CategoryAndLevel 
                     category={selectedCategory}
                     level={difficultyLevel}
-                    setCategory={filterCatgeory}
-                    setDifficultyLevel={setDifficultyLevel}
+                    getCallbacks={getCallbacks}
                 />
             </div>
             <div className='flex justify-center p-'>

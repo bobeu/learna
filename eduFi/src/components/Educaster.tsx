@@ -1,5 +1,5 @@
 import React from 'react';
-import { quizData } from '~/dummyData';
+// import { quizData } from '~/dummyData';
 import { MotionDisplayWrapper } from './peripherals/MotionDisplayWrapper';
 import Review from './peripherals/Review';
 import Scores from './peripherals/Scores';
@@ -7,22 +7,20 @@ import DisplayCategories from './peripherals/DisplayCategory';
 import DisplayQuiz from './peripherals/DisplayQuiz';
 import { StorageContextProvider } from './StorageContextProvider';
 import Home from './peripherals/Home';
+import { loadQuizData, mockScoresParam } from './utilities';
 import { 
     type Address, 
     filterTransactionData, 
     mockReadData, 
     type ReadData, 
     type TransactionCallback, 
-    emptyQuizData, 
     type TrxState,
-    type SelectedQuizData,
     mockSelectedData,
-    type HandleSelectAnswerProps,
-    type FunctionName,
     TOTAL_WEIGHT,
-    type Data, 
     type Path, 
-    type SelectedData
+    type SelectedData,
+    Category,
+    DifficultyLevel
 } from './utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import Profile from './peripherals/Profile';
@@ -34,106 +32,89 @@ import Image from 'next/image';
 import { LayoutContext } from './LayoutContext';
 
 export default function Educaster() {
-    const dataRef = React.useRef<SelectedQuizData>(emptyQuizData);
-    const selectedDataRef = React.useRef<SelectedData>(mockSelectedData);
+    const dataRef = React.useRef<SelectedData>(mockSelectedData);
     const [currentPath, setPath] = React.useState<Path>('home');
     const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
     const [questionIndex, setIndex] = React.useState<number>(0);
     const [messages, setMessage] = React.useState<string>('');
-    const [quizCompleted, setQuizCompletion] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
-    const [questionsTaken, setQuestionId] = React.useState<string[]>([]);
+    const [questionsId, setQuestionId] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState<boolean>(false);
-    const [taskCompleted, setCompletedTask] = React.useState<FunctionName>('');
 
     const chainId = useChainId();
     const config = useConfig();
-    const { isConnected, address } = useAccount();
+    const { quizData } = loadQuizData();
+    const { isConnected } = useAccount();
     const { user } = useNeynarContext();
-    const setpath = (arg: Path) => setPath(arg);
-    const setQuizData = (arg:SelectedQuizData) => dataRef.current = arg;
-    const setSelectedDataRef = ({category, level, totalQuestions, singleData} : {category?: string, level?: string, totalQuestions?: number, singleData?: Data}) => {
-        if(category) selectedDataRef.current.category = category;
-        if(level) selectedDataRef.current.difficultyLevel = level;
-        if(totalQuestions) selectedDataRef.current.totalQuestions = totalQuestions;
-        if(singleData) selectedDataRef.current.data.push(singleData);
+    const setpath = (arg: Path) => {
+        setPath(arg);
     }
-
-    // Update quiz data whenever an update to category is received
-    const setSelectedQuizData = (selected: string, level: string) => {
-        const filtered = quizData.filter(({category, difficultyLevel}) => category === selected && level === difficultyLevel);
-        if(filtered.length > 0) {
-            const data = filtered[0];
-            if(questionsTaken.includes(data.identifier)) {
-                return alert('You already taken this quiz. Please select a different question');
-            } else {
-                selectedDataRef.current.data = [];
-                setQuestionId((prev) => [...prev, data.identifier]);
-                setQuizData({category: selected, data: filtered[0]});
-                setSelectedDataRef({category:selected, level, totalQuestions: filtered[0].questions.length});
-                setpath('quiz');
-            }
-        }
+    const setmessage = (arg: string) => {
+        setMessage(arg);
+    }
+    const setError = (arg:string) => {
+        setErrorMessage(arg);
+    }
+    const toggleLoading = (arg: boolean) => {
+        setLoading(arg);
+    }
+    const resetQuestionIndex = () => {
+        setIndex(0);
+    }
+    const clearSelectedData = () => {
+        dataRef.current = mockSelectedData;
     };
-
-    // Update the quiz data each time an user selects an answer
-    const handleSelectAnswer = ({userSelect, question, userAnswer, correctAnswer, options} : HandleSelectAnswerProps) => {
-        setSelectedDataRef({
-            singleData: {
-                question,
-                userSelect,
-                userAnswer: userSelect? userAnswer! : {label: '', value: ''},
-                correctAnswer,
-                isCorrect: userAnswer?.label === correctAnswer.label,
-                options
-            }
-        });
-        const questionSize = dataRef.current.data.questions.length;
+    const finalizeQuiz = () => { 
+        setShowFinishButton(true);
+    }
+    const clearData = () => {
+        setIndex(0);
+        setMessage('');
+        setErrorMessage('');
+    }
+    const callback : TransactionCallback = (arg) => {
+        if(arg.message) setMessage(arg.message);
+        if(arg.errorMessage) setErrorMessage(arg.errorMessage);
+    };
+    const handleSelectAnswer = ({label} : {label: string}) => {
+        dataRef.current.data[questionIndex].userAnswer = label;
+        const questionSize = dataRef.current.data.length;
+        setQuestionId((prev) => [...prev, dataRef.current.data[questionIndex].hash]);
         setIndex((prev) => {
             const next = prev + 1;
-            if(next === questionSize){
-                // next = prev;
-                setQuizCompletion(true);
-                setShowFinishButton(true);
-            }
+            if(next === questionSize) setShowFinishButton(true);
             return next;
         });
     };
 
     //Prepare utility functions to be used across child components
-    const getFunctions = React.useCallback(() => {
-        const setmessage = (arg: string) => setMessage(arg);
-        const setError = (arg:string) => setErrorMessage(arg);
-        const toggleLoading = (arg: boolean) => setLoading(arg);
-        const resetQuestionIndex = () => setIndex(0);
-        const clearSelectedData = () => selectedDataRef.current = mockSelectedData;
-        const setcompletedTask = (arg: FunctionName) => setCompletedTask(arg);
-        const clearData = () => {
-            setQuizData(emptyQuizData);
-            setSelectedDataRef(mockSelectedData);
-            setIndex(0);
-            setMessage('');
-            setErrorMessage('');
+    const setSelectedQuizData = React.useCallback((selectedCategory: Category, level: DifficultyLevel) => {
+        const filteredCategory = quizData.filter(({category}) => category === selectedCategory);
+        const found = filteredCategory.map(({id, category, data}) => {
+            let k: SelectedData = {id: 0,category: '',selectedLevel: '', data: [], scoreParam: mockScoresParam};
+    
+            switch (level) {
+                case 'beginner':
+                    k = {id, category, selectedLevel:level, data: data.beginner.questions, scoreParam: mockScoresParam};
+                    break;
+                case 'intermediate':
+                    k = {id, category, selectedLevel:level, data: data.intermediate.questions, scoreParam: mockScoresParam};
+                    break;
+                case 'advanced':
+                    k = {id, category, selectedLevel:level, data: data.advanced.questions, scoreParam: mockScoresParam};
+                    break;
+                default:
+                    break;
+            }
+            return k;
+        });
+        if(found && found.length > 0){
+            dataRef.current = found[0];
+            setpath('quiz');
+        } else {
+            return alert(`No quiz found for ${selectedCategory} with ${level} level`);
         }
-        const closeQuizComplettion = () => setQuizCompletion(false);
-        // const setTransactionDone = (arg: boolean) => setFirstTransactionDone(arg);
-        const callback : TransactionCallback = (arg) => {
-            if(arg.message) setMessage(arg.message);
-            if(arg.errorMessage) setErrorMessage(arg.errorMessage);
-        };
-
-        return {
-            clearSelectedData,
-            closeQuizComplettion,
-            resetQuestionIndex,
-            setmessage,
-            setcompletedTask,
-            toggleLoading,
-            clearData,
-            callback,
-            setError,
-        }
-    }, [setLoading, setQuizCompletion, setIndex, setErrorMessage, setMessage]);
+    }, [dataRef, quizData, setpath]);
 
     // Build read transactions data
     const { readTxObject } = React.useMemo(() => {
@@ -224,47 +205,36 @@ export default function Educaster() {
         return node;
     }, [currentPath]);
 
-    // Update the state whenever user's connected address changes
-    React.useEffect(() => {
-        setQuestionId([]);
-        const { clearData, callback } = getFunctions();
-        clearData();
-        callback({message:'', errorMessage: ''});
-    }, [address, getFunctions]);
-
     // Update the sccores everytime a question is selected
     React.useEffect(() => {
-        const { category, difficultyLevel, totalQuestions, data: questionsAtempted, } = selectedDataRef.current;
+        const { category, selectedLevel, data: questionsAtempted, } = dataRef.current;
+        const totalQuestions = questionsAtempted.length;
         const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
-        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
         const totalAnsweredIncorrectly = totalQuestions - totalAnsweredCorrectly.length;
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        const noAnswer = questionsAtempted.filter(({userAnswer,}) => (!userAnswer || !userAnswer?.label));
-        const scoreParam = {
+        const noAnswer = questionsAtempted.filter(({userAnswer,}) => (!userAnswer || userAnswer === ''));
+        dataRef.current.scoreParam = {
             category,
             noAnswer: noAnswer.length,
-            difficultyLevel,
+            difficultyLevel: selectedLevel,
             totalScores,
             questionSize: totalQuestions,
             weightPerQuestion,
             totalAnsweredCorrectly,
             totalAnsweredIncorrectly,
-        }
-        selectedDataRef.current.scoreParam = scoreParam;
+        };
 
-    }, [questionIndex, selectedDataRef]);
+    }, [questionIndex, dataRef]);
     
     return(
         <StorageContextProvider
             value={{
                 handleStart: () => setpath('quiz'),
-                data: selectedDataRef.current,
+                dataRef,
                 questionIndex,
                 loading,
-                selectedQuizData: dataRef.current,
                 setpath,
-                quizCompleted,
-                taskCompleted,
                 currentPath,
                 messages,
                 state,
@@ -272,10 +242,18 @@ export default function Educaster() {
                 weekId,
                 owner,
                 refetch,
-                getFunctions,
-                setSelectedQuizData, 
+                questionsId,
+                setSelectedQuizData,
+                setmessage,
+                setError,
+                clearData,
+                toggleLoading,
+                callback,
                 handleSelectAnswer,
                 errorMessage,
+                finalizeQuiz,
+                clearSelectedData,
+                resetQuestionIndex,
                 showFinishButton
             }}
         >

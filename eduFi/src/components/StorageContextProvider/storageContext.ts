@@ -1,10 +1,10 @@
-import { Address, FunctionName, HandleSelectAnswerProps, State, TransactionCallback, WeekData, Path, QuizDatum, SelectedData } from "../utilities";
+import type { Address, State, TransactionCallback, WeekData, Path, SelectedData, Category, DifficultyLevel, VoidFunc} from "../utilities";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { ReadContractsErrorType } from "wagmi/actions";
 
 export interface NeynaDataContextProps {
     isAuthenticated: boolean;
-    setIsAuthenticated: () => void;
+    setIsAuthenticated: VoidFunc
 };
 
 export interface DataContextProps {
@@ -12,13 +12,10 @@ export interface DataContextProps {
     showFinishButton: boolean;
     errorMessage: string;
     currentPath: Path;
-    taskCompleted: FunctionName;
-    handleStart: () => void;
+    handleStart: VoidFunc
     questionIndex: number;
-    selectedQuizData: {category: string, data: QuizDatum};
-    data: SelectedData;
     loading: boolean;
-    quizCompleted: boolean;
+    // quizCompleted: boolean;
     setpath: (arg: Path) => void;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
@@ -33,18 +30,16 @@ export interface DataContextProps {
     owner: Address;
     weekData: WeekData[];
     weekId: bigint;
-    setSelectedQuizData: (selected: string, level: string) => void;
-    handleSelectAnswer: (arg: HandleSelectAnswerProps) => void;
-    getFunctions: () => {
-        clearSelectedData: () => SelectedData;
-        closeQuizComplettion: () => void,
-        resetQuestionIndex: () => void,
-        setmessage: (arg: string) => void;
-        clearData: () => void;
-        callback: TransactionCallback;
-        setError: (arg: string) => void;
-        toggleLoading: (arg: boolean) => void;
-        setcompletedTask: (arg: FunctionName) => void;
-    },
-    
+    questionsId: string[];
+    dataRef: React.RefObject<SelectedData>
+    setSelectedQuizData: (selectedCategory: Category, level: DifficultyLevel) => void;
+    clearSelectedData: VoidFunc
+    finalizeQuiz: () => void,
+    resetQuestionIndex: () => void,
+    setmessage: (arg: string) => void;
+    clearData: VoidFunc
+    callback: TransactionCallback;
+    setError: (arg: string) => void;
+    toggleLoading: (arg: boolean) => void;
+    handleSelectAnswer: ({label} : {label: string}) => void;
 }

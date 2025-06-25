@@ -6,8 +6,7 @@ import useStorage from '../hooks/useStorage';
 
 export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawer, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
-    const { getFunctions } = useStorage();
-    const { callback } = getFunctions();
+    const { callback } = useStorage();
 
     const { transactionData: td } = React.useMemo(() => {
         const filtered = filterTransactionData({
@@ -47,6 +46,6 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
 type RegisterUsersForWeeklyEarningProps = {
     weekId: bigint;
     user: Address;
-    toggleDrawer: (arg:boolean) => void;
-    openDrawer: boolean;
+    toggleDrawer: (arg:number) => void;
+    openDrawer: number;
 };

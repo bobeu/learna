@@ -20,28 +20,27 @@ import { APP_URL, RECEIVER } from "~/lib/constants";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
-        ({ getTransactions, openDrawer, toggleDrawer}) => 
+        ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, data, loading, refetch, getFunctions } = useStorage();
+    const { weekId: wkId, dataRef, loading, callback, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected, } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
     const { refetch: fetchBalance } = useBalance({config, chainId});
-
     const account = address as Address;
-    const { callback, setmessage, toggleLoading, setcompletedTask } = getFunctions();
 
     const { totalScores, weekId} = React.useMemo(() => {
-        const { totalQuestions, data: questionsAtempted, } = data;
+        const { data: questionsAtempted, } = dataRef.current;
+        const totalQuestions = questionsAtempted.length;
         const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
-        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, correctAnswer}) => userAnswer?.label === correctAnswer.label);
+        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
         const weekId = toBN(wkId.toString()).toNumber();
         return {
             totalScores,
             weekId
         };
-    }, [data, wkId]);
+    }, [dataRef, wkId]);
 
     const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
         let text = altText;
@@ -87,11 +86,16 @@ export const Confirmation :
 
         await refetch();
         callback({message: '', errorMessage: ''});
-        toggleLoading(false);
+        let timeout = 4000;
         const timeoutObj = setTimeout(() => {
-            setcompletedTask('');
-            toggleDrawer(false);
-        }, 4000);
+            // setcompletedTask('');
+            if(functionName === 'tip') {
+                timeout = 6000;
+                setmessage('Your tip was received. Check your profile for points earned');
+            }
+            toggleLoading(false);
+            toggleDrawer(0);
+        }, timeout);
         clearTimeout(timeoutObj);
     };
 
@@ -253,24 +257,30 @@ export const Confirmation :
 
     // Alert message component and reset messages when mounted
     React.useEffect(() => {
-        setcompletedTask('approve');
+        // setcompletedTask('approve');
         callback({message: "", errorMessage: ''});
         if(loading) toggleLoading(false);
     }, []);
 
     return (
         <Drawer 
-            openDrawer={openDrawer}
-            toggleDrawer={toggleDrawer}
-            title={ !loading? 'Transaction request' : 'Transaction sent' }
+            title={ !loading? (displayMessage || 'Transaction request') : 'Transaction sent' }
+            openDrawer={openDrawer} 
+            setDrawerState={toggleDrawer}
+            onClickAction={() => toggleDrawer(0)}
+            styles={{padding:'22px', borderLeft: '1px solid #2e3231', height: "100%", background: '#F9F4F4'}}
         >
-            <div className="space-y-4 text-center">
-                <Message toggleDrawer={toggleDrawer} />
-                <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"cyan"} /> : 'Proceed'}</Button>
+            <div className="border bg-purple-500/20 rounded-lg space-y-4">
+                <Message />
+                <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );
 }
+            // <div className="space-y-4 text-center">
+            //     <Message toggleDrawer={toggleDrawer} />
+            //     <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"cyan"} /> : 'Proceed'}</Button>
+            // </div>
 
 export type Transaction = {
     functionName: FunctionName,
@@ -283,7 +293,8 @@ export type Transaction = {
 };
 
 export interface ConfirmationProps {
-    toggleDrawer: (arg:boolean) => void;
-    openDrawer: boolean;
+    toggleDrawer: (arg:number) => void;
+    openDrawer: number;
     getTransactions: () => Transaction[];
+    displayMessage?: string;
 }

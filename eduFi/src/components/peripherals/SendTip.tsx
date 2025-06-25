@@ -11,17 +11,17 @@ import { parseUnits } from "viem";
 
 export default function SendTip() {
     const [ showSendCelo, setShowSendCelo ] = React.useState<boolean>(false);
-    const [ openDrawer, setDrawer ] = React.useState<boolean>(false);
+    const [ openDrawer, setDrawer ] = React.useState<number>(0);
     const [ celoAmount, setCeloAmount ] = React.useState<string>('0');
 
     const { setpath } = useStorage();
-    const toggleDrawer = () => setDrawer(!openDrawer);
+    const toggleDrawer = (arg: number) => setDrawer(arg);
     const backToHome = () => setpath('home');
     const chainId = useChainId();
     
     const handleSubmit = () => {
         if(celoAmount === '0') return alert('Please enter amount');
-        setDrawer(true);
+        setDrawer(1);
     }
 
     const getTransactions = React.useCallback(() => {
