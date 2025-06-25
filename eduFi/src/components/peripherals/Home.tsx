@@ -7,9 +7,8 @@ import { useMiniApp } from '@neynar/react';
 import ConnectButtons, { buttonProps } from "../ConnectButtons";
 
 export default function Home() {
-    const { setpath } = useStorage();
+    const { setpath, setmessage } = useStorage();
     const { isSDKLoaded, isInMiniApp, actions } = useMiniApp();
-    const { getFunctions } = useStorage();
 
     // Add Educaster to user's list of miniApps
     const handleAddMiniApp = async () => {
@@ -17,7 +16,7 @@ export default function Home() {
       const result = await actions.addMiniApp();
       if (result.notificationDetails) {
         // Mini app was added and notifications were enabled
-        getFunctions().setmessage(`Educaster added to miniApps`);
+        setmessage(`Educaster added to miniApps`);
       }
     };
     

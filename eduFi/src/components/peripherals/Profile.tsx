@@ -13,19 +13,18 @@ import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
 
 function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
-    const [openDrawer, setDrawer] = React.useState<boolean>(false);
+    const [openDrawer, setDrawer] = React.useState<number>(0);
     
     const chainId = useChainId();
     const config = useConfig();
-    const toggleDrawer = (arg:boolean) => setDrawer(arg);
+    const toggleDrawer = (arg:number) => setDrawer(arg);
     const { address, isConnected } = useAccount();
     const account = address as Address;
-    const handleClaim = () => setDrawer(true);
-    const { getFunctions } = useStorage();
+    const handleClaim = () => setDrawer(1);
+    const { callback } = useStorage();
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
-        const { callback } = getFunctions();
         const { contractAddresses: ca, transactionData: td} = filterTransactionData({
             chainId,
             filter: true,
@@ -45,7 +44,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
             }
         });
         return { readTxObject };
-    }, [chainId, account, weekId, getFunctions]);
+    }, [chainId, account, weekId, callback]);
 
     // Fetch user data 
     const { data } = useReadContracts({

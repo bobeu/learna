@@ -1,19 +1,30 @@
 import * as React from "react"
-import { categories, difficultyLevels } from "~/dummyData"
 import { Button } from "~/components/ui/button";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Category, DifficultyLevel } from "../utilities";
+import { loadQuizData } from "../utilities";
 
-export default function CategoryAndLevel( {category, level, setCategory, setDifficultyLevel} : {category: string, level: string, setCategory: (arg: string) => void, setDifficultyLevel: (arg: string) => void}) {
+interface CategoryAndLevelProps {
+    getCallbacks: () => {
+        pickCategory: (selected: Category) => void;
+        pickLevel: (selected: DifficultyLevel) => void;
+    },
+    category: string;
+    level: string;
+}
+export default function CategoryAndLevel( {category, level, getCallbacks} : CategoryAndLevelProps) {
     const [showCategory, setShowCategory] = React.useState<boolean>(false);
     const [showLevel, setShowLevel] = React.useState<boolean>(false);
+    const { pickCategory, pickLevel } = getCallbacks();
+    const { categories, difficultyLevels } = loadQuizData();
 
-    const handleSetLevel = (difLevel: string) => {
-        setDifficultyLevel(difLevel);
+    const handleSetLevel = (difLevel: DifficultyLevel) => {
+        pickLevel(difLevel);
         setShowLevel(false);
     };
 
-    const handleSetCategory = (category: string) => {
-        setCategory(category);
+    const handleSetCategory = (category: Category) => {
+        pickCategory(category);
         setShowCategory(false);
     };
 

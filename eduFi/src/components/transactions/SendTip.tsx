@@ -6,8 +6,7 @@ import useStorage from '../hooks/useStorage';
 
 export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
-    const { getFunctions } = useStorage();
-    const { callback } = getFunctions();
+    const { callback } = useStorage();
 
     const { transactionData: td } = React.useMemo(() => {
         const filtered = filterTransactionData({
@@ -47,6 +46,6 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
 
 type claimProps = {
     amount: bigint;
-    toggleDrawer: (arg:boolean) => void;
-    openDrawer: boolean;
+    toggleDrawer: (arg:number) => void;
+    openDrawer: number;
 };

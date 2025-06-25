@@ -3,61 +3,63 @@ import { MotionDisplayWrapper } from './MotionDisplayWrapper';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import Review from './Review';
-import { HandleSelectAnswerProps } from '../utilities';
+import { Quiz } from './Quiz';
+import { AnsweredQuiz } from './AnsweredQuiz';
 
 const MAX_TIME_PER_QUESTION_IN_SECS = 30;
 
 export default function DisplayQuiz() {
     const intervalId = React.useRef<string | number | NodeJS.Timeout | undefined>(undefined)
-    const { setpath, quizCompleted, handleSelectAnswer, questionIndex, showFinishButton, currentPath, selectedQuizData, getFunctions } = useStorage();
-    const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * selectedQuizData.data.questions.length);
+    const { 
+        setpath, 
+        questionIndex, 
+        showFinishButton, 
+        currentPath,
+        clearData, 
+        finalizeQuiz,
+        handleSelectAnswer, 
+        clearSelectedData, 
+        dataRef,  } = useStorage();
+    const [timeLeft, setTimeLeft] = React.useState<number>(MAX_TIME_PER_QUESTION_IN_SECS * dataRef.current.data.length);
     const [count, setCount] = React.useState<boolean>(false);
+    const noQuestionLeft = questionIndex === dataRef.current.data.length;
 
-    const { closeQuizComplettion, clearData, resetQuestionIndex, clearSelectedData } = getFunctions();
     const handleViewScores = () => {
-        closeQuizComplettion();
         setpath('scores');
     }
     const cancel = () => {
         clearData();
-        // setCount(true);
         setpath('selectcategory');
     };
 
-    const selectAnswer = (arg : HandleSelectAnswerProps) => {
+    const selectAnswer = (arg : {label: string}) => {
         if(count === false) return alert('Time Up');
         handleSelectAnswer(arg);
     }
 
-    const {questions, fiftyPercent, twentyFivePercent } = React.useMemo(() => {
+    const { fiftyPercent, twentyFivePercent } = React.useMemo(() => {
         const twentyFivePercent = Math.floor(timeLeft / 4);
         const fiftyPercent = Math.floor(timeLeft / 2);
-        let questions: { quest: string; options: Array<{ label: string; value: string; }>; correctAnswer: { label: string; value: string; }; userAnswer?: { label: string; value: string; }; }[] = [];
-        if(questionIndex < selectedQuizData.data.questions.length) {
-            questions = selectedQuizData.data.questions.filter((_, index) => index === questionIndex);
-
-        } else {
-            setCount(false);
-            resetQuestionIndex();
-        }
-        return { questions, fiftyPercent, twentyFivePercent }
-    }, [questionIndex, selectedQuizData, timeLeft, resetQuestionIndex]);
+        console.log("twentyFivePercent", twentyFivePercent)
+        console.log("fiftyPercent", fiftyPercent)
+        return { fiftyPercent, twentyFivePercent }
+    }, [timeLeft]);
 
     React.useEffect(() => {
         setCount(true);
-        clearSelectedData();
     }, [clearSelectedData]);
 
     // Update the timer
     React.useEffect(() => {
         intervalId.current = setInterval(() => {
             if(count) setTimeLeft(timeLeft > 0? timeLeft - 1 : timeLeft);
-            if(timeLeft === 0) {
+            if(timeLeft === 0 || noQuestionLeft) {
                 setCount(false);
+                finalizeQuiz();
             }
         }, 1000);
         return () => clearInterval(intervalId.current);
-    }, [count, timeLeft, setTimeLeft, setCount]);
+    }, [count, noQuestionLeft, timeLeft, setTimeLeft, setCount, finalizeQuiz]);
 
     return(
         <MotionDisplayWrapper>
@@ -66,16 +68,16 @@ export default function DisplayQuiz() {
                     <div className='space-y-2'>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%] ">Category</h3>
-                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{selectedQuizData.category}</h3>
+                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{dataRef.current.category}</h3>
                         </div>
                         <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                             <h3 className="w-[50%]">Difficulty level</h3>
-                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{selectedQuizData.data.difficultyLevel}</h3>
+                            <h3 className='w-[50%] bg-cyan-500/20 p-4 text-cyan-900 font-bold text-center'>{dataRef.current.selectedLevel}</h3>
                         </div>
                     </div>
                 </div>
 
-                <MotionDisplayWrapper className="rounded-lg max-h-[400px] overflow-auto space-y-2">
+                <MotionDisplayWrapper className="rounded-lg max-h-[400px] font-mono overflow-auto space-y-2">
                     <div className="flex justify-center items-center">
                         <h3 
                             className={
@@ -91,33 +93,8 @@ export default function DisplayQuiz() {
                             {timeLeft === 0? 'Timeup' : `Time Left: ${timeLeft}`}
                         </h3>
                     </div>
-                    {
-                        !quizCompleted && questions && questions.length > 0 && questions
-                            .map(({options, quest: question, userAnswer, correctAnswer}, index) => (
-                                <MotionDisplayWrapper key={index}> 
-                                    <div className={`w-full place-items-center`}>
-                                        <div className='w-full space-y-4'>
-                                            <h3 className='font-mono bg-cyan-500/50 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${questionIndex + 1}. ${question}`}</h3>
-                                            <div className='w-full max-w-full overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg'>
-                                                {
-                                                    options.map(({label, value}) => (
-                                                        <div 
-                                                            onClick={() => selectAnswer({options, correctAnswer, question, userAnswer: {label, value}, userSelect: true})} 
-                                                            key={value} 
-                                                            className={`w-full flex justify-start items-baseline ${userAnswer?.label === label? 'bg-cyan-500/30 font-semibold' : ''} gap-4 p-4 cursor-pointer text-cyan-900 text-sm hover:bg-cyan-500/20`}
-                                                        >
-                                                            <h3 className="font-semibold italic">{`(${label}). `}</h3>
-                                                            <h3 className='font-mono max-w-full overflow-auto'>{value}</h3>
-                                                        </div>
-                                                    ))
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                </MotionDisplayWrapper>
-                            ))
-                    }
-                    { quizCompleted && <Review /> }
+                    { noQuestionLeft? <Review /> : <Quiz selectAnswer={selectAnswer} /> }
+                    <AnsweredQuiz />
                 </MotionDisplayWrapper>
                 <MotionDisplayWrapper className='flex flex-col gap-2 justify-center items-center'>
                     <Button onClick={cancel} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Cancel</Button>

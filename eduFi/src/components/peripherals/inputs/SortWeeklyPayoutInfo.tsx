@@ -36,10 +36,10 @@ export default function SortWeeklyPayout() {
      * Parameter is optional
     */
     const [ tokenOwner, setTokenOwner ] = React.useState<Address>(zeroAddress);
-    const [ openDrawer, setDrawer ] = React.useState<boolean>(false);
+    const [ openDrawer, setDrawer ] = React.useState<number>(0);
 
     const { weekId } = useStorage();
-    const toggleDrawer = () => setDrawer(!openDrawer);
+    const toggleDrawer = (arg: number) => setDrawer(arg);
     const onChange = (e: React.ChangeEvent<HTMLInputElement>, tag: InputTag) => {
         e.preventDefault();
         const value = e.target.value;
@@ -95,7 +95,7 @@ export default function SortWeeklyPayout() {
     // Display transaction drawer
     const handleSort = () => {
         if(!argsReady) return alert('Please provide erc20 token amount');
-        toggleDrawer();
+        toggleDrawer(1);
     }
 
     return (

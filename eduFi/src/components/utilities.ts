@@ -7,11 +7,51 @@ import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
+import d from "../../quiz_with_hashes.json";
 
 export const TOTAL_WEIGHT = 100;
+export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | '';
 export type Address = `0x${string}`;
 export type FunctionName = '' | 'runall' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner' ;
-export interface SelectedQuizData {category: string, data: QuizDatum}
+export type VoidFunc = () => void;
+export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
+export interface QuestionObj {
+  question: string;
+  options: {label: string, value: string}[];
+  answer: string;
+  userAnswer: string;
+  hash: string;
+};
+
+export interface SelectedData {
+    id: number;
+    category: Category;
+    selectedLevel: DifficultyLevel;
+    data: QuestionObj[];
+    scoreParam: ScoresParam;
+}
+
+export interface QuizCategory {
+  beginner: {
+    questions: QuestionObj[];
+  };
+  intermediate: {
+    questions: QuestionObj[];
+  };
+  advanced: {
+    questions: QuestionObj[];
+  };
+};
+
+export interface SelectedQuizData {
+  category: Category, 
+  level: DifficultyLevel, 
+  questions: QuestionObj[];
+ 
+};
+export type QuizReturnData = QuizCategory[]; 
+
 export interface QuizDatum {
   category: string;
   id: number,
@@ -50,13 +90,13 @@ export interface Data {
   options: Array<Answer>;
 };
 
-export interface SelectedData {
-  category: string;
-  difficultyLevel: string;
-  data: Array<Data>;
-  totalQuestions: number;
-  scoreParam: ScoresParam;
-}
+// export interface SelectedData {
+//   category: string;
+//   difficultyLevel: string;
+//   data: Array<Data>;
+//   totalQuestions: number;
+//   scoreParam: ScoresParam;
+// }
 
 export type QuizData = Array<QuizDatum>;
 export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
@@ -161,7 +201,7 @@ export interface ScoresParam {
   totalScores: number;
   questionSize: number;
   weightPerQuestion: number;
-  totalAnsweredCorrectly: Data[];
+  totalAnsweredCorrectly: QuestionObj[];
   noAnswer: number;
   totalAnsweredIncorrectly: number;
 }
@@ -179,10 +219,10 @@ export const mockScoresParam : ScoresParam =  {
 
 export const mockSelectedData : SelectedData = {
   category: '',
-  difficultyLevel: '',
+  selectedLevel: '',
   data: [],
-  totalQuestions: 0,
-  scoreParam: mockScoresParam
+  scoreParam: mockScoresParam,
+  id: 0
 };
 
 export type ScoresReturn = () => ScoresParam;
@@ -250,15 +290,9 @@ export const mockReadData : ReadData = {
 }
 
 export const emptyQuizData : SelectedQuizData = {
-  category: '', 
-  data: {
-    category: '',
-    id: 0,
-    difficultyLevel: '',
-    taken: false,
-    questions: [],
-    identifier: ""
-  }
+  category: "",
+  level: "",
+  questions: []
 }
 /**
  * @dev Converts an argument to a bigInt value
@@ -369,7 +403,47 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
     }
 }
 
+/**
+ * @dev Fetch and format cast messages or text
+ * @param task : This is the function name that was performed
+ * @param weekId : WeekId, perhaps the current week
+ * @returns 
+ */
 export function getCastText(task: FunctionName, weekId: number) {
   const filtered = CAST_MESSAGES.filter(({key}) => key === task);
   return filtered?.[0]?.handler(weekId) || '';
+}
+
+/**
+ * @dev Load and prepare data from the JSON API
+ * @returns : Formatted data and categories
+ */
+export function loadQuizData() {
+  const difficultyLevels : DifficultyLevel[] = d.difficultylevels.split(',') as DifficultyLevel[];
+  const categories : Category[] = d.categories.split(',') as Category[];
+  let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
+  categories.forEach((category, id) => {
+    switch (category) {
+      case 'defi':
+        quizData.push({id, category, selectedLevel: '', data: d.defi});
+        break;
+      case 'reactjs':
+        quizData.push({id, category, selectedLevel: '', data: d.reactjs});
+        break;
+      case 'solidity':
+        quizData.push({id, category, selectedLevel: '', data: d.solidity});
+        break;
+      case 'wagmi':
+        quizData.push({id, category, selectedLevel: '', data: d.wagmi});
+        break;
+      default:
+        break;
+    }
+  });
+  assert(quizData.length === categories.length, "Data anomally occurred in utilities.ts");
+  return{
+    difficultyLevels,
+    categories,
+    quizData
+  };
 }

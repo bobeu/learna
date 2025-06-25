@@ -9,9 +9,9 @@ import { parseUnits } from "viem";
 
 const VALUE = parseUnits('1', 16);
 export default function GenerateKey({functionName} : {functionName: FunctionName}) {
-    const [openDrawer, setDrawer] = React.useState<boolean>(false);
+    const [openDrawer, setDrawer] = React.useState<number>(0);
 
-    const toggleDrawer = (arg:boolean) => setDrawer(arg); 
+    const toggleDrawer = (arg:number) => setDrawer(arg); 
     const { chainId, address } = useAccount();
     const account = address as Address;
     const config = useConfig();
@@ -44,7 +44,7 @@ export default function GenerateKey({functionName} : {functionName: FunctionName
         });
 
         return { readTxObject, mutate };
-    }, [chainId, weekId, account, functionName]);
+    }, [chainId, weekId, account]);
 
     // Fetch the user's profile
     const { refetch } = useReadContracts({
@@ -88,15 +88,16 @@ export default function GenerateKey({functionName} : {functionName: FunctionName
             return transaction;
         })
         return transactions;
-   }, [mutate, refetch]);
+   }, [mutate, functionName, refetch]);
 
     return(
         <MotionDisplayWrapper>
-            <Button onClick={() => toggleDrawer(true)} variant={'ghost'} className="text-cyan-900 font-bold ">Generate Key</Button>
+            <Button onClick={() => toggleDrawer(1)} variant={'ghost'} className="text-cyan-900 font-bold ">Generate Key</Button>
             <Confirmation 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
+                displayMessage={`Generating a key for week ${weekId}`}
             />
         </MotionDisplayWrapper>
     )
