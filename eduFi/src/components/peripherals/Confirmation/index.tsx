@@ -22,7 +22,7 @@ export const Confirmation :
     React.FC<ConfirmationProps> = 
         ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, dataRef, loading, callback, setmessage, toggleLoading, refetch } = useStorage();
+    const { weekId: wkId, dataRef, messages, errorMessage, loading, callback, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected, } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
@@ -42,27 +42,25 @@ export const Confirmation :
         };
     }, [dataRef, wkId]);
 
+    React.useEffect(() => {
+        callback({message: '', errorMessage: ''});
+    }, [callback]);
+
     const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
         let text = altText;
         if(task) text = getCastText(task, weekId);
-        try {
-            if(text !== '') {
-                const response = await sdk.actions.composeCast({text, embeds: [APP_URL]})
-                // const response = await axios.post<{ message: string }>("/api/cast", {
-                //   signerUuid: user?.signer_uuid,
-                //   text,
-                // });
-                // console.log("Response: ", response);
-                if(response?.cast?.hash) {
-                    setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
-                } else{
-                    setmessage('Cast publish failed!');
-                }
+        if(text !== '') {
+            const response = await sdk.actions.composeCast({text, embeds: [APP_URL]})
+            // const response = await axios.post<{ message: string }>("/api/cast", {
+            //   signerUuid: user?.signer_uuid,
+            //   text,
+            // });
+            // console.log("Response: ", response);
+            if(response?.cast?.hash) {
+                setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+            } else{
+                setmessage('Cast publish failed!');
             }
-        } catch (err) {
-        //   const { message } = (err as AxiosError).response?.data as ErrorRes;
-          setmessage("Casting failed");
-          alert('Casting failed');
         }
       };
 
@@ -84,18 +82,22 @@ export const Confirmation :
             }
         }
 
-        await refetch();
         callback({message: '', errorMessage: ''});
         let timeout = 4000;
         const timeoutObj = setTimeout(() => {
-            // setcompletedTask('');
-            if(functionName === 'tip') {
-                timeout = 6000;
-                setmessage('Your tip was received. Check your profile for points earned');
+            switch (functionName) {
+                case 'tip':
+                    timeout = 6000;
+                    setmessage('Your tip was received. Check your profile for points earned');
+                break;
+            default:
+                setmessage('Yay! transaction was successful ended');
+                break;
             }
             toggleLoading(false);
             toggleDrawer(0);
         }, timeout);
+            await refetch();
         clearTimeout(timeoutObj);
     };
 

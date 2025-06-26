@@ -40,8 +40,6 @@ export default function DisplayQuiz() {
     const { fiftyPercent, twentyFivePercent } = React.useMemo(() => {
         const twentyFivePercent = Math.floor(timeLeft / 4);
         const fiftyPercent = Math.floor(timeLeft / 2);
-        console.log("twentyFivePercent", twentyFivePercent)
-        console.log("fiftyPercent", fiftyPercent)
         return { fiftyPercent, twentyFivePercent }
     }, [timeLeft]);
 
