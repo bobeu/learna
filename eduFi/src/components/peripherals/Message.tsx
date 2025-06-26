@@ -14,7 +14,7 @@ const Error = () => {
 }
 
 export default function Message() {
-    const { messages, errorMessage, setError, setmessage } = useStorage();
+    const { messages, errorMessage } = useStorage();
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
     const isEnded = messages.includes('ended') || errorMessage.includes('ended');
