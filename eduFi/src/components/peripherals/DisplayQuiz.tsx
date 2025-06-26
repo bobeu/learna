@@ -27,7 +27,7 @@ export default function DisplayQuiz() {
         questionsId,
         clearData, 
         callback,
-        finalizeQuiz,
+        toggleShowFinishButton,
         handleSelectAnswer, 
         clearSelectedData,
         weekId, 
@@ -48,11 +48,11 @@ export default function DisplayQuiz() {
     // Scrutinize the questions for ones already answered by the user.
     const hasAnsweredAll = React.useMemo(() => {
         type N = 1 | 0;
-        let result : N[] = [];
+        let answeredAll : N[] = [];
         dataRef.current.data.forEach(({hash}) => {
-            if(questionsId.includes(hash)) result.push(1);
+            if(questionsId.includes(hash)) answeredAll.push(1);
         });
-        return result.includes(1)? true : false;
+        return answeredAll.includes(1)? true : false
     }, [dataRef]);
 
     // Build the transactions to run
@@ -90,6 +90,7 @@ export default function DisplayQuiz() {
     }
     const cancel = () => {
         clearData();
+        toggleShowFinishButton(false)
         setpath('selectcategory');
     };
 
@@ -115,11 +116,11 @@ export default function DisplayQuiz() {
             if(count && !hasAnsweredAll) setTimeLeft(timeLeft > 0? timeLeft - 1 : timeLeft);
             if(timeLeft === 0 || noQuestionLeft) {
                 setCount(false);
-                finalizeQuiz();
+                toggleShowFinishButton(true);
             }
         }, 1000);
         return () => clearInterval(intervalId.current);
-    }, [count, noQuestionLeft, timeLeft, setTimeLeft, setCount, finalizeQuiz]);
+    }, [count, noQuestionLeft, timeLeft, setTimeLeft, setCount, toggleShowFinishButton]);
 
     return(
         <MotionDisplayWrapper>
@@ -144,18 +145,18 @@ export default function DisplayQuiz() {
                                 <h3 
                                     className={
                                         `
-                                            w-full text-center rounded-xl p-4
+                                            w-full text-center rounded-lg p-4
                                             ${timeLeft < twentyFivePercent && 'bg-red-500/10 text-red-700'} 
                                             ${(timeLeft > twentyFivePercent && timeLeft < fiftyPercent) && 'bg-purple-500/10 text-purple-700'} 
                                             ${timeLeft > fiftyPercent && 'bg-cyan-500/10 text-cyan-700'} 
-                                            ${timeLeft === 0 && 'bg-red-500/10 text-red-700'}
+                                            ${timeLeft === 0 && 'text-red-900 bg-red-500/20'}
                                         `
                                     }
                                 >
                                     {timeLeft === 0? 'Timeup' : `Time Left: ${timeLeft} sec`}
                                 </h3>
                             </div>
-                            { (noQuestionLeft || !showFinishButton || timeLeft === 0)? <Review /> : <Quiz selectAnswer={selectAnswer} disabled={hasAnsweredAll || timeLeft === 0} hasAnsweredAll={hasAnsweredAll} /> }
+                            { (noQuestionLeft || showFinishButton || timeLeft === 0)? <Review /> : <Quiz selectAnswer={selectAnswer} disabled={hasAnsweredAll || timeLeft === 0} hasAnsweredAll={hasAnsweredAll} /> }
                             <AnsweredQuiz />
                         </MotionDisplayWrapper>
                 }

@@ -34,7 +34,7 @@ export interface DataContextProps {
     dataRef: React.RefObject<SelectedData>
     setSelectedQuizData: (selectedCategory: Category, level: DifficultyLevel) => void;
     clearSelectedData: VoidFunc
-    finalizeQuiz: () => void,
+    toggleShowFinishButton: (arg: BooleanConstructor) => void,
     resetQuestionIndex: () => void,
     setmessage: (arg: string) => void;
     clearData: VoidFunc

@@ -22,25 +22,23 @@ export const Confirmation :
     React.FC<ConfirmationProps> = 
         ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, dataRef, messages, errorMessage, loading, callback, setmessage, toggleLoading, refetch } = useStorage();
+    const { weekId: wkId, dataRef, loading, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected, } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
     const { refetch: fetchBalance } = useBalance({config, chainId});
     const account = address as Address;
+    const weekId = toBN(wkId.toString()).toNumber();
+    const { data: questionsAtempted, } = dataRef.current;
 
-    const { totalScores, weekId} = React.useMemo(() => {
-        const { data: questionsAtempted, } = dataRef.current;
+    const { totalScores } = React.useMemo(() => {
         const totalQuestions = questionsAtempted.length;
         const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
         const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        const weekId = toBN(wkId.toString()).toNumber();
-        return {
-            totalScores,
-            weekId
-        };
-    }, [dataRef, wkId]);
+        
+        return { totalScores };
+    }, [questionsAtempted]);
 
     React.useEffect(() => {
         callback({message: '', errorMessage: ''});
@@ -83,21 +81,25 @@ export const Confirmation :
         }
 
         callback({message: '', errorMessage: ''});
-        let timeout = 4000;
-        const timeoutObj = setTimeout(() => {
-            switch (functionName) {
-                case 'tip':
-                    timeout = 6000;
-                    setmessage('Your tip was received. Check your profile for points earned');
-                break;
+        console.log("Here1")
+        await refetch();
+        console.log("Here2")
+        switch (functionName) {
+            case 'tip':
+                setmessage('Your tip was received. Check your profile for points earned');
+            break;
             default:
                 setmessage('Yay! transaction was successful ended');
-                break;
-            }
+            break;
+        }
+        console.log("Here3")
+        const timeoutObj = setTimeout(() => {
+            console.log("Here4")
             toggleLoading(false);
             toggleDrawer(0);
-        }, timeout);
-            await refetch();
+            setpath('profile');
+            console.log("Here5")
+        }, 6000);
         clearTimeout(timeoutObj);
     };
 
@@ -272,9 +274,9 @@ export const Confirmation :
             onClickAction={() => toggleDrawer(0)}
             styles={{padding:'22px', borderLeft: '1px solid #2e3231', height: "100%", background: '#F9F4F4'}}
         >
-            <div className="border bg-purple-500/20 rounded-lg space-y-4">
+            <div className="space-y-4">
                 <Message />
-                <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
+                <Button variant={'outline'} disabled={loading} className="w-full bg-cyan-500 p-6 max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );

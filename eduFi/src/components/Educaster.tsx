@@ -64,8 +64,8 @@ export default function Educaster() {
     const clearSelectedData = () => {
         dataRef.current = mockSelectedData;
     };
-    const finalizeQuiz = () => { 
-        setShowFinishButton(true);
+    const toggleShowFinishButton = (arg: boolean) => { 
+        setShowFinishButton(arg);
     }
     const clearData = () => {
         setIndex(0);
@@ -251,7 +251,7 @@ export default function Educaster() {
                 callback,
                 handleSelectAnswer,
                 errorMessage,
-                finalizeQuiz,
+                toggleShowFinishButton,
                 clearSelectedData,
                 resetQuestionIndex,
                 showFinishButton
