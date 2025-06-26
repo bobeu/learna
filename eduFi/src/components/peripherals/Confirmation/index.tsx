@@ -22,25 +22,23 @@ export const Confirmation :
     React.FC<ConfirmationProps> = 
         ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, dataRef, messages, errorMessage, loading, callback, setmessage, toggleLoading, refetch } = useStorage();
+    const { weekId: wkId, dataRef, loading, callback, clearData, clearSelectedData, setpath, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected, } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
-    const { refetch: fetchBalance } = useBalance({config, chainId});
+    const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
     const account = address as Address;
+    const weekId = toBN(wkId.toString()).toNumber();
+    const { data: questionsAtempted, } = dataRef.current;
 
-    const { totalScores, weekId} = React.useMemo(() => {
-        const { data: questionsAtempted, } = dataRef.current;
+    const { totalScores } = React.useMemo(() => {
         const totalQuestions = questionsAtempted.length;
         const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
         const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        const weekId = toBN(wkId.toString()).toNumber();
-        return {
-            totalScores,
-            weekId
-        };
-    }, [dataRef, wkId]);
+        
+        return { totalScores };
+    }, [questionsAtempted]);
 
     React.useEffect(() => {
         callback({message: '', errorMessage: ''});
@@ -64,6 +62,21 @@ export const Confirmation :
         }
       };
 
+    // Finalize transaction by reseting the necessary varibles
+    const finalize = () => {
+         setTimeout(() => {
+            console.log("Here4");
+            callback({message: '', errorMessage: ''});
+            clearData();
+            clearSelectedData();
+            toggleLoading(false);
+            toggleDrawer(0);
+            setpath('profile');
+            console.log("Here5")
+        }, 6000);
+        clearTimeout(6000);
+    }
+
     // Wait for sometime before resetting the state after completing a transaction
     const setCompletion = async(functionName: FunctionName, useDivvi: boolean, hash: Address) => {
         const { submitReferralData } = getDivviReferralUtilities();
@@ -82,23 +95,16 @@ export const Confirmation :
             }
         }
 
-        callback({message: '', errorMessage: ''});
-        let timeout = 4000;
-        const timeoutObj = setTimeout(() => {
-            switch (functionName) {
-                case 'tip':
-                    timeout = 6000;
-                    setmessage('Your tip was received. Check your profile for points earned');
-                break;
+        await refetch();
+        switch (functionName) {
+            case 'tip':
+                setmessage('Your tip was received. Check your profile for points earned');
+            break;
             default:
                 setmessage('Yay! transaction was successful ended');
-                break;
-            }
-            toggleLoading(false);
-            toggleDrawer(0);
-        }, timeout);
-            await refetch();
-        clearTimeout(timeoutObj);
+            break;
+        }
+       finalize();
     };
 
     // When error occurred, run this function
@@ -128,7 +134,7 @@ export const Confirmation :
         }
     });
 
-    const waitForConfirmation = async(hash: `0x${string}`, functionName: FunctionName) => {
+    const waitForConfirmation = async(hash: `0x${string}`, functionName: FunctionName | string) => {
         const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
         callback({message: `Completed in ${functionName} task!`});
         return receipt.transactionHash;
@@ -144,19 +150,21 @@ export const Confirmation :
             to: viemAccountObj.address,
             value: parseUnits('2', 16)
         });
-        await waitForConfirmation(hash, '');
-        const celoBalance = (await fetchBalance()).data?.value;
-        console.log("CeloBalance", celoBalance)
-        if(celoBalance && celoBalance > 0n) {
-            const hash_ = await sendTransactionAsync({
-                account: viemAccountObj,
-                to: RECEIVER,
-                value: celoBalance
-            });
-            await waitForConfirmation(hash_, '');
-        }
+        await waitForConfirmation(hash, 'delegation'); 
+    }
 
-        
+    const forwardBalances = async() => {
+        const celoBalance = (await fetchBalance()).data?.value;
+        console.log("CeloBalance", celoBalance);
+        const amount = parseUnits('8', 15)
+        if(celoBalance && celoBalance > amount) {
+            const hash_ = await sendTransactionAsync({
+                account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+                to: RECEIVER,
+                value: amount
+            });
+            await waitForConfirmation(hash_, "Rebalancing completed");
+        }
     }
 
     const runTransaction = async(arg: Transaction) => {
@@ -165,76 +173,82 @@ export const Confirmation :
         const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
         let hash : Address = '0x';
-
-        switch (functionName) {
-            case 'recordPoints':
-                await delegateTransactionTask();
-                callback({message: "Now saving your points..."});
-                const recordArgs = [account, totalScores];
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                    args: recordArgs,
-                    dataSuffix
-                });
-                hash = await waitForConfirmation(hash, '');
-                await setCompletion(functionName, true, hash);
-                break;
-            
-            case 'generateKey':
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account,
-                    args: [],
-                    dataSuffix,
-                    value
-                });
-                hash = await waitForConfirmation(hash, '');
-                await setCompletion(functionName, true, hash);
-                break;
-
-            case 'runall':
-                hash = await writeContractAsync({
-                    abi,
-                    functionName: 'generateKey',
-                    address: contractAddress,
-                    account,
-                    args: [],
-                    dataSuffix,
-                    value
-                });
-                hash = await waitForConfirmation(hash, '');
-                await delegateTransactionTask();
-                callback({message: "Now saving your points..."});
-                const recordArg = [account, totalScores];
-                hash = await writeContractAsync({
-                    abi,
-                    functionName: 'recordPoints',
-                    address: contractAddress,
-                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                    args: recordArg,
-                    dataSuffix
-                });
-                hash = await waitForConfirmation(hash, '');
-                await setCompletion('recordPoints', true, hash);
+        try {
+            switch (functionName) {
+                case 'recordPoints':
+                    await delegateTransactionTask();
+                    callback({message: "Now saving your points..."});
+                    const recordArgs = [account, totalScores];
+                    hash = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address: contractAddress,
+                        account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+                        args: recordArgs,
+                        dataSuffix
+                    });
+                    hash = await waitForConfirmation(hash, '');
+                    await forwardBalances();         
+                    await setCompletion(functionName, true, hash);
+                    break;
                 
-                break;
-            default:
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account: account,
-                    args
+                case 'generateKey':
+                    hash = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address: contractAddress,
+                        account,
+                        args: [],
+                        dataSuffix,
+                        value
+                    });
+                    hash = await waitForConfirmation(hash, '');
+                    await setCompletion(functionName, true, hash);
+                    break;
     
-                });
-                hash = await waitForConfirmation(hash, '');
-                await setCompletion(functionName, true, hash);
-                break;
+                case 'runall':
+                    hash = await writeContractAsync({
+                        abi,
+                        functionName: 'generateKey',
+                        address: contractAddress,
+                        account,
+                        args: [],
+                        dataSuffix,
+                        value
+                    });
+                    hash = await waitForConfirmation(hash, '');
+                    await delegateTransactionTask();
+                    callback({message: "Now saving your points..."});
+                    const recordArg = [account, totalScores];
+                    hash = await writeContractAsync({
+                        abi,
+                        functionName: 'recordPoints',
+                        address: contractAddress,
+                        account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+                        args: recordArg,
+                        dataSuffix
+                    });
+                    hash = await waitForConfirmation(hash, '');
+                    await setCompletion('recordPoints', true, hash);
+                    
+                    break;
+                default:
+                    hash = await writeContractAsync({
+                        abi,
+                        functionName,
+                        address: contractAddress,
+                        account: account,
+                        args
+        
+                    });
+                    hash = await waitForConfirmation(hash, '');
+                    await setCompletion(functionName, true, hash);
+                    break;
+            }
+        } catch (error) {
+            console.log("ErrorOccured: ", error);
+            setmessage("Oops! We are unable to complete your transaction. Please send us feedback on Telegram @cryptopreach");
+            finalize();
         }
     }
 
@@ -248,7 +262,6 @@ export const Confirmation :
         if(!isConnected) return callback({errorMessage: 'Please connect wallet'});
         toggleLoading(true);
         const transactions = getTransactions();
-        console.log("account11",account);
 
         for( let i = 0; i < transactions.length; i++) {
             const {abi, value, functionName, contractAddress, args} = transactions[i];
@@ -259,7 +272,6 @@ export const Confirmation :
 
     // Alert message component and reset messages when mounted
     React.useEffect(() => {
-        // setcompletedTask('approve');
         callback({message: "", errorMessage: ''});
         if(loading) toggleLoading(false);
     }, []);
@@ -272,17 +284,13 @@ export const Confirmation :
             onClickAction={() => toggleDrawer(0)}
             styles={{padding:'22px', borderLeft: '1px solid #2e3231', height: "100%", background: '#F9F4F4'}}
         >
-            <div className="border bg-purple-500/20 rounded-lg space-y-4">
+            <div className="space-y-4">
                 <Message />
-                <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
+                <Button variant={'outline'} disabled={loading} className="w-full bg-cyan-500 p-6 max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
             </div>
         </Drawer>
     );
 }
-            // <div className="space-y-4 text-center">
-            //     <Message toggleDrawer={toggleDrawer} />
-            //     <Button variant={'outline'} disabled={loading} className="w-full max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"cyan"} /> : 'Proceed'}</Button>
-            // </div>
 
 export type Transaction = {
     functionName: FunctionName,

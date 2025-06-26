@@ -29,8 +29,8 @@ export default function DisplayCategories() {
     }, [clearData]);
 
     return( 
-        <MotionDisplayWrapper className='space-y-4 mt-4'>
-            <h1 className='text-sm font-medium '>{`To start the quiz, please set your preferences`}</h1>
+        <MotionDisplayWrapper className='space-y-4 mt-4 font-mono'>
+            <h1 className='text-sm font-medium'>{`To start the quiz, please set your preferences`}</h1>
             <div className=''>
                 <CategoryAndLevel 
                     category={selectedCategory}

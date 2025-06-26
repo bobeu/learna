@@ -7,11 +7,12 @@ import DisplayCategories from './peripherals/DisplayCategory';
 import DisplayQuiz from './peripherals/DisplayQuiz';
 import { StorageContextProvider } from './StorageContextProvider';
 import Home from './peripherals/Home';
-import { loadQuizData, mockScoresParam } from './utilities';
 import { 
     type Address, 
     filterTransactionData, 
     mockReadData, 
+    loadQuizData,
+    mockScoresParam,
     type ReadData, 
     type TransactionCallback, 
     type TrxState,
@@ -44,8 +45,9 @@ export default function Educaster() {
     const chainId = useChainId();
     const config = useConfig();
     const { quizData } = loadQuizData();
-    const { isConnected } = useAccount();
+    const { isConnected, } = useAccount();
     const { user } = useNeynarContext();
+
     const setpath = (arg: Path) => {
         setPath(arg);
     }
@@ -64,8 +66,8 @@ export default function Educaster() {
     const clearSelectedData = () => {
         dataRef.current = mockSelectedData;
     };
-    const finalizeQuiz = () => { 
-        setShowFinishButton(true);
+    const toggleShowFinishButton = (arg: boolean) => { 
+        setShowFinishButton(arg);
     }
     const clearData = () => {
         setIndex(0);
@@ -94,14 +96,14 @@ export default function Educaster() {
             let k: SelectedData = {id: 0,category: '',selectedLevel: '', data: [], scoreParam: mockScoresParam};
     
             switch (level) {
-                case 'beginner':
-                    k = {id, category, selectedLevel:level, data: data.beginner.questions, scoreParam: mockScoresParam};
+                case 'easy':
+                    k = {id, category, selectedLevel:level, data: data.easy.questions, scoreParam: mockScoresParam};
                     break;
-                case 'intermediate':
-                    k = {id, category, selectedLevel:level, data: data.intermediate.questions, scoreParam: mockScoresParam};
+                case 'medium':
+                    k = {id, category, selectedLevel:level, data: data.medium.questions, scoreParam: mockScoresParam};
                     break;
-                case 'advanced':
-                    k = {id, category, selectedLevel:level, data: data.advanced.questions, scoreParam: mockScoresParam};
+                case 'hard':
+                    k = {id, category, selectedLevel:level, data: data.hard.questions, scoreParam: mockScoresParam};
                     break;
                 default:
                     break;
@@ -114,14 +116,14 @@ export default function Educaster() {
         } else {
             return alert(`No quiz found for ${selectedCategory} with ${level} level`);
         }
-    }, [dataRef, quizData, setpath]);
+    }, [dataRef, quizData]);
 
     // Build read transactions data
     const { readTxObject } = React.useMemo(() => {
         const { contractAddresses: ca, transactionData: td } = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['getData', 'owner'],
+            functionNames: ['getData', 'owner', 'getUserData'],
             callback: (arg: TrxState) => {
                 if(arg.message) setMessage(arg.message);
                 if(arg.errorMessage) setErrorMessage(arg.errorMessage);
@@ -168,7 +170,7 @@ export default function Educaster() {
             weekId,
             state,
             owner,
-            weekData
+            weekData,
         }
     }, [result]);
 
@@ -251,14 +253,14 @@ export default function Educaster() {
                 callback,
                 handleSelectAnswer,
                 errorMessage,
-                finalizeQuiz,
+                toggleShowFinishButton,
                 clearSelectedData,
                 resetQuestionIndex,
                 showFinishButton
             }}
         >
             <LayoutContext>
-                <main className='relative'>
+                <main className='relative space-y-2'>
                     <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-4 rounded-xl '>
                         <div className="w-1/4/ flex justify-end items-baseline">
                             <Image 
