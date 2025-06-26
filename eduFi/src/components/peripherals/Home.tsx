@@ -5,10 +5,64 @@ import useStorage from "../hooks/useStorage";
 import { Swipeable } from "./Swipeable";
 import { useMiniApp } from '@neynar/react';
 import ConnectButtons, { buttonProps } from "../ConnectButtons";
+import { useChainId, useConfig, useAccount, useReadContracts  } from "wagmi";
+import { Address, filterTransactionData, Profile } from "../utilities";
+import GenerateUserKey from "./GenerateUserKey";
 
 export default function Home() {
-    const { setpath, setmessage } = useStorage();
+    const { setpath, setmessage, callback, weekId, currentPath } = useStorage();
     const { isSDKLoaded, isInMiniApp, actions } = useMiniApp();
+    const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
+    
+    const chainId = useChainId();
+    const config = useConfig();
+    const account = useAccount().address as Address;
+
+    // Build the transactions to run
+    const { readTxObject } = React.useMemo(() => {
+        const { contractAddresses: ca, transactionData: td} = filterTransactionData({
+            chainId,
+            filter: true,
+            functionNames: ['getUserData'],
+            callback
+        });
+
+        const learna = ca.Learna as Address;
+        const readArgs = [[account, weekId]];
+        const addresses = [learna, learna];
+        const readTxObject = td.map((item, i) => {
+            return{
+                abi: item.abi,
+                functionName: item.functionName,
+                address: addresses[i],
+                args: readArgs[i]
+            }
+        });
+
+        return { readTxObject };
+    }, [chainId, account, weekId, callback]);
+
+    // Fetch user data 
+    const { data: result } = useReadContracts({
+        config,
+        contracts: readTxObject
+    });
+    
+     const profile = result?.[0]?.result as Profile;
+
+    const handleNavigate = () => {
+        if(!result || !result?.[0].result) return alert('Please check your connection');
+        if(!profile){
+            return alert("Please connect your wallet first or check your connection");
+        } else {
+            if(profile.haskey){
+                setpath('selectcategory');
+            } else {
+                setShowGenerateUserKey(true);
+                alert("Please generate your key for the week to access your path");
+            }
+        }
+    }
 
     // Add Educaster to user's list of miniApps
     const handleAddMiniApp = async () => {
@@ -19,14 +73,20 @@ export default function Home() {
         setmessage(`Educaster added to miniApps`);
       }
     };
-    
+
+    React.useEffect(() => {
+        if(profile && !profile.haskey && currentPath !== "home"){
+            setpath('home');
+        }
+    }, [profile, currentPath, setpath]);
+
     return(
-        <React.Fragment>
+        <div className="space-y-4">
             <MotionDisplayWrapper className="w-full font-mono space-y-2 ">
-                <div className="text-white pt-4 border rounded-xl py-4 px-2 bg-cyan-500/80">
+                <div className="pt-4 border rounded-xl py-4 px-2 bg-cyan-500/60">
                     <h3 className="w-full text-center text-2xl font-bold">{'Learning just got better'}</h3>
-                    <h3 className="w-full text-center font-semibold text-white">{"Learn! Grow! Earn! Have fun!"}</h3>
-                    <h3 className="w-full text-center text-xs text-white">{"With Educaster, learning is fun"}</h3>
+                    <h3 className="w-full text-center font-semibold">{"Learn! Grow! Earn! Have fun!"}</h3>
+                    <h3 className="w-full text-center text-xs">{"With Educaster, learning is fun"}</h3>
                 </div>
                 <div className="p-4 bg-cyan-500/10 border rounded-xl text-cyan-600 font-semibold">
                     <h3 className="w-full flex justify-between gap-1 ">
@@ -42,26 +102,29 @@ export default function Home() {
                     </div>
                 </div>
             </MotionDisplayWrapper>
-            <MotionDisplayWrapper className="space-y-2  mt-4 font-mono">
-                { !isInMiniApp && <Button onClick={handleAddMiniApp}>Add Educaster to miniApps</Button>}
-                <div className="p-4 border rounded-lg space-y-2">
-                    <h3>Quickstart</h3>
-                    <Swipeable />
-                </div>
-                <ConnectButtons />
-                <div className="border rounded-lg p-4 space-y-1">
-                    <h3>Pick a learning path</h3>
-                    <Button { ...buttonProps({onClick: () => setpath('selectcategory')}) }>Quiz</Button>
-                </div>
-            </MotionDisplayWrapper>
+            {
+                showGenerateUserKey? <div className="border rounded-lg p-4 font-mono bg-cyan-500/10">
+                    <GenerateUserKey 
+                        exit={() => setShowGenerateUserKey(false)} 
+                        runAll={false}
+                    />
+                </div> : 
+                    <MotionDisplayWrapper className="space-y-2  mt-4 font-mono">
+                        { !isInMiniApp && <Button onClick={handleAddMiniApp}>Add Educaster to miniApps</Button>}
+                        <div className="p-4 border rounded-lg space-y-2">
+                            <h3>Quickstart</h3>
+                            <Swipeable />
+                        </div>
+                        <ConnectButtons />
+                        <div className="border rounded-lg p-4 space-y-1">
+                            <h3>Pick a learning path</h3>
+                            <Button { ...buttonProps({onClick: handleNavigate}) }>Quiz</Button>
+                        </div>
+                    </MotionDisplayWrapper>
+            }
         
 
-        </React.Fragment>
+        </div>
 
     );
 }
-
-
-{/* <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-<NeynarAuthButton className="right-4 top-4"/>
-</div> */}

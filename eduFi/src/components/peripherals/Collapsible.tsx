@@ -14,7 +14,7 @@ export default function CollapsibleComponent({ header, children} : { header: str
       className="flex flex-col gap-2"
     >
       <CollapsibleTrigger asChild>
-        <Button variant="outline" className={`flex justify-between items-center ${isOpen? 'bg-cyan-500/50' : 'bg-cyan-500/20'}`}>
+        <Button variant="outline" className={`flex justify-between items-center ${isOpen? 'bg-cyan-500/50' : 'bg-cyan-500/60'}`}>
           <h4>{isOpen? 'Close' : header}</h4>
           <ChevronsUpDown />
           <span className="sr-only">Toggle</span>

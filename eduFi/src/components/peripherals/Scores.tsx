@@ -4,7 +4,7 @@ import { Button } from "~/components//ui/button";
 import useStorage from "../hooks/useStorage";
 import RecordPoints from "../transactions/RecordPoints";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
-import { type Address, filterTransactionData, FunctionName, getCastText, type Profile, } from "../utilities";
+import { type Address, filterTransactionData, type Profile, } from "../utilities";
 import GenerateUserKey from "./GenerateUserKey";
 import Drawer from "./Confirmation/Drawer";
 import sdk from "@farcaster/frame-sdk";
@@ -68,7 +68,7 @@ export default function Scores() {
     const account = useAccount().address as Address;
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const backToScores = () => setShowGenerateUserKey(false);
-    const { setpath, clearData, callback, setmessage,  weekId, dataRef} = useStorage();
+    const { setpath, clearData, callback, setmessage, weekId, dataRef} = useStorage();
     const { 
         category,
         noAnswer,
@@ -138,7 +138,7 @@ export default function Scores() {
     return(
         <MotionDisplayWrapper>
             {
-                showGenerateUserKey? <GenerateUserKey exit={backToScores} /> : 
+                showGenerateUserKey? <GenerateUserKey exit={backToScores} runAll={true} /> : 
                     <MotionDisplayWrapper className="space-y-4 font-mono">
                         <h3 className="text-center text-2xl ">Score card</h3>
                         <div className="space-y-2">

@@ -99,9 +99,9 @@ export default function SortWeeklyPayout() {
     }
 
     return (
-        <MotionDisplayWrapper className='space-y-2 mt-2 font-mono'>
+        <MotionDisplayWrapper className='space-y-2 mt-2 font-mono border bg-cyan-500/20 rounded-lg p-4'>
             <div className='space-y-2 rounded-xl p-4 bg-cyan-300/5'>
-                <h3 className='font-semibold text-sm'>{`Set up week ${weekId} payout`}</h3>
+                <h3 className='font-semibold text-sm'>{`Set up week ${weekId} payout. (Only Admin)`}</h3>
                 {
                     sortContent.map(({id, type, required, label, placeHolder, tag}) => (
                         <Input 

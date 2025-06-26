@@ -134,23 +134,23 @@ export default function Stats() {
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
-            <div className="space-y-2">
-                <h3 className="text-sm font-bold pl-4">{`Current week ${weekCounter.toString()}`}</h3>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+            <div className="space-y-2 border bg-cyan-500/20 rounded-lg p-4">
+                <h3 className="text-sm font-bold pl-4">{`App stats`}</h3>
+                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Current Week</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{weekCounter.toString() || 0}</h3>
                 </div>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Transition interval</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${interval / 60 || 0} Minutes`}</h3>
                 </div>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Minimum token</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${formatValue(minimumToken.toString()).toStr || 0} Celo`}</h3>
                 </div> 
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 border bg-cyan-500/20 rounded-lg p-4">
                 <h3 className="text-sm font-semibold pl-4">Week Data</h3>
                 {
                     weekData.length && weekData.map((wkd, index) => (
@@ -166,7 +166,6 @@ export default function Stats() {
             </div>
             { (account.toLowerCase() === owner.toLowerCase()) && <SortWeeklyPayout />  }
             <div className="flex justify-center items-center gap-1 w-full">
-                {/* <Button disabled={disableClaimButton} onClick={handleClaim} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Claim</Button> */}
                 <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
             </div>
         </MotionDisplayWrapper>

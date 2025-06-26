@@ -48,12 +48,12 @@ export default function DisplayQuiz() {
     // Scrutinize the questions for ones already answered by the user.
     const hasAnsweredAll = React.useMemo(() => {
         type N = 1 | 0;
-        let answeredAll : N[] = [];
+        const answeredAll : N[] = [];
         dataRef.current.data.forEach(({hash}) => {
             if(questionsId.includes(hash)) answeredAll.push(1);
         });
         return answeredAll.includes(1)? true : false
-    }, [dataRef]);
+    }, [dataRef, questionsId]);
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -120,7 +120,7 @@ export default function DisplayQuiz() {
             }
         }, 1000);
         return () => clearInterval(intervalId.current);
-    }, [count, noQuestionLeft, timeLeft, setTimeLeft, setCount, toggleShowFinishButton]);
+    }, [count, noQuestionLeft, hasAnsweredAll, timeLeft, setTimeLeft, setCount, toggleShowFinishButton]);
 
     return(
         <MotionDisplayWrapper>
@@ -139,7 +139,7 @@ export default function DisplayQuiz() {
                 </div>
 
                 {
-                    showGenerateUserKey? <GenerateUserKey exit={backToScores} /> : 
+                    showGenerateUserKey? <GenerateUserKey exit={backToScores} runAll={false} /> : 
                         <MotionDisplayWrapper className="rounded-lg max-h-fit font-mono overflow-auto space-y-2">
                             <div className="flex justify-center items-center">
                                 <h3 

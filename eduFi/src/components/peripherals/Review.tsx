@@ -15,20 +15,24 @@ export default function Review() {
     const { dataRef } = useStorage();
 
   // Scrutinize the questions for ones already answered by the user.
-    const allNotAnswered = React.useMemo(() => {
-        type N = 1 | 0;
-        let noAnswered : N[] = [];
+    const didNotAttemptAllQuestions = () => {
+        type N = 'yes' | 'no';
+        const isEmptyAllThrough : N[] = [];
         dataRef.current.data.forEach(({userAnswer}) => {
-            if(userAnswer === '') noAnswered.push(1); 
+            if(userAnswer === '') {
+                isEmptyAllThrough.push('yes');
+            } else {
+                isEmptyAllThrough.push('no');
+            }
         });
-        return noAnswered.length === dataRef.current.data.length;
-    }, [dataRef]);
+        return !isEmptyAllThrough.includes('no');
+    };
 
   return (
     <MotionDisplayWrapper className=" rounded-lg space-y-3">
         <div className="flex justify-between items-center border rounded-lg">
             <h3 className="w-2/4 p-3">Your responses</h3>
-            {allNotAnswered && <h3 className={`text-red-900 text-center bg-red-500/20 p-3 text-xs w-2/4`}>Take but no answer was selected</h3>}
+            {didNotAttemptAllQuestions() && <h3 className={`text-red-900 text-center bg-red-500/20 p-3 text-xs w-2/4`}>Taken but no answer was selected</h3>}
         </div>
         <Carousel className="w-full relative p-4 bg-cyan-500 rounded-lg">
             <CarouselContent className="">

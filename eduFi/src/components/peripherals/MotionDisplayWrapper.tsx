@@ -5,7 +5,7 @@ export const MotionDisplayWrapper = ({ className, style, transitionDelay, childr
   return (
     <motion.div
       initial={{ zoom: "0%", opacity: 0}} 
-      animate={{ zoom: ["35%", "70%", "100%"], opacity: [0, 1]}}
+      animate={{ zoom: ["50%", "100%"], opacity: [0, 1]}}
       transition={{duration: 0.5, delay: transitionDelay || 0.5}}
       className={className}
       style={style}

@@ -15,7 +15,6 @@ export interface DataContextProps {
     handleStart: VoidFunc
     questionIndex: number;
     loading: boolean;
-    // quizCompleted: boolean;
     setpath: (arg: Path) => void;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
@@ -34,7 +33,7 @@ export interface DataContextProps {
     dataRef: React.RefObject<SelectedData>
     setSelectedQuizData: (selectedCategory: Category, level: DifficultyLevel) => void;
     clearSelectedData: VoidFunc
-    toggleShowFinishButton: (arg: BooleanConstructor) => void,
+    toggleShowFinishButton: (arg: boolean) => void,
     resetQuestionIndex: () => void,
     setmessage: (arg: string) => void;
     clearData: VoidFunc
