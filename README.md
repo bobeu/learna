@@ -90,4 +90,8 @@ To build for production, run
     npm run build
 ```
 
+## About us
 
+Educaster team, curious mind with a teacher’s touch and a developer’s discipline, we craft interactive quizzes like a sculptor carves marble — precisely, creatively, and always with purpose. Sometimes, we achieve this manually, and often with the help of Aritificial intelligence using a carefully and skillfully prepared prompt. We navigate subjects such as Solidity, ReactJS, DeFi, Wagmi, etc, with ease, blending logic and learning into bite-sized brilliance. When not hashing questions into unique hex codes (literally), We are building tools that teach, challenge, and empower others.
+
+Our team clearly got a strong grasp of dev skills and an interest in ed-tech-style systems. 

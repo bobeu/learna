@@ -94,14 +94,14 @@ export default function Educaster() {
             let k: SelectedData = {id: 0,category: '',selectedLevel: '', data: [], scoreParam: mockScoresParam};
     
             switch (level) {
-                case 'beginner':
-                    k = {id, category, selectedLevel:level, data: data.beginner.questions, scoreParam: mockScoresParam};
+                case 'easy':
+                    k = {id, category, selectedLevel:level, data: data.easy.questions, scoreParam: mockScoresParam};
                     break;
-                case 'intermediate':
-                    k = {id, category, selectedLevel:level, data: data.intermediate.questions, scoreParam: mockScoresParam};
+                case 'medium':
+                    k = {id, category, selectedLevel:level, data: data.medium.questions, scoreParam: mockScoresParam};
                     break;
-                case 'advanced':
-                    k = {id, category, selectedLevel:level, data: data.advanced.questions, scoreParam: mockScoresParam};
+                case 'hard':
+                    k = {id, category, selectedLevel:level, data: data.hard.questions, scoreParam: mockScoresParam};
                     break;
                 default:
                     break;
@@ -258,7 +258,7 @@ export default function Educaster() {
             }}
         >
             <LayoutContext>
-                <main className='relative'>
+                <main className='relative space-y-2'>
                     <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-4 rounded-xl '>
                         <div className="w-1/4/ flex justify-end items-baseline">
                             <Image 

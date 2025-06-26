@@ -31,7 +31,7 @@ export default function Review() {
                                                 <h1 className='font-mono bg-white p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${id + 1}. ${question}`}</h1>
                                                 <div className='w-full max-w-full bg-white overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg '>
                                                     {
-                                                        options.map(({label}) => (
+                                                        options.map(({label, value}) => (
                                                             <div 
                                                                 key={label} 
                                                                 className={` 
@@ -39,15 +39,15 @@ export default function Review() {
                                                                       text-sm
                                                                     ${userAnswer === label && userAnswer === answer? 'bg-purple-500/20 text-md font-bold italic text-purple-700' : ''} 
                                                                     ${userAnswer === label && userAnswer !== answer && 'bg-red-500/20 text-red-700'}
-                                                                    ${answer === label && 'bg-purple-500/20 text-md font-bold italic text-purple-700'}
+                                                                    ${answer === label && 'bg-purple-500/20 text-md font-bold italic text-purple-700 p-4'}
                                                                     w-full flex justify-start items-baseline gap-4 p-3 cursor-not-allowed text-cyan-900 
                                                                     `
                                                                 }
                                                             >
-                                                                <h3 className={`${userAnswer === label && userAnswer=== answer? 'absolute right-0 top-0 text-cyan-500 ' : 'hidden'}`}>Correct</h3>
+                                                                <h3 className={`${userAnswer === label && userAnswer=== answer? 'absolute right-0 top-0 text-purple-900 ' : 'hidden'}`}>Correct</h3>
                                                                 <h3 className={`${(!userAnswer || (userAnswer=== label && userAnswer!== answer ))? 'absolute right-0 top-0 text-red-500 ' : 'hidden'}`}>Wrong</h3>
                                                                 <h3 className="font-semibold italic">{`(${label}). `}</h3>
-                                                                <h3 className='font-mono max-w-full overflow-auto'>{label}</h3>
+                                                                <h3 className='font-mono max-w-full overflow-auto'>{value}</h3>
                                                             </div>
                                                         ))
                                                     }

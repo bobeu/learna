@@ -4,9 +4,11 @@ import { Button } from "~/components//ui/button";
 import useStorage from "../hooks/useStorage";
 import RecordPoints from "../transactions/RecordPoints";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
-import { type Address, filterTransactionData, type Profile, } from "../utilities";
+import { type Address, filterTransactionData, FunctionName, getCastText, type Profile, } from "../utilities";
 import GenerateUserKey from "./GenerateUserKey";
 import Drawer from "./Confirmation/Drawer";
+import sdk from "@farcaster/frame-sdk";
+import { APP_URL } from "~/lib/constants";
 
 interface WarnBeforeClearScoresAndDataProps {
     openDrawer: number; 
@@ -15,7 +17,7 @@ interface WarnBeforeClearScoresAndDataProps {
     exit: () => void;
 }
 
-function WarnBeforeClearScoresAndData({openDrawer, exit, toggleDrawer, saveScore}: WarnBeforeClearScoresAndDataProps) {
+export function WarnBeforeClearScoresAndData({openDrawer, exit, toggleDrawer, saveScore}: WarnBeforeClearScoresAndDataProps) {
     const handleSaveScore = () => {
         toggleDrawer(0);
         saveScore();
@@ -66,7 +68,7 @@ export default function Scores() {
     const account = useAccount().address as Address;
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const backToScores = () => setShowGenerateUserKey(false);
-    const { setpath, clearData, callback, weekId, dataRef} = useStorage();
+    const { setpath, clearData, callback, setmessage,  weekId, dataRef} = useStorage();
     const { 
         category,
         noAnswer,
@@ -83,6 +85,18 @@ export default function Scores() {
         clearData();
         setpath('selectcategory');
     }
+
+    // Publish your scores to Farcaster
+    const publishCast = async () => {
+        const text = `I earned ${totalScores} on Educaster`;
+        const response = await sdk.actions.composeCast({text, embeds: [APP_URL]})
+        if(response?.cast?.hash) {
+            setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+        } else{
+            setmessage('Cast publish failed!');
+        }
+    };
+    
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -165,7 +179,7 @@ export default function Scores() {
                         </div>
                         <div className="w-full grid grid-cols-1 gap-2">
                             <div className="flex justify-between items-center ">
-                                <Button onClick={handleSaveScores} variant={'outline'} className="flex justify-between items-center w-2/4 bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">
+                                <Button onClick={publishCast} variant={'outline'} className="flex justify-between items-center w-2/4 bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">
                                     <h3 className="w-full text-center">Share</h3> 
                                     <span>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -173,7 +187,7 @@ export default function Scores() {
                                         </svg>
                                     </span>
                                 </Button>
-                                <Button onClick={() => setShowWarning(1)} variant={'outline'} className="w-2/4 bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
+                                <Button onClick={totalScores === 0? exit : () => setShowWarning(1)} variant={'outline'} className="w-2/4 bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
                             </div>
                             <div className="place-items-center">
                                 <Button onClick={handleSaveScores} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Save My Scores</Button>

@@ -29,7 +29,7 @@ export default function CategoryAndLevel( {category, level, getCallbacks} : Cate
     };
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-2 font-mono">
             <div className="relative w-full flex flex-col">
                 <Button variant={'outline'} onClick={() => setShowCategory(!showCategory)} className={`w-full flex justify-between bg-cyan-500/30`}>
                     <h3>{category && category !== ''? category : 'Select a category'}</h3>

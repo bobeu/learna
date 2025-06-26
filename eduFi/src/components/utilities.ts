@@ -11,7 +11,7 @@ import d from "../../quiz_with_hashes.json";
 
 export const TOTAL_WEIGHT = 100;
 export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | '';
+export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
 export type FunctionName = '' | 'runall' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner' ;
 export type VoidFunc = () => void;
@@ -33,13 +33,13 @@ export interface SelectedData {
 }
 
 export interface QuizCategory {
-  beginner: {
+  easy: {
     questions: QuestionObj[];
   };
-  intermediate: {
+  medium: {
     questions: QuestionObj[];
   };
-  advanced: {
+  hard: {
     questions: QuestionObj[];
   };
 };
