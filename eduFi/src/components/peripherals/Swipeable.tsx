@@ -1,6 +1,7 @@
 "use-client"
 
 import * as React from "react";
+import Autoplay from "embla-carousel-autoplay"
 import Image from "next/image";
 import {
   Carousel,
@@ -13,7 +14,12 @@ import {
 export function Swipeable() {
   return (
     <Carousel 
-        className="w-full relative "
+      className="w-full relative "
+      plugins={[
+        Autoplay({
+          delay: 2000,
+        })
+      ]}
     >
       <CarouselContent className="">
         {carouselContent.map(({id, imageName, imageUrl, text}) => (

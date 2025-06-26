@@ -209,7 +209,7 @@ export default function Educaster() {
     React.useEffect(() => {
         const { category, selectedLevel, data: questionsAtempted, } = dataRef.current;
         const totalQuestions = questionsAtempted.length;
-        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
+        const weightPerQuestion = Math.ceil(TOTAL_WEIGHT / totalQuestions);
         const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
         const totalAnsweredIncorrectly = totalQuestions - totalAnsweredCorrectly.length;
         const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
@@ -218,7 +218,7 @@ export default function Educaster() {
             category,
             noAnswer: noAnswer.length,
             difficultyLevel: selectedLevel,
-            totalScores,
+            totalScores: totalScores > 100? 100 : totalScores,
             questionSize: totalQuestions,
             weightPerQuestion,
             totalAnsweredCorrectly,
@@ -258,28 +258,30 @@ export default function Educaster() {
             }}
         >
             <LayoutContext>
-                <main>
-                    <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-2 mb-2 rounded-xl '>
-                        <Image 
-                            src={'/icon4.png'}
-                            alt={'Educaster logo'}
-                            width={70}
-                            height={70}
-                            className="rounded-xl"
-                        />
+                <main className='relative'>
+                    <MotionDisplayWrapper className='w-full flex justify-between items-baseline uppercase text-sm text-center space-y-4 border bg-cyan-500 p-4 rounded-xl '>
+                        <div className="w-1/4/ flex justify-end items-baseline">
+                            <Image 
+                                src={'/icon4.png'}
+                                alt={'Educaster logo'}
+                                width={40}
+                                height={40}
+                                className="rounded-xl"
+                            />
+                        </div>
                         {/* <h1 className='relative h-[60px] w-[60px] flex justify-center items-center bg-white rounded-full font-mono italic text-2xl'><span className='absolute left-[19px] font-black text-purple-700 rotate-180'>E</span><span className='font-mono absolute right-[21px] bottom-4'>C</span></h1> */}
-                        <div className=''>
-                            <button onClick={() => setPath('sendtip')} className={`absolute top-8 right-[110px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                        <div className='w-3/4 flex justify-end items- gap-2'>
+                            <button onClick={() => setPath('sendtip')} className={`absolute top-4 right-[114px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'sendtip'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                                 </svg>
                             </button>
-                            <button onClick={() => setPath('stats')} className={` absolute top-8 right-[65px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'stats'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                            <button onClick={() => setPath('stats')} className={`absolute top-4 right-[64px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'stats'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                                 </svg>
                             </button>
-                            <button onClick={() => setPath('profile')} className={`absolute top-8 right-[20px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'profile'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
+                            <button onClick={() => setPath('profile')} className={`absolute top-4 right-[14px] h-[40px] w-[40px] flex justify-center items-center ${currentPath === 'profile'? 'bg-white/70 text-purple-700' : 'bg-white '} rounded-full font-mono`}>
                                 {
                                     user? 
                                         <Image 

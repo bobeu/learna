@@ -14,16 +14,11 @@ const Error = () => {
 }
 
 export default function Message() {
-    const { messages, errorMessage, setError, setmessage } = useStorage();
+    const { messages, errorMessage } = useStorage();
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
-    const inclusiveNone = (message: string) => message.endsWith('.none');
     const isEnded = messages.includes('ended') || errorMessage.includes('ended');
-
-    React.useEffect(() => {
-        setmessage('');
-        setError('');
-    }, [setError, setmessage]);
+    const formattedMessage = isEnded? messages.replace('ended', '').replace('tip', '') : messages;
     return(
         <React.Fragment>
             {
@@ -31,7 +26,7 @@ export default function Message() {
                     <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-red-400' : 'border-cyan-500/20'} rounded-lg p-4 text-xs space-y-2 `}>
                         {
                             isEnded && messages.includes('tip')?
-                                <MotionDisplayWrapper className="bg-cyan-500/30 flex justify-center p-4 rounded-xl">
+                                <MotionDisplayWrapper className=" flex justify-center p-4 rounded-xl">
                                     <h3>Thank You</h3>
                                     <Image 
                                         src={'/thankYou.svg'}
@@ -40,19 +35,17 @@ export default function Message() {
                                         height={100}
 
                                     />
-                                </MotionDisplayWrapper> : 
-                        
-                                <div className="font-mono">
+                                </MotionDisplayWrapper> : <div className="font-mono ">
                                     {
-                                        isError? <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
-                                            <Error />
-                                            <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
-                                        </MotionDisplayWrapper>
-                                            : 
-                                        <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-purple-700`}>
-                                            <h3 className="font-semibold">O</h3>
-                                            <h1 className="max-w-sm overflow-auto">{ inclusiveNone(messages)? messages.replace('.none', '') : messages }</h1>
-                                        </MotionDisplayWrapper>
+                                        isError?
+                                            <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-red-500`}>
+                                                <Error />
+                                                <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
+                                            </MotionDisplayWrapper> : 
+                                                <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-purple-700`}>
+                                                    <h3 className="font-semibold">O</h3>
+                                                    <h1 className="max-w-sm overflow-auto">{ formattedMessage }</h1>
+                                                </MotionDisplayWrapper>
                                     }
                                 </div>
                         }
