@@ -1,5 +1,6 @@
 ## Educaster
-An open-source quiz-based platform that rewards users for learning and participating in the web3 network.
+
+An open-source educational learn-and-earn initiative build on the Farcaster mini Apps.
 
 ![image](https://github.com/user-attachments/assets/1d8cccbf-4707-4624-8f35-76002977708a)
 

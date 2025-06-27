@@ -1,18 +1,20 @@
 import React from "react";
-import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
+import { MotionDisplayWrapper } from "../MotionDisplayWrapper";
 import { Button } from "~/components//ui/button";
-import useStorage from "../hooks/useStorage";
-import { Swipeable } from "./Swipeable";
+import useStorage from "../../hooks/useStorage";
+import { Swipeable } from "../Swipeable";
 import { useMiniApp } from '@neynar/react';
-import ConnectButtons, { buttonProps } from "../ConnectButtons";
+import ConnectButtons, { buttonProps } from "../../ConnectButtons";
 import { useChainId, useConfig, useAccount, useReadContracts  } from "wagmi";
-import { Address, filterTransactionData, Profile } from "../utilities";
-import GenerateUserKey from "./GenerateUserKey";
+import { Address, filterTransactionData, Profile } from "../../utilities";
+import GenerateUserKey from "../GenerateUserKey";
+import { WelcomeScreen } from "./WelcomeScreen";
 
 export default function Home() {
     const { setpath, setmessage, callback, weekId, currentPath } = useStorage();
     const { isSDKLoaded, isInMiniApp, actions } = useMiniApp();
     const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
+    const [showWelcomeScreen, setShowWelcomeScreen] = React.useState<number>(0);
     
     const chainId = useChainId();
     const config = useConfig();
@@ -51,7 +53,7 @@ export default function Home() {
      const profile = result?.[0]?.result as Profile;
 
     const handleNavigate = () => {
-        if(!result || !result?.[0].result) return alert('Please check your connection');
+        // if(!result || !result?.[0].result) return alert('Please check your connection');
         if(!profile){
             return alert("Please connect your wallet first or check your connection");
         } else {
@@ -59,7 +61,7 @@ export default function Home() {
                 setpath('selectcategory');
             } else {
                 setShowGenerateUserKey(true);
-                alert("Please generate your key for the week to access your path");
+                setShowWelcomeScreen(1);
             }
         }
     }
@@ -122,8 +124,12 @@ export default function Home() {
                         </div>
                     </MotionDisplayWrapper>
             }
-        
-
+            <WelcomeScreen 
+                openDrawer={showWelcomeScreen}
+                toggleDrawer={(arg: number) => setShowWelcomeScreen(arg)}
+            >
+                <h3 className="border p-4 rounded-lg bg-cyan-500/10">Every week is a refreshing opportunity on Educaster. Passkey gives you access to get rewarded for the time you spent learning and interacting</h3>
+            </WelcomeScreen>
         </div>
 
     );

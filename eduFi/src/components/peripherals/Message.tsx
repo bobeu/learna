@@ -42,10 +42,10 @@ export default function Message() {
                                                 <Error />
                                                 <h1 className="max-w-sm overflow-auto">{ errorMessage.length > 50? 'Trasaction Failed' : errorMessage }</h1>
                                             </MotionDisplayWrapper> : 
-                                                <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-purple-700`}>
-                                                    <h3 className="font-semibold">O</h3>
-                                                    <h1 className="max-w-sm overflow-auto">{ formattedMessage }</h1>
-                                                </MotionDisplayWrapper>
+                                            <MotionDisplayWrapper className={`w-full flex justify-start items-center gap-2 text-cyan-800`}>
+                                                <h3>o</h3>
+                                                <h1 className="max-w-sm overflow-auto">{ formattedMessage }</h1>
+                                            </MotionDisplayWrapper>
                                     }
                                 </div>
                         }

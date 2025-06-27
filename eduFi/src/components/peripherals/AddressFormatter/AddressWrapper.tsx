@@ -14,7 +14,7 @@ const AddressWrapper = (props: AddressProps ) => {
   const Copy = () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className={`w-${copyIconSize || '6'} h-${copyIconSize || '6'} cursor-pointer text-cyan-700`}
+      className={`w-${copyIconSize || 6} h-${copyIconSize || 6} cursor-pointer text-cyan-700`}
       viewBox="0 0 24 24"
       strokeWidth="3"
       stroke="orange"
@@ -39,7 +39,7 @@ const AddressWrapper = (props: AddressProps ) => {
     <div className={`flex justify-center items-center gap-1 ${overrideClassName}`}>
       <span ><Blockie account={wrapToText(account || zeroAddress)} size={size} /></span> 
       <a href={`https://xfiscan.com/address/${account}`} rel="noreferrer" target="_blank">{size ? getEllipsisTxt(wrapToText(account || zeroAddress), size) : account || zeroAddress}</a>
-      <span className="" >{(isClicked ? display && <Check /> : props?.display && <Copy />)}</span>
+      <span className="" >{(isClicked ? display && <Check /> : display && <Copy />)}</span>
     </div>
   );
 }
