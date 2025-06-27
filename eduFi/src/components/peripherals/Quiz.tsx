@@ -20,8 +20,8 @@ export function Quiz({ selectAnswer, disabled, hasAnsweredAll } : {selectAnswer:
   }
  
   return (
-    <MotionDisplayWrapper className="w-full relative  p-4 rounded-lg font-mono">
-      <Carousel className="w-full relative p-4 bg-cyan-500 rounded-lg">
+    <MotionDisplayWrapper className="w-full relative rounded-lg font-mono">
+      <Carousel className="w-full relative">
         <CarouselContent className="">
           {dataRef.current.data && dataRef.current.data.map(({options, userAnswer, question, hash}, index) => (
             <CarouselItem key={index} className="">
@@ -30,8 +30,8 @@ export function Quiz({ selectAnswer, disabled, hasAnsweredAll } : {selectAnswer:
                 <div className={`w-full h-fit`} hidden={questionIndex !== index}>
                   {
                     <div className='w-full space-y-4'> 
-                        <h3 className=' bg-white p-4 rounded-lg max-w-full overflow-auto font-bold text-cyan-800'>{`${index + 1 }. ${question}`}</h3>
-                        <div className='relative w-full max-w-full space-y-2 py-4 bg-white overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg'>
+                        <h3 className='font-mono bg-cyan-500/60 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${index + 1 }. ${question}`}</h3>
+                        <div className='w-full max-w-full overflow-auto grid grid-cols-1 space-y-2 border rounded-lg py-6'>
                           {
                             options.map(({label, value}, index) => (
                               <Button 
@@ -56,8 +56,8 @@ export function Quiz({ selectAnswer, disabled, hasAnsweredAll } : {selectAnswer:
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-0 bg-cyan-900 text-cyan-50"/>
-        <CarouselNext className="absolute bottom-0 right-0 bg-cyan-900 text-cyan-50"/>
+        <CarouselPrevious className="absolute -left-2  bg-cyan-900 text-cyan-50"/>
+        <CarouselNext className="absolute -right-2 bg-cyan-900 text-cyan-50"/>
       </Carousel>
     </MotionDisplayWrapper>
   )

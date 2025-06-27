@@ -4,7 +4,6 @@ import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import Review from './Review';
 import { Quiz } from './Quiz';
-import { AnsweredQuiz } from './AnsweredQuiz';
 import { WarnBeforeClearScoresAndData } from './Scores';
 import RecordPoints from "../transactions/RecordPoints";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
@@ -45,7 +44,6 @@ export default function DisplayQuiz() {
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const backToScores = () => setShowGenerateUserKey(false);
 
-    console.log("QuestionsID", questionsId);
     // Scrutinize the questions for ones already answered by the user.
     const hasAnsweredAll = React.useMemo(() => {
         type N = 'yes' | 'no';
@@ -159,7 +157,7 @@ export default function DisplayQuiz() {
                                 </h3>
                             </div>
                             { (noQuestionLeft || showFinishButton || timeLeft === 0)? <Review /> : <Quiz selectAnswer={selectAnswer} disabled={hasAnsweredAll || timeLeft === 0} hasAnsweredAll={hasAnsweredAll} /> }
-                            <AnsweredQuiz />
+                            {/* <AnsweredQuiz /> */}
                         </MotionDisplayWrapper>
                 }
                 <MotionDisplayWrapper className='flex flex-col gap-2 justify-center items-center'>
