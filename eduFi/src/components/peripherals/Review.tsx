@@ -34,7 +34,7 @@ export default function Review() {
             <h3 className="w-2/4 p-3">Your responses</h3>
             {didNotAttemptAllQuestions() && <h3 className={`text-red-900 text-center bg-red-500/20 p-3 text-xs w-2/4`}>Taken but no answer was selected</h3>}
         </div>
-        <Carousel className="w-full relative p-4 bg-cyan-500 rounded-lg">
+        <Carousel className="w-full relative">
             <CarouselContent className="">
                 {dataRef.current.data.map(({options, userAnswer, question, answer}, id) => (
                 <CarouselItem key={id} className="">
@@ -45,7 +45,7 @@ export default function Review() {
                                     <div key={question}>
                                         <div className={`w-full place-items-center`}>
                                             <div className='w-full space-y-4'>
-                                                <h1 className='font-mono bg-white p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${id + 1}. ${question}`}</h1>
+                                                <h1 className='font-mono bg-white border bg-cyan-500/60 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${id + 1}. ${question}`}</h1>
                                                 <div className='w-full max-w-full bg-white overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg py-4'>
                                                     {
                                                         options.map(({label, value}) => (
@@ -79,8 +79,8 @@ export default function Review() {
                 </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute -left-0 bg-cyan-900 text-cyan-50"/>
-            <CarouselNext className="absolute right-0 bg-cyan-900 text-cyan-50"/>
+            <CarouselPrevious className="absolute -left-0 bottom-0 bg-cyan-900 text-cyan-50"/>
+            <CarouselNext className="absolute right-0 bottom-0 bg-cyan-900 text-cyan-50"/>
         </Carousel>
     </MotionDisplayWrapper>
   )

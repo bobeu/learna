@@ -45,14 +45,16 @@ export default function DisplayQuiz() {
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const backToScores = () => setShowGenerateUserKey(false);
 
+    console.log("QuestionsID", questionsId);
     // Scrutinize the questions for ones already answered by the user.
     const hasAnsweredAll = React.useMemo(() => {
-        type N = 1 | 0;
-        const answeredAll : N[] = [];
+        type N = 'yes' | 'no';
+        const found : N[] = [];
         dataRef.current.data.forEach(({hash}) => {
-            if(questionsId.includes(hash)) answeredAll.push(1);
+            if(questionsId.includes(hash)) found.push('yes');
+            else found.push('no');
         });
-        return answeredAll.includes(1)? true : false
+        return !found.includes('no');
     }, [dataRef, questionsId]);
 
     // Build the transactions to run

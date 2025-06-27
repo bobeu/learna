@@ -32,7 +32,7 @@ export default function Drawer({ openDrawer, styles, setDrawerState, title, onCl
                 role="presentation"
                 onClick={() => toggleDrawer(0, setDrawerState)}
                 onKeyDown={() => toggleDrawer(0, setDrawerState)}
-                className='h-screen overflow-auto p-4 space-y-2 border'
+                className='overflow-auto p-4 space-y-2 border'
             >
                 <DrawerHeader title={title} onClickAction={onClickAction} />
                 { children }

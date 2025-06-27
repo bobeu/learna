@@ -8,7 +8,7 @@ import { Button } from '~/components/ui/button';
 import { parseUnits } from "viem";
 
 const VALUE = parseUnits('1', 16);
-export default function GenerateKey({functionName} : {functionName: FunctionName}) {
+export default function GenerateKey({functionName, buttonClassName} : {functionName: FunctionName, buttonClassName?: string}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
 
     const toggleDrawer = (arg:number) => setDrawer(arg); 
@@ -92,12 +92,12 @@ export default function GenerateKey({functionName} : {functionName: FunctionName
 
     return(
         <MotionDisplayWrapper>
-            <Button onClick={() => toggleDrawer(1)} variant={'ghost'} className="text-cyan-900 font-bold ">Generate Key</Button>
+            <Button onClick={() => toggleDrawer(1)} variant={'ghost'} className={`w-full ${buttonClassName || "text-cyan-900  bg-cyan-500/60"} font-bold `}>Get passkey</Button>
             <Confirmation 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
-                displayMessage={`Generating a key for week ${weekId}`}
+                displayMessage={`Hang on while we create your passkey for ${weekId}...`}
             />
         </MotionDisplayWrapper>
     )
