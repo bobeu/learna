@@ -37,16 +37,18 @@ export default function Review() {
         <Carousel className="w-full relative">
             <CarouselContent className="">
                 {dataRef.current.data.map(({options, userAnswer, question, answer}, id) => (
-                <CarouselItem key={id} className="">
+                <CarouselItem key={id}>
                     <MotionDisplayWrapper>
-                        <div className='space-y-2 overflow-auto'> 
+                        {/* { didNotAttemptAllQuestions() && <h3 className="top-40 left-40">Please select another question</h3>} */}
+                        {/* <div className={`space-y-2 overflow-auto ${didNotAttemptAllQuestions() && "opacity-10"}`}>  */}
+                        <div className={`space-y-2 overflow-auto`}> 
                             <MotionDisplayWrapper className="rounded-lg max-h-[400px] overflow-auto space-y-2">
                                 {
                                     <div key={question}>
                                         <div className={`w-full place-items-center`}>
                                             <div className='w-full space-y-4'>
-                                                <h1 className='font-mono bg-white border bg-cyan-500/60 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${id + 1}. ${question}`}</h1>
-                                                <div className='w-full max-w-full bg-white overflow-auto grid grid-cols-1 border border-opacity-10 rounded-lg py-4'>
+                                                <h1 className='font-mono bg-cyan-500/60 p-4 rounded-lg max-w-full overflow-auto font-semibold text-cyan-800'>{`${id + 1}. ${question}`}</h1>
+                                                <div className='w-full max-w-full bg-cyan-500/10 overflow-auto grid grid-cols-1 border rounded-lg py-4'>
                                                     {
                                                         options.map(({label, value}) => (
                                                             <div 
@@ -79,8 +81,8 @@ export default function Review() {
                 </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute -left-0 bottom-0 bg-cyan-900 text-cyan-50"/>
-            <CarouselNext className="absolute right-0 bottom-0 bg-cyan-900 text-cyan-50"/>
+            <CarouselPrevious className="absolute -left-2  bg-cyan-900 text-cyan-50"/>
+            <CarouselNext className="absolute -right-2 bg-cyan-900 text-cyan-50"/>
         </Carousel>
     </MotionDisplayWrapper>
   )
