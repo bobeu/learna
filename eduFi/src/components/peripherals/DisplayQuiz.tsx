@@ -4,7 +4,6 @@ import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import Review from './Review';
 import { Quiz } from './Quiz';
-import { AnsweredQuiz } from './AnsweredQuiz';
 import { WarnBeforeClearScoresAndData } from './Scores';
 import RecordPoints from "../transactions/RecordPoints";
 import { useAccount, useChainId, useConfig, useReadContracts } from "wagmi";
