@@ -12,16 +12,16 @@ describe("Learna", function () {
   
   describe("Claim reward", function () {
     it("Users should be able to claim reward from weekly payout", async function () {
-      const { learna, learnaAddr, growToken, signers : { deployer, deployerAddr, signer2, signer2Addr, signer1, signer1Addr },} = await loadFixture(deployContractsFixcture);
+      const { learna, learnaAddr, growToken, growTokenAddr, signers : { deployer, deployerAddr, signer2, signer2Addr, signer1, signer1Addr },} = await loadFixture(deployContractsFixcture);
       const amountInERC20 = parseEther('10000');
       const tipAmount = parseEther('80');
       const signer1PointsEarned = 70;
       const signer2PointsEarned = 90;
       const { state: {weekCounter: weekId} } = await learna.getData();
-      await getPassKey({signer: signer1, learna});
-      await getPassKey({signer: signer2, learna});
-      await recordPoints({deployer, learna, points:signer1PointsEarned, user: signer1Addr});
-      await recordPoints({deployer, learna, points:signer2PointsEarned, user: signer2Addr});
+      await getPassKey({signer: signer1, learna, token: growTokenAddr});
+      await getPassKey({signer: signer2, learna, token: growTokenAddr});
+      await recordPoints({deployer, learna, points:signer1PointsEarned, user: signer1Addr, token: growTokenAddr});
+      await recordPoints({deployer, learna, points:signer2PointsEarned, user: signer2Addr, token: growTokenAddr});
       const nativeBalOfLearnerB4 = await signer1.provider?.getBalance(learnaAddr);
       await sendTip({learna, signer: deployer, tipAmount});
       const nativeBalOfLearnerAfterTipping = await signer1.provider?.getBalance(learnaAddr);

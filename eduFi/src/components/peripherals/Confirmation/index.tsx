@@ -2,10 +2,9 @@
 
 import React from "react";
 import Drawer from './Drawer';
-import { Button } from "~/components/ui/button";
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId, useBalance } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { Address, FunctionName, getCastText, getDivviReferralUtilities, toBN, TOTAL_WEIGHT } from "~/components/utilities";
+import { getCastText, getDivviReferralUtilities, toBN, TOTAL_WEIGHT } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
@@ -17,12 +16,13 @@ import { celo } from "viem/chains";
 // import { ErrorRes } from "@neynar/nodejs-sdk/build/api";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL, RECEIVER } from "~/lib/constants";
+import { Address, FunctionName } from "../../../../types/quiz";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
         ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, dataRef, loading, callback, clearData, clearSelectedData, setpath, setmessage, toggleLoading, refetch } = useStorage();
+    const { weekId: wkId, dataRef, loading, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected, } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
@@ -67,8 +67,8 @@ export const Confirmation :
          setTimeout(() => {
             console.log("Here4");
             callback({message: '', errorMessage: ''});
-            clearData();
-            clearSelectedData();
+            // clearData();
+            // clearSelectedData();
             toggleLoading(false);
             toggleDrawer(0);
             setpath('profile');
@@ -286,7 +286,7 @@ export const Confirmation :
         >
             <div className="space-y-4">
                 <Message />
-                <Button variant={'outline'} disabled={loading} className="w-full bg-cyan-500 p-6 max-w-sm" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</Button>
+                <button disabled={loading} className="w-full flex-1 btn-primary flex items-center justify-center space-x-2" onClick={handleSendTransaction}>{loading? <Spinner color={"white"} /> : 'Proceed'}</button>
             </div>
         </Drawer>
     );
@@ -308,3 +308,24 @@ export interface ConfirmationProps {
     getTransactions: () => Transaction[];
     displayMessage?: string;
 }
+
+
+
+
+
+
+
+//   async publishQuizResult(score: number, totalPoints: number, quizTitle: string, fid: string): Promise<boolean> {
+//     const percentage = Math.round((score / totalPoints) * 100);
+//     let emoji = '🎯';
+    
+//     if (percentage >= 90) emoji = '🏆';
+//     else if (percentage >= 80) emoji = '🥇';
+//     else if (percentage >= 70) emoji = '🥈';
+//     else if (percentage >= 60) emoji = '🥉';
+
+//     const castText = `${emoji} Just completed "${quizTitle}" quiz!\n\nScore: ${score}/${totalPoints} (${percentage}%)\n\nTry it yourself! 🧠✨\n\n#Web3Quiz #Farcaster`;
+
+//     return await this.publishCast(castText, fid);
+//   }
+// }

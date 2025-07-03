@@ -11,17 +11,17 @@ describe("Learna", function () {
   
   describe("Should record weekly payout", function () {
     it("An admin should be able to add user to weekly earning payroll", async function () {
-      const { learna, signers : { deployer, signer1Addr, signer1 },} = await loadFixture(deployContractsFixcture);
+      const { learna, growTokenAddr, signers : { deployer, signer1Addr, signer1 },} = await loadFixture(deployContractsFixcture);
       const pointsEarned = 60;
       const { state : {weekCounter: weekId}} = await learna.getData();
 
       // Recording point without passkey should fail
-      await expect( recordPoints({deployer, learna, points:pointsEarned, user: signer1Addr}))
+      await expect( recordPoints({deployer, learna, points:pointsEarned, user: signer1Addr, token: growTokenAddr}))
       .to.be.revertedWith('No pass key');
 
       const initialProfile = await learna.getUserData(signer1Addr, weekId);
-      await getPassKey({signer: signer1, learna});
-      const {points, amountClaimedInERC20, amountClaimedInNative, claimed, haskey, passKey} = await recordPoints({deployer, learna, points:pointsEarned, user: signer1Addr});
+      await getPassKey({signer: signer1, learna, token: growTokenAddr});
+      const {points, amountClaimedInERC20, amountClaimedInNative, claimed, haskey, passKey} = await recordPoints({deployer, learna, points:pointsEarned, user: signer1Addr, token: growTokenAddr});
       expect(points === BigInt(pointsEarned)).to.be.true;
       expect(initialProfile.amountClaimedInERC20).to.be.eq(0n);
       expect(initialProfile.amountClaimedInNative).to.be.eq(0n);

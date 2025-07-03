@@ -1,6 +1,6 @@
 ## Educaster
 
-An open-source educational learn-and-earn initiative build on the Farcaster mini Apps.
+An open-source educational learn-and-earn initiative built on the Farcaster mini-apps.
 
 ![image](https://github.com/user-attachments/assets/1d8cccbf-4707-4624-8f35-76002977708a)
 

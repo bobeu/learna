@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Drawer as MuiDrawer, } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
-import { ToggleDrawer, VoidFunc } from '~/components/utilities';
 import DrawerHeader from './DrawerHeader';
+import { ToggleDrawer, VoidFunc } from '../../../../../types/quiz';
 
 const toggleDrawer : ToggleDrawer =
     (value: number, setState: (value: number) => void) =>
@@ -32,10 +32,12 @@ export default function Drawer({ openDrawer, styles, setDrawerState, title, onCl
                 role="presentation"
                 onClick={() => toggleDrawer(0, setDrawerState)}
                 onKeyDown={() => toggleDrawer(0, setDrawerState)}
-                className='overflow-auto p-4 space-y-2 border'
+                className='border min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 overflow-auto flex flex-col items-center justify-start gap-4 p-4'
             >
                 <DrawerHeader title={title} onClickAction={onClickAction} />
-                { children }
+                <div className="w-full glass-card rounded-3xl p-8  text-center mb-6">
+                    { children }
+                </div>
             </div>
         </MuiDrawer>    
     );

@@ -2,7 +2,7 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
-import { Address, filterTransactionData, formatValue, mockProfile, Profile as ProfileType, toBN, } from "../utilities";
+import { filterTransactionData, formatValue, mockProfile, toBN, } from "../utilities";
 import { useAccount, useChainId, useConfig, useDisconnect, useReadContracts } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
@@ -11,6 +11,10 @@ import CollapsibleComponent from "./Collapsible";
 import { useMiniApp, } from "@neynar/react";
 import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
+import { Address, Profile as ProfileType, } from "../../../types/quiz";
+import { ArrowLeft, ArrowRight, PlugZap } from "lucide-react";
+import CustomButton from "./CustomButton"
+import Wrapper2xl from "./Wrapper2xl";
 
 function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
@@ -139,9 +143,22 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
 
 
 export default function Profile() {
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+    
     const { weekId, setpath } = useStorage();
-    const backToHome = () => setpath('home');
-    const goToQuiz = () => setpath('selectcategory');
+
+    const toggleOpen = (arg: boolean) => {
+        setIsOpen(arg);
+    };
+
+    const backToHome = () => {
+        setpath('home');
+    };
+
+    const goToQuiz = () => {
+        setpath('selectcategory');
+    };
+
     const { context } = useMiniApp();
     const { disconnect } = useDisconnect();
     const { isConnected, address } = useAccount();
@@ -152,28 +169,54 @@ export default function Profile() {
     }, [weekId]);
 
     return(
-        <div className="space-y-2 grid grid-cols-1 font-mono">
-            <div className="w-full relative flex justify-between items-center p-4 border rounded-xl">
-                <h3 className="absolute top-0 text-xs ">Account</h3>
-                <AddressWrapper account={address || zeroAddress} size={5} display copyIconSize="md" />
-                { isConnected && <Button onClick={() => disconnect()} variant={'outline'} className="float-right text-cyan-700">Logout</Button>}
+        <Wrapper2xl>
+            <div className="space-y-6 grid grid-cols-1 ">
+                <div className="w-full relative flex justify-between items-center p-8 border rounded-2xl">
+                    {
+                        isConnected? <AddressWrapper account={address || zeroAddress} size={5} display copyIconSize="md" /> : <div>
+                            <div className="w-24 h-24 rounded-full border bg-purple-200 flex justify-center items-center">
+                                <PlugZap className="w-12 h-12 text-pink-500 animate-bounce-gentle" />
+                            </div>
+                            <h3>{"Not Connected To Any Wallet"}</h3>
+                        </div>
+                    }
+                    { isConnected && <Button onClick={() => disconnect()} variant={'outline'} className="float-right text-cyan-700">Logout</Button>}
+                </div>
+                <CustomButton
+                    onClick={goToQuiz}
+                    exit={false}
+                    disabled={false}
+                >
+                    <ArrowRight className="w-5 h-5" />
+                    <span>Take A Quiz</span>
+                </CustomButton>
+                <div className="w-full overflow-hidden md:overflow-auto border rounded-xl p-4 grid grid-cols-1-lg gap-2">
+                    {
+                        weekIds.map((wkId) => (
+                            <MotionDisplayWrapper 
+                                key={wkId}
+                            >
+                                <CollapsibleComponent 
+                                    header={`Week ${wkId}`}
+                                    isOpen={isOpen}
+                                    toggleOpen={toggleOpen}
+                                >
+                                    <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
+                                </CollapsibleComponent>
+                            </MotionDisplayWrapper>
+                        ))
+                    }
+                </div>
+                <CustomButton
+                    onClick={backToHome}
+                    exit={true}
+                    disabled={false}
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>Exit</span>
+                </CustomButton>
             </div>
-            <Button onClick={goToQuiz} variant={'outline'} className="w-full ">Start quiz</Button>
-            <div className="w-full grid grid-cols-1-lg space-y-1">
-                {
-                    weekIds.map((wkId) => (
-                        <MotionDisplayWrapper 
-                            key={wkId}
-                        >
-                            <CollapsibleComponent header={`Week ${wkId}`}>
-                                <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
-                            </CollapsibleComponent>
-                        </MotionDisplayWrapper>
-                    ))
-                }
-            </div>
-            <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
-        </div>
+        </Wrapper2xl>
     )
 
 }

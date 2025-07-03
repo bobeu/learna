@@ -5,11 +5,12 @@ pragma solidity 0.8.24;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IGrowToken } from "./IGrowToken.sol";
 import { Utils } from "./Utils.sol";
 
-contract Learna is Ownable, ReentrancyGuard {
+contract Learna is Ownable, ReentrancyGuard, Pausable {
     using Utils for uint96;
     enum Mode { LOCAL, LIVE }
 
@@ -36,6 +37,7 @@ contract Learna is Ownable, ReentrancyGuard {
                
     // User's profile data
     struct Profile {
+        uint amountMinted;
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
         bool claimed;
@@ -77,6 +79,11 @@ contract Learna is Ownable, ReentrancyGuard {
         uint64 transitionInterval;
     } 
 
+    struct Admin {
+        address id;
+        bool active;
+    }
+
     Mode private mode;
 
     // Other state variables
@@ -84,6 +91,9 @@ contract Learna is Ownable, ReentrancyGuard {
 
     // Dev Address
     address private dev;
+
+    // All admins
+    Admin[] private admins;
 
     // Tippers 
     mapping(address => TipperData) private isTipper;
@@ -95,7 +105,8 @@ contract Learna is Ownable, ReentrancyGuard {
     mapping(address user => mapping(uint weekId => Profile)) private users;
 
     // Admin access role
-    mapping(address => uint8) private isAdmin;
+    // mapping(address => uint8) private isAdmin;
+    mapping(address => uint8) private adminSlot;
 
     //weekly claims
     mapping(uint weekId => WeekData) private weekData;
@@ -106,13 +117,34 @@ contract Learna is Ownable, ReentrancyGuard {
         _;
     }
 
-    // Only Admin
-    modifier onlyAdmin {
-        require(isAdmin[_msgSender()] > 0, 'Only admin');
+    modifier validateTokenAddress(address token) {
+        require(token != address(0), "Token is zero");
         _;
     }
 
-    constructor(address[] memory admins, uint64 transitionInterval, Mode _mode) Ownable(_msgSender()) {
+    /**
+     * @dev Only admin
+     * @notice If no admin is added, we will always byepass the out-of-bound error since 
+     * we already added at least one content to the admins array. It wil always fetch zero slot.
+     */
+    modifier onlyAdmin {
+        uint8 slot = adminSlot[_msgSender()];
+        require(admins[slot].active, 'Only admin');
+        _;
+    }
+
+    /**
+     * @dev Constructor
+     * @param _admins : Addresses to be added as admin
+     * @param transitionInterval : Interval in time with which a week can be sorted. Ex. If its 7 days, this mean an admin
+     *                              cannot perform the sort function until its 7 days from the last sorted time. 
+     * @param _mode : Deployment mode - LOCAL or LIVE
+     * @notice We instanitate the admins array with an empty content. This is to ensure that anyone with slot 0 will always be
+     * false otherwise anyone with 0 slot will automatically inherits the attributes of an admin in slot 0. If such as admin is active,
+     * anyone could perform an admin role.
+     */
+    constructor(address[] memory _admins, uint64 transitionInterval, Mode _mode) Ownable(_msgSender()) {
+        admins.push();
         state.minimumToken = 1e16;
         mode = _mode;
         dev = _msgSender();
@@ -120,8 +152,8 @@ contract Learna is Ownable, ReentrancyGuard {
             state.transitionInterval = transitionInterval;
             weekData[0].claim.transitionDate = _now() + transitionInterval;
         }
-        for(uint i = 0; i < admins.length; i++) {
-            if(admins[i] != address(0)) _setAdmin(admins[i], 1); 
+        for(uint i = 0; i < _admins.length; i++) {
+            if(_admins[i] != address(0)) _setAdmin(_admins[i], true); 
         }
     }
 
@@ -132,8 +164,11 @@ contract Learna is Ownable, ReentrancyGuard {
         result = uint64(block.timestamp);
     } 
 
-    // Users are required to generate a key every week in order to qualify for the weekly payout
-    function generateKey() public payable returns(bool) {
+    /**
+     * @dev Generate new key for the week.
+     * @param token : GROW Token address
+     */
+    function generateKey(address token) public payable whenNotPaused validateTokenAddress(token) returns(bool) {
         State memory st = state;
         uint weekId = st.weekCounter;
         require(msg.value >= st.minimumToken, "Insufficient token");
@@ -144,8 +179,10 @@ contract Learna is Ownable, ReentrancyGuard {
         Profile memory pf = users[sender][weekId];
         require(!pf.haskey, 'User already owns a passkey');
         pf.haskey = true;
-        pf.passKey = keccak256(abi.encodePacked(sender, weekId, pf.haskey));
+        pf.amountMinted = msg.value;
+        pf.passKey = keccak256(abi.encodePacked(sender, weekId, pf.haskey, msg.value));
         users[sender][weekId] = pf;
+        require(IGrowToken(token).allocate(msg.value, sender), 'Gen: Allocation failed');
 
         emit PasskeyGenerated(sender, weekId);
         return true;
@@ -160,14 +197,33 @@ contract Learna is Ownable, ReentrancyGuard {
         return users[user][state.weekCounter].haskey;
     }
 
-    // Approve or deactivate admin
-    function _setAdmin(address target, uint8 flag) internal {
-        isAdmin[target] = flag;
+    /**
+     * @dev Add or remove an admin
+     * @param target : Account to add
+     * @param flag : Whether to add or remove. If true, add else remove
+     */
+    function _setAdmin(address target, bool flag) internal {
+        uint8 slot = adminSlot[target];
+
+        if(flag) {
+            slot = uint8(admins.length);
+            admins.push();
+            require(!admins[slot].active, "Address is an admin");
+            admins[slot] = Admin(target, flag);
+            adminSlot[target] = slot;
+        } else {
+            require(admins[slot].active, "Address is not an admin");
+            admins[slot].active = flag;
+        }
     }
  
-    // Approve or deactivate admin
-    // 0 will remove admin. Any number greater than 0 will approve admin
-    function setAdmin(address target, uint8 flag) public onlyOwner returns(bool) {
+    /**
+     * @dev Approve or deactivate admin
+     * @param target : Target address
+     * @param flag : Boolean value showing whether to activate or deactive
+     * @notice False will remove admin vice versa
+     */
+    function setAdmin(address target, bool flag) public onlyOwner returns(bool) {
         _setAdmin(target, flag); 
         return true;
     }
@@ -178,11 +234,18 @@ contract Learna is Ownable, ReentrancyGuard {
      * @param points : Points generated in quizzes.
      * @notice Only owner function
     */
-    function recordPoints(address user, uint16 points) public onlyAdmin returns(bool) {
+    function recordPoints(address user, uint16 points, address token) 
+        public 
+        onlyAdmin 
+        whenNotPaused 
+        validateTokenAddress(token)
+        returns(bool) 
+    {
         uint weekId = state.weekCounter;
         Profile memory pf = users[user][weekId];
-        require(pf.totalQuizPerWeek <= 120, 'Rate limited');
+        require(pf.totalQuizPerWeek <= 50, 'User hit limit');
         require(pf.haskey, 'No pass key');
+        require(IGrowToken(token).burn(user, pf.amountMinted), 'Not enough GROW');
         if(user != address(0)) {
             unchecked {
                 users[user][weekId].points += points;
@@ -201,7 +264,7 @@ contract Learna is Ownable, ReentrancyGuard {
      * @param weekId: Week id 
      * @notice Only owner function
      */
-    function removeUsersForWeeklyEarning(address[] memory _users, uint weekId) public onlyAdmin returns(bool) {
+    function removeUsersForWeeklyEarning(address[] memory _users, uint weekId) public onlyAdmin whenNotPaused returns(bool) {
         for(uint i = 0; i < _users.length; i++) {
             address user = _users[i];
             if(user != address(0)) {
@@ -286,7 +349,7 @@ contract Learna is Ownable, ReentrancyGuard {
      * @param weekId : Week id for the specific week user want to withdraw from
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimWeeklyReward(uint weekId) public onlyPasskeyHolder(weekId) nonReentrant returns(bool) {
+    function claimWeeklyReward(uint weekId) public onlyPasskeyHolder(weekId) whenNotPaused nonReentrant returns(bool) {
         require(weekId <= state.weekCounter, "Week not ready");
         address sender = _msgSender();
         Profile memory pf = users[sender][weekId];
@@ -299,7 +362,7 @@ contract Learna is Ownable, ReentrancyGuard {
             weekData[weekId].claim.erc20.totalClaimed += erc20Amount;
             weekData[weekId].claim.native.totalClaimed += nativeClaim;
         }
-        users[sender][weekId] = Profile(nativeClaim, erc20Amount, true, pf.points, pf.passKey, pf.haskey, pf.totalQuizPerWeek);
+        users[sender][weekId] = Profile(pf.amountMinted, nativeClaim, erc20Amount, true, pf.points, pf.passKey, pf.haskey, pf.totalQuizPerWeek);
         if(erc20Amount > 0) _claimErc20(sender, erc20Amount, IERC20(clm.erc20Addr));
         if(nativeClaim > 0) _claimNativeToken(sender, nativeClaim);
  
@@ -347,7 +410,7 @@ contract Learna is Ownable, ReentrancyGuard {
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(address token, address owner, uint amountInERC20) public onlyAdmin returns(bool) {
+    function sortWeeklyReward(address token, address owner, uint amountInERC20) public whenNotPaused onlyAdmin returns(bool) {
         State memory st = state;
         uint pastWeekId = st.weekCounter;
         WeekData memory wd = weekData[pastWeekId];
@@ -364,7 +427,8 @@ contract Learna is Ownable, ReentrancyGuard {
         if(allowance > 0) {
             IERC20(token).transferFrom(owner, address(this), allowance);
         } else {
-            require(IGrowToken(token).allocate(amountInERC20), 'Allocation failed');
+            require(token != address(0), "Sort: Token is empty");
+            require(IGrowToken(token).allocate(amountInERC20, address(0)), 'Allocation failed');
         }
         (uint256 nativeBalance, uint256 erc20Balance) = _getBalanceAfterDevShare(token);
         weekData[pastWeekId].claim = Claim({
@@ -405,7 +469,7 @@ contract Learna is Ownable, ReentrancyGuard {
     } 
 
         // set tips to the learna contract. Tippers earn points
-    function tip() public payable returns(bool) {
+    function tip() public payable whenNotPaused returns(bool) {
         address sender = _msgSender();
         TipperData memory td = isTipper[sender];
         uint amount = msg.value;
@@ -433,13 +497,13 @@ contract Learna is Ownable, ReentrancyGuard {
     }
 
     // Set minimum payable token by users when signing up
-    function setMinimumToken(uint newToken) public onlyAdmin  returns(bool) {
+    function setMinimumToken(uint newToken) public onlyAdmin whenNotPaused  returns(bool) {
         state.minimumToken = newToken;
         return true; 
     }
 
     // Set minimum payable token by users when signing up
-    function setTransitionInterval(uint64 newInternal) public onlyAdmin returns(bool) {
+    function setTransitionInterval(uint64 newInternal) public onlyAdmin whenNotPaused returns(bool) {
         state.minimumToken = newInternal;
         return true;
     }
@@ -447,6 +511,26 @@ contract Learna is Ownable, ReentrancyGuard {
     // Get user's data
     function getUserData(address user, uint weekId) public view returns(Profile memory) {
         return users[user][weekId];
+    }
+
+    // Check if an address is an admin
+    function getAdminStatus(address target) public view returns(bool) {
+        uint8 slot = adminSlot[target];
+        return admins[slot].active;
+    }
+
+    /**
+     * @dev Triggers stopped state.
+    */
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Returns to normal state.
+     */
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
 }

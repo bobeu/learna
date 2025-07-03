@@ -1,11 +1,11 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount, useConfig, useReadContracts } from 'wagmi';
-import { type Address, filterTransactionData, type FunctionName, type Profile } from '../utilities';
+import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { MotionDisplayWrapper } from '../peripherals/MotionDisplayWrapper';
-import { Button } from '~/components/ui/button';
 import { parseUnits } from "viem";
+import { ArrowRight } from "lucide-react";
+import { FunctionName, Address, Profile } from '../../../types/quiz';
 
 const VALUE = parseUnits('1', 16);
 export default function GenerateKey({functionName, buttonClassName} : {functionName: FunctionName, buttonClassName?: string}) {
@@ -91,14 +91,24 @@ export default function GenerateKey({functionName, buttonClassName} : {functionN
    }, [mutate, functionName, refetch]);
 
     return(
-        <MotionDisplayWrapper>
-            <Button onClick={() => toggleDrawer(1)} variant={'ghost'} className={`w-full ${buttonClassName || "text-cyan-900  bg-cyan-500/60"} font-bold `}>Get passkey</Button>
+        <React.Fragment>
+            <button
+                onClick={() => toggleDrawer(1)}
+                className={
+                    `${buttonClassName || 'w-full'} flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 
+                        text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105
+                        flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl`
+                }
+            >
+                <span>Get Passkey</span>
+                <ArrowRight className="w-5 h-5" />
+            </button>
             <Confirmation 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 getTransactions={getTransactions}
                 displayMessage={`Hang on while we create your passkey for ${weekId}...`}
             />
-        </MotionDisplayWrapper>
+        </React.Fragment>
     )
 }

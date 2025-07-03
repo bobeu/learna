@@ -3,5 +3,6 @@
 pragma solidity 0.8.24;
 
 interface IGrowToken {
-    function allocate(uint amount) external returns(bool);
+    function allocate(uint amount, address to) external returns(bool);
+    function burn(address holder, uint amount) external returns(bool);
 }

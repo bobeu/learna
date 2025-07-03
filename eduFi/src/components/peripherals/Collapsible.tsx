@@ -1,24 +1,22 @@
 "use client"
 import * as React from "react"
 import { ChevronsUpDown } from "lucide-react"
-import { Button } from "~/components/ui/button"
+// import { Button } from "~/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger,} from "~/components/ui/collapsible";
 
-export default function CollapsibleComponent({ header, children} : { header: string, children: React.ReactNode}) {
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
-
+export default function CollapsibleComponent({ header, isOpen, triggerClassName, overrideClassName, toggleOpen, selected, children} : CollapsibleProps) {
   return (
     <Collapsible
       open={isOpen}
-      onOpenChange={setIsOpen}
-      className="flex flex-col gap-2"
+      onOpenChange={toggleOpen}
+      className={`flex flex-col gap-2 ${overrideClassName}`}
     >
       <CollapsibleTrigger asChild>
-        <Button variant="outline" className={`flex justify-between items-center ${isOpen? 'bg-cyan-500/50' : 'bg-cyan-500/60'}`}>
-          <h4>{isOpen? 'Close' : header}</h4>
+        <button className={`flex justify-between items-center ${triggerClassName}`}>
+          <h4>{isOpen? 'Close' : selected || header}</h4>
           <ChevronsUpDown />
           <span className="sr-only">Toggle</span>
-        </Button>
+        </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
         { children }
@@ -27,3 +25,12 @@ export default function CollapsibleComponent({ header, children} : { header: str
   )
 }
  
+export interface CollapsibleProps { 
+  isOpen: boolean;
+  toggleOpen: (arg: boolean) => void;
+  header: string;
+  selected?: string | number | null;
+  children: React.ReactNode;
+  overrideClassName?: string;
+  triggerClassName?: string;
+}

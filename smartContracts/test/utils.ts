@@ -75,10 +75,10 @@ export async function claimWeeklyReward(x: {learna: Learna, weekId: bigint, sign
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function getPassKey(x: {learna: Learna, signer: Signer}) {
-  const { learna, signer } = x;
+export async function getPassKey(x: {learna: Learna, signer: Signer, token: Address}) {
+  const { learna, signer, token } = x;
   const address = await signer.getAddress();
-  await learna.connect(signer).generateKey({value: parseUnits('1', 16)});
+  await learna.connect(signer).generateKey(token, {value: parseUnits('1', 16)});
   const data = await learna.getData();
   return await learna.getUserData(address, data.state.weekCounter);
 }
@@ -88,9 +88,9 @@ export async function getPassKey(x: {learna: Learna, signer: Signer}) {
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function recordPoints(x: {user: Address, learna: Learna, points: number, deployer: Signer}) {
-  const { user, learna, deployer, points } = x;
-  await learna.connect(deployer).recordPoints(user, points);
+export async function recordPoints(x: {user: Address, learna: Learna, points: number, deployer: Signer, token: Address}) {
+  const { user, learna, deployer, points, token } = x;
+  await learna.connect(deployer).recordPoints(user, points, token);
   const data = await learna.getData();
   return await learna.getUserData(user, data.state.weekCounter);
 }
