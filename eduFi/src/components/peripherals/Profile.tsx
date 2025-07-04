@@ -12,7 +12,7 @@ import { useMiniApp, } from "@neynar/react";
 import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
 import { Address, Profile as ProfileType, } from "../../../types/quiz";
-import { ArrowLeft, ArrowRight, PlugZap } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, PlugZap, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";
 
@@ -25,7 +25,8 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
     const { address, isConnected } = useAccount();
     const account = address as Address;
     const handleClaim = () => setDrawer(1);
-    const { callback } = useStorage();
+    const { callback, weekData } = useStorage();
+    const totalPoints = weekData[toBN(weekId).toNumber()].totalPoints;
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
@@ -83,7 +84,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
-            <h3 className="font-semibold pl-4">{`Week ${weekId.toString()} data`}</h3>
+            <h3 className="pl-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
             <div className="space-y-2">
                 {/* <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Account</h3>
@@ -92,25 +93,89 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                         :<h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>No Account detected</h3>
                     }
                 </div>  */}
-                <div className="flex justify-center bg-cyan-500/60 rounded-lg ">
+                <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                            <div className="text-6xl font-bold mb-2">
+                                {points || 0}
+                            </div>
+                        <div className="text-xl opacity-90 mb-2">
+                            You earned {points || 0} out of {totalPoints} total points for the week
+                        </div>
+                        <div className="text-lg opacity-80 capitalize">
+                            Your FID: {user?.fid || 'NA'}
+                        </div>
+                    </div>
+                </div>
+                {/* <div className="flex justify-center bg-cyan-500/60 rounded-lg ">
                     <div className="flex flex-col justify-center items-center text-cyan-900 h-[150px] w-full rounded-lg text-xs">
                         <h3>Points earned</h3>
                         <h3 className="text-6xl font-black">{`${points || 0}`}</h3>
                     </div>
-                </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                </div> */}
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">FID</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{user?.fid || 'NA'}</h3>
+                </div> */}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Store className="w-8 h-8 text-green-600" />
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-1">
+                            {totalQuizPerWeek || 0}
+                        </div>
+                        <div className="text-sm text-gray-600">Total Onchain Streak</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Key className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-1">
+                            { 
+                                !haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
+                                    <CheckCircle className="w-8 h-8 " />
+                                </h3> : <div className=' p-1 text-cyan-900  text-center'>
+                                    <GenerateKey functionName={'generateKey'} buttonClassName="text-md " />
+                                </div>
+                            }
+                        </div>
+                        <div className="text-sm text-gray-600">Passkey</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <HandCoins className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-1">
+                            {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
+                        </div>
+                        <div className="text-sm text-gray-600">$GROW earned</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Coins className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-1">
+                            {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
+                        </div>
+                        <div className="text-sm text-gray-600">$CELO earned</div>
+                    </div>
                 </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Total attempted quiz</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
-                </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                </div> */}
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">Points earned</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || 0}</h3>
-                </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                </div> */}
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">PassKey</h3>
                     { 
                         haskey? <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>
@@ -119,19 +184,33 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                             <GenerateKey functionName={'generateKey'} buttonClassName="bg-none rounded-none" />
                         </div>
                     }
-                </div> 
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                </div>  */}
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">{"$GROW claimed"}</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
-                </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                </div> */}
+                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
                     <h3 className="w-[50%]">{`$Celo claimed`}</h3>
                     <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
-                </div>
+                </div> */}
             </div>
-            <div className="flex justify-center items-center gap-1 w-full">
-                <Button disabled={disableClaimButton} onClick={handleClaim} variant={'outline'} className="w-full bg-cyan-500 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Claim</Button>
-            </div>
+            <button
+                onClick={handleClaim}
+                disabled={disableClaimButton}
+                className={`w-full mt-4 ${disableClaimButton? "btn-secondary" : "btn-primary"} flex items-center justify-center gap-2 border`}
+            >
+                <BaggageClaim className="w-5 h-5 text-orange-600" />
+                <span>Claim</span>
+            </button>
+            {/* <div className="flex justify-center items-center gap-1 w-full">
+                <CustomButton
+                    onClick={handleClaim}
+                    disabled={disableClaimButton}
+                    exit={false}
+                >
+                    <span>Claim</span>
+                </CustomButton>
+            </div> */}
             <ClaimWeeklyReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
@@ -169,7 +248,7 @@ export default function Profile() {
     }, [weekId]);
 
     return(
-        <Wrapper2xl>
+        <Wrapper2xl useMinHeight={true} >
             <div className="space-y-6 grid grid-cols-1 ">
                 <div className="w-full relative flex justify-between items-center p-8 border rounded-2xl">
                     {

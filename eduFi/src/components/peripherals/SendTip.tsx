@@ -11,12 +11,14 @@ import { parseUnits } from "viem";
 import { Address, FunctionName } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
 import CollapsibleComponent from "./Collapsible";
+import CustomButton from "./CustomButton";
+import { Info } from "lucide-react";
 
 export default function SendTip() {
     const [ showSendCelo, setShowSendCelo ] = React.useState<boolean>(false);
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
     const [ celoAmount, setCeloAmount ] = React.useState<string>('0');
-    const [ protocol, setProtocol ] = React.useState<string | null>(null);
+    const [ protocol, setProtocol ] = React.useState<string | undefined>(undefined);
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
     const { setpath, appData } = useStorage();
@@ -24,7 +26,7 @@ export default function SendTip() {
         setDrawer(arg);
     }
     const toggleOpen = (arg: boolean) => setIsOpen(arg);
-    const backToHome = () => setpath('home');
+    const backToDashboard = () => setpath('dashboard');
     const chainId = useChainId();
     
     const handleSubmit = () => {
@@ -34,13 +36,13 @@ export default function SendTip() {
 
     React.useEffect(
         () => {
-            if(protocol){
+            if(protocol !== undefined){
                 setTimeout(() => 
                     setShowSendCelo(true), 
-                    1000
+                    500
                 );
             }
-            return () => clearTimeout(1000);
+            return () => clearTimeout(500);
         },
         [protocol]
     );
@@ -53,7 +55,7 @@ export default function SendTip() {
         if(showSendCelo) {
             transactions.push({
                 abi: transactionData[0].abi,
-                args: [],
+                args: [protocol],
                 contractAddress,
                 functionName,
                 requireArgUpdate: false,
@@ -61,7 +63,7 @@ export default function SendTip() {
             })
         }
         return transactions;
-    }, [showSendCelo, chainId, celoAmount]);
+    }, [showSendCelo, chainId, protocol, celoAmount]);
 
     const protocols = (
         <CollapsibleComponent
@@ -69,10 +71,10 @@ export default function SendTip() {
             toggleOpen={toggleOpen}
             header="Select your protocol"
             selected={protocol}
-            overrideClassName="relative"
+            overrideClassName="relati"
             triggerClassName="border rounded-xl p-4 bg-gradient-to-r from-cyan-400 to-purple-300"
         >
-            <div className="absolute bottom-15 bg-white z-50 border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
+            <div className="absolute top-10 slide-in-from-top-10 p-4 bg-white z-[100px] border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
                 {
                     appData.categories.map((protocol_) => (
                         <Button 
@@ -82,7 +84,7 @@ export default function SendTip() {
                                 setIsOpen(!isOpen)
                             }}
                             variant={'ghost'}
-                            className="w-full p-6"
+                            className="w-1/3 p-6"
                         >
                             { protocol_ }
                         </Button>
@@ -94,8 +96,8 @@ export default function SendTip() {
 
     return(
         <MotionDisplayWrapper>
-            <Wrapper2xl>
-                <div className='space-y-4 overflow-auto font-mono'>
+            <Wrapper2xl useMinHeight={true} >
+                <div className='relative space-y-4 overflow-auto font-mono'>
                     {
                         !showSendCelo && 
                             <div className="flex flex-col justify-center items-center text-center text-2xl gap-4">
@@ -111,40 +113,45 @@ export default function SendTip() {
                     {
                         showSendCelo && <MotionDisplayWrapper>
                             <div className='space-y-4 border rounded-2xl p-4'> 
-                                <div className="flex justify-between items-center">
-                                    <h3 className='w-full flex jus'>
-                                        <span>{"You're funding:"}</span>
-                                        <span>{protocol}</span>
-                                    </h3>
-                                    <Button variant={'ghost'} className='w-full ' onClick={handleSubmit}>Submit</Button>
+                                <div className="flex justify-between items-center gap-4 text-lg bg-gradient-to-r px-3 py-6 rounded-xl">
+                                    <h3 className='w-2/4'>{`You're funding: `}</h3>
+                                    <h3 className='w-2/4 capitalize font-medium'>{protocol}</h3>
                                 </div>
-                                <Input 
-                                    type={'text'}
-                                    placeholder={'Amount'}
-                                    required
-                                    id={'Celo'}
-                                    onChange={(e) => {
-                                        e.preventDefault();
-                                        setCeloAmount(parseUnits(e.target.value, 18).toString());
-                                    }}
-                                    className={`bg-white1 text-xs border border-green1/30 focus:ring-0 `}
-                                />
+                                <div className="flex justify-between items-center gap-4">
+                                    <Input 
+                                        type={'text'}
+                                        placeholder={'Amount'}
+                                        required
+                                        id={'Celo'}
+                                        onChange={(e) => {
+                                            e.preventDefault();
+                                            setCeloAmount(parseUnits(e.target.value, 18).toString());
+                                        }}
+                                        className={`bg-white1 text-xs border border-green1/30 focus:ring-0 `}
+                                    />
+                                    <Button variant={'ghost'} className='w-full bg-white text-lg p-6' onClick={handleSubmit}>Submit</Button>
+                                </div>
                             </div>
                             
                         </MotionDisplayWrapper>
                     }
-                    <div className=" space-y-2">
+                    <div className="space-y-2">
                         { protocols }
                         {/* <Button disabled={showSendCelo} onClick={() => setShowSendCelo(true)} variant={'outline'} className="w-full bg-cyan-500/80">Send Celo</Button> */}
-                        <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50">Exit</Button>
+                        <CustomButton
+                            onClick={backToDashboard}
+                            disabled={false}
+                            exit={true}
+                            overrideClassName="w-full"
+                        >
+                            <span>Exit</span>
+                        </CustomButton>
                     </div>
-                    <div className="relative flex justify-between items-center border text-cyan-600 bg-cyan-300/10 rounded-xl p-2 gap-2">
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                        </span>
-                        <h3 className="text-sm text-center">Tokens or Coins sent as support are shared as payout to all active users</h3>
+                    <div className="border flex justify-between rounded-2xl">
+                        <div className="flex justify-center items-center p-4">
+                            <Info className="w-7 h-7 text-cyan-500 font-bold" />
+                        </div>
+                        <h3 className="text-sm text-center p-4 text-cyan-900">Tokens or Coins sent as support are shared as payout to all active users</h3>
                     </div>
                 </div>
             </Wrapper2xl>

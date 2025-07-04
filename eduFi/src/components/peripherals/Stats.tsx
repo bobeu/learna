@@ -7,7 +7,7 @@ import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
-import { Address, formatValue, getTimeFromEpoch, WeekData, toBN } from "../utilities";
+import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import {
     Carousel,
     CarouselContent,
@@ -15,8 +15,13 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "~/components/ui/carousel";
+import { Address, WeekData } from "../../../types/quiz";
+import Wrapper2xl from "./Wrapper2xl";
+import { Timer, Fuel, Calendar} from "lucide-react";
+import CustomButton from "./CustomButton";
 
-function Stat({weekData} : {weekData: WeekData}) {
+function Stat({weekData, index} : {weekData: WeekData, index: number}) {
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const { 
         activeLearners, 
         claim: { claimActiveUntil, erc20, erc20Addr, native, transitionDate },
@@ -26,97 +31,171 @@ function Stat({weekData} : {weekData: WeekData}) {
 
     // const intervalBeforeSorted = transitionInterval > 0? transitionInterval / 360 : transitionInterval;
     const interval = toBN(transitionInterval.toString()).toNumber();
+    const toggleOpen = (arg: boolean) => {
+        setIsOpen(arg);
+    };
 
     return(
-        <MotionDisplayWrapper>
-            <div className=" space-y-2" key={claimActiveUntil}>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Active users</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{activeLearners.toString() || '0'}</h3>
-                </div>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Total Points</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalPoints.toString() || '0'}</h3>
-                </div>
-                <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Minimum interval before sorted</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${interval || '0'} Minutes`}</h3>
-                </div>
-                <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">Payout data</h3>
-                    <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">Time until claim close</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(claimActiveUntil)}</h3>
-                    </div>
-                    <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">Time until sorted</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(transitionDate)}</h3>
-                    </div>
-                    <div className='border p-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">Token address</h3>
-                        <AddressWrapper account={erc20Addr} size={4} display/> 
-                    </div>
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-semibold">ERC20 token claims</h3>
-                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3 className="w-[50%]">Total allocated</h3>
-                            <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(erc20.totalAllocated.toString()).toStr || '0'}</h3>
+        <CollapsibleComponent 
+            header={`Week ${index}`} 
+            isOpen={isOpen} 
+            toggleOpen={toggleOpen}
+            overrideClassName="relative"
+            triggerClassName="bg-gradient-to-r from-cyan-500 to-purple-500 py-2 px-4 border rounded-xl text-white font-semibold"
+        >
+            <MotionDisplayWrapper>
+                {/* Timings */}
+                <div className="grid grid-cols-3 gap-2 md:gap-6 mb-8">
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Calendar className="w-4 h-4 text-green-600" />
                         </div>
-                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3 className="w-[50%]">Total claimed</h3>
-                            <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(erc20.totalClaimed.toString()).toStr || '0'}</h3>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {activeLearners.toString() || '0'}
                         </div>
+                        <div className="text-xs text-gray-600">Active users</div>
                     </div>
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-semibold">{"Claims in $Celo"}</h3>
-                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3 className="w-[50%]">Total allocated</h3>
-                            <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(native.totalAllocated.toString()).toStr || '0'}</h3>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Timer className="w-4 h-4 text-purple-600" />
                         </div>
-                        <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                            <h3 className="w-[50%]">Total claimed</h3>
-                            <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(native.totalClaimed.toString()).toStr || '0'}</h3>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {totalPoints.toString() || '0'}
+                        </div>
+                        <div className="text-xs text-gray-600">All points</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {`${interval || '0'} Minutes`}
+                        </div>
+                        <div className="text-xs text-gray-600">Sorting intervals</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {getTimeFromEpoch(claimActiveUntil)}
+                        </div>
+                        <div className="text-xs text-gray-600">Claim ends</div>
+                    </div>
+
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {getTimeFromEpoch(transitionDate)}
+                        </div>
+                        <div className="text-xs text-gray-600">Date until sorting active</div>
+                    </div>
+                </div>
+
+                {/* Allocations */}
+                <div className="space-y-4">
+                    <div className="text-lg text-left font-semibold text-gray-800 mb-2">Allocation</div>
+                    <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Fuel className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="font-semibold text-gray-800 mb-1">
+                                {formatValue(erc20.totalAllocated.toString()).toStr || '0'} 
+                            </div>
+                            <div className="text-xs text-gray-600">$GROW Allocation</div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Fuel className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="font-semibold text-gray-800 mb-1">
+                                {formatValue(erc20.totalAllocated.toString()).toStr || '0'} 
+                            </div>
+                            <div className="text-xs text-gray-600">$CELO Allocation</div>
                         </div>
                     </div>
                 </div>
-                {
-                    (tippers && tippers.length > 0) &&  <div className="space-y-2 border p-4 rounded-xl">
-                        <h3 className="text-sm font-semibold">Tippers</h3>
-                        <Carousel className="w-full max-w-xs relative">
-                            <CarouselContent>
-                                {
-                                    tippers.map(({id, lastTippedDate, points, totalTipped}) => (
-                                        <CarouselItem key={id}>
-                                            <div className="place-items-center text-center font-mono">
-                                                <h3 className="text-sm h-[60px] p3 rounded-t-xl">
-                                                    <AddressWrapper account={id} size={4} display/>
-                                                </h3>
-                                                <div className="w-full space-y-2 h-fit text-xs">
-                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
-                                                        <h3 className="w-[50%]">Amount tipped</h3>
-                                                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(totalTipped.toString()).toStr || '0'}</h3>
-                                                    </div>
-                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
-                                                        <h3 className="w-[50%]">Date tipped</h3>
-                                                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{getTimeFromEpoch(lastTippedDate)}</h3>
-                                                    </div>
-                                                    <div className='border rounded-lg flex justify-between items-center text-xs font-mono'>
-                                                        <h3 className="w-[50%]">Point earned</h3>
-                                                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || '0'}</h3>
+
+                {/* Claims */}
+                <div className="space-y-4 ">
+                    <div className="text-lg text-left font-semibold text-gray-800 my-2">Claims</div>
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            <AddressWrapper account={erc20Addr} size={4} display/> 
+                        </div>
+                        <div className="text-xs text-gray-600">$GROW Address</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Fuel className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="font-semibold text-gray-800 mb-1">
+                                {formatValue(erc20.totalClaimed.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-xs text-gray-600">$GROW Claimed</div>
+                        </div>
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Fuel className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="font-semibold text-gray-800 mb-1">
+                                {formatValue(native.totalAllocated.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-xs text-gray-600">$CELO Claimed</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-gradient-to-r my-4 flex justify-center items-center py-6 glass-card rounded-2xl ">
+                    {
+                        (tippers && tippers.length > 0) &&  <div className="space-y-2 ">
+                            <h3 className="text-lg font-semibold">Tippers</h3>
+                            <Carousel className="w-full max-w-xs relative">
+                                <CarouselContent>
+                                    {
+                                        tippers.map(({id, lastTippedDate, points, totalTipped}) => (
+                                            <CarouselItem key={id}>
+                                                <div className="place-items-center text-center ">
+                                                    <h3 className="p-4">
+                                                        <AddressWrapper account={id} size={4} display   />
+                                                    </h3>
+                                                    <div className="w-full space-y-2 h-fit text-sm">
+                                                        <div className='border border-purple-100 rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                            <h3 className="w-[50%]">Amount tipped</h3>
+                                                            <h3 className='btn-primary text-white rounded-r-lg p-4 font-bold w-[50%] text-center'>{formatValue(totalTipped.toString()).toStr || '0'}</h3>
+                                                        </div>
+                                                        <div className='border border-purple-100 rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                            <h3 className="w-[50%]">Date tipped</h3>
+                                                            <h3 className='btn-primary text-white rounded-r-lg p-4 font-bold w-[50%] text-center'>{getTimeFromEpoch(lastTippedDate)}</h3>
+                                                        </div>
+                                                        <div className='border border-purple-100 rounded-lg flex justify-between items-center text-xs font-mono'>
+                                                            <h3 className="w-[50%]">Point earned</h3>
+                                                            <h3 className='btn-primary text-white rounded-r-lg p-4 font-bold w-[50%] text-center'>{points || '0'}</h3>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </CarouselItem>
-                                    ))
-                                }
-                            </CarouselContent>
-                            <CarouselPrevious className="absolute -left-4 bg-cyan-900 text-cyan-50"/>
-                            <CarouselNext className="absolute -right-4 bg-cyan-900 text-cyan-50"/>
-                        </Carousel>
-                    </div>
-                }
-            </div>
-        </MotionDisplayWrapper>
+                                            </CarouselItem>
+                                        ))
+                                    }
+                                </CarouselContent>
+                                <CarouselPrevious className="absolute -left-4 btn-primary text-cyan-50"/>
+                                <CarouselNext className="absolute -right-4 btn-primary text-cyan-50"/>
+                            </Carousel>
+                        </div>
+                    }
+                </div>
+            </MotionDisplayWrapper>
+        </CollapsibleComponent>
     )
 }
 
@@ -129,45 +208,70 @@ export default function Stats() {
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
 
-    const backToHome = () => setpath('home');
+    const backToHome = () => {
+        setpath('home');
+    }
+
     const interval = toBN(transitionInterval.toString()).toNumber();
 
     return(
-        <MotionDisplayWrapper className="space-y-2 font-mono">
-            <div className="space-y-2 border bg-cyan-500/20 rounded-lg p-4">
-                <h3 className="text-sm font-bold pl-4">{`App stats`}</h3>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Current Week</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{weekCounter.toString() || 0}</h3>
+        <Wrapper2xl useMinHeight={true} >
+            <div className="text-3xl text-left font-bold text-gray-800 mb-4">Analytics</div>
+            <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
+                <div className="glass-card rounded-xl p-4">
+                    <div className="flex items-center justify-center mb-3">
+                        <Calendar className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-800 mb-1">
+                        {weekCounter.toString() || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Current week</div>
                 </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Transition interval</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${interval / 60 || 0} Minutes`}</h3>
+
+                <div className="glass-card rounded-xl p-4">
+                    <div className="flex items-center justify-center mb-3">
+                        <Timer className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-800 mb-1">
+                        {`${interval / 60 || 0} Minutes`}
+                    </div>
+                    <div className="text-sm text-gray-600">Transition interval</div>
                 </div>
-                <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Minimum token</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{`${formatValue(minimumToken.toString()).toStr || 0} Celo`}</h3>
-                </div> 
+
+                <div className="glass-card rounded-xl p-4">
+                    <div className="flex items-center justify-center mb-3">
+                        <Fuel className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-800 mb-1">
+                        {`${formatValue(minimumToken.toString()).toStr || 0} Celo`}
+                    </div>
+                    <div className="text-sm text-gray-600">Min. Token</div>
+                </div>
             </div>
             
-            <div className="space-y-2 border bg-cyan-500/20 rounded-lg p-4">
-                <h3 className="text-sm font-semibold pl-4">Week Data</h3>
-                {
-                    weekData.length && weekData.map((wkd, index) => (
-                        <CollapsibleComponent 
-                            key={index}
-                            header={`Week ${index}`}
-                        >
-                            <Stat weekData={wkd}/>
-                        </CollapsibleComponent>
-                    ))
-                }
+            <div className="space-y-1 mb-4">
+                <div className="text-2xl text-left font-bold text-gray-800 mb-2">Weeks Data</div>
+                <div className="border rounded-2xl p-4">
+                    {
+                        weekData.length && weekData.map((wkd, index) => (
+                        <Stat weekData={wkd} key={index} index={index}/>
+                        ))
+                    }
+                </div>
                 
             </div>
-            { (account.toLowerCase() === owner.toLowerCase()) && <SortWeeklyPayout />  }
-            <div className="flex justify-center items-center gap-1 w-full">
-                <Button onClick={backToHome} variant={'outline'} className="w-full bg-orange-500/50 hover:bg-opacity-70 active:bg-cyan-500/50 active:shadow-sm active:shadow-gray-500/30">Exit</Button>
+            <div className="flex justify-center items-center w-full" >
+                { (account.toLowerCase() !== zeroAddress && account.toLowerCase() === owner.toLowerCase()) && <SortWeeklyPayout />  }
             </div>
-        </MotionDisplayWrapper>
+            <div className="flex justify-center items-center gap-1 w-full">
+                <CustomButton
+                    exit={true}
+                    onClick={backToHome}
+                    disabled={false}
+                >
+                    <span>Exit</span>
+                </CustomButton>
+            </div>
+        </Wrapper2xl>
     );
 }

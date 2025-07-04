@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { Input, InputTag } from './Input';
-import { Address } from '~/components/utilities';
 import { parseUnits, zeroAddress } from 'viem';
-import { MotionDisplayWrapper } from '../MotionDisplayWrapper';
-import { Button } from '~/components/ui/button';
+// import { MotionDisplayWrapper } from '../MotionDisplayWrapper';
+// import { Button } from '~/components/ui/button';
 import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
 import useStorage from '~/components/hooks/useStorage';
+import { Address } from '../../../../types/quiz';
+import CustomButton from '../CustomButton';
 
 interface ContentType { 
     tag: InputTag, 
@@ -99,9 +100,9 @@ export default function SortWeeklyPayout() {
     }
 
     return (
-        <MotionDisplayWrapper className='space-y-2 mt-2 font-mono border bg-cyan-500/20 rounded-lg p-4'>
-            <div className='space-y-2 rounded-xl p-4 bg-cyan-300/5'>
-                <h3 className='font-semibold text-sm'>{`Set up week ${weekId} payout. (Only Admin)`}</h3>
+        <div className='space-y-2 my-2 mb-4 font-mono border bg-gradient-to-r rounded-2xl p-4 w-full '>
+            <div className='space-y-4 rounded-xl p-4'>
+                <h3 className='font-semibold text-xl'>{`Set up week ${weekId} payout. (Only Admin)`}</h3>
                 {
                     sortContent.map(({id, type, required, label, placeHolder, tag}) => (
                         <Input 
@@ -117,7 +118,17 @@ export default function SortWeeklyPayout() {
                     ))
                 }
             </div>
-            <Button variant={'outline'} className='w-full bg-cyan-500' onClick={handleSort}>Submit</Button>
+            <div className='w-full'>
+                <CustomButton
+                    onClick={handleSort}
+                    exit={false}
+                    disabled={false}
+                    overrideClassName='w-2/4 float-right'
+                >
+                    <span>Submit</span>
+                </CustomButton>
+            </div>
+            {/* <Button variant={'outline'} className='w-full bg-cyan-500' onClick={handleSort}>Submit</Button> */}
             <SortWeeklyReward 
                 amountInERC20={amount}
                 openDrawer={openDrawer}
@@ -125,6 +136,6 @@ export default function SortWeeklyPayout() {
                 owner={tokenOwner}
                 token={tokenAddress}
             />
-        </MotionDisplayWrapper>
+        </div>
     );
 }

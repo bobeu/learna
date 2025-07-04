@@ -23,17 +23,17 @@ interface InputProps {
 export const Input = (props: InputProps) => {
     const { type, placeholder, label, tag, id, overrideClassName, onChange } = props;
     return(
-        <div className="flex w-full max-w-sm items-center ">
-            <div className="w-full max-w-sm items-center gap-1.5">
-                { label && <Label className="text-xs font-medium">{label}</Label>}
-                <div className={"flex justify-between items-center gap-2"}>
+        <div className="">
+            <div className="w-full flex justify-between max-w-sm items-center">
+                { label && <Label className="font-medium 2/4 ">{label}</Label>}
+                <div className={"w-2/4"}>
                     <InputComponent 
                         type={type}
                         placeholder={placeholder}
                         required
                         id={id}
                         onChange={(e) => onChange(e, tag)}
-                        className={`bg-white1 text-xs dark:bg-gray1 border border-green1/30 dark:border-white1/30 dark:text-orange-200 focus:ring-0 ${overrideClassName}`}
+                        className={` bg-white borde ${overrideClassName}`}
                     />
                 </div>
             </div>

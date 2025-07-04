@@ -94,11 +94,7 @@ export default function GenerateKey({functionName, buttonClassName} : {functionN
         <React.Fragment>
             <button
                 onClick={() => toggleDrawer(1)}
-                className={
-                    `${buttonClassName || 'w-full'} flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 
-                        text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105
-                        flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl`
-                }
+                className={`${buttonClassName || "w-full flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"}`}
             >
                 <span>Get Passkey</span>
                 <ArrowRight className="w-5 h-5" />

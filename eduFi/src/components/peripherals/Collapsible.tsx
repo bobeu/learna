@@ -14,7 +14,7 @@ export default function CollapsibleComponent({ header, isOpen, triggerClassName,
       <CollapsibleTrigger asChild>
         <button className={`flex justify-between items-center ${triggerClassName}`}>
           <h4>{isOpen? 'Close' : selected || header}</h4>
-          <ChevronsUpDown />
+          <ChevronsUpDown className="w-5 h-5"/>
           <span className="sr-only">Toggle</span>
         </button>
       </CollapsibleTrigger>
