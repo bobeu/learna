@@ -15,6 +15,7 @@ node_modules
 # Large deployment files
 /deployments
 deployments
+/dist
 
 # solidity-coverage files
 /coverage
