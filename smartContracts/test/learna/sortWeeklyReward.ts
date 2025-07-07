@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { sortWeeklyEarning } from "../utils";
 import { parseEther } from "viem";
+import { campaignHashes } from "../../hashes";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -18,8 +19,9 @@ describe("Learna", function () {
         balanceInGrowReserveAfterAllocation,
         balanceInGrowReserveB4Allocation,
         balanceOfLearnaAfterAllocation,
-        balanceOfLearnaB4Allocation
-      } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, owner:deployerAddr});
+        balanceOfLearnaB4Allocation,
+        data
+      } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, campaignHashes});
 
       expect(balanceInGrowReserveAfterAllocation < balanceInGrowReserveB4Allocation).to.be.true;
       expect(balanceOfLearnaAfterAllocation > balanceOfLearnaB4Allocation).to.be.true;

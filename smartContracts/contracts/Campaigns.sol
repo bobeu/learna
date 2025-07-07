@@ -2,61 +2,28 @@
 
 pragma solidity 0.8.24;
 
-// import { Slots } from "./Slots.sol";
-
-abstract contract Storage {
-    // enum RewardType { NATIVE, ERC20, BOTH }
-
-    // struct Values {
-    //     uint totalAllocated;
-    //     uint totalClaimed;
-    // }
-
-    // // Claim data
-    // struct Claim {
-    //     Values native;
-    //     Values erc20;
-    //     address erc20Addr;
-    //     uint64 claimActiveUntil;
-    // }
-               
-    // User's profile dat
-
+/**
+ * @title Campaigns. 
+ * @author : Bobeu - https://github.com/bobeu
+ * @notice A non-deployable parent contract that perform CRUD operation on campaigns
+*/
+abstract contract Campaigns {
     struct Campaign {
         uint256 fundsNative;
         uint256 fundsERC20;
         uint96 totalPoints;
         uint64 lastUpdated;
         uint activeLearners; 
-        // uint64 transitionInterval;
         uint64 transitionDate;
-        // bool active;
         uint64 claimActiveUntil;
         address operator;
         address token;
-        // RewardType rewardType;
-        // Claim claim;
         bytes32 hash_;
+        bool canClaim;
     }
 
-    // struct WeekDataOther {
-    // }
-
-    // struct Campaign {
-    //     CampaignOther others;
-    //     Profile[] learners;
-    // }
-
-    struct CampaignData {
-        bytes32 hash_;
-        bool isApproved;
-    }
-
-    //week data for all protocols
+    //week data for all campaigns
     mapping(uint weekId => Campaign[]) private campaigns;
-
-    // Weekly campaigns
-    // mapping(uint weekId => bytes32[]) private campaignHashes;
 
     // Campaign identifiers
     mapping(uint weekId => mapping(bytes32 => uint32)) private campaignIds;
@@ -89,11 +56,6 @@ abstract contract Storage {
         require(campaignSlot < _getTotalCampaignForAGivenWeek(weekId), "Invalid campaign id");
     }
 
-    // // Returns the length of users in a campaign for the given week  
-    // function _getTotalLearnersInACampaign(uint weekId, uint32 cId) internal view returns(uint96 result) {
-    //     result = uint96(campaigns[weekId][cId].learners.length);
-    // }
-
     // Returns the length of users in a campaign for the given week 
     function _getTotalCampaignForAGivenWeek(uint weekId) internal view returns(uint32 result) {
         result = uint32(campaigns[weekId].length);
@@ -112,7 +74,7 @@ abstract contract Storage {
      * @dev Initializeds a new campaign slot
      * @param weekId : Week Id
      * @param campaignHash : Campaign hash
-     * @notice : Slot 0 is reserved hence no campaign can occupy slot 0.
+     * @notice Campaigns with zero index are not initialized hence invalid
     */
     function _initializeCampaign(uint weekId, bytes32 campaignHash) internal returns(Campaign memory result) {
         uint32 cId;
@@ -130,26 +92,6 @@ abstract contract Storage {
         }
         result = campaigns[weekId][cId];
     }
-
-    // /**
-    //  * @dev Initializeds a new campaign slot
-    //  * @param weekId : Week Id
-    //  * @param campaignHash : Campaign Hash
-    //  */
-    // function _initializeProfile(uint weekId, bytes32 campaignHash) internal returns(uint96 slot) {
-    //     uint32 cId = _getCampaignId(weekId, campaignHash);
-    //     slot = _getTotalLearnersInACampaign(weekId, cId);
-    //     campaigns[weekId][cId].learners.push();
-    // }
-
-    // /**
-    //  * Update other data in Week data
-    //  * @param weekId : Week id
-    //  * @param others : Other data
-    //  */
-    // function _setWeekDataOther(uint weekId, WeekDataOther memory others) internal {
-    //     campaigns[weekId].others = others;
-    // }
 
     /**
      * Update other data in Week data
@@ -188,37 +130,6 @@ abstract contract Storage {
         result = campaigns[weekId][cId];
     }
 
-    // /**
-    //  * Update other campaign data
-    //  * @param weekId : Week id
-    //  * @param profile : Profile data
-    //  * @param campaignHash : Campaign Hash
-    //  * @param slot : Slot ref
-    //  */
-    // function _setCampaignProfile(uint weekId, bytes32 campaignHash, uint96 slot, Profile memory profile) internal {
-    //     campaigns[weekId][_getCampaignId(weekId, campaignHash)].learners[slot] = profile;
-    // }
-
-    // /**
-    //  * Update other campaign data
-    //  * @param weekId : Week id
-    //  * @param claim :Claim data
-    //  * @param campaignId : Campaign Id
-    //  */
-    // function _setClaim(uint weekId, uint32 campaignId, Claim memory claim) internal {
-    //     campaigns[weekId][campaignId].others.claim = claim; 
-    // }
-
-    // /**
-    //  * Update other campaign data
-    //  * @param weekId : Week id
-    //  * @param campaignId : Campaign Id
-    //  * @return claim :Claim data
-    //  */
-    // function _getClaim(uint weekId, uint32 campaignId) internal view returns(Claim memory claim) {
-    //     claim = campaigns[weekId][campaignId].others.claim; 
-    // }
-
     /**
      * @dev Returns campaign data
      * @param weekId : Week Id
@@ -232,15 +143,4 @@ abstract contract Storage {
     function _now() internal view returns(uint64 result) {
         result = uint64(block.timestamp);
     } 
-
-    // /**
-    //  * @dev Set transition date
-    //  * @param transitionInterval : interval
-    //  * @param weekId: Week Id
-    //  */
-    // function _setTransitionDate(uint64 transitionInterval, uint weekId) internal {
-    //     campaigns[weekId].others.transitionDate = _now() + transitionInterval;
-    // }
-
-
 }

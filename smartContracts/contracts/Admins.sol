@@ -20,11 +20,14 @@ abstract contract Admins {
      * we already added at least one content to the admins array in the constructor, it wil always fetch zero slot.
     */
     modifier onlyAdmin(address target) {
-        uint8 slot = adminSlot[target];
-        require(admins[slot].active, 'Only admin');
+        require(_isAdmin(target), 'Only admin');
         _;
     }
 
+    function _isAdmin(address target) internal view returns(bool result) {
+        uint8 slot = adminSlot[target];
+        result = admins[slot].active;
+    }
     
     /**
      * @dev Add or remove an admin
@@ -53,7 +56,6 @@ abstract contract Admins {
 
     // Check if account is an admin
     function getAdminStatus(address target) public view returns(bool) {
-        uint8 slot = adminSlot[target];
-        return admins[slot].active;
+        return _isAdmin(target);
     }
 }
