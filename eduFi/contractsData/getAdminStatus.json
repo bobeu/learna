@@ -1,0 +1,27 @@
+{
+  "contractAddress": "0xcaB31Ddbebb41104fca20c96c915926707C19a73",
+  "functionName": "getAdminStatus",
+  "inputCount": 1,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "getAdminStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

@@ -1,17 +1,22 @@
 {
   "approvedFunctions": [
-    "checkligibility",
+    "checkEligibility",
     "recordPoints",
-    "removeUsersForWeeklyEarning",
-    "claimWeeklyReward",
+    "banUserFromCampaign",
+    "setAdmin",
+    "getAdminStatus",
+    "hasPassKey",
+    "setTransitionInterval",
+    "claimReward",
     "sortWeeklyReward",
-    "tip",
-    "getTippers",
-    "getUserData",
-    "owner",
+    "adjustCampaignValues",
+    "setUpCampaign",
+    "getProfile",
     "generateKey",
     "getData",
-    "approve"
+    "owner",
+    "approve",
+    "setMinimumToken"
   ],
   "chainName": {
     "42220": "celo",
@@ -27,6 +32,7 @@
       "deployments\\celo\\Learna.json"
     ],
     "44787": [
+      "deployments\\alfajores\\FeeManager.json",
       "deployments\\alfajores\\GrowToken.json",
       "deployments\\alfajores\\Learna.json"
     ]
@@ -34,8 +40,8 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "GrowToken": "0x0D42E9B84d11Ea4A66660E167546632619633799",
-      "Learna": "0x4AeDfE7137012679837bd7284d80FAfdC72513c6"
+      "GrowToken": "0xF7E8959BEaeE9BB632331b063D2FA7A16705Df15",
+      "Learna": "0xcaB31Ddbebb41104fca20c96c915926707C19a73"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",

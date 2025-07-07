@@ -97,3 +97,9 @@ To build for production, run
 Educaster team, curious mind with a teacher’s touch and a developer’s discipline, we craft interactive quizzes like a sculptor carves marble — precisely, creatively, and always with purpose. Sometimes, we achieve this manually, and often with the help of Aritificial intelligence using a carefully and skillfully prepared prompt. We navigate subjects such as Solidity, ReactJS, DeFi, Wagmi, etc, with ease, blending logic and learning into bite-sized brilliance. When not hashing questions into unique hex codes (literally), We are building tools that teach, challenge, and empower others.
 
 Our team clearly got a strong grasp of dev skills and an interest in ed-tech-style systems. 
+
+
+<!-- 0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204 GROWTOKEN -->
+
+ <!-- 0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB Learna new -->
+ 

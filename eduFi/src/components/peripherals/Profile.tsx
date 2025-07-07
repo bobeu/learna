@@ -196,7 +196,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
             </div>
             <button
                 onClick={handleClaim}
-                disabled={disableClaimButton}
+                disabled={!disableClaimButton}
                 className={`w-full mt-4 ${disableClaimButton? "btn-secondary" : "btn-primary"} flex items-center justify-center gap-2 border`}
             >
                 <BaggageClaim className="w-5 h-5 text-orange-600" />
@@ -225,22 +225,23 @@ export default function Profile() {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     
     const { weekId, setpath } = useStorage();
+    const { context } = useMiniApp();
+    const { disconnect } = useDisconnect();
+    const { isConnected, address } = useAccount();
 
     const toggleOpen = (arg: boolean) => {
         setIsOpen(arg);
     };
 
     const backToHome = () => {
-        setpath('home');
+        isConnected? setpath('dashboard') : setpath('home');
     };
 
     const goToQuiz = () => {
         setpath('selectcategory');
     };
 
-    const { context } = useMiniApp();
-    const { disconnect } = useDisconnect();
-    const { isConnected, address } = useAccount();
+    
     const weekIds = React.useMemo(() => {
         const wkId = toBN(weekId.toString()).toNumber();
         const weekIds = [...Array(wkId === 0? 1 : wkId + 1).keys()];

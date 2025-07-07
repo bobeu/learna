@@ -221,6 +221,7 @@ export const formatAddr = (x: string | (Address | undefined)) : Address => {
 export function filterTransactionData({chainId, filter, functionNames, callback}: FilterTransactionDataProps) {
     const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
     let transactionData : TransactionData[] = [];
+    // console.log("ChainId:", chainId);
     const index = chainIds.indexOf(chainId || chainIds[0]);
     if(filter) {
       assert(functionNames !== undefined, "FunctionNames not provided");

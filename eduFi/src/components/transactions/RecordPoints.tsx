@@ -1,12 +1,14 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { Address, filterTransactionData, FunctionName } from '../utilities';
+import { filterTransactionData } from '../utilities';
+import { Address, FunctionName } from '../../../types/quiz';
+import { Hex } from 'viem';
 
-export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsProps) {
-    const { chainId } = useAccount();
+export default function RecordPoints({openDrawer, toggleDrawer, campaignHashes }: RecordPointsProps) {
+    const { chainId, address } = useAccount();
 
-    const { transactionData: td } = React.useMemo(() => {
+    const { transactionData: td, contractAddresses: ca } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
@@ -19,7 +21,7 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [],
+                args: [address, [], ca.GrowToken, campaignHashes],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: false
@@ -28,7 +30,7 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
         })
         return transactions;
     
-   }, [td]);
+   }, [td, ca, campaignHashes]);
 
     return(
         <Confirmation 
@@ -42,4 +44,5 @@ export default function RecordPoints({openDrawer, toggleDrawer }: RecordPointsPr
 type RecordPointsProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    campaignHashes: Hex[];
 };

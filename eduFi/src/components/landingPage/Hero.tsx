@@ -2,11 +2,11 @@ import { Zap, ArrowRight, Play } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
 
-export default function Hero() {
-    const { setpath } = useStorage();
-    const goToDashboard = () => {
-        setpath('dashboard');
-    }
+export default function Hero({handleClick} : {handleClick: () => void}) {
+    // const { setpath } = useStorage();
+    // const goToDashboard = () => {
+    //     setpath('dashboard');
+    // }
 
     return(
         <section className="relative px-4 py-12 md:py-20 text-center bg-gradient-to-br from-gray-50 to-cyan-50">
@@ -30,18 +30,16 @@ export default function Hero() {
                 </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Button onClick={goToDashboard} variant={'outline'} className="group bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-cyan-500/25">
-                    <span className="flex items-center justify-center">
-                        Start Learning
-                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                </Button>
-                <Button variant={'outline'} className="group border-2 border-cyan-500 text-cyan-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-cyan-500 hover:text-white transition-all duration-300">
+                <button onClick={handleClick} className="flex justify-center items-center group bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-cyan-500/25">
+                    <a href="#connect" className="text-white hover:text-cyan-600 transition-colors font-medium">Start Learning</a>                        
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button disabled className="group border-2 border-cyan-500 text-cyan-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-cyan-500 hover:text-white transition-all duration-300">
                     <span className="flex items-center justify-center">
                         <Play className="w-5 h-5 mr-2" />
                         Watch Demo
                     </span>
-                </Button>
+                </button>
             </div>
 
             <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto">

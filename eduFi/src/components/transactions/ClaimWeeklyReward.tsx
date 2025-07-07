@@ -1,10 +1,12 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { Address, filterTransactionData, FunctionName } from '../utilities';
+import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
+import { Address, FunctionName } from '../../../types/quiz';
+import { Hex } from 'viem';
 
-export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: claimProps) {
+export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -12,7 +14,7 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['claimWeeklyReward'],
+            functionNames: ['claimReward'],
             callback
         });
 
@@ -23,7 +25,7 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [weekId],
+                args: [weekId, campainHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -32,7 +34,7 @@ export default function ClaimWeeklyReward({weekId, openDrawer, toggleDrawer }: c
         })
         return transactions;
     
-   }, [td, weekId]);
+   }, [td, weekId, campainHash]);
 
     return(
         <Confirmation 
@@ -47,4 +49,5 @@ type claimProps = {
     weekId: bigint;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    campainHash: Hex;
 };

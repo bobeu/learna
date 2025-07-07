@@ -45,6 +45,11 @@ export default function Home() {
         }
     }, []);
 
+    React.useEffect(() => {
+        if(isConnected && currentPath === 'home') setpath('dashboard');
+        if(!isConnected && currentPath !== 'home') setpath('home');
+    }, [isConnected]);
+
     // Load user results from localStorage on component mount
     useEffect(() => {
         const savedResults = localStorage.getItem('quizResults');
@@ -123,7 +128,7 @@ export default function Home() {
         const { contractAddresses: ca, transactionData: td } = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['getData', 'owner', 'getUserData'],
+            functionNames: ['getData', 'owner'],
             callback: (arg: TrxState) => {
                 if(arg.message) setMessage(arg.message);
                 if(arg.errorMessage) setErrorMessage(arg.errorMessage);

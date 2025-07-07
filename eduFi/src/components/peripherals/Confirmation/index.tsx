@@ -178,13 +178,15 @@ export const Confirmation :
                 case 'recordPoints':
                     await delegateTransactionTask();
                     callback({message: "Now saving your points..."});
-                    const recordArgs = [account, totalScores];
+                    let args_ = args;
+                    args_[1] = totalScores;
+                    // const recordArgs = [account, totalScores];
                     hash = await writeContractAsync({
                         abi,
                         functionName,
                         address: contractAddress,
                         account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                        args: recordArgs,
+                        args: args_,
                         dataSuffix
                     });
                     hash = await waitForConfirmation(hash, '');

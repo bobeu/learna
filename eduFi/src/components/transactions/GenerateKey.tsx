@@ -3,12 +3,12 @@ import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount, useConfig, useReadContracts } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { parseUnits } from "viem";
+import { Hex, parseUnits } from "viem";
 import { ArrowRight } from "lucide-react";
 import { FunctionName, Address, Profile } from '../../../types/quiz';
 
 const VALUE = parseUnits('1', 16);
-export default function GenerateKey({functionName, buttonClassName} : {functionName: FunctionName, buttonClassName?: string}) {
+export default function GenerateKey({functionName, campainHash, buttonClassName} : {campainHash: Hex, functionName: FunctionName, buttonClassName?: string}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
 
     const toggleDrawer = (arg:number) => setDrawer(arg); 
@@ -22,7 +22,7 @@ export default function GenerateKey({functionName, buttonClassName} : {functionN
         const { contractAddresses: ca, transactionData: td} = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['checkligibility', 'getUserData'],
+            functionNames: ['checkEligibility', 'getProfile'],
         });
 
         const mutate = filterTransactionData({
@@ -32,7 +32,7 @@ export default function GenerateKey({functionName, buttonClassName} : {functionN
         });
 
         const learna = ca.Learna as Address;
-        const readArgs = [[weekId], [account, weekId]];
+        const readArgs = [[weekId, account, campainHash], [account, weekId, [campainHash]]];
         const addresses = [learna, learna];
         const readTxObject = td.map((item, i) => {
             return{
@@ -44,7 +44,7 @@ export default function GenerateKey({functionName, buttonClassName} : {functionN
         });
 
         return { readTxObject, mutate };
-    }, [chainId, weekId, account]);
+    }, [chainId, weekId, account, campainHash]);
 
     // Fetch the user's profile
     const { refetch } = useReadContracts({

@@ -1,7 +1,27 @@
 export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
-export type FunctionName = '' | 'runall' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner' ;
+export type FunctionName = 
+  '' | 
+  'runall' | 
+  "checkEligibility"|
+  'recordPoints'|
+  'banUserFromCampaign'|
+  'setAdmin'|
+  'getAdminStatus'|
+  'hasPassKey'|
+  'setTransitionInterval'|
+  'claimReward'|
+  'sortWeeklyReward'|
+  'adjustCampaignValues'|
+  'setUpCampaign'|
+  'getProfile'|
+  'generateKey'|
+  'getData'|
+  'owner'|
+  'approve'|
+  'setMinimumToken';
+
 export type VoidFunc = () => void;
 export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 export type QuizData = Array<QuizDatum>;

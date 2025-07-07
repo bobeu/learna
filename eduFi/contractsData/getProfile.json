@@ -1,0 +1,91 @@
+{
+  "contractAddress": "0xcaB31Ddbebb41104fca20c96c915926707C19a73",
+  "functionName": "getProfile",
+  "inputCount": 3,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "campaignHashes",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "getProfile",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amountMinted",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amountClaimedInNative",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amountClaimedInERC20",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "claimed",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "points",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "passKey",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "haskey",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "totalQuizPerWeek",
+                  "type": "uint8"
+                }
+              ],
+              "internalType": "struct Learna.Profile",
+              "name": "profile",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "campaignHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct Learna.ReadProfile[]",
+          "name": "result",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

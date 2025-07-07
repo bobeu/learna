@@ -270,7 +270,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * @dev Remove users from the list of campaigns in the current week
      * @param _users : List of users 
      * @notice Only owner function
-     */
+    */
     function banUserFromCampaign(
         address[] memory _users, 
         bytes32[] memory campaignHashes

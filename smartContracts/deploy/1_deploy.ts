@@ -30,11 +30,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	/**
 	 * Deploy Learna contract
 	*/
-	//  address[] memory _admins, 
-    //     uint64 transitionInterval, 
-    //     Mode _mode, 
-    //     address _feeManager,
-    //     bytes32[] memory campaignHashes
 	const campaignHashes = getCampaignHashes();
 	const learna = await deploy("Learna", {
 		from: deployer,
@@ -56,4 +51,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 export default func;
 
-func.tags = ['ProofOfLearning', 'Learna', 'GrowToken'];
+func.tags = ['Learna', 'GrowToken', 'FeeManager'];

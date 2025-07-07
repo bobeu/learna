@@ -1,0 +1,27 @@
+{
+  "contractAddress": "0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB",
+  "functionName": "hasPassKey",
+  "inputCount": 1,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "hasPassKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

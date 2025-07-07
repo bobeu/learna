@@ -207,9 +207,12 @@ export default function Stats() {
         owner,
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
+    const { isConnected } = useAccount();
+
+    console.log("WeekData", weekData)
 
     const backToHome = () => {
-        setpath('home');
+        isConnected? setpath('dashboard') : setpath('home');
     }
 
     const interval = toBN(transitionInterval.toString()).toNumber();
