@@ -1,36 +1,42 @@
 import React from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
-import { Button } from "~/components/ui/button";
+// import { Button } from "~/components/ui/button";
 import CollapsibleComponent from "./Collapsible";
 import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "~/components/ui/carousel";
-import { Address, WeekData } from "../../../types/quiz";
+// import {
+//     Carousel,
+//     CarouselContent,
+//     CarouselItem,
+//     CarouselNext,
+//     CarouselPrevious,
+// } from "~/components/ui/carousel";
+import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
-import { Timer, Fuel, Calendar} from "lucide-react";
+import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
 import CustomButton from "./CustomButton";
 
-function Stat({weekData, index} : {weekData: WeekData, index: number}) {
+function Stat({campaign, index} : {campaign: Campaign, index: number}) {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const { 
-        activeLearners, 
-        claim: { claimActiveUntil, erc20, erc20Addr, native, transitionDate },
-        tippers, 
-        totalPoints, 
-        transitionInterval } = weekData;
+            activeLearners, 
+            claimActiveUntil,
+            transitionDate,
+            totalPoints, 
+            canClaim,
+            fundsERC20,
+            fundsNative,
+            lastUpdated,
+            operator,
+            token
+         } = campaign;
 
     // const intervalBeforeSorted = transitionInterval > 0? transitionInterval / 360 : transitionInterval;
-    const interval = toBN(transitionInterval.toString()).toNumber();
+    // const interval = toBN(transitionInterval.toString()).toNumber();
     const toggleOpen = (arg: boolean) => {
         setIsOpen(arg);
     };
@@ -71,9 +77,9 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                             <Fuel className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                            {`${interval || '0'} Minutes`}
+                            { getTimeFromEpoch(lastUpdated) }
                         </div>
-                        <div className="text-xs text-gray-600">Sorting intervals</div>
+                        <div className="text-xs text-gray-600">Last updated</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -83,7 +89,7 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                         <div className="font-semibold text-gray-800 mb-1">
                             {getTimeFromEpoch(claimActiveUntil)}
                         </div>
-                        <div className="text-xs text-gray-600">Claim ends</div>
+                        <div className="text-xs text-gray-600">Claimable until</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -95,20 +101,31 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                         </div>
                         <div className="text-xs text-gray-600">Date until sorting active</div>
                     </div>
+
+                     <div className={`glass-card rounded-xl p-4 ${canClaim? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="flex items-center justify-center mb-3">
+                            <BaggageClaim className={`w-5 h-5`} />
+                            <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
+                        </div>
+                         <div className="font-semibold text-gray-800 mb-1">
+                            {getTimeFromEpoch(claimActiveUntil)}
+                        </div>
+                        <div className="text-xs text-cyan-600">Claim ends</div>
+                    </div>
                 </div>
 
                 {/* Allocations */}
                 <div className="space-y-4">
-                    <div className="text-lg text-left font-semibold text-gray-800 mb-2">Allocation</div>
+                    <div className="text-lg text-left font-semibold text-gray-800 mb-2">Funds</div>
                     <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
                         <div className="glass-card rounded-xl p-4">
                             <div className="flex items-center justify-center mb-3">
                                 <Fuel className="w-4 h-4 text-purple-600" />
                             </div>
                             <div className="font-semibold text-gray-800 mb-1">
-                                {formatValue(erc20.totalAllocated.toString()).toStr || '0'} 
+                                {formatValue(fundsERC20.toString()).toStr || '0'} 
                             </div>
-                            <div className="text-xs text-gray-600">$GROW Allocation</div>
+                            <div className="text-xs text-gray-600">ERC20 balance after claim</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -116,25 +133,27 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                                 <Fuel className="w-4 h-4 text-purple-600" />
                             </div>
                             <div className="font-semibold text-gray-800 mb-1">
-                                {formatValue(erc20.totalAllocated.toString()).toStr || '0'} 
+                                {formatValue(fundsNative.toString()).toStr || '0'} 
                             </div>
-                            <div className="text-xs text-gray-600">$CELO Allocation</div>
+                            <div className="text-xs text-gray-600">$CELO balance after claim</div>
+                        </div>
+                        
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Fuel className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div className="font-semibold text-gray-800 mb-1">
+                                <AddressWrapper account={token} size={4} display/> 
+                            </div>
+                            <div className="text-xs text-gray-600">Funded asset</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Claims */}
+                {/* Claims
                 <div className="space-y-4 ">
                     <div className="text-lg text-left font-semibold text-gray-800 my-2">Claims</div>
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Fuel className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div className="font-semibold text-gray-800 mb-1">
-                            <AddressWrapper account={erc20Addr} size={4} display/> 
-                        </div>
-                        <div className="text-xs text-gray-600">$GROW Address</div>
-                    </div>
+                   
                     <div className="grid grid-cols-2 gap-3">
                         <div className="glass-card rounded-xl p-4">
                             <div className="flex items-center justify-center mb-3">
@@ -155,8 +174,8 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                             <div className="text-xs text-gray-600">$CELO Claimed</div>
                         </div>
                     </div>
-                </div>
-                <div className="bg-gradient-to-r my-4 flex justify-center items-center py-6 glass-card rounded-2xl ">
+                </div> */}
+                {/* <div className="bg-gradient-to-r my-4 flex justify-center items-center py-6 glass-card rounded-2xl ">
                     {
                         (tippers && tippers.length > 0) &&  <div className="space-y-2 ">
                             <h3 className="text-lg font-semibold">Tippers</h3>
@@ -193,13 +212,15 @@ function Stat({weekData, index} : {weekData: WeekData, index: number}) {
                             </Carousel>
                         </div>
                     }
-                </div>
+                </div> */}
             </MotionDisplayWrapper>
         </CollapsibleComponent>
     )
 }
 
 export default function Stats() {
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+
     const account = useAccount().address as Address || zeroAddress;
     const {  
         setpath, 
@@ -209,13 +230,41 @@ export default function Stats() {
     } = useStorage();
     const { isConnected } = useAccount();
 
-    console.log("WeekData", weekData)
+    // console.log("WeekData", weekData)
+
+    const toggleOpen = (arg: boolean) => {
+        setIsOpen(arg);
+    }
 
     const backToHome = () => {
         isConnected? setpath('dashboard') : setpath('home');
     }
-
     const interval = toBN(transitionInterval.toString()).toNumber();
+    
+
+    const renderWeekData = React.useCallback(() => {
+        return weekData.map(({campaigns, weekId}) => (
+            <CollapsibleComponent 
+                key={weekId}
+                header={`Week ${weekId.toString()}`} 
+                isOpen={isOpen} 
+                toggleOpen={toggleOpen}
+                overrideClassName="relative"
+                triggerClassName="bg-gradient-to-r from-cyan-500 to-purple-500 py-2 px-4 border rounded-xl text-white font-semibold"
+            >
+                <MotionDisplayWrapper>
+                    {
+                        campaigns.map((campaign, index) => (
+                            <Stat 
+                                index={index}
+                                campaign={campaign}
+                            />
+                        ))
+                    }
+                </MotionDisplayWrapper>
+            </CollapsibleComponent>
+        ))
+    }, [weekData, isOpen, toggleOpen ]);
 
     return(
         <Wrapper2xl useMinHeight={true} >
@@ -255,11 +304,7 @@ export default function Stats() {
             <div className="space-y-1 mb-4">
                 <div className="text-2xl text-left font-bold text-gray-800 mb-2">Weeks Data</div>
                 <div className="border rounded-2xl p-4">
-                    {
-                        weekData.length && weekData.map((wkd, index) => (
-                        <Stat weekData={wkd} key={index} index={index}/>
-                        ))
-                    }
+                    { renderWeekData() }
                 </div>
                 
             </div>

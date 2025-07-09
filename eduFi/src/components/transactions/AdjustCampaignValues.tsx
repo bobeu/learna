@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, toggleDrawer }: claimProps) {
+export default function AdjustCampaignValues({erc20Values, nativeValues, openDrawer, campaignHashes, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -14,7 +14,7 @@ export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, togg
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['claimReward'],
+            functionNames: ['adjustCampaignValues'],
             callback
         });
 
@@ -25,7 +25,7 @@ export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, togg
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [weekId, campainHash],
+                args: [campaignHashes, erc20Values, nativeValues],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -34,7 +34,7 @@ export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, togg
         })
         return transactions;
     
-   }, [td, weekId, campainHash]);
+   }, [td, campaignHashes, erc20Values, nativeValues]);
 
     return(
         <Confirmation 
@@ -45,9 +45,10 @@ export default function ClaimWeeklyReward({weekId, campainHash, openDrawer, togg
     )
 }
 
-type claimProps = {
-    weekId: bigint;
+type RegisterUsersForWeeklyEarningProps = {
+    campaignHashes: Hex[];
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campainHash: Hex;
+    erc20Values: bigint[];
+    nativeValues: bigint[];
 };

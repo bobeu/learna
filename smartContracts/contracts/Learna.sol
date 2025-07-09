@@ -25,7 +25,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
     event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32[] campainHashes);
     event Banned(address[] indexed users, uint weekId, bytes32[] campainHashes);
-    event Sorted(uint _weekId, uint newWeekId, bytes32[] campainHashes);
+    event Sorted(uint _weekId, uint newWeekId, string[] campainHashes);
     event PasskeyGenerated(address indexed sender, uint weekId, bytes32[] campainHashes);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
 
@@ -53,6 +53,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Readonly data
     struct ReadData {
         State state;
+        CampaignData[] cData;
         WeekData[] wd;
     }
 
@@ -110,7 +111,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         uint64 transitionInterval, 
         Mode _mode, 
         address _feeManager,
-        bytes32[] memory campaignHashes
+        string[] memory _campaigns
     ) Ownable(_msgSender()) {
         _initializeEmptyAdminSlot();
         state.minimumToken = 1e16;
@@ -118,7 +119,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         dev = _msgSender();
         require(_feeManager != address(0), "Fee manager is zero");
         feeManager = _feeManager;
-        uint weekId = 0;
+        uint weekId = state.weekCounter;
         if(mode == Mode.LIVE){
             state.transitionInterval = transitionInterval;
         } 
@@ -126,8 +127,8 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             if(_admins[i] != address(0)) _setAdmin(_admins[i], true); 
         }
 
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            _initializeCampaign(weekId, campaignHashes[i]);
+        for(uint i = 0; i < _campaigns.length; i++) {
+            _initializeCampaign(weekId, _campaigns[i]);
         }
     }
 
@@ -470,7 +471,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @dev Add new campaign to the current week
-     * @param campaignHash : List of campaign hashes
+     * @param campaign : Campaign string
      * @param token : ERC20 contract address if fundsErc20 is greater than 0
      * @param fundsErc20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
      * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
@@ -479,12 +480,12 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * - Native such as CELO.
      */
     function setUpCampaign(
-        bytes32 campaignHash, 
+        string memory campaign, 
         uint256 fundsErc20,
         address token
     ) public payable returns(bool) {
         uint weekId = state.weekCounter;
-        Campaign memory cp = _initializeCampaign(weekId, campaignHash);
+        (Campaign memory cp, bytes32 campaignHash) = _initializeCampaign(weekId, campaign);
         address sender = _msgSender();
         address recipient = address(this);
         unchecked {
@@ -514,7 +515,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev Allocate weekly earnings
      * @param growTokenContract : Grow Token contract address.
-     * @param campaignHashes : Campaign hashes.
+     * @param _campaigns : Campaign hashes.
      * @param amountInGrowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
@@ -522,7 +523,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     function sortWeeklyReward(
         address growTokenContract,
         uint amountInGrowToken, 
-        bytes32[] memory campaignHashes
+        string[] memory _campaigns
     ) 
         public 
         whenNotPaused 
@@ -535,14 +536,14 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         assert(newWeekId > pastWeekId);
         require(growTokenContract != address(0), 'Token is zero');
         uint256 totalBalInNative;
-        for(uint i=0; i<campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
+        for(uint i=0; i < _campaigns.length; i++) {
+            string memory campaign = _campaigns[i];
+            (Campaign memory newCp, bytes32 campaignHash) = _initializeCampaign(newWeekId, campaign);
             _validateCampaign(campaignHash, pastWeekId);
             Campaign memory cp = _getCampaign(pastWeekId, campaignHash);
             if(mode == Mode.LIVE) {
                 require(cp.transitionDate > 0 && _now() >= cp.transitionDate, 'Transition date in future');
             }
-            Campaign memory newCp = _initializeCampaign(newWeekId, campaignHash);
             (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
             unchecked {
                 totalBalInNative += nativeBalance;
@@ -562,7 +563,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         }
         require(address(this).balance >= totalBalInNative, "Balance anomally");
 
-        emit Sorted(pastWeekId, newWeekId, campaignHashes);   
+        emit Sorted(pastWeekId, newWeekId, _campaigns);   
         return true;
     }
 
@@ -603,22 +604,22 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
         data.state = state;
+        data.cData = _getCampaingData();
         uint weekId = data.state.weekCounter;
-        WeekData[] memory wd = new WeekData[](weekId);
-        data.wd = wd;
-        wd = new WeekData[](weekId + 1);
-        weekId += 1;
-        for(uint i = 0; i < weekId; i++) {
-            wd[i].weekId = i;
-            wd[i].campaigns = _getCampaings(i);
+        // data.wd = new WeekData[](weekId);
+        // data.wd = wd;
+        if(weekId > 0) {
+            data.wd = new WeekData[](weekId + 1);
+            weekId += 1;
+            for(uint i = 0; i < weekId; i++) {
+                data.wd[i].weekId = i;
+                data.wd[i].campaigns = _getCampaings(i);
+            }
+        } else {
+            data.wd = new WeekData[](1);
+           data.wd[0].campaigns = _getCampaings(0); 
         }
-        // if(weekId > 0) {
-        // } else {
-        //     wd = new WeekData[](1);
-        //     wd[0].weekId = 0;
-        //     wd[0].campaigns = _getCampaings(0);
-        // }
-        data.wd = wd;
+        // data.wd = wd;
         return data;
     } 
 

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xcaB31Ddbebb41104fca20c96c915926707C19a73",
+  "contractAddress": "0xCfDa5a219a79295730770F08a30BDF3cAE525bE5",
   "functionName": "claimReward",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -27,9 +27,9 @@
           "type": "address"
         },
         {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
+          "internalType": "string[]",
+          "name": "_campaigns",
+          "type": "string[]"
         }
       ],
       "stateMutability": "nonpayable",
@@ -516,9 +516,9 @@
         },
         {
           "indexed": false,
-          "internalType": "bytes32[]",
+          "internalType": "string[]",
           "name": "campainHashes",
-          "type": "bytes32[]"
+          "type": "string[]"
         }
       ],
       "name": "Sorted",
@@ -713,6 +713,23 @@
               "internalType": "struct Learna.State",
               "name": "state",
               "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Campaigns.CampaignData[]",
+              "name": "cData",
+              "type": "tuple[]"
             },
             {
               "components": [
@@ -1043,9 +1060,9 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
+          "internalType": "string",
+          "name": "campaign",
+          "type": "string"
         },
         {
           "internalType": "uint256",
@@ -1082,9 +1099,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
+          "internalType": "string[]",
+          "name": "_campaigns",
+          "type": "string[]"
         }
       ],
       "name": "sortWeeklyReward",

@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { getCampaigns, setUpCampaign } from "../utils";
 import { parseEther, parseUnits } from "viem";
-import { campaignHashes } from "../../hashes";
+import { CAMPAIGNS, getCampaignHashes } from "../../hashes";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -16,11 +16,13 @@ describe("Learna", function () {
       const { learna, growToken, learnaAddr, signers : { signer1, admin2, signer1Addr, deployer }, growTokenAddr} = await loadFixture(deployContractsFixcture);
       let fundERC20 = parseEther('5');
       let value = parseEther('1');
+      const { campaignData } = await getCampaigns(learna);
+      const { campaignHashes } = getCampaignHashes(campaignData);
       const erc20Amount = fundERC20 * BigInt(campaignHashes.length);
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
-      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaignHashes, fundERC20, token: growTokenAddr, value});
-      const campaigns = cp.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
+      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaigns: CAMPAIGNS, fundERC20, token: growTokenAddr, value});
+      const campaigns = cp.campaigns.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
       // console.log("campaignHashes.length: ", campaignHashes.length);
       const newErc20Values = campaignHashes.map((_, i) => {
         const reducer = parseUnits((i+1).toString(), 9);
@@ -37,7 +39,7 @@ describe("Learna", function () {
       });
 
       await learna.connect(admin2).adjustCampaignValues(campaignHashes, newErc20Values,newNativeValues);
-      const newCampaigns = (await getCampaigns(learna)).filter((_, i) => i > 0);;
+      const newCampaigns = (await getCampaigns(learna)).campaigns.filter((_, i) => i > 0);;
 
       campaigns.forEach((campaign, i) => {
         expect(campaign.activeLearners).to.be.eq(newCampaigns[i].activeLearners);

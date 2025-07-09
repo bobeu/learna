@@ -4,40 +4,37 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
+import { Hex } from 'viem';
 
-export default function SortWeeklyReward({growTokenAmount, campaignString, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
+export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
-    const { transactionData: td, args, contractAddress } = React.useMemo(() => {
+    const { transactionData: td } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['sortWeeklyReward'],
+            functionNames: ['banUserFromCampaign'],
             callback
         });
 
-        const contractAddress = filtered.contractAddresses.Learna as Address;
-        const growToken = filtered.contractAddresses.GrowToken as Address;
-        const args = [growToken, growTokenAmount, campaignString];
-
-        return { ...filtered, args, contractAddress };
-    }, [chainId, callback, growTokenAmount, campaignString]);
+        return { ...filtered };
+    }, [chainId, callback]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args,
-                contractAddress,
+                args: [[user], [campaignHash]],
+                contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
-                requireArgUpdate: false
+                requireArgUpdate: txObject.requireArgUpdate
             };
             return transaction;
         })
         return transactions;
     
-   }, [td, args, contractAddress]);
+   }, [td, user, campaignHash]);
 
     return(
         <Confirmation 
@@ -48,9 +45,9 @@ export default function SortWeeklyReward({growTokenAmount, campaignString, openD
     )
 }
 
-type SortWeeklyRewardProps = {
-    growTokenAmount: bigint;
+type RegisterUsersForWeeklyEarningProps = {
+    user: Address;
+    campaignHash: Hex;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campaignString: string[];
 };

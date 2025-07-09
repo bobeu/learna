@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment, } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
-import { getCampaignHashes  } from "../hashes";
+import { CAMPAIGNS  } from "../hashes";
 
 dotconfig();
 enum Mode { LOCAL, LIVE }
@@ -30,10 +30,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	/**
 	 * Deploy Learna contract
 	*/
-	const campaignHashes = getCampaignHashes();
+	// const campaignHashes = getCampaignHashes();
 	const learna = await deploy("Learna", {
 		from: deployer,
-		args: [[admin, admin2, deployer], transitionInterval, mode, feeManager.address, campaignHashes],
+		args: [[admin, admin2, deployer], transitionInterval, mode, feeManager.address, CAMPAIGNS],
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${learna.address}`);

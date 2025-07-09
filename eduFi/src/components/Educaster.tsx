@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Address, Category, Path, Quiz, QuizResult, ReadData, SelectedData, TransactionCallback, TrxState } from '../../types/quiz';
+import { Address, Campaign, Category, Path, Quiz, QuizResult, ReadData, SelectedData, TransactionCallback, TrxState } from '../../types/quiz';
 import { Dashboard } from '~/components/quizComponents/Dashboard';
 import { QuizInterface } from '~/components/quizComponents/QuizInterface';
 import { QuizResults } from '~/components/quizComponents/QuizResults';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
-import { zeroAddress } from 'viem';
+import { bytesToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
-import { filterTransactionData, mockQuiz, mockQuizResult, mockReadData, mockSelectedData, loadQuizData } from './utilities';
+import { filterTransactionData, mockQuiz, mockQuizResult, mockReadData, mockSelectedData, loadQuizData, formatAddr, mockCampaign } from './utilities';
 import LandingPage from './landingPage';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
-import SendTip from './peripherals/SendTip';
+import SetupCampaign from './peripherals/SetupCampaign';
 
 
 const TOTAL_POINTS = 100;
@@ -28,14 +28,15 @@ export default function Home() {
 
     const dataRef = React.useRef<SelectedData>(mockSelectedData);
     const [currentPath, setPath] = React.useState<Path>('home');
-    const [showFinishButton, setShowFinishButton] = React.useState<boolean>(false);
+    const [selectedCampaign, setSelectedCampaign] = React.useState<Campaign>(mockCampaign);
     const [questionIndex, setIndex] = React.useState<number>(0);
     const [questionsId, setQuestionId] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState<boolean>(false);
     
     const chainId = useChainId();
     const config = useConfig();
-    const { isConnected, } = useAccount();
+    const { isConnected, address } = useAccount();
+    const account = formatAddr(address);
     // const { user } = useNeynarContext();
 
     React.useEffect(() => {
@@ -118,6 +119,11 @@ export default function Home() {
         setLoading(arg);
     }
 
+    const setselectedCampaign = (arg: Campaign) => {
+        setSelectedCampaign(arg);
+        if(currentPath !== 'profile') setPath('profile');
+    };
+
     const callback : TransactionCallback = (arg) => {
         if(arg.message) setMessage(arg.message);
         if(arg.errorMessage) setErrorMessage(arg.errorMessage);
@@ -128,7 +134,7 @@ export default function Home() {
         const { contractAddresses: ca, transactionData: td } = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['getData', 'owner'],
+            functionNames: ['owner', 'getData', 'getAdminStatus'],
             callback: (arg: TrxState) => {
                 if(arg.message) setMessage(arg.message);
                 if(arg.errorMessage) setErrorMessage(arg.errorMessage);
@@ -136,10 +142,10 @@ export default function Home() {
         });
 
         const learna = ca.Learna as Address;
-        const readArgs = [[], []];
-        const addresses = [learna, learna];
+        const readArgs = [[], [], [account]];
+        const addresses = [1, 2, 3].map(() => learna);
 
-        // console.log("Abi", td);
+        console.log("Abi", addresses);
         const readTxObject = td.map((item, i) => {
             return{
                 abi: item.abi,
@@ -164,18 +170,30 @@ export default function Home() {
         }
     });
 
-    const { weekId, state, owner, weekData } = React.useMemo(() => {
-        const data = result?.[0]?.result as ReadData || mockReadData;
+    const { weekId, state, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
+        const data = result?.[1]?.result as ReadData || mockReadData;
         const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
-        const owner = result?.[1]?.result as Address || zeroAddress;
+        console.log("data.cData", result)
+        const campaignData = [...data.cData].map(({campaignHash, encoded}) => {
+            const campaign = bytesToString(encoded);
+            return {campaignHash, campaign}
+        });
+        const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
+        const campaignStrings = campaignData.map(({campaign}) => campaign);
+        const owner = result?.[0]?.result as Address || zeroAddress;
         const weekData = [...data.wd];
+        const userAdminStatus = result?.[2]?.result as boolean;
 
         return {
             weekId,
             state,
             owner,
             weekData,
+            campaignData,
+            campaignStrings,
+            campaignHashes,
+            userAdminStatus
         }
     }, [result]);
 
@@ -206,8 +224,8 @@ export default function Home() {
                 app = <Stats />;
                 break;
 
-            case 'sendtip':
-                app = <SendTip />;
+            case 'setupcampaign':
+                app = <SetupCampaign />;
                 break;
         
             default:
@@ -234,8 +252,11 @@ export default function Home() {
                 owner,
                 refetch,
                 questionsId,
+                campaignHashes,
+                campaignStrings,
                 appData,
                 setmessage,
+                setselectedCampaign,
                 setError,
                 result: quizResult? quizResult : mockQuizResult,
                 quiz: selectedQuiz? selectedQuiz : mockQuiz,
@@ -245,15 +266,12 @@ export default function Home() {
                 onComplete: handleQuizComplete,
                 onBack: handleBackToDashboard,
                 userResults,
-                // clearData,
+                campaignData,
+                userAdminStatus,
                 toggleLoading,
                 callback,
-                // handleSelectAnswer,
                 errorMessage,
-                // toggleShowFinishButton,
-                // clearSelectedData,
-                // resetQuestionIndex,
-                showFinishButton
+                selectedCampaign
             }}
         >
             <LayoutContext> { renderedApp }</LayoutContext>

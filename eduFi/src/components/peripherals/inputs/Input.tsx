@@ -3,7 +3,7 @@ import { Input as InputComponent } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 // import { Button } from "~/components/ui/button";
 
-export type InputTag = 'erc20amount' | 'tokenaddress' | 'owner';
+export type InputTag = 'growtokenamount' | 'celoamount' | 'erc20amount' | 'token' | 'campaignhash';
 export interface InputCategoryProp {
     selected: string | number;
     handleChange: (value: string, tag: InputTag) => void

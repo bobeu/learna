@@ -2,9 +2,9 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { claimReward, getPassKey, recordPoints, setUpCampaign, sortWeeklyEarning, transferToken } from "../utils";
+import { claimReward, getCampaigns, getPassKey, recordPoints, setUpCampaign, sortWeeklyEarning } from "../utils";
 import { parseEther } from "viem";
-import { campaignHashes, getPoints } from "../../hashes";
+import { CAMPAIGNS, getCampaignHashes, getPoints,  } from "../../hashes";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -18,12 +18,14 @@ describe("Learna", function () {
       const fundERC20 = parseEther('80');
       const signer1PointsEarned = 70;
       const signer2PointsEarned = 90;
-      const campaignSize = BigInt(campaignHashes.length)
+      const { campaignData } = await getCampaigns(learna);
+      const { campaignHashes } = getCampaignHashes(campaignData);
+      const campaignSize = BigInt(campaignHashes.length);
       const valuePerCampaign = parseEther('1');
       const { state: {weekCounter: weekId} } = await learna.getData();
       const nativeBalOfLearnerB4 = await signer1.provider?.getBalance(learnaAddr);
       await growToken.connect(deployer).approve(learnaAddr, fundERC20 * campaignSize);
-      await setUpCampaign({learna, signer: deployer, fundERC20, campaignHashes, value: valuePerCampaign, token: growTokenAddr});
+      await setUpCampaign({learna, signer: deployer, fundERC20, campaigns: CAMPAIGNS, value: valuePerCampaign, token: growTokenAddr});
       const nativeBalOfLearnerAfterSetup = await signer1.provider?.getBalance(learnaAddr);
       if(nativeBalOfLearnerB4 && nativeBalOfLearnerAfterSetup){
         expect(nativeBalOfLearnerAfterSetup > nativeBalOfLearnerB4).to.be.true;
@@ -40,7 +42,7 @@ describe("Learna", function () {
         expect(isEligible).to.be.false;
       }
 
-      await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, campaignHashes});
+      await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, campaigns: CAMPAIGNS});
       for(let i = 0; i < campaignHashes.length; i++) {
         const campaignHash = campaignHashes[i];
         const isEligibleAfter = await learna.connect(signer1).checkEligibility(weekId, signer1Addr, campaignHash);

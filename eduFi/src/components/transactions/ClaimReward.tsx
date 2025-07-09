@@ -1,10 +1,12 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { Address, filterTransactionData, FunctionName } from '../utilities';
+import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
+import { Address, FunctionName } from '../../../types/quiz';
+import { Hex } from 'viem';
 
-export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawer, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
+export default function ClaimReward({weekId, campainHash, openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -12,7 +14,7 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['removeUsersForWeeklyEarning'],
+            functionNames: ['claimReward'],
             callback
         });
 
@@ -23,7 +25,7 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [user, weekId],
+                args: [weekId, campainHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -32,7 +34,7 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
         })
         return transactions;
     
-   }, [td, user, weekId]);
+   }, [td, weekId, campainHash]);
 
     return(
         <Confirmation 
@@ -43,9 +45,9 @@ export default function UnregisterUsersForWeeklyEarning({user, weekId, openDrawe
     )
 }
 
-type RegisterUsersForWeeklyEarningProps = {
+type claimProps = {
     weekId: bigint;
-    user: Address;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    campainHash: Hex;
 };

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { formatEther, keccak256, stringToHex, zeroAddress } from "viem";
+import { formatEther, Hex, keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsData/global.json";
@@ -8,7 +8,7 @@ import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import quizRawData from "../../quizData.json";
-import { Address, Category, DifficultyLevel, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizCategory, QuizResult, ReadData, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import { Address, Campaign, Category, DifficultyLevel, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizCategory, QuizResult, ReadData, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -20,58 +20,38 @@ export const mockReadData : ReadData = {
   },
   wd: [
     {
-      activeLearners: 0n,
-      totalPoints: 0n,
-      transitionInterval: 0,
-      claim: {
-        native: { totalAllocated: 0n, totalClaimed: 0n},
-        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
-        erc20Addr: zeroAddress,
-        claimActiveUntil: 0,
-        transitionDate: 0
-      },
-      tippers: [
+      weekId: 0n,
+      campaigns: [
         {
-          id: zeroAddress,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
+          fundsNative: 0n,
+          fundsERC20: 0n,
+          totalPoints: 0n,
+          lastUpdated: 0,
+          activeLearners: 0n,
+          transitionDate: 0,
+          claimActiveUntil: 0,
+          operator: zeroAddress,
+          token: zeroAddress,
+          hash_: zeroAddress,
+          canClaim: false
         },
         {
-          id: `0x${'0'.repeat(41)}1`,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-      ]
-    },
-    {
-      activeLearners: 0n,
-      totalPoints: 0n,
-      transitionInterval: 0,
-      claim: {
-        native: { totalAllocated: 0n, totalClaimed: 0n},
-        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
-        erc20Addr: zeroAddress,
-        claimActiveUntil: 0,
-        transitionDate: 0
-      },
-      tippers: [
-        {
-          id: zeroAddress,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-        {
-          id: `0x${'0'.repeat(41)}1`,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
+          fundsNative: 0n,
+          fundsERC20: 0n,
+          totalPoints: 0n,
+          lastUpdated: 0,
+          activeLearners: 0n,
+          transitionDate: 0,
+          claimActiveUntil: 0,
+          operator: zeroAddress,
+          token: zeroAddress,
+          hash_: zeroAddress,
+          canClaim: false
         },
       ]
-    },
-  ] 
+    }
+  ],
+  cData: []
 }
 
 export const mockProfile : Profile = {
@@ -81,7 +61,8 @@ export const mockProfile : Profile = {
   points: 0,
   passKey: "0x",
   haskey: false,
-  totalQuizPerWeek: 0
+  totalQuizPerWeek: 0,
+  amountMinted: 0n
 }
 
 export const mockScoresParam : ScoresParam =  {
@@ -131,6 +112,20 @@ export const mockQuizResult : QuizResult = {
   timeSpent: 0,
   answers: {},
   completedAt: new Date()
+}
+
+export const mockCampaign : Campaign = {
+  fundsNative: 0n,
+  fundsERC20: 0n,
+  totalPoints: 0n,
+  lastUpdated: 0,
+  activeLearners: 0n,
+  transitionDate: 0,
+  claimActiveUntil: 0,
+  operator: zeroAddress,
+  token: zeroAddress,
+  hash_: zeroAddress,
+  canClaim: false
 }
 
 /**
@@ -195,12 +190,27 @@ export function getDivviReferralUtilities() {
  * @returns Formatted value.
  */
 export const formatValue = (arg: string | number | ethers.BigNumberish | bigint | undefined) => {
-    const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
-    return {
-      toStr: valueInBigNumber.toString(),
-      toNum: valueInBigNumber.toNumber()
-    }
+  const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
+  return {
+    toStr: valueInBigNumber.toString(),
+    toNum: valueInBigNumber.toNumber()
   }
+}
+
+/**
+ * @dev Accept an array of string. The result is the hashed version of each content in the data object
+ * @param data : An Array of string to hash
+ * @returns Hashed values
+*/
+export function getCampaignHashes(data: string[]) {
+  let result : Hex[] = [];
+  data.forEach((item, i) => {
+    const hash = keccak256(stringToBytes(item));
+    result.push(hash);
+  })
+  console.log("Result", result);
+  return result;
+}
   
 /**
  * @dev Formats an undefined address type object to a defined one

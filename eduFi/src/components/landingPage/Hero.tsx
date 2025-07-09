@@ -1,12 +1,13 @@
-import { Zap, ArrowRight, Play } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Zap, ArrowRight, LucideBox } from "lucide-react";
+// import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
 
 export default function Hero({handleClick} : {handleClick: () => void}) {
-    // const { setpath } = useStorage();
-    // const goToDashboard = () => {
-    //     setpath('dashboard');
-    // }
+    const { setpath } = useStorage();
+
+    const goToSetupCampaign = () => {
+        setpath('setupcampaign');
+    }
 
     return(
         <section className="relative px-4 py-12 md:py-20 text-center bg-gradient-to-br from-gray-50 to-cyan-50">
@@ -34,10 +35,10 @@ export default function Hero({handleClick} : {handleClick: () => void}) {
                     <a href="#connect" className="text-white hover:text-cyan-600 transition-colors font-medium">Start Learning</a>                        
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button disabled className="group border-2 border-cyan-500 text-cyan-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-cyan-500 hover:text-white transition-all duration-300">
+                <button onClick={goToSetupCampaign} className="group border-2 border-cyan-500 text-cyan-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-cyan-500 hover:text-white transition-all duration-300">
                     <span className="flex items-center justify-center">
-                        <Play className="w-5 h-5 mr-2" />
-                        Watch Demo
+                        <LucideBox className="w-5 h-5 mr-2" />
+                        Add New Or Fund Existing Campaign
                     </span>
                 </button>
             </div>

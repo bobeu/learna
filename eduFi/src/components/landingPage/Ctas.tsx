@@ -26,7 +26,7 @@ export default function Ctas() {
                         </span>
                     </Button>
                     <Button variant={'outline'} className="border-2 border-gray-300 text-gray-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 hover:border-gray-400 transition-all duration-300">
-                        Learn More
+                        <a href="#how-it-works" className="text-gray-600 hover:text-cyan-600 transition-colors font-medium">Learn More</a>
                     </Button>
                 </div>
             </div>

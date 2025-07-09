@@ -22,6 +22,13 @@ abstract contract Campaigns {
         bool canClaim;
     }
 
+    struct CampaignData {
+        bytes32 campaignHash;
+        bytes encoded;
+    }
+
+    CampaignData[] private campaignData;
+
     //week data for all campaigns
     mapping(uint weekId => Campaign[]) private campaigns;
 
@@ -34,8 +41,8 @@ abstract contract Campaigns {
      * @param campaignHash : Campaign Hash : Hash of the campaign string e.g keccack256("Solidity")
     */
     function _validateCampaign(bytes32 campaignHash, uint weekId) internal view {
-        require(campaignIds[weekId][campaignHash] > 0, "Not a valid campaign");
-    }
+        require(_isInitializedCampaign(weekId, campaignHash), "Not a valid campaign");
+    } 
 
     /**
      * @dev Check if a campaign has been funded
@@ -71,14 +78,25 @@ abstract contract Campaigns {
     }
 
     /**
+     * @dev Return the hashed result of a campaign string
+     * @param campaign : Campaign string
+     */
+    function _getCampaignHash(string memory campaign) internal pure returns(bytes32 hash_, bytes memory encoded) {
+        encoded = bytes(campaign);
+        hash_ = keccak256(encoded);
+    }
+
+    /**
      * @dev Initializeds a new campaign slot
      * @param weekId : Week Id
-     * @param campaignHash : Campaign hash
+     * @param campaign : Campaign string
      * @notice Campaigns with zero index are not initialized hence invalid
     */
-    function _initializeCampaign(uint weekId, bytes32 campaignHash) internal returns(Campaign memory result) {
+    function _initializeCampaign(uint weekId, string memory campaign) internal returns(Campaign memory result, bytes32 _campaignHash) {
         uint32 cId;
+        (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(campaign);
         if(!_isInitializedCampaign(weekId, campaignHash)){
+            campaignData.push(CampaignData(campaignHash, encoded));
             cId = _getTotalCampaignForAGivenWeek(weekId);
             campaigns[weekId].push();
             if(cId == 0) {
@@ -90,6 +108,7 @@ abstract contract Campaigns {
         } else {
             cId = _getCampaignId(weekId, campaignHash);
         }
+        _campaignHash = campaignHash;
         result = campaigns[weekId][cId];
     }
 
@@ -100,6 +119,13 @@ abstract contract Campaigns {
      */
     function _getCampaings(uint weekId) internal view returns(Campaign[] memory data) {
         data = campaigns[weekId];
+    }
+
+    /**
+     * Return campaign data with encoded and hashed values
+     */
+    function _getCampaingData() internal view returns(CampaignData[] memory cData) {
+        cData = campaignData;
     }
 
     /**

@@ -16,7 +16,7 @@ export const campaignHashes = [
   '0xc162469c13e9be46edb3d505b604b45100194a04c826d2f4a55f3ab391fb8267'
 ] as Hex[];
 
-const CAMPAIGNS = [
+export const CAMPAIGNS = [
     'solidity',
     'wagmi',
     'reactjs',
@@ -40,6 +40,6 @@ export function getCampaignHashes() {
             console.log("New push",hash);
         }
     })
-    console.log("campaignHashes",campaignHashes);
+    // console.log("campaignHashes",campaignHashes);
     return campaignHashes;
 }

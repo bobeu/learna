@@ -46,7 +46,7 @@ export default function GenerateKey({functionName, campainHash, buttonClassName}
         return { readTxObject, mutate };
     }, [chainId, weekId, account, campainHash]);
 
-    // Fetch the user's profile
+    // Fetch the user's profile and eligibility status
     const { refetch } = useReadContracts({
         config,
         contracts: readTxObject

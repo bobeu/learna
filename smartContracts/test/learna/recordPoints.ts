@@ -2,8 +2,8 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { getPassKey, recordPoints } from "../utils";
-import { campaignHashes, getPoints } from "../../hashes";
+import { getCampaigns, getPassKey, recordPoints } from "../utils";
+import { getCampaignHashes, getPoints } from "../../hashes";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -16,7 +16,8 @@ describe("Learna", function () {
       const pointsEarned = 60;
       const { state : {weekCounter: weekId}} = await learna.getData();
       const points = getPoints(pointsEarned);
-
+      const { campaignData } = await getCampaigns(learna);
+      const { campaignHashes } = getCampaignHashes(campaignData);
       // Recording point without passkey should fail
       await expect( recordPoints({deployer, learna, points, campaignHashes, user: signer1Addr, token: growTokenAddr}))
       .to.be.revertedWith('No pass key');

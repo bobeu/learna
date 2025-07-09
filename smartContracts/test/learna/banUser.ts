@@ -2,8 +2,8 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { getPassKey, banUserFromCampaig } from "../utils";
-import { campaignHashes } from "../../hashes";
+import { getPassKey, banUserFromCampaig, getCampaigns } from "../utils";
+import { getCampaignHashes } from "../../hashes";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -14,6 +14,8 @@ describe("Learna", function () {
     it("An admin should be able to remove user from weekly earning payroll", async function () {
       const { learna, growTokenAddr, signers : { deployer, signer1Addr, signer1 },} = await loadFixture(deployContractsFixcture);
       const { state: {weekCounter: weekId} } = await learna.getData();
+      const { campaignData } = await getCampaigns(learna);
+      const { campaignHashes } = getCampaignHashes(campaignData);
       const initialProfile = await learna.getProfile(signer1Addr, weekId, campaignHashes);
       for(let i = 0; i < campaignHashes.length; i++){
         const iniP = initialProfile[i].profile;

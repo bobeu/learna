@@ -97,7 +97,7 @@ export const Confirmation :
 
         await refetch();
         switch (functionName) {
-            case 'tip':
+            case 'setUpCampaign':
                 setmessage('Your tip was received. Check your profile for points earned');
             break;
             default:

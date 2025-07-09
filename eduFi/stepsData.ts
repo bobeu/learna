@@ -12,6 +12,7 @@ import getAdminStatus from "./contractsData/getAdminStatus.json";
 import owner from "./contractsData/owner.json";
 import setMinimumToken from "./contractsData/setMinimumToken.json";
 import approve from "./contractsData/approve.json";
+import allowance from "./contractsData/allowance.json";
 import setTransitionInterval from "./contractsData/setTransitionInterval.json";
 import banUserFromCampaign from "./contractsData/banUserFromCampaign.json";
 import adjustCampaignValues from "./contractsData/adjustCampaignValues.json";
@@ -19,6 +20,7 @@ import adjustCampaignValues from "./contractsData/adjustCampaignValues.json";
 const steps = [
     { key: 'banUserFromCampaign', value: { ...banUserFromCampaign} },
     { key: 'owner', value: { ...owner} },
+    { key: 'allowance', value: { ...allowance} },
     { key: 'approve', value: { ...approve} },
     { key: 'setUpCampaign', value: { ...setUpCampaign} },
     { key: 'sortWeeklyReward', value: { ...sortWeeklyReward } },

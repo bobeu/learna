@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Trophy, GraduationCap, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, Heart} from 'lucide-react';
+import { BookOpen, Trophy, GraduationCap, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
 import { QuizResult, UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-
 
 export const Dashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -84,9 +83,9 @@ export const Dashboard = () => {
                 <ChartBar className="w-4 h-4 text-pink-500" />
                 <span>Stats</span>
               </button>
-              <button onClick={() => setpath('sendtip')} className="flex justify-start items-center gap-1 w-28 h-12 border rounded-xl p-3 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
-                <Heart className="w-4 h-4 text-purple-500" />
-                <span>Tip</span>
+              <button onClick={() => setpath('setupcampaign')} className="flex justify-start items-center gap-1 w-28 h-12 border rounded-xl p-3 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
+                <LucideBox className="w-4 h-4 text-purple-500" />
+                <span>Campaign</span>
               </button>
               <button onClick={() => setpath('profile')} className="flex justify-start items-center gap-1 w-28 h-12 border rounded-xl p-3 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
                 {
@@ -114,8 +113,8 @@ export const Dashboard = () => {
                       <ChartBar className="w-5 h-5" />
                       <span>Stats</span>
                     </button>
-                    <button onClick={() => setpath('sendtip')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
-                      <Heart className="w-5 h-5" />
+                    <button onClick={() => setpath('setupcampaign')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
+                      <LucideBox className="w-5 h-5" />
                       <span>Tip</span>
                     </button>
                     <button onClick={() => setpath('profile')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">

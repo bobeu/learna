@@ -1,5 +1,5 @@
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { celo } from "wagmi/chains";
+import { celo, celoAlfajores } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { farcasterFrame as miniAppConnector } from "@farcaster/frame-wagmi-connector";
 import { coinbaseWallet, metaMask } from 'wagmi/connectors';
@@ -42,9 +42,9 @@ function useCoinbaseWalletAutoConnect() {
 }
 
 export const config = createConfig({
-  chains: [celo],
+  chains: [celoAlfajores],
   transports: {
-    [celo.id]: http(),
+    [celoAlfajores.id]: http(),
   },
   connectors: [
     miniAppConnector(),

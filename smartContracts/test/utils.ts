@@ -8,7 +8,7 @@ interface SortEarnings {
   growToken: GrowToken;
   deployer: Signer;
   amountInERC20: bigint;
-  campaignHashes: Hex[];
+  campaigns: string[];
 }
 
 interface ClaimReward {
@@ -48,7 +48,7 @@ interface SetUpCampaign {
   fundERC20: bigint;
   token: Address;
   learna: Learna;
-  campaignHashes: Hex[];
+  campaigns: string[];
   value: bigint;
 }
 
@@ -64,12 +64,12 @@ interface SetUpCampaign {
  * }
 */
 export async function sortWeeklyEarning(x: SortEarnings) {
-  const { learna, campaignHashes, amountInERC20, deployer, growToken } = x;
+  const { learna, campaigns, amountInERC20, deployer, growToken } = x;
   const learnaAddr = await learna.getAddress();
   const growTokenAddr = await growToken.getAddress();
   const balanceOfLearnaB4Allocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveB4Allocation = await growToken.balanceOf(growTokenAddr);
-  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, amountInERC20, campaignHashes);
+  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, amountInERC20, campaigns);
   const balanceOfLearnaAfterAllocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveAfterAllocation = await growToken.balanceOf(growTokenAddr);
   const data = await learna.getData();
@@ -164,16 +164,16 @@ export async function banUserFromCampaig(x: Ban) {
  * @returns : User's profile data
 */
 export async function setUpCampaign(x: SetUpCampaign) {
-  const { signer, learna, fundERC20, campaignHashes, token, value } = x;
+  const { signer, learna, fundERC20, campaigns, token, value } = x;
   const learnaAddr = await learna.getAddress();
   const balanceOfLeanerB4Tipped = await signer.provider?.getBalance(learnaAddr);
-  for(let i = 0; i < campaignHashes.length; i++) {
-    await learna.connect(signer).setUpCampaign(campaignHashes[i], fundERC20, token, {value});
+  for(let i = 0; i < campaigns.length; i++) {
+    await learna.connect(signer).setUpCampaign(campaigns[i], fundERC20, token, {value});
   }
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
-  const campaigns = await getCampaigns(learna);
+  const campaigns_ = await getCampaigns(learna);
   return {
-    campaigns,
+    campaigns: campaigns_,
     balanceOfLeanerB4Tipped,
     balanceOfLeanerAfterTipped 
   }
@@ -182,9 +182,14 @@ export async function setUpCampaign(x: SetUpCampaign) {
 export async function getCampaigns(learna: Learna) {
   let campaigns : Campaigns.CampaignStructOutput[] = [];
   let wd : Learn.WeekDataStructOutput[] = [];
-  wd = (await learna.getData()).wd;
+  const data = await learna.getData();
+  // console.log("Data", data)
+  wd = data.wd;
   if(wd && wd.length > 0) campaigns = wd[0].campaigns;
-  return campaigns;
+  return {
+    campaigns,
+    campaignData: data.cData
+  };
 }
 
 /**

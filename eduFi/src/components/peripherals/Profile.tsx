@@ -2,22 +2,25 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
-import { filterTransactionData, formatValue, mockProfile, toBN, } from "../utilities";
+import { filterTransactionData, formatValue, getTimeFromEpoch, mockProfile, toBN, } from "../utilities";
 import { useAccount, useChainId, useConfig, useDisconnect, useReadContracts } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
-import ClaimWeeklyReward from "../transactions/ClaimWeeklyReward";
+import ClaimReward from "../transactions/ClaimReward";
 import CollapsibleComponent from "./Collapsible";
 import { useMiniApp, } from "@neynar/react";
 import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
-import { Address, Profile as ProfileType, } from "../../../types/quiz";
+import { Address, CampaignDataFormatted, Profile as ProfileType, } from "../../../types/quiz";
 import { ArrowLeft, ArrowRight, CheckCircle, PlugZap, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";
+import { CampaignMap } from "./SetupCampaign";
 
 function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [ reSelectedCampaign, setCampaign ] = React.useState<CampaignDataFormatted>({campaign: '', campaignHash: `0x${''}`});
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
     
     const chainId = useChainId();
     const config = useConfig();
@@ -25,20 +28,30 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
     const { address, isConnected } = useAccount();
     const account = address as Address;
     const handleClaim = () => setDrawer(1);
-    const { callback, weekData } = useStorage();
-    const totalPoints = weekData[toBN(weekId).toNumber()].totalPoints;
+    const formattedWeekId = toBN(weekId.toString()).toNumber();
+    const { callback, selectedCampaign, campaignData, weekData, setselectedCampaign } = useStorage();
+    const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = selectedCampaign;
+
+    const toggleOpen = (arg: boolean) => {
+        setIsOpen(arg)
+    };
+
+    const handleSetCampaign = (campaign: CampaignDataFormatted) => {
+        const filtered = weekData[formattedWeekId].campaigns.filter(({hash_}) => hash_.toLowerCase() === campaign.campaignHash.toLowerCase());
+        setselectedCampaign(filtered?.[0]);
+    }
 
     // Build the transactions to run
     const { readTxObject } = React.useMemo(() => {
         const { contractAddresses: ca, transactionData: td} = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['getUserData', 'checkligibility'],
+            functionNames: ['getProfile', 'checkEligibility'],
             callback
         });
 
         const learna = ca.Learna as Address;
-        const readArgs = [[account, weekId], [weekId]];
+        const readArgs = [[account, weekId, [hash_]], [weekId]];
         const addresses = [learna, learna];
         const readTxObject = td.map((item, i) => {
             return{
@@ -82,17 +95,23 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
         }
     }, [data]);
 
+    React.useEffect(() => {
+        if(selectedCampaign.hash_.toLowerCase() !== reSelectedCampaign.campaignHash.toLowerCase()) handleSetCampaign(reSelectedCampaign);
+    }, [reSelectedCampaign, selectedCampaign]);
+
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
             <h3 className="pl-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
             <div className="space-y-2">
-                {/* <div className='border pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Account</h3>
-                    { 
-                        haskey? <AddressWrapper account={zeroAddress} size={4} display={false} copyIconSize={'sm'} overrideClassName="w-[50%] p-4"/>
-                        :<h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>No Account detected</h3>
-                    }
-                </div>  */}
+               <div>
+                    <CampaignMap 
+                        campaignData={campaignData}
+                        isOpen={isOpen}
+                        selectedCampaign={reSelectedCampaign.campaign}
+                        setCampaign={(campaign) => setCampaign(campaign)}
+                        toggleOpen={toggleOpen}
+                    />
+               </div>
                 <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                         <div className="relative z-10">
@@ -100,10 +119,28 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                                 {points || 0}
                             </div>
                         <div className="text-xl opacity-90 mb-2">
-                            You earned {points || 0} out of {totalPoints} total points for the week
+                            You earned {points || 0} out of {totalPoints.toString()} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             Your FID: {user?.fid || 'NA'}
+                        </div>
+                        <div className="flex-1 justify-between items-center text-lg opacity-80 capitalize">
+                            <h3>Learners</h3>
+                            <h3>{activeLearners.toString()}</h3>
+                        </div>
+                        <div className={`flex-1 justify-between items-center text-lg opacity-80 capitalize ${canClaim? 'text-green-600' : 'text-red-600'}`}>
+                            <div className="flex gap-3 text-center">
+                                <BaggageClaim className={`w-5 h-5`} />
+                                <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
+                            </div>
+                            <div className="text-center">
+                                <h3>Will be sorted on/after</h3>
+                                <h3>{getTimeFromEpoch(transitionDate)}</h3>
+                            </div>
+                            <div className="text-center">
+                                <h3>Claim ends</h3>
+                                <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -139,7 +176,11 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                                 !haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
                                     <CheckCircle className="w-8 h-8 " />
                                 </h3> : <div className=' p-1 text-cyan-900  text-center'>
-                                    <GenerateKey functionName={'generateKey'} buttonClassName="text-md " />
+                                    <GenerateKey 
+                                        functionName={'generateKey'} 
+                                        buttonClassName="text-md " 
+                                        campainHash={hash_} 
+                                    />
                                 </div>
                             }
                         </div>
@@ -153,7 +194,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                         <div className="text-3xl font-bold text-gray-800 mb-1">
                             {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
                         </div>
-                        <div className="text-sm text-gray-600">$GROW earned</div>
+                        <div className="text-sm text-gray-600">Amount of $GROW earned</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -163,7 +204,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                         <div className="text-3xl font-bold text-gray-800 mb-1">
                             {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
                         </div>
-                        <div className="text-sm text-gray-600">$CELO earned</div>
+                        <div className="text-sm text-gray-600">Amount of $CELO earned</div>
                     </div>
                 </div>
 
@@ -211,10 +252,11 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                     <span>Claim</span>
                 </CustomButton>
             </div> */}
-            <ClaimWeeklyReward 
+            <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 weekId={weekId}
+                campainHash={hash_}
             />
         </MotionDisplayWrapper>
     );
@@ -238,14 +280,33 @@ export default function Profile() {
     };
 
     const goToQuiz = () => {
-        setpath('selectcategory');
+        setpath('quiz');
     };
 
     
-    const weekIds = React.useMemo(() => {
+    const profileData = React.useMemo(() => {
         const wkId = toBN(weekId.toString()).toNumber();
         const weekIds = [...Array(wkId === 0? 1 : wkId + 1).keys()];
-        return weekIds;
+        const profileData = weekIds.map(() => (
+             <div className="w-full overflow-hidden md:overflow-auto border rounded-xl p-4 grid grid-cols-1-lg gap-2">
+                {
+                    weekIds.map((wkId) => (
+                        <MotionDisplayWrapper 
+                            key={wkId}
+                        >
+                            <CollapsibleComponent 
+                                header={`Week ${wkId}`}
+                                isOpen={isOpen}
+                                toggleOpen={toggleOpen}
+                            >
+                                <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
+                            </CollapsibleComponent>
+                        </MotionDisplayWrapper>
+                    ))
+                }
+            </div>
+        ))
+        return profileData;
     }, [weekId]);
 
     return(
@@ -262,36 +323,14 @@ export default function Profile() {
                     }
                     { isConnected && <Button onClick={() => disconnect()} variant={'outline'} className="float-right text-cyan-700">Logout</Button>}
                 </div>
-                <CustomButton
-                    onClick={goToQuiz}
-                    exit={false}
-                    disabled={false}
-                >
+                <CustomButton onClick={goToQuiz} exit={false} disabled={false}>
                     <ArrowRight className="w-5 h-5" />
                     <span>Take A Quiz</span>
                 </CustomButton>
-                <div className="w-full overflow-hidden md:overflow-auto border rounded-xl p-4 grid grid-cols-1-lg gap-2">
-                    {
-                        weekIds.map((wkId) => (
-                            <MotionDisplayWrapper 
-                                key={wkId}
-                            >
-                                <CollapsibleComponent 
-                                    header={`Week ${wkId}`}
-                                    isOpen={isOpen}
-                                    toggleOpen={toggleOpen}
-                                >
-                                    <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
-                                </CollapsibleComponent>
-                            </MotionDisplayWrapper>
-                        ))
-                    }
-                </div>
-                <CustomButton
-                    onClick={backToHome}
-                    exit={true}
-                    disabled={false}
-                >
+
+                { profileData }
+
+                <CustomButton onClick={backToHome} exit={true} disabled={false}>
                     <ArrowLeft className="w-5 h-5" />
                     <span>Exit</span>
                 </CustomButton>

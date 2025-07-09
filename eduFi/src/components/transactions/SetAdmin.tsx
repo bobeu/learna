@@ -1,39 +1,41 @@
 import React from 'react';
-import { Confirmation, type Transaction } from '../peripherals/Confirmation';
+import { Confirmation } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { Address, filterTransactionData, FunctionName } from '../utilities';
+import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
+import { Address, FunctionName } from '../../../types/quiz';
 
-export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps) {
+export default function SetAdmin({openDrawer, flag, user, toggleDrawer }: SetUpCampaignProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
-    const { transactionData: td } = React.useMemo(() => {
-        const filtered = filterTransactionData({
+    const { mutate, setupArgs } = React.useMemo(() => {
+        const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['tip'],
+            functionNames: ['setAdmin'],
             callback
         });
+        
+        const setupArgs = [user, flag];
 
-        return { ...filtered };
-    }, [chainId, callback]);
+        return { mutate, setupArgs, };
+
+    }, [chainId, user, flag, callback]);
 
     const getTransactions = React.useCallback(() => {
-        const transactions = td.map((txObject) => {
-            const transaction : Transaction = {
+        const transactions = mutate.transactionData.map((txObject) => {
+            return {
                 abi: txObject.abi,
-                args: [],
+                args: setupArgs,
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate,
-                value: amount
             };
-            return transaction;
         })
         return transactions;
     
-   }, [td, amount]);
+   }, [setupArgs, mutate]);
 
     return(
         <Confirmation 
@@ -44,8 +46,9 @@ export default function SendTip({amount, openDrawer, toggleDrawer }: claimProps)
     )
 }
 
-type claimProps = {
-    amount: bigint;
+interface SetUpCampaignProps {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    user: Address;
+    flag: boolean;
 };
