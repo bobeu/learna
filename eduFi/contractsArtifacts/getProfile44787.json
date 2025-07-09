@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xCfDa5a219a79295730770F08a30BDF3cAE525bE5",
+  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
   "functionName": "getProfile",
   "inputCount": 3,
   "requireArgUpdate": true,

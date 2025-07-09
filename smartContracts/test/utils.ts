@@ -183,12 +183,12 @@ export async function getCampaigns(learna: Learna) {
   let campaigns : Campaigns.CampaignStructOutput[] = [];
   let wd : Learn.WeekDataStructOutput[] = [];
   const data = await learna.getData();
-  // console.log("Data", data)
+  const cData = await learna.getCampaingData();
   wd = data.wd;
-  if(wd && wd.length > 0) campaigns = wd[0].campaigns;
+  campaigns = wd[0].campaigns;
   return {
     campaigns,
-    campaignData: data.cData
+    campaignData: cData
   };
 }
 

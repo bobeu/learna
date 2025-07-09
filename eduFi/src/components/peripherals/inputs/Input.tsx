@@ -24,8 +24,8 @@ export const Input = (props: InputProps) => {
     const { type, placeholder, label, tag, id, overrideClassName, onChange } = props;
     return(
         <div className="">
-            <div className="w-full flex justify-between max-w-sm items-center">
-                { label && <Label className="font-medium 2/4 ">{label}</Label>}
+            <div className="w-full flex justify-between items-center border p-3 rounded-xl bg-gradient-to-r ">
+                { label && <Label className="text-left w-2/4">{label}</Label>}
                 <div className={"w-2/4"}>
                     <InputComponent 
                         type={type}
@@ -33,7 +33,7 @@ export const Input = (props: InputProps) => {
                         required
                         id={id}
                         onChange={(e) => onChange(e, tag)}
-                        className={` bg-white borde ${overrideClassName}`}
+                        className={`w-full bg-white border ${overrideClassName}`}
                     />
                 </div>
             </div>

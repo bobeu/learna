@@ -1,18 +1,23 @@
 {
-  "contractAddress": "0xCfDa5a219a79295730770F08a30BDF3cAE525bE5",
-  "functionName": "getAdminStatus",
-  "inputCount": 1,
+  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
+  "functionName": "hasPassKey",
+  "inputCount": 2,
   "requireArgUpdate": true,
   "abi": [
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "target",
+          "name": "user",
           "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "campaignHash",
+          "type": "bytes32"
         }
       ],
-      "name": "getAdminStatus",
+      "name": "hasPassKey",
       "outputs": [
         {
           "internalType": "bool",

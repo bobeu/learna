@@ -26,11 +26,8 @@ describe("Learna", function () {
         balanceOfLeanerAfterTipped, 
         campaigns: cp
       } = await setUpCampaign({learna, signer: signer1, campaigns: CAMPAIGNS, fundERC20, token: growTokenAddr, value});
-      const campaigns = cp.campaigns.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
-      console.log("campaigns.length: ", campaigns.length)
-      console.log("campaignHashes.length: ", campaignHashes.length)
-      expect(campaigns.length === campaignHashes.length).to.be.true;
-      campaigns.forEach((campaign, i) => {
+      expect(cp.campaigns.length === campaignHashes.length).to.be.true;
+      cp.campaigns.forEach((campaign, i) => {
         expect(campaign.activeLearners).to.be.eq(0n);
         expect(campaign.claimActiveUntil).to.be.eq(0n);
         expect(campaign.fundsERC20).to.be.eq(fundERC20);

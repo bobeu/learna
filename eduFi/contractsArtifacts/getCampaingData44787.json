@@ -1,0 +1,33 @@
+{
+  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
+  "functionName": "getCampaingData",
+  "inputCount": 0,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getCampaingData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "campaignHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "encoded",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct Campaigns.CampaignData[]",
+          "name": "cData",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

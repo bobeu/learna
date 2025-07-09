@@ -26,6 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${feeManager.address}`);
+	// console.log("CAMPAIGNS", CAMPAIGNS.length)
 
 	/**
 	 * Deploy Learna contract

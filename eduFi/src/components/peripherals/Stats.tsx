@@ -20,7 +20,7 @@ import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
 import CustomButton from "./CustomButton";
 
-function Stat({campaign, index} : {campaign: Campaign, index: number}) {
+function Stat({campaign, index, campaignName} : {campaign: Campaign, index: number, campaignName: string}) {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const { 
             activeLearners, 
@@ -31,7 +31,7 @@ function Stat({campaign, index} : {campaign: Campaign, index: number}) {
             fundsERC20,
             fundsNative,
             lastUpdated,
-            operator,
+            // operator,
             token
          } = campaign;
 
@@ -43,11 +43,11 @@ function Stat({campaign, index} : {campaign: Campaign, index: number}) {
 
     return(
         <CollapsibleComponent 
-            header={`Week ${index}`} 
+            header={`${campaignName}`} 
             isOpen={isOpen} 
             toggleOpen={toggleOpen}
-            overrideClassName="relative"
-            triggerClassName="bg-gradient-to-r from-cyan-500 to-purple-500 py-2 px-4 border rounded-xl text-white font-semibold"
+            overrideClassName="relative space-y-1"
+            triggerClassName="capitalize bg-gradient-to-r border py-2 px-4 border rounded-xl font-semibold"
         >
             <MotionDisplayWrapper>
                 {/* Timings */}
@@ -225,6 +225,7 @@ export default function Stats() {
     const {  
         setpath, 
         weekData,
+        campaignStrings,
         owner,
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
@@ -240,27 +241,31 @@ export default function Stats() {
         isConnected? setpath('dashboard') : setpath('home');
     }
     const interval = toBN(transitionInterval.toString()).toNumber();
-    
 
     const renderWeekData = React.useCallback(() => {
-        return weekData.map(({campaigns, weekId}) => (
+        return weekData.map(({campaigns}, weekId) => (
             <CollapsibleComponent 
                 key={weekId}
-                header={`Week ${weekId.toString()}`} 
+                header={`Week ${weekId}`} 
                 isOpen={isOpen} 
                 toggleOpen={toggleOpen}
-                overrideClassName="relative"
+                overrideClassName="relative font-mono"
                 triggerClassName="bg-gradient-to-r from-cyan-500 to-purple-500 py-2 px-4 border rounded-xl text-white font-semibold"
             >
                 <MotionDisplayWrapper>
-                    {
-                        campaigns.map((campaign, index) => (
-                            <Stat 
-                                index={index}
-                                campaign={campaign}
-                            />
-                        ))
-                    }
+                    <div className="text-xl text-left font-bold text-gray-800 mb-2">Campaigns</div>
+                    <div className="space-y-1">
+                        {
+                            campaigns.map((campaign, index) => (
+                                <Stat 
+                                    key={index}
+                                    index={index}
+                                    campaign={campaign}
+                                    campaignName={campaignStrings[index]}
+                                />
+                            ))
+                        }
+                    </div>
                 </MotionDisplayWrapper>
             </CollapsibleComponent>
         ))

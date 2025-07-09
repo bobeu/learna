@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Address, Campaign, Category, Path, Quiz, QuizResult, ReadData, SelectedData, TransactionCallback, TrxState } from '../../types/quiz';
+import { Address, Campaign, CampaignData, Category, CData, Path, Quiz, QuizResult, ReadData, SelectedData, TransactionCallback, TrxState } from '../../types/quiz';
 import { Dashboard } from '~/components/quizComponents/Dashboard';
 import { QuizInterface } from '~/components/quizComponents/QuizInterface';
 import { QuizResults } from '~/components/quizComponents/QuizResults';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
-import { bytesToString, zeroAddress } from 'viem';
+import { bytesToString, hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
 import { filterTransactionData, mockQuiz, mockQuizResult, mockReadData, mockSelectedData, loadQuizData, formatAddr, mockCampaign } from './utilities';
@@ -70,7 +70,7 @@ export default function Home() {
     // Save user results to localStorage whenever userResults changes
     useEffect(() => {
         if (userResults.length > 0) {
-        localStorage.setItem('quizResults', JSON.stringify(userResults));
+            localStorage.setItem('quizResults', JSON.stringify(userResults));
         }
     }, [userResults]);
 
@@ -128,39 +128,35 @@ export default function Home() {
         if(arg.message) setMessage(arg.message);
         if(arg.errorMessage) setErrorMessage(arg.errorMessage);
     };
-
+    
     // Build read transactions data
-    const { readTxObject } = React.useMemo(() => {
-        const { contractAddresses: ca, transactionData: td } = filterTransactionData({
-            chainId,
-            filter: true,
-            functionNames: ['owner', 'getData', 'getAdminStatus'],
-            callback: (arg: TrxState) => {
-                if(arg.message) setMessage(arg.message);
-                if(arg.errorMessage) setErrorMessage(arg.errorMessage);
-            }
-        });
+    const { contractAddresses: ca, transactionData: td } = filterTransactionData({
+        chainId,
+        filter: true,
+        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData'],
+        callback: (arg: TrxState) => {
+            if(arg.message) setMessage(arg.message);
+            if(arg.errorMessage) setErrorMessage(arg.errorMessage);
+        }
+    });
 
-        const learna = ca.Learna as Address;
-        const readArgs = [[], [], [account]];
-        const addresses = [1, 2, 3].map(() => learna);
+    const learna = ca.Learna as Address;
+    const readArgs = [[], [], [account], []];
+    // const addresses = [1, 2, 3, 4].map(() => learna);
 
-        console.log("Abi", addresses);
-        const readTxObject = td.map((item, i) => {
-            return{
-                abi: item.abi,
-                functionName: item.functionName,
-                address: addresses[i],
-                args: readArgs[i]
-            }
-        });
-
-        return { readTxObject };
-    }, [chainId, setMessage,setErrorMessage]);
+    const readTxObject = td.map((item, i) => {
+        return{
+            abi: item.abi,
+            functionName: item.functionName,
+            address: item.contractAddress as Address,
+            args: readArgs[i]
+        }
+    });
 
     // Read smart contract state 
     const { data: result, refetch } = useReadContracts({
         config,
+        account,
         contracts: readTxObject,
         allowFailure: true,
         query: {
@@ -172,11 +168,13 @@ export default function Home() {
 
     const { weekId, state, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
         const data = result?.[1]?.result as ReadData || mockReadData;
+        console.log("Data", data)
         const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
-        console.log("data.cData", result)
-        const campaignData = [...data.cData].map(({campaignHash, encoded}) => {
-            const campaign = bytesToString(encoded);
+        const cData = result?.[3]?.result as CData;
+        const cData_ = cData? [...cData] : [];
+        const campaignData = cData_.map(({campaignHash, encoded}) => {
+            const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
         const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);

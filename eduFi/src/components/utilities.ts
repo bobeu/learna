@@ -1,14 +1,14 @@
 /* eslint-disable */
-import { formatEther, Hex, keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
+import { formatEther, Hex, keccak256, stringToBytes, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
-import globalContractData from "../../contractsData/global.json";
+import globalContractData from "../../contractsArtifacts/global.json";
 import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import quizRawData from "../../quizData.json";
-import { Address, Campaign, Category, DifficultyLevel, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizCategory, QuizResult, ReadData, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import { Address, Campaign, Category, CData, DifficultyLevel, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizCategory, QuizResult, ReadData, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -20,7 +20,6 @@ export const mockReadData : ReadData = {
   },
   wd: [
     {
-      weekId: 0n,
       campaigns: [
         {
           fundsNative: 0n,
@@ -51,8 +50,14 @@ export const mockReadData : ReadData = {
       ]
     }
   ],
-  cData: []
 }
+
+export const mockCData : CData = [
+  {
+    campaignHash: `0x${''}`,
+    encoded: `0x${''}`
+  }
+];
 
 export const mockProfile : Profile = {
   amountClaimedInNative: 0n,
@@ -241,7 +246,7 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
           callback?.({errorMessage});
           throw new Error(errorMessage);
         }
-        const data = getStepData(functionName);
+        const data = getStepData(functionName.concat(chainId?.toString() || '44787'));
         transactionData.push(data);
       })
     }

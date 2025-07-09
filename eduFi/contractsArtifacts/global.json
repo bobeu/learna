@@ -17,7 +17,8 @@
     "approve",
     "setMinimumToken",
     "owner",
-    "allowance"
+    "allowance",
+    "getCampaingData"
   ],
   "chainName": {
     "42220": "celo",
@@ -42,8 +43,8 @@
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
       "FeeManager": "0x5A458c9fc7C9cf855AA6a54af8059cc2ffCfc225",
-      "GrowToken": "0xf17AA948eA582E6b4D82876Ee4ac885a8FB5dAf0",
-      "Learna": "0xCfDa5a219a79295730770F08a30BDF3cAE525bE5"
+      "GrowToken": "0x133a7964bCDa5288914A193Cd835d13216cDcc12",
+      "Learna": "0x2bA102A41C49082151E33Ed270FEd5387294311a"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",

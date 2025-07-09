@@ -23,12 +23,13 @@ export type FunctionName =
   'owner'|
   'allowance'|
   'approve'|
+  'getCampaingData' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
 export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 export type Path = 'dashboard' | 'results' | 'review' | 'admin' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile' | 'setupcampaign';
-
+export type CData = CampaignData[];
 export interface Question {
   id: string;
   question: string;
@@ -198,7 +199,7 @@ export interface Campaign {
 
 export interface CampaignData {
   campaignHash: Hex;
-  encoded: ByteArray;
+  encoded: Hex;
 }
 
 export interface CampaignDataFormatted {
@@ -213,13 +214,13 @@ export interface State {
 }
 
 export interface WeekData {
-  weekId: bigint;
+  // weekId: bigint;
   campaigns: Readonly<Campaign[]>;
 } 
 
 export interface ReadData {
   state: State;
-  cData: Readonly<CampaignData[]>;
+  // cData: Readonly<CampaignData[]>;
   wd: Readonly<WeekData[]>;
 }
 

@@ -47,13 +47,12 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     struct WeekData {
         Campaign[] campaigns;
-        uint weekId; 
     } 
 
     // Readonly data
     struct ReadData {
         State state;
-        CampaignData[] cData;
+        // CampaignData[] cData;
         WeekData[] wd;
     }
 
@@ -604,21 +603,28 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
         data.state = state;
-        data.cData = _getCampaingData();
+        // data.cData = _getCampaingData();
         uint weekId = data.state.weekCounter;
         // data.wd = new WeekData[](weekId);
         // data.wd = wd;
-        if(weekId > 0) {
-            data.wd = new WeekData[](weekId + 1);
-            weekId += 1;
-            for(uint i = 0; i < weekId; i++) {
-                data.wd[i].weekId = i;
-                data.wd[i].campaigns = _getCampaings(i);
-            }
-        } else {
-            data.wd = new WeekData[](1);
-           data.wd[0].campaigns = _getCampaings(0); 
+
+        data.wd = new WeekData[](weekId + 1);
+        weekId += 1;
+        for(uint i = 0; i < weekId; i++) {
+            // data.wd[i].weekId = i;
+            data.wd[i].campaigns = _getCampaings(i);
         }
+        // if(weekId > 0) {
+        //     data.wd = new WeekData[](weekId + 1);
+        //     weekId += 1;
+        //     for(uint i = 0; i < weekId; i++) {
+        //         // data.wd[i].weekId = i;
+        //         data.wd[i].campaigns = _getCampaings(i);
+        //     }
+        // } else {
+        //     data.wd = new WeekData[](1);
+        //    data.wd[0].campaigns = _getCampaings(0); 
+        // }
         // data.wd = wd;
         return data;
     } 

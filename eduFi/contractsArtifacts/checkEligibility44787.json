@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0xCfDa5a219a79295730770F08a30BDF3cAE525bE5",
-  "functionName": "claimReward",
-  "inputCount": 2,
+  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
+  "functionName": "checkEligibility",
+  "inputCount": 3,
   "requireArgUpdate": true,
   "abi": [
     {
@@ -688,6 +688,31 @@
     },
     {
       "inputs": [],
+      "name": "getCampaingData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "campaignHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "encoded",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct Campaigns.CampaignData[]",
+          "name": "cData",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getData",
       "outputs": [
         {
@@ -713,23 +738,6 @@
               "internalType": "struct Learna.State",
               "name": "state",
               "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "campaignHash",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes",
-                  "name": "encoded",
-                  "type": "bytes"
-                }
-              ],
-              "internalType": "struct Campaigns.CampaignData[]",
-              "name": "cData",
-              "type": "tuple[]"
             },
             {
               "components": [
@@ -794,11 +802,6 @@
                   "internalType": "struct Campaigns.Campaign[]",
                   "name": "campaigns",
                   "type": "tuple[]"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "weekId",
-                  "type": "uint256"
                 }
               ],
               "internalType": "struct Learna.WeekData[]",

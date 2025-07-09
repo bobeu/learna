@@ -19,39 +19,45 @@ import { ContentType } from "./inputs/SortWeeklyPayoutInfo";
 // interface Campaign {campaignHash: `0x${string}`; campaign: string;};
 
 export function CampaignMap(
-    {isOpen, selectedCampaign, toggleOpen, campaignData, setCampaign} : 
+    {selectedCampaign,campaignData, setCampaign} : 
     {
-        isOpen: boolean; 
         selectedCampaign: string; 
-        toggleOpen: (arg: boolean) => void; 
         campaignData: CampaignDataFormatted[];
         setCampaign: (data: CampaignDataFormatted) => void;
     }) 
 {
-        return (
-            <CollapsibleComponent
-                isOpen={isOpen}
-                toggleOpen={toggleOpen}
-                header="Select campaign"
-                selected={selectedCampaign}
-                overrideClassName="relati"
-                triggerClassName="border rounded-xl p-4 bg-gradient-to-r from-cyan-400 to-purple-300"
-            >
-                <div className="absolute top-10 slide-in-from-top-10 p-4 bg-white z-[100px] border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
-                    {
-                        campaignData?.map((data) => (
-                            <Button 
-                                key={data.campaignHash}
-                                onClick={() => setCampaign(data)}
-                                variant={'ghost'}
-                                className="w-1/3 p-6"
-                            >
-                                { selectedCampaign }
-                            </Button>
-                        ))
-                    }
-                </div>
-            </CollapsibleComponent>
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+
+    const toggleOpen = (arg: boolean) => {
+        setIsOpen(arg)
+    }
+    return (
+        <CollapsibleComponent
+            isOpen={isOpen}
+            toggleOpen={toggleOpen}
+            header="Select campaign"
+            selected={selectedCampaign}
+            overrideClassName="relative"
+            triggerClassName="border rounded-xl p-4 bg-gradient-to-r from-cyan-400 to-purple-300 text-white"
+        >
+            <div className="w-full absolute top-16 text-cyan-900 slide-in-from-top-10 p-4 bg-white z-50 border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
+                {
+                    campaignData?.map((data) => (
+                        <Button 
+                            key={data.campaignHash}
+                            onClick={() => {
+                                setCampaign(data);
+                                setIsOpen(false)
+                            }}
+                            variant={'ghost'}
+                            className="w-2/4 p-6"
+                        >
+                            { data.campaign }
+                        </Button>
+                    ))
+                }
+            </div>
+        </CollapsibleComponent>
     );
 }
 
@@ -59,19 +65,19 @@ export default function SetupCampaign() {
     // const [ showSendCelo, setShowSendCelo ] = React.useState<boolean>(false);
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
     const [ celoAmount, setCeloAmount ] = React.useState<string>('0');
-    const [ token, setToken ] = React.useState<string>(zeroAddress);
+    const [ token, setToken ] = React.useState<{address: Address, name: string}>({address: zeroAddress, name: ''});
     const [ erc20Amount, setErc20Amount ] = React.useState<string>('0');
     const [ selectedCampaign, setCampaign ] = React.useState<string>('');
-    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+    // const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const [isAddressesOpen, setIsAddressesOpen] = React.useState<boolean>(false);
 
     const { setpath, campaignData } = useStorage();
     const toggleDrawer = (arg: number) => {
         setDrawer(arg);
     }
-    const toggleOpen = (arg: boolean) => {
-        setIsOpen(arg)
-    };
+    // const toggleOpen = (arg: boolean) => {
+    //     setIsOpen(arg)
+    // };
 
     const toggleOpenAddresses = (arg: boolean) => {
         setIsAddressesOpen(arg)
@@ -82,7 +88,7 @@ export default function SetupCampaign() {
 
     // Memoize and update the argments
     const {argsReady, fundsErc20, fundsNative, sortContent, contractAddresses} = React.useMemo(() => {
-        const argsReady = token !== zeroAddress && (erc20Amount !== '0' || celoAmount !== '0') && selectedCampaign !== '';
+        const argsReady = token.address !== zeroAddress && (erc20Amount !== '0' || celoAmount !== '0') && selectedCampaign !== '';
         const fundsErc20 = parseUnits(erc20Amount, 18);
         const fundsNative = parseUnits(celoAmount, 18);
         const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
@@ -157,20 +163,24 @@ export default function SetupCampaign() {
     //     [protocol]
     // );
 
-    const renderContractAddresses = (
+    const renderAssets = (
         <CollapsibleComponent
             isOpen={isAddressesOpen}
             toggleOpen={toggleOpenAddresses}
-            header="Select ERC20 asset to fund from. (Please be sure you have enough of the asset in the connected wallet)"
-            selected={selectedCampaign}
-            triggerClassName="border rounded-xl p-4 bg-gradient-to-r from-cyan-400 to-purple-300"
+            header="Select funding asset"
+            selected={token.name}
+            overrideClassName="relative"
+            triggerClassName="border rounded-xl p-4 bg-gradient-to-r border"
         >
-            <div className="absolute top-10 slide-in-from-top-10 p-4 bg-white z-[100px] border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
+            <div className="w-full absolute top-14 slide-in-from-top-10 p-4 bg-white z-50 border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
                 {
                     contractAddresses?.map(({address, name}) => (
                         <Button 
                             key={name}
-                            onClick={() => setToken(address)}
+                            onClick={() => {
+                                setToken({address, name});
+                                setIsAddressesOpen(false);
+                            }}
                             variant={'ghost'}
                             className="w-full p-6"
                         >
@@ -229,8 +239,8 @@ export default function SetupCampaign() {
         <MotionDisplayWrapper>
             <Wrapper2xl useMinHeight={true} >
                 <div className='relative space-y-4 overflow-auto font-mono'>
-                    <div className="flex flex-col justify-center items-center text-center text-2xl gap-4">
-                        <h3>Want to encourage people to learn and gain knowledge of your protocol or tech? Open, fund your campaign and watch the magic. Our system is decentralized and transparent. </h3>
+                    <div className="flex flex-col justify-center items-center text-center text-x gap-4">
+                        <h3>Want to build interest in your protocol or tech? Open, add and fund a campaign and watch the magic. Our system is decentralized and transparent. </h3>
                         <Image 
                             src={'/support.svg'}
                             alt="support image"
@@ -245,20 +255,18 @@ export default function SetupCampaign() {
                             {/* Selected campaign */}
                             <CampaignMap 
                                 campaignData={campaignData}
-                                isOpen={isOpen}
                                 selectedCampaign={selectedCampaign}
                                 setCampaign={(campaign) => setCampaign(campaign.campaign)}
-                                toggleOpen={toggleOpen}
                             />
                             
-                            {/* Select contract addresses */}
-                            { renderContractAddresses }
+                            {/* Select asset */}
+                            { renderAssets }
 
-                            <div className="flex justify-between items-center gap-4 text-lg bg-gradient-to-r px-3 py-6 rounded-xl">
+                            {/* <div className="flex justify-between items-center gap-4 text-lg bg-gradient-to-r px-3 py-6 rounded-xl">
                                 <h3 className='w-2/4'>{`Campaign`}</h3>
                                 <h3 className='w-2/4 capitalize font-medium'>{selectedCampaign}</h3>
-                            </div>
-                            <div className="flex justify-between items-center gap-4">
+                            </div> */}
+                            <div className="space-y-3">
                                 {
                                     sortContent.map(({id, type, required, label, placeHolder, tag}) => (
                                         <Input 
@@ -305,7 +313,7 @@ export default function SetupCampaign() {
                 openDrawer={openDrawer} 
                 campaignString={selectedCampaign} 
                 fundsErc20={fundsErc20} 
-                token={formatAddr(token)}
+                token={formatAddr(token.address)}
             />
         </MotionDisplayWrapper>
     );

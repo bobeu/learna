@@ -31,6 +31,8 @@ abstract contract Campaigns {
 
     //week data for all campaigns
     mapping(uint weekId => Campaign[]) private campaigns;
+    
+    mapping(uint weekId => mapping(bytes32 campaignHash => bool)) private initializer;
 
     // Campaign identifiers
     mapping(uint weekId => mapping(bytes32 => uint32)) private campaignIds;
@@ -74,7 +76,7 @@ abstract contract Campaigns {
      * @param weekId : Week Id
     */
     function _isInitializedCampaign(uint weekId, bytes32 campaignHash) internal view returns(bool result) {
-        result = _getCampaignId(weekId, campaignHash) > 0;
+        result = initializer[weekId][campaignHash];
     }
 
     /**
@@ -90,19 +92,15 @@ abstract contract Campaigns {
      * @dev Initializeds a new campaign slot
      * @param weekId : Week Id
      * @param campaign : Campaign string
-     * @notice Campaigns with zero index are not initialized hence invalid
     */
     function _initializeCampaign(uint weekId, string memory campaign) internal returns(Campaign memory result, bytes32 _campaignHash) {
         uint32 cId;
         (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(campaign);
         if(!_isInitializedCampaign(weekId, campaignHash)){
+            initializer[weekId][campaignHash] = true;
             campaignData.push(CampaignData(campaignHash, encoded));
             cId = _getTotalCampaignForAGivenWeek(weekId);
             campaigns[weekId].push();
-            if(cId == 0) {
-                cId = _getTotalCampaignForAGivenWeek(weekId);
-                campaigns[weekId].push();
-            }
             campaignIds[weekId][campaignHash] = cId;
             campaigns[weekId][cId].hash_ = campaignHash;
         } else {
@@ -124,8 +122,9 @@ abstract contract Campaigns {
     /**
      * Return campaign data with encoded and hashed values
      */
-    function _getCampaingData() internal view returns(CampaignData[] memory cData) {
+    function getCampaingData() public view returns(CampaignData[] memory cData) {
         cData = campaignData;
+        return cData;
     }
 
     /**

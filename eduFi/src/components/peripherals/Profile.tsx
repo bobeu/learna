@@ -30,7 +30,8 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
     const handleClaim = () => setDrawer(1);
     const formattedWeekId = toBN(weekId.toString()).toNumber();
     const { callback, selectedCampaign, campaignData, weekData, setselectedCampaign } = useStorage();
-    const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = selectedCampaign;
+    const wkId = toBN(weekId.toString()).toNumber()
+    const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = selectedCampaign ||  weekData[wkId].campaigns[0];
 
     const toggleOpen = (arg: boolean) => {
         setIsOpen(arg)
@@ -96,169 +97,173 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
     }, [data]);
 
     React.useEffect(() => {
-        if(selectedCampaign.hash_.toLowerCase() !== reSelectedCampaign.campaignHash.toLowerCase()) handleSetCampaign(reSelectedCampaign);
+        if(selectedCampaign?.hash_?.toLowerCase() !== reSelectedCampaign.campaignHash.toLowerCase()) handleSetCampaign(reSelectedCampaign);
     }, [reSelectedCampaign, selectedCampaign]);
 
     return(
-        <MotionDisplayWrapper className="space-y-2 font-mono">
-            <h3 className="pl-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
-            <div className="space-y-2">
-               <div>
-                    <CampaignMap 
-                        campaignData={campaignData}
-                        isOpen={isOpen}
-                        selectedCampaign={reSelectedCampaign.campaign}
-                        setCampaign={(campaign) => setCampaign(campaign)}
-                        toggleOpen={toggleOpen}
-                    />
-               </div>
-                <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                        <div className="relative z-10">
-                            <div className="text-6xl font-bold mb-2">
-                                {points || 0}
-                            </div>
-                        <div className="text-xl opacity-90 mb-2">
-                            You earned {points || 0} out of {totalPoints.toString()} total points for the week
-                        </div>
-                        <div className="text-lg opacity-80 capitalize">
-                            Your FID: {user?.fid || 'NA'}
-                        </div>
-                        <div className="flex-1 justify-between items-center text-lg opacity-80 capitalize">
-                            <h3>Learners</h3>
-                            <h3>{activeLearners.toString()}</h3>
-                        </div>
-                        <div className={`flex-1 justify-between items-center text-lg opacity-80 capitalize ${canClaim? 'text-green-600' : 'text-red-600'}`}>
-                            <div className="flex gap-3 text-center">
-                                <BaggageClaim className={`w-5 h-5`} />
-                                <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
-                            </div>
-                            <div className="text-center">
-                                <h3>Will be sorted on/after</h3>
-                                <h3>{getTimeFromEpoch(transitionDate)}</h3>
-                            </div>
-                            <div className="text-center">
-                                <h3>Claim ends</h3>
-                                <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
-                            </div>
-                        </div>
-                    </div>
+        <CollapsibleComponent 
+            header={`Week `}
+            isOpen={isOpen}
+            toggleOpen={toggleOpen}
+        >
+            <MotionDisplayWrapper className="space-y-2 font-mono">
+                <h3 className="pl-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
+                <div className="space-y-2">
+                <div>
+                        <CampaignMap 
+                            campaignData={campaignData}
+                            selectedCampaign={reSelectedCampaign.campaign}
+                            setCampaign={(campaign) => setCampaign(campaign)}
+                        />
                 </div>
-                {/* <div className="flex justify-center bg-cyan-500/60 rounded-lg ">
-                    <div className="flex flex-col justify-center items-center text-cyan-900 h-[150px] w-full rounded-lg text-xs">
-                        <h3>Points earned</h3>
-                        <h3 className="text-6xl font-black">{`${points || 0}`}</h3>
-                    </div>
-                </div> */}
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">FID</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{user?.fid || 'NA'}</h3>
-                </div> */}
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Store className="w-8 h-8 text-green-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {totalQuizPerWeek || 0}
-                        </div>
-                        <div className="text-sm text-gray-600">Total Onchain Streak</div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Key className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            { 
-                                !haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
-                                    <CheckCircle className="w-8 h-8 " />
-                                </h3> : <div className=' p-1 text-cyan-900  text-center'>
-                                    <GenerateKey 
-                                        functionName={'generateKey'} 
-                                        buttonClassName="text-md " 
-                                        campainHash={hash_} 
-                                    />
+                    <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                            <div className="relative z-10">
+                                <div className="text-6xl font-bold mb-2">
+                                    {points || 0}
                                 </div>
-                            }
+                            <div className="text-xl opacity-90 mb-2">
+                                You earned {points || 0} out of {totalPoints.toString()} total points for the week
+                            </div>
+                            <div className="text-lg opacity-80 capitalize">
+                                Your FID: {user?.fid || 'NA'}
+                            </div>
+                            <div className="flex-1 justify-between items-center text-lg opacity-80 capitalize">
+                                <h3>Learners</h3>
+                                <h3>{activeLearners.toString()}</h3>
+                            </div>
+                            <div className={`flex-1 justify-between items-center text-lg opacity-80 capitalize ${canClaim? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="flex gap-3 text-center">
+                                    <BaggageClaim className={`w-5 h-5`} />
+                                    <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
+                                </div>
+                                <div className="text-center">
+                                    <h3>Will be sorted on/after</h3>
+                                    <h3>{getTimeFromEpoch(transitionDate)}</h3>
+                                </div>
+                                <div className="text-center">
+                                    <h3>Claim ends</h3>
+                                    <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-sm text-gray-600">Passkey</div>
+                    </div>
+                    {/* <div className="flex justify-center bg-cyan-500/60 rounded-lg ">
+                        <div className="flex flex-col justify-center items-center text-cyan-900 h-[150px] w-full rounded-lg text-xs">
+                            <h3>Points earned</h3>
+                            <h3 className="text-6xl font-black">{`${points || 0}`}</h3>
+                        </div>
+                    </div> */}
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">FID</h3>
+                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{user?.fid || 'NA'}</h3>
+                    </div> */}
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Store className="w-8 h-8 text-green-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {totalQuizPerWeek || 0}
+                            </div>
+                            <div className="text-sm text-gray-600">Total Onchain Streak</div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Key className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                { 
+                                    !haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
+                                        <CheckCircle className="w-8 h-8 " />
+                                    </h3> : <div className=' p-1 text-cyan-900  text-center'>
+                                        <GenerateKey 
+                                            functionName={'generateKey'} 
+                                            buttonClassName="text-md " 
+                                            campainHash={hash_} 
+                                        />
+                                    </div>
+                                }
+                            </div>
+                            <div className="text-sm text-gray-600">Passkey</div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <HandCoins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Amount of $GROW earned</div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Coins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Amount of $CELO earned</div>
+                        </div>
                     </div>
 
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <HandCoins className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
-                        </div>
-                        <div className="text-sm text-gray-600">Amount of $GROW earned</div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Coins className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
-                        </div>
-                        <div className="text-sm text-gray-600">Amount of $CELO earned</div>
-                    </div>
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">Total attempted quiz</h3>
+                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
+                    </div> */}
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">Points earned</h3>
+                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || 0}</h3>
+                    </div> */}
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">PassKey</h3>
+                        { 
+                            haskey? <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>
+                                <AddressWrapper account={passKey} size={4} display={false} copyIconSize={'sm'} />
+                            </h3> : <div className='bg-cyan-500/60 rounded-r-lg p-1 text-cyan-900 font-bold w-[50%] text-center'>
+                                <GenerateKey functionName={'generateKey'} buttonClassName="bg-none rounded-none" />
+                            </div>
+                        }
+                    </div>  */}
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">{"$GROW claimed"}</h3>
+                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
+                    </div> */}
+                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
+                        <h3 className="w-[50%]">{`$Celo claimed`}</h3>
+                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
+                    </div> */}
                 </div>
-
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Total attempted quiz</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
-                </div> */}
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">Points earned</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || 0}</h3>
-                </div> */}
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">PassKey</h3>
-                    { 
-                        haskey? <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>
-                            <AddressWrapper account={passKey} size={4} display={false} copyIconSize={'sm'} />
-                        </h3> : <div className='bg-cyan-500/60 rounded-r-lg p-1 text-cyan-900 font-bold w-[50%] text-center'>
-                            <GenerateKey functionName={'generateKey'} buttonClassName="bg-none rounded-none" />
-                        </div>
-                    }
-                </div>  */}
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">{"$GROW claimed"}</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
-                </div> */}
-                {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                    <h3 className="w-[50%]">{`$Celo claimed`}</h3>
-                    <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
-                </div> */}
-            </div>
-            <button
-                onClick={handleClaim}
-                disabled={!disableClaimButton}
-                className={`w-full mt-4 ${disableClaimButton? "btn-secondary" : "btn-primary"} flex items-center justify-center gap-2 border`}
-            >
-                <BaggageClaim className="w-5 h-5 text-orange-600" />
-                <span>Claim</span>
-            </button>
-            {/* <div className="flex justify-center items-center gap-1 w-full">
-                <CustomButton
+                <button
                     onClick={handleClaim}
-                    disabled={disableClaimButton}
-                    exit={false}
+                    disabled={!disableClaimButton}
+                    className={`w-full mt-4 ${disableClaimButton? "btn-secondary" : "btn-primary"} flex items-center justify-center gap-2 border`}
                 >
+                    <BaggageClaim className="w-5 h-5 text-orange-600" />
                     <span>Claim</span>
-                </CustomButton>
-            </div> */}
-            <ClaimReward 
-                openDrawer={openDrawer}
-                toggleDrawer={toggleDrawer}
-                weekId={weekId}
-                campainHash={hash_}
-            />
-        </MotionDisplayWrapper>
+                </button>
+                {/* <div className="flex justify-center items-center gap-1 w-full">
+                    <CustomButton
+                        onClick={handleClaim}
+                        disabled={disableClaimButton}
+                        exit={false}
+                    >
+                        <span>Claim</span>
+                    </CustomButton>
+                </div> */}
+                <ClaimReward 
+                    openDrawer={openDrawer}
+                    toggleDrawer={toggleDrawer}
+                    weekId={weekId}
+                    campainHash={hash_}
+                />
+            </MotionDisplayWrapper>
+        </CollapsibleComponent>
     );
 }
 
@@ -287,21 +292,11 @@ export default function Profile() {
     const profileData = React.useMemo(() => {
         const wkId = toBN(weekId.toString()).toNumber();
         const weekIds = [...Array(wkId === 0? 1 : wkId + 1).keys()];
-        const profileData = weekIds.map(() => (
-             <div className="w-full overflow-hidden md:overflow-auto border rounded-xl p-4 grid grid-cols-1-lg gap-2">
+        const profileData = weekIds.map((_,i) => (
+             <div key={i} className="w-full overflow-hidden md:overflow-auto border rounded-xl p-4 grid grid-cols-1-lg gap-2">
                 {
-                    weekIds.map((wkId) => (
-                        <MotionDisplayWrapper 
-                            key={wkId}
-                        >
-                            <CollapsibleComponent 
-                                header={`Week ${wkId}`}
-                                isOpen={isOpen}
-                                toggleOpen={toggleOpen}
-                            >
-                                <ProfileComponent weekId={BigInt(wkId)} user={context?.user} />
-                            </CollapsibleComponent>
-                        </MotionDisplayWrapper>
+                    weekIds.map((wkId, key) => (
+                        <ProfileComponent key={key} weekId={BigInt(wkId)} user={context?.user} />
                     ))
                 }
             </div>

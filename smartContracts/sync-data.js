@@ -5,10 +5,10 @@ const path = require('path');
 
 // Configuration - directory files
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
-const REACT_DATA_PATH = '../eduFi/contractsData';
-const GLOBAL_OUTPUT_PATH = '../eduFi/contractsData/global.json';
-const approvedFunctions = ['checkEligibility', 'recordPoints', 'banUserFromCampaign', 'setAdmin', 'getAdminStatus', 'hasPassKey', 'setTransitionInterval', 'claimReward', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'generateKey', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance'];
-const readFunctions = ['getProfile',  'getData', 'checkligibility', 'hasPassKey', 'getAdminStatus', 'owner', 'allowance'];
+const REACT_DATA_PATH = '../eduFi/contractsArtifacts';
+const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
+const approvedFunctions = ['checkEligibility', 'recordPoints', 'banUserFromCampaign', 'setAdmin', 'getAdminStatus', 'hasPassKey', 'setTransitionInterval', 'claimReward', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'generateKey', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'getCampaingData'];
+const readFunctions = ['getProfile',  'getData', 'checkligibility', 'hasPassKey', 'getAdminStatus', 'owner', 'allowance', 'getCampaingData'];
 const functionsRequireArgUpdate = approvedFunctions;
 const chainName = {44787: 'alfajores', 42220: 'celo'};
 const chainIds = [44787, 42220]
@@ -24,6 +24,7 @@ let globalOutput = {
     paths: workBuild,
     contractAddresses: [{"stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"}, {"stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a'}],
 };
+
 
 let itemOutput = {
     contractAddress: '',
@@ -84,7 +85,7 @@ try {
                         inputs.push(input.name);
                     });
                     const isReadFunction = readFunctions.includes(item.name);
-                    const stdItemOutPath = path.join(REACT_DATA_PATH, `${item.name}.json`);
+                    const stdItemOutPath = path.join(REACT_DATA_PATH, `${item.name.concat(chainId.toString())}.json`);
                     itemOutput.abi = isReadFunction? [item] : artifact.abi;
                     itemOutput.inputCount = inputs.length;
                     itemOutput.functionName = item.name;

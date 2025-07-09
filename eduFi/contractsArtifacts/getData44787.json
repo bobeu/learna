@@ -1,0 +1,114 @@
+{
+  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
+  "functionName": "getData",
+  "inputCount": 0,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "minimumToken",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "transitionInterval",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "weekCounter",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Learna.State",
+              "name": "state",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "fundsNative",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "fundsERC20",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint96",
+                      "name": "totalPoints",
+                      "type": "uint96"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "lastUpdated",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "activeLearners",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "transitionDate",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "claimActiveUntil",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "operator",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes32",
+                      "name": "hash_",
+                      "type": "bytes32"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "canClaim",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Campaigns.Campaign[]",
+                  "name": "campaigns",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct Learna.WeekData[]",
+              "name": "wd",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct Learna.ReadData",
+          "name": "data",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

@@ -22,7 +22,7 @@ describe("Learna", function () {
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaigns: CAMPAIGNS, fundERC20, token: growTokenAddr, value});
-      const campaigns = cp.campaigns.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
+      // const campaigns = cp.campaigns.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
       // console.log("campaignHashes.length: ", campaignHashes.length);
       const newErc20Values = campaignHashes.map((_, i) => {
         const reducer = parseUnits((i+1).toString(), 9);
@@ -39,9 +39,9 @@ describe("Learna", function () {
       });
 
       await learna.connect(admin2).adjustCampaignValues(campaignHashes, newErc20Values,newNativeValues);
-      const newCampaigns = (await getCampaigns(learna)).campaigns.filter((_, i) => i > 0);;
+      const newCampaigns = (await getCampaigns(learna)).campaigns;
 
-      campaigns.forEach((campaign, i) => {
+      cp.campaigns.forEach((campaign, i) => {
         expect(campaign.activeLearners).to.be.eq(newCampaigns[i].activeLearners);
         expect(campaign.claimActiveUntil).to.be.eq(newCampaigns[i].claimActiveUntil);
         expect(campaign.fundsERC20 > newCampaigns[i].fundsERC20).to.be.true;
