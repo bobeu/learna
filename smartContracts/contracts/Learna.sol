@@ -23,7 +23,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     event NewCampaign(bytes32 campaignHash, Campaign campaign);
     event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
-    event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32[] campainHashes);
+    event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32 campainHash);
     event Banned(address[] indexed users, uint weekId, bytes32[] campainHashes);
     event Sorted(uint _weekId, uint newWeekId, string[] campainHashes);
     event PasskeyGenerated(address indexed sender, uint weekId, bytes32[] campainHashes);
@@ -34,15 +34,63 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         bytes32 campaignHash;
     }
 
-    struct Profile {
+    struct Answer {
+        bytes questionHash;
+        uint64 selected;
+        bool isUserSelected;
+    }
+
+    struct AnswerInput {
+        string questionHash;
+        uint64 selected;
+        bool isUserSelected;
+    }
+
+    struct QuizResultOther {
+        bytes id;
+        // bytes32[] hashes;
+        bytes quizId;
+        uint32 score;
+        uint64 totalPoints;
+        uint16 percentage;
+        uint64 timeSpent;
+        bytes completedAt;
+    }
+
+    struct QuizResultOtherInput {
+        string id;
+        // bytes32[] hashes;
+        string quizId;
+        uint32 score;
+        uint64 totalPoints;
+        uint16 percentage;
+        uint64 timeSpent;
+        string completedAt;
+    }
+
+    struct QuizResultInput {
+        AnswerInput[] answers;
+        QuizResultOtherInput other;
+    }
+
+    struct QuizResult {
+        Answer[] answers;
+        QuizResultOther other;
+    }
+
+    struct ProfileOther {
         uint amountMinted;
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
         bool claimed;
-        uint16 points;
         bytes32 passKey;
         bool haskey;
         uint8 totalQuizPerWeek;
+    }
+
+    struct Profile {
+        QuizResult[] quizResults;
+        ProfileOther other;
     }
 
     struct WeekData {
@@ -60,6 +108,11 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         uint minimumToken;
         uint64 transitionInterval; 
         uint weekCounter;
+    }
+
+    struct Eligibility {
+        bool value;
+        bytes32 campaignHash;
     }
 
     Mode private mode;
@@ -90,7 +143,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     modifier onlyPasskeyHolder(uint weekId, address user, bytes32[] memory campaignHashes) {
         for(uint i = 0; i < campaignHashes.length; i++) {
             bytes32 campaignHash = campaignHashes[i];
-            require(learners[weekId][campaignHash][user].haskey, 'Only passkey holders');
+            require(learners[weekId][campaignHash][user].other.haskey, 'Only passkey holders');
         }
         _;
     }
@@ -163,8 +216,8 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * @param user : Target user
      * @param profile : Profile data
     */
-    function _setProfile(uint weekId, bytes32 campaignHash, address user, Profile memory profile) internal {
-        learners[weekId][campaignHash][user] = profile;
+    function _setProfile(uint weekId, bytes32 campaignHash, address user, ProfileOther memory profile) internal {
+        learners[weekId][campaignHash][user].other = profile;
     }
 
     // Send collected fee to reciever
@@ -202,12 +255,12 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
                 cpo.activeLearners += 1;
             }
             Profile memory pf = _getProfile(weekId, campaignHash, sender);
-            require(!pf.haskey, 'Passkey exist');
+            require(!pf.other.haskey, 'Passkey exist');
             // slot = _generateAndSaveSlot(weekId, sender, campaignHash, _initializeProfile); 
-            pf.haskey = true;
-            pf.amountMinted = st.minimumToken ;
-            pf.passKey = keccak256(abi.encodePacked(sender, weekId, pf.haskey, st.minimumToken));
-            _setProfile(weekId, campaignHash, sender, pf);
+            pf.other.haskey = true;
+            pf.other.amountMinted = st.minimumToken ;
+            pf.other.passKey = keccak256(abi.encodePacked(sender, weekId, pf.other.haskey, st.minimumToken));
+            _setProfile(weekId, campaignHash, sender, pf.other);
 
         }
         require(IGrowToken(token).allocate(msg.value, sender), 'Gen: Allocation failed');
@@ -223,17 +276,17 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * @return : True or False
     */
     function hasPassKey(address user, bytes32 campaignHash) public view returns(bool) {
-        return _getProfile(state.weekCounter, campaignHash, user).haskey;
+        return _getProfile(state.weekCounter, campaignHash, user).other.haskey;
     }
  
     /**
      * @dev Register users for weekly reward
      * @param user : User 
-     * @param points : Points generated in quizzes.
-     * @param campaignHashes : Campaign hash 
+     * @param campaignHash : Campaign hash 
+     * @param quizResult : Array of quiz result for a campaign
      * @notice Only owner function
     */
-    function recordPoints(address user, uint16[] memory points, address token, bytes32[] memory campaignHashes) 
+    function recordPoints(address user, QuizResultInput memory quizResult, address token, bytes32 campaignHash) 
         public 
         payable
         onlyAdmin(_msgSender())
@@ -244,25 +297,39 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         uint weekId = state.weekCounter;
         _forwardFee(msg.value);
         require(user != address(0), "Invalid user");
-        require(points.length == campaignHashes.length, "Array mismatch");
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
-            _validateCampaign(campaignHash, weekId);
-            Campaign memory cpo = _getCampaign(weekId, campaignHash);
-            Profile memory pf = _getProfile(weekId, campaignHash, user);
-            require(pf.haskey, 'No pass key');
-            require(pf.totalQuizPerWeek <= 14, 'Storage limit exceeded');
-            IGrowToken(token).burn(user, pf.amountMinted);
-            unchecked {
-                pf.points += points[i];
-                pf.totalQuizPerWeek += 1;
-                cpo.totalPoints += points[i]; 
-            }
-            _setProfile(weekId,  campaignHash, user,  pf);
-            _setCampaign(weekId, campaignHash, cpo);
+        _validateCampaign(campaignHash, weekId);
+        Campaign memory cpo = _getCampaign(weekId, campaignHash);
+        Profile memory pf = _getProfile(weekId, campaignHash, user);
+        if(msg.value > 0) {
+            require(pf.other.haskey, 'No pass key');
+            IGrowToken(token).burn(user, pf.other.amountMinted);
         }
+        require(pf.other.totalQuizPerWeek <= 14, 'Storage limit exceeded');
+    
+        unchecked {
+            pf.other.totalQuizPerWeek += 1;
+            cpo.totalPoints += quizResult.other.score; 
+        }
+        _setProfile(weekId,  campaignHash, user, pf.other);
+        uint index = learners[weekId][campaignHash][user].quizResults.length;
+        learners[weekId][campaignHash][user].quizResults.push();
+        learners[weekId][campaignHash][user].quizResults[index].other.id = bytes(quizResult.other.id);
+        learners[weekId][campaignHash][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
+        learners[weekId][campaignHash][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
+        // learners[weekId][campaignHash][user].quizResults[index].other.hashes = quizResult.other.hashes;
+        learners[weekId][campaignHash][user].quizResults[index].other.score = quizResult.other.score;
+        learners[weekId][campaignHash][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
+        learners[weekId][campaignHash][user].quizResults[index].other.percentage = quizResult.other.percentage;
+        learners[weekId][campaignHash][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
 
-        emit RegisteredForWeeklyEarning(user, weekId, campaignHashes);
+        for(uint i = 0; i < quizResult.answers.length; i++){
+            AnswerInput memory answer = quizResult.answers[i]; 
+            learners[weekId][campaignHash][user].quizResults[index].answers.push();
+            learners[weekId][campaignHash][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
+        }
+        _setCampaign(weekId, campaignHash, cpo);
+
+        emit RegisteredForWeeklyEarning(user, weekId, campaignHash);
         return true;
     }
 
@@ -288,9 +355,9 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
                     bytes32 campaignHash = campaignHashes[j];
                     _validateCampaign(campaignHash, weekId);
                     Profile memory pf = _getProfile(weekId, campaignHash, user);
-                    if(pf.haskey) {
-                        pf.haskey = false;
-                        _setProfile(weekId, campaignHash, user, pf);
+                    if(pf.other.haskey) {
+                        pf.other.haskey = false;
+                        _setProfile(weekId, campaignHash, user, pf.other);
                     }
                 }
             }
@@ -332,7 +399,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * @param cp : Campaign 
      */
     function _calculateShare( 
-        uint16 userPoints, 
+        uint64 userPoints, 
         Campaign memory cp
     ) internal view returns(uint erc20Amount, uint nativeClaim) {
         uint8 erc20Decimals;
@@ -370,7 +437,14 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         _validateCampaign(campaignHash, weekId);
         cp = _getCampaign(weekId, campaignHash);
         pf = _getProfile(weekId, campaignHash, user);
-        (uint erc20, uint native) = _calculateShare(pf.points, cp);
+        uint64 totalScore;
+        for(uint i = 0; i < pf.quizResults.length; i++) { 
+            unchecked {
+                totalScore += pf.quizResults[i].other.score;
+            }
+        }
+        // if(totalScore == 0) revert("here");
+        (uint erc20, uint native) = _calculateShare(totalScore, cp);
         erc20Amount = erc20;
         nativeAmount = native;
         isEligible = (erc20Amount > 0 || nativeAmount > 0) && cp.canClaim; 
@@ -379,18 +453,25 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     /**
      * Check Eligibility
      * @param weekId : Week Id
+     * @param campaignHashes: CampaignHashes
      */
     function checkEligibility(
         uint weekId, 
         address user, 
-        bytes32 campaignHash
+        bytes32[] memory campaignHashes
     ) 
         public 
         view 
-        returns(bool) 
+        returns(Eligibility[] memory result) 
     {
-        (,,,,bool isEligible) = _checkEligibility(weekId, user, campaignHash);
-        return isEligible;
+        uint campaignSize = campaignHashes.length;
+        result = new Eligibility[](campaignSize);
+        for(uint i = 0; i < campaignSize; i++){
+            bytes32 campaignHash = campaignHashes[i];
+            (,,,,bool isEligible) = _checkEligibility(weekId, user, campaignHash);
+            result[i] = Eligibility(isEligible, campaignHash);
+        }
+        return result;
     } 
  
     /**
@@ -415,19 +496,19 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             bool isEligible
         ) = _checkEligibility(weekId, sender, campaignHash);
         if(!isEligible) revert NotEligible();
-        if(!pf.haskey) revert NoPasskey();
+        if(!pf.other.haskey) revert NoPasskey();
         require(cp.canClaim, "Claim not active");
         require(_hasFund(weekId, campaignHash), "No funds in campaign");
-        require(!pf.claimed, 'Already claimed');
-        pf.claimed = true;
+        require(!pf.other.claimed, 'Already claimed');
+        pf.other.claimed = true;
         if(mode == Mode.LIVE) require(_now() <= cp.claimActiveUntil, 'Claim ended'); 
         unchecked {
             if(cp.fundsNative > nativeAmount) cp.fundsNative -= nativeAmount;
             if(cp.fundsERC20 > nativeAmount) cp.fundsERC20 -= erc20Amount;
-            pf.amountClaimedInNative += nativeAmount;
-            pf.amountClaimedInERC20 += erc20Amount;
+            pf.other.amountClaimedInNative += nativeAmount;
+            pf.other.amountClaimedInERC20 += erc20Amount;
         }
-        _setProfile(weekId,  campaignHash, sender, pf);
+        _setProfile(weekId,  campaignHash, sender, pf.other);
         _setCampaign(weekId, campaignHash, cp);
         if(erc20Amount > 0) _claimErc20(sender, erc20Amount, IERC20(cp.token)); 
         if(nativeAmount > 0) _claimNativeToken(sender, nativeAmount);
@@ -603,29 +684,13 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
         data.state = state;
-        // data.cData = _getCampaingData();
         uint weekId = data.state.weekCounter;
-        // data.wd = new WeekData[](weekId);
-        // data.wd = wd;
-
         data.wd = new WeekData[](weekId + 1);
         weekId += 1;
         for(uint i = 0; i < weekId; i++) {
-            // data.wd[i].weekId = i;
             data.wd[i].campaigns = _getCampaings(i);
         }
-        // if(weekId > 0) {
-        //     data.wd = new WeekData[](weekId + 1);
-        //     weekId += 1;
-        //     for(uint i = 0; i < weekId; i++) {
-        //         // data.wd[i].weekId = i;
-        //         data.wd[i].campaigns = _getCampaings(i);
-        //     }
-        // } else {
-        //     data.wd = new WeekData[](1);
-        //    data.wd[0].campaigns = _getCampaings(0); 
-        // }
-        // data.wd = wd;
+
         return data;
     } 
 

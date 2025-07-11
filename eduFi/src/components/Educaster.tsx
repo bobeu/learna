@@ -1,13 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Address, Campaign, CampaignData, Category, CData, Path, Quiz, QuizResult, ReadData, SelectedData, TransactionCallback, TrxState } from '../../types/quiz';
-import { Dashboard } from '~/components/quizComponents/Dashboard';
+import type { 
+    Address, 
+    Campaign, 
+    Category, 
+    CData, 
+    Path, 
+    Quiz, 
+    QuizResultInput, 
+    QuizResultOtherInput, 
+    ReadData, 
+    TransactionCallback, 
+    TrxState 
+} from '../../types/quiz';
+
+import Dashboard from '~/components/quizComponents/Dashboard';
 import { QuizInterface } from '~/components/quizComponents/QuizInterface';
 import { QuizResults } from '~/components/quizComponents/QuizResults';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
-import { bytesToString, hexToString, zeroAddress } from 'viem';
+import { hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
-import { filterTransactionData, mockQuiz, mockQuizResult, mockReadData, mockSelectedData, loadQuizData, formatAddr, mockCampaign } from './utilities';
+
+import { 
+    filterTransactionData, 
+    mockQuiz, 
+    mockQuizResult, 
+    mockReadData, 
+    loadQuizData, 
+    formatAddr, 
+    mockCampaign 
+} from './utilities';
+
 import LandingPage from './landingPage';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
@@ -17,27 +40,22 @@ import SetupCampaign from './peripherals/SetupCampaign';
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
 
-export default function Home() {
-    // const [appState, setAppState] = useState<AppState>('');
+export default function Educaster() {
     const [appData, setAppData] = React.useState<{categories: Category[], quizData: Quiz[] | null}>({categories: [], quizData: null});
-    const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(mockQuiz);
-    const [quizResult, setQuizResult] = useState<QuizResult | null>(mockQuizResult);
-    const [userResults, setUserResults] = useState<QuizResult[]>([]);
+    const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+    const [quizResult, setQuizResult] = useState<QuizResultInput | null>(null);
+    const [userResults, setUserResults] = useState<QuizResultInput[]>([]);
     const [messages, setMessage] = React.useState<string>('');
     const [errorMessage, setErrorMessage] = React.useState<string>('');
-
-    const dataRef = React.useRef<SelectedData>(mockSelectedData);
     const [currentPath, setPath] = React.useState<Path>('home');
     const [selectedCampaign, setSelectedCampaign] = React.useState<Campaign>(mockCampaign);
-    const [questionIndex, setIndex] = React.useState<number>(0);
-    const [questionsId, setQuestionId] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState<boolean>(false);
+    const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
     
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address } = useAccount();
     const account = formatAddr(address);
-    // const { user } = useNeynarContext();
 
     React.useEffect(() => {
         if(!appData.quizData) {
@@ -55,15 +73,15 @@ export default function Home() {
     useEffect(() => {
         const savedResults = localStorage.getItem('quizResults');
         if (savedResults) {
-        try {
-            const parsedResults = JSON.parse(savedResults).map((result: any) => ({
-            ...result,
-            completedAt: new Date(result.completedAt)
-            }));
-            setUserResults(parsedResults);
-        } catch (error) {
-            console.error('Error loading saved results:', error);
-        }
+            try {
+                const parsedResults = JSON.parse(savedResults).map((result: any) => ({
+                    ...result,
+                    completedAt: new Date(result.completedAt)
+                }));
+                setUserResults(parsedResults);
+            } catch (error) {
+                console.error('Error loading saved results:', error);
+            }
         }
     }, []);
 
@@ -79,14 +97,20 @@ export default function Home() {
         setPath('quiz');
     };
 
-    const handleQuizComplete = (result: Omit<QuizResult, 'id'>) => {
-        const newResult: QuizResult = {
-        ...result,
-        id: Date.now().toString() // Simple ID generation
+    const handleQuizComplete = (result: QuizResultInput) => {
+        const resultOtherInput : QuizResultOtherInput = {
+            ...result.other,
+            id: Date.now().toString()
+        }
+        
+        const newResult: QuizResultInput= {
+            answers: result.answers,
+            other: resultOtherInput
         };
         
         setQuizResult(newResult);
         setUserResults(prev => [newResult, ...prev]);
+        setRecordPoints(true);
         setPath('results');
     };
 
@@ -94,14 +118,18 @@ export default function Home() {
         setPath(arg);
     }
 
+    const toggleRecordPoints = (arg: boolean) => {
+        setRecordPoints(arg);
+    }
+
     const handlePlayAgain = () => {
         setPath('quiz');
     };
 
-    const handleBackToHome = () => {
+    const handleBackToHome = (path: Path) => {
         setSelectedQuiz(null);
         setQuizResult(null);
-        setPath('dashboard');
+        setPath(path);
     };
 
     const handleBackToDashboard = () => {
@@ -130,20 +158,17 @@ export default function Home() {
     };
     
     // Build read transactions data
-    const { contractAddresses: ca, transactionData: td } = filterTransactionData({
+    const { transactionData: td } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData'],
+        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData', 'getProfile'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
 
-    const learna = ca.Learna as Address;
     const readArgs = [[], [], [account], []];
-    // const addresses = [1, 2, 3, 4].map(() => learna);
-
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
@@ -168,7 +193,6 @@ export default function Home() {
 
     const { weekId, state, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
         const data = result?.[1]?.result as ReadData || mockReadData;
-        console.log("Data", data)
         const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
         const cData = result?.[3]?.result as CData;
@@ -238,8 +262,6 @@ export default function Home() {
         <StorageContextProvider
             value={{
                 handleStart: () => setPath('quiz'),
-                dataRef,
-                questionIndex,
                 loading,
                 setpath,
                 currentPath,
@@ -249,9 +271,10 @@ export default function Home() {
                 weekId,
                 owner,
                 refetch,
-                questionsId,
                 campaignHashes,
                 campaignStrings,
+                recordPoints,
+                toggleRecordPoints,
                 appData,
                 setmessage,
                 setselectedCampaign,

@@ -8,7 +8,7 @@ import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import quizRawData from "../../quizData.json";
-import { Address, Campaign, Category, CData, DifficultyLevel, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizCategory, QuizResult, ReadData, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -59,15 +59,48 @@ export const mockCData : CData = [
   }
 ];
 
+export const mockEligibility : Eligibility[] = [
+  {
+    campaignHash: `0x${''}`,
+    value: false
+  }
+]
+
 export const mockProfile : Profile = {
-  amountClaimedInNative: 0n,
-  amountClaimedInERC20: 0n,
-  claimed: false,
-  points: 0,
-  passKey: "0x",
-  haskey: false,
-  totalQuizPerWeek: 0,
-  amountMinted: 0n
+  other: {
+    amountClaimedInNative: 0n,
+    amountClaimedInERC20: 0n,
+    claimed: false,
+    passKey: "0x",
+    haskey: false,
+    totalQuizPerWeek: 0,
+    amountMinted: 0n
+  },
+  quizResults: [
+    {
+      answers: [
+        {
+          isUserSelected: false,
+          questionHash: '',
+          selected: 0
+        }
+      ],
+      other: {
+        completedAt: '',
+        id: '',
+        percentage: 0,
+        quizId: '',
+        score: 0,
+        timeSpent: 0,
+        totalPoints: 0
+      }
+    }
+  ]
+}
+
+export const mockReadProfile : ReadProfile = {
+  campaignHash: `0x${''}`,
+  profile: mockProfile
 }
 
 export const mockScoresParam : ScoresParam =  {
@@ -108,15 +141,16 @@ export const mockQuiz : Quiz = {
   createdAt: new Date()
 }
 
-export const mockQuizResult : QuizResult = {
-  id: "",
-  quizId: "",
-  score: 0,
-  totalPoints: 0,
-  percentage: 0,
-  timeSpent: 0,
-  answers: {},
-  completedAt: new Date()
+export const mockQuizResult : QuizResultInput = {
+  answers: [],
+  other: {
+    quizId: "",
+    score: 0,
+    totalPoints: 0,
+    percentage: 0,
+    timeSpent: 0,
+    completedAt: new Date().toString(),
+  }
 }
 
 export const mockCampaign : Campaign = {
@@ -291,26 +325,19 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
       const timeLimit = Math.ceil(timePerQuestion * questionSize);
 
       // Run through the questions
-      questions.forEach(({answer, options, question, explanation}, id) => {
+      questions.forEach(({answer, options, hash, question, explanation}, id) => {
         let correctAnswer = 0;
         qs.push({
-          id: id.toString(),
+          id,
           question,
           options,
+          hash: `0x${hash}`,
           correctAnswer: typeof answer === "number"? answer : options.indexOf(answer),
           difficulty: difficulty as DifficultyLevel,
           category,
           points,
           explanation:explanation === ""? `The answer to ${question} is ${options[correctAnswer]}` : explanation
         })
-        // for (let i = 0; i < options.length; i++){
-        //   const option = options[i];
-        //   if(answer === option) {
-        //     console.log("answer === option", answer === option)
-        //   }
-        //   // console.log("option", option)
-        //   if(answer === option) qs[id].correctAnswer = i;
-        // }
       });
 
       quizData.push(
@@ -318,8 +345,7 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
           category,
           description,
           difficulty: difficulty as DifficultyLevel,
-          // id: keccak256(stringToHex(category)),
-          id: levelId,
+          id: keccak256(stringToBytes(category)),
           createdAt: new Date(),
           questions:qs,
           title: category,

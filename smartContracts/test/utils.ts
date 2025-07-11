@@ -1,7 +1,10 @@
-import { Hex, parseUnits } from "viem";
+import { Hex, parseEther, parseUnits, stringToHex } from "viem";
 import type { Address, GrowToken, Learna, Null, Signer } from "./types";
 import { Learna as Learn,   } from "../typechain-types";
 import { Campaigns } from "../typechain-types/contracts/Learna";
+
+export const campaigns = ['solidity'];
+// export const campaignHash = '0xa477d97b122e6356d32a064f9ee824230d42d04c7d66d8e7d125a091a42b0b25' as Hex;
   
 interface SortEarnings {
   learna: Learna; 
@@ -29,10 +32,10 @@ interface GenerateKey {
 interface RecordPoints {
   user: Address;
   learna: Learna;
-  points: number[];
+  quizResult: QuizResultInput;
   deployer: Signer;
   token: Address;
-  campaignHashes: Hex[];
+  campaignHash: Hex;
 }
 
 interface Ban {
@@ -48,8 +51,29 @@ interface SetUpCampaign {
   fundERC20: bigint;
   token: Address;
   learna: Learna;
-  campaigns: string[];
+  campaign: string;
   value: bigint;
+}
+
+interface QuizResultOtherInput {
+  id: string;
+  quizId: string;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  timeSpent: number;
+  completedAt: string;
+}
+
+interface AnswerInput {
+  questionHash: string;
+  isUserSelected: boolean;
+  selected: number;
+}
+
+export interface QuizResultInput {
+  answers: AnswerInput[];
+  other: QuizResultOtherInput;
 }
 
 /**
@@ -141,10 +165,11 @@ export async function getPassKey(x: GenerateKey) {
  * @returns : User's profile data
 */
 export async function recordPoints(x: RecordPoints) {
-  const { user, learna, deployer, points, token, campaignHashes } = x;
-  await learna.connect(deployer).recordPoints(user, points, token, campaignHashes);
+  const { user, learna, deployer, quizResult, token, campaignHash } = x;
+  // console.log("X", x)address user, QuizResultInput memory quizResult, address token, bytes32 campaignHash
+  await learna.connect(deployer).recordPoints(user, quizResult, token, campaignHash, {value: parseEther('1')});
   const data = await learna.getData();
-  return await learna.getProfile(user, data.state.weekCounter, campaignHashes);
+  return await learna.getProfile(user, data.state.weekCounter, [campaignHash]);
 }
 
 /**
@@ -164,12 +189,11 @@ export async function banUserFromCampaig(x: Ban) {
  * @returns : User's profile data
 */
 export async function setUpCampaign(x: SetUpCampaign) {
-  const { signer, learna, fundERC20, campaigns, token, value } = x;
+  const { signer, learna, fundERC20, campaign, token, value } = x;
   const learnaAddr = await learna.getAddress();
   const balanceOfLeanerB4Tipped = await signer.provider?.getBalance(learnaAddr);
-  for(let i = 0; i < campaigns.length; i++) {
-    await learna.connect(signer).setUpCampaign(campaigns[i], fundERC20, token, {value});
-  }
+  await learna.connect(signer).setUpCampaign(campaign, fundERC20, token, {value});
+
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
   const campaigns_ = await getCampaigns(learna);
   return {
@@ -215,5 +239,36 @@ export async function balanceOf({accounts, asset}: {accounts: Address[], asset: 
   for(let i = 0; i < accounts.length; i++) {
     const balance = await asset.balanceOf(accounts[i]);
     result.push(balance);
+  }
+}
+
+export const getQuizResult = (hash: Address, score: number): QuizResultInput => {
+  return {
+    other: {
+      completedAt: new Date().toString(),
+      id: '1',
+      percentage: 20,
+      quizId: 'solidity',
+      score,
+      timeSpent: 70,
+      totalPoints: 100
+    },
+    answers: [
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 0
+      },
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 1
+      },
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 2
+      },
+    ]
   }
 }

@@ -42,6 +42,7 @@ export default function SetAdmin({openDrawer, flag, user, toggleDrawer }: SetUpC
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='setAdmin'
         />
     )
 }

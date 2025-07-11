@@ -2,43 +2,32 @@
 
 import React from "react";
 import Drawer from './Drawer';
-import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId, useBalance } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useSendTransaction, useConnect, useChainId, useBalance, } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { getCastText, getDivviReferralUtilities, toBN, TOTAL_WEIGHT } from "~/components/utilities";
+import { filterTransactionData, getCastText, getDivviReferralUtilities, toBN } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
 import { parseUnits } from "viem";
 import { celo } from "viem/chains";
-// import { useNeynarContext } from "@neynar/react";
-// import axios, { AxiosError } from "axios";
-// import { ErrorRes } from "@neynar/nodejs-sdk/build/api";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL, RECEIVER } from "~/lib/constants";
 import { Address, FunctionName } from "../../../../types/quiz";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
-        ({ getTransactions, openDrawer, toggleDrawer, displayMessage}) => 
+        ({ getTransactions, lastStepInList, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, dataRef, loading, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
-    const { address, isConnected, } = useAccount();
+    const { weekId: wkId, result, loading, recordPoints, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
+    const { address, isConnected, connector } = useAccount();
+    const { connect } = useConnect();
     const chainId = useChainId();
     const config = useConfig();
     const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
-    const { data: questionsAtempted, } = dataRef.current;
-
-    const { totalScores } = React.useMemo(() => {
-        const totalQuestions = questionsAtempted.length;
-        const weightPerQuestion = Math.floor(TOTAL_WEIGHT / totalQuestions);
-        const totalAnsweredCorrectly = questionsAtempted.filter(({userAnswer, answer}) => userAnswer === answer);
-        const totalScores = weightPerQuestion * totalAnsweredCorrectly.length;
-        
-        return { totalScores };
-    }, [questionsAtempted]);
+    // const { data: blockNonce, refetch: getNonce } = useBlockTransactionCount({chainId, config});
 
     React.useEffect(() => {
         callback({message: '', errorMessage: ''});
@@ -63,54 +52,72 @@ export const Confirmation :
       };
 
     // Finalize transaction by reseting the necessary varibles
-    const finalize = () => {
+    const finalize = (functionName: FunctionName = '') => {
          setTimeout(() => {
-            console.log("Here4");
-            callback({message: '', errorMessage: ''});
-            // clearData();
-            // clearSelectedData();
             toggleLoading(false);
             toggleDrawer(0);
-            setpath('profile');
-            console.log("Here5")
+            switch (functionName) {
+                case 'setUpCampaign':
+                    setpath('stats');
+                    break;
+                case 'adjustCampaignValues':
+                    setpath('stats');
+                    break;
+                case 'generateKey':
+                    setpath('dashboard');
+                    break;
+                case 'recordPoints':
+                    setpath('profile');
+                    break;
+                case 'sortWeeklyReward':
+                    setpath('stats');
+                    break;
+                default:
+                    break;
+            } 
+            
+            // console.log("Here5")
         }, 6000);
         clearTimeout(6000);
     }
 
     // Wait for sometime before resetting the state after completing a transaction
     const setCompletion = async(functionName: FunctionName, useDivvi: boolean, hash: Address) => {
-        const { submitReferralData } = getDivviReferralUtilities();
-        callback({message: `Transaction completed!`});
-        if(functionName === 'sortWeeklyReward'){
-            await publishCast(weekId - 1, '', functionName);
-        }
-
-        if(useDivvi) {
-            const result = await submitReferralData(hash, chainId);
-            if(result.status === 200) {
-                setmessage('Publishing cast...');
-                await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
-            } else {
-                setmessage('Referral submission failed');
+        if(functionName === lastStepInList){
+            const { submitReferralData } = getDivviReferralUtilities();
+            callback({message: `Transaction completed!`});
+            if(functionName === 'sortWeeklyReward'){
+                await publishCast(weekId - 1, '', functionName);
             }
+    
+            if(useDivvi) {
+                const result = await submitReferralData(hash, chainId);
+                if(result.status === 200) {
+                    setmessage('Publishing cast...');
+                    await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
+                } else {
+                    setmessage('Referral submission failed');
+                }
+            }
+    
+            await refetch();
+            switch (functionName) {
+                case 'setUpCampaign':
+                    setmessage('Your tip was received. Check your profile for points earned');
+                break;
+                default:
+                    setmessage('Yay! transaction was successful ended');
+                break;
+            }
+           finalize(functionName);
         }
-
-        await refetch();
-        switch (functionName) {
-            case 'setUpCampaign':
-                setmessage('Your tip was received. Check your profile for points earned');
-            break;
-            default:
-                setmessage('Yay! transaction was successful ended');
-            break;
-        }
-       finalize();
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
         callback({errorMessage: error.message});
-        toggleLoading(false);
+        setTimeout(() => toggleLoading(false), 3000);
+        clearTimeout(3000);
     }
 
     const { writeContractAsync, } = useWriteContract({
@@ -178,9 +185,10 @@ export const Confirmation :
                 case 'recordPoints':
                     await delegateTransactionTask();
                     callback({message: "Now saving your points..."});
-                    let args_ = args;
-                    args_[1] = totalScores;
-                    // const recordArgs = [account, totalScores];
+                    const args_ = args;
+                    args_[1] = result;
+                    console.log("args_", args_); 
+
                     hash = await writeContractAsync({
                         abi,
                         functionName,
@@ -191,7 +199,7 @@ export const Confirmation :
                     });
                     hash = await waitForConfirmation(hash, '');
                     await forwardBalances();         
-                    await setCompletion(functionName, true, hash);
+                    await setCompletion(functionName, useDivvi, hash);
                     break;
                 
                 case 'generateKey':
@@ -200,12 +208,12 @@ export const Confirmation :
                         functionName,
                         address: contractAddress,
                         account,
-                        args: [],
+                        args,
                         dataSuffix,
                         value
                     });
                     hash = await waitForConfirmation(hash, '');
-                    await setCompletion(functionName, true, hash);
+                    await setCompletion(functionName, useDivvi, hash);
                     break;
     
                 case 'runall':
@@ -214,14 +222,16 @@ export const Confirmation :
                         functionName: 'generateKey',
                         address: contractAddress,
                         account,
-                        args: [],
+                        args,
                         dataSuffix,
                         value
                     });
                     hash = await waitForConfirmation(hash, '');
                     await delegateTransactionTask();
                     callback({message: "Now saving your points..."});
-                    const recordArg = [account, totalScores];
+                    const recordArg = args;
+                    recordArg[1] = result;
+                    console.log("args_", recordArg); 
                     hash = await writeContractAsync({
                         abi,
                         functionName: 'recordPoints',
@@ -231,20 +241,21 @@ export const Confirmation :
                         dataSuffix
                     });
                     hash = await waitForConfirmation(hash, '');
-                    await setCompletion('recordPoints', true, hash);
+                    await setCompletion('recordPoints', useDivvi, hash);
                     
                     break;
                 default:
+                    console.log("Args: ", arg)
                     hash = await writeContractAsync({
                         abi,
                         functionName,
                         address: contractAddress,
                         account: account,
-                        args
-        
+                        args,
+                        value
                     });
                     hash = await waitForConfirmation(hash, '');
-                    await setCompletion(functionName, true, hash);
+                    await setCompletion(functionName, useDivvi, hash);
                     break;
             }
         } catch (error) {
@@ -272,11 +283,47 @@ export const Confirmation :
         }
     }
 
-    // Alert message component and reset messages when mounted
+    // Record points silently
     React.useEffect(() => {
-        callback({message: "", errorMessage: ''});
-        if(loading) toggleLoading(false);
-    }, []);
+        if(recordPoints) {
+            if(!isConnected && connector) connect({connector, chainId}); 
+            const { transactionData, contractAddresses: { GrowToken} } = filterTransactionData({chainId, filter: true, functionNames: ['recordPoints']});
+            const td = transactionData[0];
+            const sendScore = async() => {
+                try {
+                    callback({message: "We're saving your score"});
+                    toggleDrawer(1);
+                    toggleLoading(true);
+                    const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+                    const args : any[] = [account, result, GrowToken as Address, result.other.quizId];
+                    // let nonce = blockNonce;
+                    // if(!nonce) {
+                    //     nonce = (await getNonce()).data
+                    // }
+                    const hash = await writeContractAsync({
+                        abi: td.abi,
+                        functionName: td.functionName,
+                        address: td.contractAddress as Address,
+                        account: viemAccountObj,
+                        args,
+                        // nonce: result.other.score
+                    });
+                    await waitForConfirmation(hash, 'delegation');
+                    callback({message: "Your scores was successfully updated"})
+                } catch (error: any) {
+                    console.log("Record Error", error?.message || error?.data?.message);
+                    callback({errorMessage: "Something went wrong. We could not update your scores. Please save it manually using the save button"})
+                }
+                setTimeout(() => {
+                    toggleLoading(false);
+                    toggleDrawer(0);
+                    toggleRecordPoints(false);
+                }, 3000);
+                clearTimeout(3000);
+            }
+            sendScore();
+        }
+    }, [recordPoints, account]);
 
     return (
         <Drawer 
@@ -301,7 +348,7 @@ export type Transaction = {
     requireArgUpdate: boolean;
     abi: any[] | Readonly<any[]>;
     value?: bigint;
-    refetchArgs?: (funcName: FunctionName) => Promise<{args: any[], value: bigint, proceed: number}>;
+    refetchArgs?: (funcName?: FunctionName) => Promise<{args: any[], value: bigint, proceed: number}>;
 };
 
 export interface ConfirmationProps {
@@ -309,25 +356,6 @@ export interface ConfirmationProps {
     openDrawer: number;
     getTransactions: () => Transaction[];
     displayMessage?: string;
+    lastStepInList: FunctionName;
 }
 
-
-
-
-
-
-
-//   async publishQuizResult(score: number, totalPoints: number, quizTitle: string, fid: string): Promise<boolean> {
-//     const percentage = Math.round((score / totalPoints) * 100);
-//     let emoji = '🎯';
-    
-//     if (percentage >= 90) emoji = '🏆';
-//     else if (percentage >= 80) emoji = '🥇';
-//     else if (percentage >= 70) emoji = '🥈';
-//     else if (percentage >= 60) emoji = '🥉';
-
-//     const castText = `${emoji} Just completed "${quizTitle}" quiz!\n\nScore: ${score}/${totalPoints} (${percentage}%)\n\nTry it yourself! 🧠✨\n\n#Web3Quiz #Farcaster`;
-
-//     return await this.publishCast(castText, fid);
-//   }
-// }

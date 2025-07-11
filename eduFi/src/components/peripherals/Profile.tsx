@@ -2,8 +2,8 @@ import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
-import { filterTransactionData, formatValue, getTimeFromEpoch, mockProfile, toBN, } from "../utilities";
-import { useAccount, useChainId, useConfig, useDisconnect, useReadContracts } from "wagmi";
+import { formatValue, getTimeFromEpoch, toBN, } from "../utilities";
+import { useAccount, useDisconnect, } from "wagmi";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import GenerateKey from "../transactions/GenerateKey";
 import ClaimReward from "../transactions/ClaimReward";
@@ -11,27 +11,33 @@ import CollapsibleComponent from "./Collapsible";
 import { useMiniApp, } from "@neynar/react";
 import { zeroAddress } from "viem";
 import { UserContext } from "@farcaster/frame-core/dist/context";
-import { Address, CampaignDataFormatted, Profile as ProfileType, } from "../../../types/quiz";
+import { CampaignDataFormatted } from "../../../types/quiz";
 import { ArrowLeft, ArrowRight, CheckCircle, PlugZap, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";
 import { CampaignMap } from "./SetupCampaign";
+import useProfile from "../hooks/useProfile";
 
 function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [ reSelectedCampaign, setCampaign ] = React.useState<CampaignDataFormatted>({campaign: '', campaignHash: `0x${''}`});
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     
-    const chainId = useChainId();
-    const config = useConfig();
     const toggleDrawer = (arg:number) => setDrawer(arg);
-    const { address, isConnected } = useAccount();
-    const account = address as Address;
     const handleClaim = () => setDrawer(1);
     const formattedWeekId = toBN(weekId.toString()).toNumber();
-    const { callback, selectedCampaign, campaignData, weekData, setselectedCampaign } = useStorage();
+    const { selectedCampaign, campaignData, weekData, setselectedCampaign } = useStorage();
     const wkId = toBN(weekId.toString()).toNumber()
     const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = selectedCampaign ||  weekData[wkId].campaigns[0];
+    const { 
+        amountClaimedInERC20, 
+        amountClaimedInNative, 
+        disableClaimButton,
+        haskey,
+        totalPointsForACampaign,
+        totalQuizPerWeek,
+        isElibigleToClaimForTheWeek
+     } = useProfile({campaignHash: hash_});
 
     const toggleOpen = (arg: boolean) => {
         setIsOpen(arg)
@@ -42,59 +48,6 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
         setselectedCampaign(filtered?.[0]);
     }
 
-    // Build the transactions to run
-    const { readTxObject } = React.useMemo(() => {
-        const { contractAddresses: ca, transactionData: td} = filterTransactionData({
-            chainId,
-            filter: true,
-            functionNames: ['getProfile', 'checkEligibility'],
-            callback
-        });
-
-        const learna = ca.Learna as Address;
-        const readArgs = [[account, weekId, [hash_]], [weekId]];
-        const addresses = [learna, learna];
-        const readTxObject = td.map((item, i) => {
-            return{
-                abi: item.abi,
-                functionName: item.functionName,
-                address: addresses[i],
-                args: readArgs[i]
-            }
-        });
-        return { readTxObject };
-    }, [chainId, account, weekId, callback]);
-
-    // Fetch user data 
-    const { data } = useReadContracts({
-        config,
-        contracts: readTxObject,
-        allowFailure: true,
-        query: {
-            enabled: !!isConnected,
-            refetchOnReconnect: 'always', 
-            refetchInterval: 5000,
-            refetchOnMount: 'always',
-
-        }
-    });
-
-    const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, disableClaimButton, totalQuizPerWeek } = React.useMemo(() => {
-        const profile = data?.[0]?.result as ProfileType || mockProfile;
-        const isElibigle = data?.[1]?.result as boolean;
-        const disableClaimButton = (profile && profile.claimed) || !profile || (profile && !profile.haskey || !isElibigle);
-        const { amountClaimedInERC20, amountClaimedInNative, haskey, passKey, points, totalQuizPerWeek } = profile;
-        return {
-            isElibigle,
-            amountClaimedInERC20,
-            amountClaimedInNative,
-            haskey,
-            passKey,
-            points,
-            totalQuizPerWeek,
-            disableClaimButton
-        }
-    }, [data]);
 
     React.useEffect(() => {
         if(selectedCampaign?.hash_?.toLowerCase() !== reSelectedCampaign.campaignHash.toLowerCase()) handleSetCampaign(reSelectedCampaign);
@@ -107,63 +60,56 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
             toggleOpen={toggleOpen}
         >
             <MotionDisplayWrapper className="space-y-2 font-mono">
-                <h3 className="pl-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
+                <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3>
                 <div className="space-y-2">
                 <div>
-                        <CampaignMap 
-                            campaignData={campaignData}
-                            selectedCampaign={reSelectedCampaign.campaign}
-                            setCampaign={(campaign) => setCampaign(campaign)}
-                        />
+                    <CampaignMap 
+                        campaignData={campaignData}
+                        selectedCampaign={reSelectedCampaign.campaign}
+                        setCampaign={(campaign) => setCampaign(campaign)}
+                    />
                 </div>
                     <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                             <div className="relative z-10">
                                 <div className="text-6xl font-bold mb-2">
-                                    {points || 0}
+                                    {totalPointsForACampaign || 0}
                                 </div>
                             <div className="text-xl opacity-90 mb-2">
-                                You earned {points || 0} out of {totalPoints.toString()} total points for the week
+                                You earned {totalPointsForACampaign || 0} out of {totalPoints.toString()} total points for the week
                             </div>
                             <div className="text-lg opacity-80 capitalize">
                                 Your FID: {user?.fid || 'NA'}
                             </div>
-                            <div className="flex-1 justify-between items-center text-lg opacity-80 capitalize">
-                                <h3>Learners</h3>
-                                <h3>{activeLearners.toString()}</h3>
+                            <div className="text-lg opacity-80 capitalize">
+                                <h3>Learners: {activeLearners.toString()}</h3>
                             </div>
-                            <div className={`flex-1 justify-between items-center text-lg opacity-80 capitalize ${canClaim? 'text-green-600' : 'text-red-600'}`}>
-                                <div className="flex gap-3 text-center">
-                                    <BaggageClaim className={`w-5 h-5`} />
-                                    <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
+                            <div className={`border rounded-xl grid grid-cols-1 bg-white p-4 text-lg mt-2 space-y-2 opacity-80 capitalize ${canClaim? 'text-cyan-900' : 'text-red-600'}`}>
+                                <div className="flex justify-between gap-3 p-2">
+                                    <BaggageClaim className={`w-5 h-5 text-gray-900`} />
+                                    <h3>{canClaim? 'Ready to claim' : 'Claim not Ready'}</h3>
                                 </div>
-                                <div className="text-center">
-                                    <h3>Will be sorted on/after</h3>
+                                <div className="flex justify-between gap-3 p-2">
+                                    <h3 className="text-gray-900">Sorted date</h3>
                                     <h3>{getTimeFromEpoch(transitionDate)}</h3>
                                 </div>
-                                <div className="text-center">
-                                    <h3>Claim ends</h3>
+                                <div className="flex justify-between gap-3 p-2">
+                                    <h3 className="text-gray-900">Claim ends: </h3>
                                     <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                                </div>
+                                <div className="flex justify-between gap-3 p-2">
+                                    <h3 className="text-gray-900">Reward: </h3>
+                                    <h3 className={`${isElibigleToClaimForTheWeek? 'text-green-600' : 'text-red-600'}`}>{isElibigleToClaimForTheWeek? 'Eligible' : 'NotEligible'}</h3>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {/* <div className="flex justify-center bg-cyan-500/60 rounded-lg ">
-                        <div className="flex flex-col justify-center items-center text-cyan-900 h-[150px] w-full rounded-lg text-xs">
-                            <h3>Points earned</h3>
-                            <h3 className="text-6xl font-black">{`${points || 0}`}</h3>
-                        </div>
-                    </div> */}
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">FID</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{user?.fid || 'NA'}</h3>
-                    </div> */}
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
                         <div className="glass-card rounded-xl p-4">
                             <div className="flex items-center justify-center mb-3">
-                                <Store className="w-8 h-8 text-green-600" />
+                                <Store className="w-8 h-8 text-blue-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {totalQuizPerWeek || 0}
@@ -173,17 +119,17 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
 
                         <div className="glass-card rounded-xl p-4">
                             <div className="flex items-center justify-center mb-3">
-                                <Key className="w-8 h-8 text-blue-600" />
+                                <Key className={`w-8 h-8 text-blue-600`} />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 { 
-                                    !haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
+                                    haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
                                         <CheckCircle className="w-8 h-8 " />
                                     </h3> : <div className=' p-1 text-cyan-900  text-center'>
                                         <GenerateKey 
                                             functionName={'generateKey'} 
-                                            buttonClassName="text-md " 
-                                            campainHash={hash_} 
+                                            buttonClassName="text-md fle gap-2" 
+                                            campaignHash={hash_}
                                         />
                                     </div>
                                 }
@@ -211,51 +157,16 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
                             <div className="text-sm text-gray-600">Amount of $CELO earned</div>
                         </div>
                     </div>
-
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">Total attempted quiz</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{totalQuizPerWeek || 0}</h3>
-                    </div> */}
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">Points earned</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{points || 0}</h3>
-                    </div> */}
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">PassKey</h3>
-                        { 
-                            haskey? <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>
-                                <AddressWrapper account={passKey} size={4} display={false} copyIconSize={'sm'} />
-                            </h3> : <div className='bg-cyan-500/60 rounded-r-lg p-1 text-cyan-900 font-bold w-[50%] text-center'>
-                                <GenerateKey functionName={'generateKey'} buttonClassName="bg-none rounded-none" />
-                            </div>
-                        }
-                    </div>  */}
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">{"$GROW claimed"}</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInERC20?.toString()).toStr || '0'}</h3>
-                    </div> */}
-                    {/* <div className='pl-4 rounded-lg flex justify-between items-center text-xs font-mono'>
-                        <h3 className="w-[50%]">{`$Celo claimed`}</h3>
-                        <h3 className='bg-cyan-500/60 rounded-r-lg p-4 text-cyan-900 font-bold w-[50%] text-center'>{formatValue(amountClaimedInNative?.toString()).toStr || '0'}</h3>
-                    </div> */}
                 </div>
-                <button
+                <CustomButton
+                    exit={false}
                     onClick={handleClaim}
-                    disabled={!disableClaimButton}
-                    className={`w-full mt-4 ${disableClaimButton? "btn-secondary" : "btn-primary"} flex items-center justify-center gap-2 border`}
+                    disabled={disableClaimButton}
+                    overrideClassName="w-full mt-4"
                 >
-                    <BaggageClaim className="w-5 h-5 text-orange-600" />
+                    <BaggageClaim className="w-5 h-5 text-orange-white" />
                     <span>Claim</span>
-                </button>
-                {/* <div className="flex justify-center items-center gap-1 w-full">
-                    <CustomButton
-                        onClick={handleClaim}
-                        disabled={disableClaimButton}
-                        exit={false}
-                    >
-                        <span>Claim</span>
-                    </CustomButton>
-                </div> */}
+                </CustomButton>
                 <ClaimReward 
                     openDrawer={openDrawer}
                     toggleDrawer={toggleDrawer}
@@ -269,16 +180,10 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
 
 
 export default function Profile() {
-    const [isOpen, setIsOpen] = React.useState<boolean>(false);
-    
     const { weekId, setpath } = useStorage();
     const { context } = useMiniApp();
     const { disconnect } = useDisconnect();
     const { isConnected, address } = useAccount();
-
-    const toggleOpen = (arg: boolean) => {
-        setIsOpen(arg);
-    };
 
     const backToHome = () => {
         isConnected? setpath('dashboard') : setpath('home');
@@ -288,7 +193,6 @@ export default function Profile() {
         setpath('quiz');
     };
 
-    
     const profileData = React.useMemo(() => {
         const wkId = toBN(weekId.toString()).toNumber();
         const weekIds = [...Array(wkId === 0? 1 : wkId + 1).keys()];

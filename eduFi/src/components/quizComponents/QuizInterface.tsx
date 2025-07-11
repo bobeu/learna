@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucide-react';
-import { QuizResult } from '../../../types/quiz';
+import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 
 export const QuizInterface = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<AnswerInput[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState<AnswerInput | null>(null);
   const [showResult, setShowResult] = useState(false);
   const { quiz, onComplete, onBack } = useStorage();
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
   const [startTime] = useState(Date.now());
-
 
   const currentQuestion = quiz?.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
@@ -42,28 +41,28 @@ export const QuizInterface = () => {
   };
 
   // Handle select answer
-  const handleAnswerSelect = (answerIndex: number) => {
+  const handleAnswerSelect = (answerIndex: number, hash: Address, isUserSelected: boolean) => {
     if (!showResult) {
-      setSelectedAnswer(answerIndex);
+      setSelectedAnswer({questionHash: hash, isUserSelected, selected: answerIndex});
     }
   };
 
   // Handles request to display next question
   const handleNextQuestion = () => {
+    let answersCopy =  answers;
     if (selectedAnswer !== null) {
-      const newAnswers = {
-        ...answers,
-        [currentQuestion.id]: selectedAnswer
-      };
-      setAnswers(newAnswers);
-
-      if (isLastQuestion) {
-        handleQuizComplete(newAnswers);
-      } else {
-        setCurrentQuestionIndex(prev => prev + 1);
-        setSelectedAnswer(null);
-        setShowResult(false);
-      }
+      answersCopy.push(selectedAnswer);
+    } else {
+      answersCopy.push({questionHash: currentQuestion.hash, isUserSelected: false, selected: 0});
+    }
+    
+    setAnswers(answersCopy);
+    if (isLastQuestion) {
+      handleQuizComplete(answersCopy);
+    } else {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
     }
   };
 
@@ -72,27 +71,31 @@ export const QuizInterface = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
       const prevQuestion = quiz.questions[currentQuestionIndex - 1];
-      setSelectedAnswer(answers[prevQuestion.id] ?? null);
+      const selected = answers.filter(({questionHash}) => questionHash.toLowerCase() === prevQuestion.hash.toLowerCase());
+      setSelectedAnswer(selected[0] ?? null);
       setShowResult(false);
     }
   };
 
   // Finalize quiz completion
   const handleQuizComplete = (finalAnswers = answers) => {
+    // const hashes : Hex[] = quiz.questions.map(({hash}) => hash);
     const score = quiz.questions.reduce((total, question) => {
-      const userAnswer = finalAnswers[question.id];
-      return total + (userAnswer === question.correctAnswer ? question.points : 0);
+      const userAnswer = finalAnswers[question.id]; //////////////////////////////////////////////////////
+      return total + (userAnswer.selected === question.correctAnswer ? question.points : 0);
     }, 0);
 
-    const result: Omit<QuizResult, 'id'> = {
-      quizId: quiz.id,
-      score,
-      totalPoints: quiz.totalPoints,
-      percentage: Math.round((score / quiz.totalPoints) * 100),
-      timeSpent: Math.round((Date.now() - startTime) / 1000),
-      answers: finalAnswers,
-      completedAt: new Date(),
-    };
+    const result : QuizResultInput = {
+      other: {
+        score: Math.ceil(score),
+        totalPoints: quiz.totalPoints,
+        percentage: Math.round((score / quiz.totalPoints) * 100),
+        timeSpent: Math.round((Date.now() - startTime) / 1000),
+        completedAt: new Date().toString(),
+        quizId: quiz.id,
+      },
+      answers
+    }
 
     onComplete(result);
   };
@@ -172,14 +175,14 @@ export const QuizInterface = () => {
           {/* Answer Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
             {currentQuestion.options.map((option, index) => {
-              const isSelected = selectedAnswer === index;
+              const isSelected = selectedAnswer?.selected === index;
               const isCorrect = index === currentQuestion.correctAnswer;
               const isWrong = showResult && isSelected && !isCorrect;
               
               return (
                 <button
                   key={option}
-                  onClick={() => !showResult && handleAnswerSelect(index)}
+                  onClick={() => !showResult && handleAnswerSelect(index, currentQuestion.hash, true)}
                   disabled={showResult}
                   className={`
                     w-full p-4 rounded-xl text-left transition-all duration-300 border-2

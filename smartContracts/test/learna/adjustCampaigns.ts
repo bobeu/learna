@@ -2,9 +2,8 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { getCampaigns, setUpCampaign } from "../utils";
-import { parseEther, parseUnits } from "viem";
-import { CAMPAIGNS, getCampaignHashes } from "../../hashes";
+import { campaigns, getCampaigns, setUpCampaign } from "../utils";
+import { parseEther } from "viem";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -16,44 +15,31 @@ describe("Learna", function () {
       const { learna, growToken, learnaAddr, signers : { signer1, admin2, signer1Addr, deployer }, growTokenAddr} = await loadFixture(deployContractsFixcture);
       let fundERC20 = parseEther('5');
       let value = parseEther('1');
-      const { campaignData } = await getCampaigns(learna);
-      const { campaignHashes } = getCampaignHashes(campaignData);
-      const erc20Amount = fundERC20 * BigInt(campaignHashes.length);
+      const erc20Amount = fundERC20;
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
-      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaigns: CAMPAIGNS, fundERC20, token: growTokenAddr, value});
-      // const campaigns = cp.campaigns.filter((_, i) => i > 0); // Remove the first slot in campaign list since it will alwways be zero. Please refer to the Campaign.sol
-      // console.log("campaignHashes.length: ", campaignHashes.length);
-      const newErc20Values = campaignHashes.map((_, i) => {
-        const reducer = parseUnits((i+1).toString(), 9);
-        if(fundERC20 > reducer) fundERC20 -= reducer
-        else fundERC20 += reducer;
-        return fundERC20;
-      });
+      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20, token: growTokenAddr, value});
+      const { campaignData } = await getCampaigns(learna);
+      const campaignHash = campaignData[0].campaignHash;
+      const newErc20Values = fundERC20 / 2n;
 
-      const newNativeValues = campaignHashes.map((_, i) => {
-        const reducer = parseUnits((i+1).toString(), 9);
-        if(value > reducer) value -= reducer
-        else value += reducer;
-        return value;
-      });
+      const newNativeValues = value / 2n;
 
-      await learna.connect(admin2).adjustCampaignValues(campaignHashes, newErc20Values,newNativeValues);
+      await learna.connect(admin2).adjustCampaignValues([campaignHash], [newErc20Values], [newNativeValues]);
       const newCampaigns = (await getCampaigns(learna)).campaigns;
 
-      cp.campaigns.forEach((campaign, i) => {
-        expect(campaign.activeLearners).to.be.eq(newCampaigns[i].activeLearners);
-        expect(campaign.claimActiveUntil).to.be.eq(newCampaigns[i].claimActiveUntil);
-        expect(campaign.fundsERC20 > newCampaigns[i].fundsERC20).to.be.true;
-        expect(campaign.fundsNative > newCampaigns[i].fundsNative).to.be.true;
-        expect(campaign.transitionDate > 0).to.be.true;
-        expect(campaign.transitionDate === newCampaigns[i].transitionDate).to.be.true;
-        expect(campaign.totalPoints).to.be.eq(newCampaigns[i].totalPoints);
-        expect(campaign.token).to.be.eq(newCampaigns[i].token);
-        expect(campaign.operator).to.be.eq(newCampaigns[i].operator);
-        expect(campaign.hash_).to.be.eq(campaignHashes[i]);
-        expect(campaign.lastUpdated <= newCampaigns[i].lastUpdated).to.be.true;
-      })
+      // console.log("CP", cp.campaigns);
+      expect(cp.campaigns[0].activeLearners).to.be.eq(newCampaigns[0].activeLearners);
+      expect(cp.campaigns[0].claimActiveUntil).to.be.eq(newCampaigns[0].claimActiveUntil);
+      expect(cp.campaigns[0].fundsERC20 > newCampaigns[0].fundsERC20).to.be.true;
+      expect(cp.campaigns[0].fundsNative > newCampaigns[0].fundsNative).to.be.true;
+      expect(cp.campaigns[0].transitionDate > 0).to.be.true;
+      expect(cp.campaigns[0].transitionDate === newCampaigns[0].transitionDate).to.be.true;
+      expect(cp.campaigns[0].totalPoints).to.be.eq(newCampaigns[0].totalPoints);
+      expect(cp.campaigns[0].token).to.be.eq(newCampaigns[0].token);
+      expect(cp.campaigns[0].operator).to.be.eq(newCampaigns[0].operator);
+      expect(cp.campaigns[0].hash_).to.be.eq(campaignHash);
+      expect(cp.campaigns[0].lastUpdated <= newCampaigns[0].lastUpdated).to.be.true;
     });
   })
 })

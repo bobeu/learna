@@ -41,6 +41,7 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='claimReward'
         />
     )
 }

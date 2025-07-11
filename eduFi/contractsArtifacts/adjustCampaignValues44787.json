@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x2bA102A41C49082151E33Ed270FEd5387294311a",
+  "contractAddress": "0xBAF91f2454944065459c64A0fBCe7CDfFcBe9DB5",
   "functionName": "adjustCampaignValues",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -229,44 +229,117 @@
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "amountMinted",
-              "type": "uint256"
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes",
+                      "name": "questionHash",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "selected",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isUserSelected",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Learna.Answer[]",
+                  "name": "answers",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes",
+                      "name": "id",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "quizId",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "uint32",
+                      "name": "score",
+                      "type": "uint32"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "totalPoints",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "uint16",
+                      "name": "percentage",
+                      "type": "uint16"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "timeSpent",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "completedAt",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Learna.QuizResultOther",
+                  "name": "other",
+                  "type": "tuple"
+                }
+              ],
+              "internalType": "struct Learna.QuizResult[]",
+              "name": "quizResults",
+              "type": "tuple[]"
             },
             {
-              "internalType": "uint256",
-              "name": "amountClaimedInNative",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amountClaimedInERC20",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "claimed",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint16",
-              "name": "points",
-              "type": "uint16"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "passKey",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "haskey",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint8",
-              "name": "totalQuizPerWeek",
-              "type": "uint8"
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "amountMinted",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amountClaimedInNative",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amountClaimedInERC20",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "claimed",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "passKey",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "haskey",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "totalQuizPerWeek",
+                  "type": "uint8"
+                }
+              ],
+              "internalType": "struct Learna.ProfileOther",
+              "name": "other",
+              "type": "tuple"
             }
           ],
           "indexed": false,
@@ -491,9 +564,9 @@
         },
         {
           "indexed": false,
-          "internalType": "bytes32[]",
-          "name": "campainHashes",
-          "type": "bytes32[]"
+          "internalType": "bytes32",
+          "name": "campainHash",
+          "type": "bytes32"
         }
       ],
       "name": "RegisteredForWeeklyEarning",
@@ -603,17 +676,29 @@
           "type": "address"
         },
         {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
+          "internalType": "bytes32[]",
+          "name": "campaignHashes",
+          "type": "bytes32[]"
         }
       ],
       "name": "checkEligibility",
       "outputs": [
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "value",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "campaignHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct Learna.Eligibility[]",
+          "name": "result",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -842,44 +927,117 @@
             {
               "components": [
                 {
-                  "internalType": "uint256",
-                  "name": "amountMinted",
-                  "type": "uint256"
+                  "components": [
+                    {
+                      "components": [
+                        {
+                          "internalType": "bytes",
+                          "name": "questionHash",
+                          "type": "bytes"
+                        },
+                        {
+                          "internalType": "uint64",
+                          "name": "selected",
+                          "type": "uint64"
+                        },
+                        {
+                          "internalType": "bool",
+                          "name": "isUserSelected",
+                          "type": "bool"
+                        }
+                      ],
+                      "internalType": "struct Learna.Answer[]",
+                      "name": "answers",
+                      "type": "tuple[]"
+                    },
+                    {
+                      "components": [
+                        {
+                          "internalType": "bytes",
+                          "name": "id",
+                          "type": "bytes"
+                        },
+                        {
+                          "internalType": "bytes",
+                          "name": "quizId",
+                          "type": "bytes"
+                        },
+                        {
+                          "internalType": "uint32",
+                          "name": "score",
+                          "type": "uint32"
+                        },
+                        {
+                          "internalType": "uint64",
+                          "name": "totalPoints",
+                          "type": "uint64"
+                        },
+                        {
+                          "internalType": "uint16",
+                          "name": "percentage",
+                          "type": "uint16"
+                        },
+                        {
+                          "internalType": "uint64",
+                          "name": "timeSpent",
+                          "type": "uint64"
+                        },
+                        {
+                          "internalType": "bytes",
+                          "name": "completedAt",
+                          "type": "bytes"
+                        }
+                      ],
+                      "internalType": "struct Learna.QuizResultOther",
+                      "name": "other",
+                      "type": "tuple"
+                    }
+                  ],
+                  "internalType": "struct Learna.QuizResult[]",
+                  "name": "quizResults",
+                  "type": "tuple[]"
                 },
                 {
-                  "internalType": "uint256",
-                  "name": "amountClaimedInNative",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amountClaimedInERC20",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "claimed",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "uint16",
-                  "name": "points",
-                  "type": "uint16"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "passKey",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "haskey",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "totalQuizPerWeek",
-                  "type": "uint8"
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "amountMinted",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amountClaimedInNative",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "amountClaimedInERC20",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "claimed",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bytes32",
+                      "name": "passKey",
+                      "type": "bytes32"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "haskey",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint8",
+                      "name": "totalQuizPerWeek",
+                      "type": "uint8"
+                    }
+                  ],
+                  "internalType": "struct Learna.ProfileOther",
+                  "name": "other",
+                  "type": "tuple"
                 }
               ],
               "internalType": "struct Learna.Profile",
@@ -965,9 +1123,75 @@
           "type": "address"
         },
         {
-          "internalType": "uint16[]",
-          "name": "points",
-          "type": "uint16[]"
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "questionHash",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "selected",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "isUserSelected",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Learna.AnswerInput[]",
+              "name": "answers",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "quizId",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "score",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "totalPoints",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "percentage",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "timeSpent",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "string",
+                  "name": "completedAt",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct Learna.QuizResultOtherInput",
+              "name": "other",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct Learna.QuizResultInput",
+          "name": "quizResult",
+          "type": "tuple"
         },
         {
           "internalType": "address",
@@ -975,9 +1199,9 @@
           "type": "address"
         },
         {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
+          "internalType": "bytes32",
+          "name": "campaignHash",
+          "type": "bytes32"
         }
       ],
       "name": "recordPoints",

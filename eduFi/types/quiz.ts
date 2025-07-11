@@ -1,5 +1,4 @@
-import { ByteArray, Hex } from "viem";
-
+import { Hex } from "viem";
 export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
@@ -30,8 +29,10 @@ export type VoidFunc = () => void;
 export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 export type Path = 'dashboard' | 'results' | 'review' | 'admin' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile' | 'setupcampaign';
 export type CData = CampaignData[];
+
 export interface Question {
-  id: string;
+  id: number;
+  hash: Hex;
   question: string;
   options: string[];
   correctAnswer: number;
@@ -54,15 +55,50 @@ export interface Quiz {
   createdAt: Date;
 }
 
-export interface QuizResult {
+export interface QuizResultInput {
+  answers: AnswerInput[];
+  other: Omit<QuizResultOtherInput, 'id'> ;
+}
+
+export interface QuizResultOtherInput {
   id: string;
   quizId: string;
   score: number;
   totalPoints: number;
   percentage: number;
   timeSpent: number;
-  answers: Record<string, number>;
-  completedAt: Date;
+  completedAt: string;
+}
+
+export interface QuizResultOtherOutput extends QuizResultOtherInput{}
+
+export interface AnswerInput {
+  questionHash: Address;
+  selected: number;
+  isUserSelected: boolean;
+}
+
+export interface AnswerOutput {
+  questionHash: string;
+  selected: number;
+  isUserSelected: boolean;
+}
+
+// export interface QuizResult {
+//   id: string;
+//   hashes: Hex[];
+//   quizId: string;
+//   score: number;
+//   totalPoints: number;
+//   percentage: number;
+//   timeSpent: number;
+//   answers: Record<string, number>;
+//   completedAt: Date;
+// }
+
+export interface QuizResultOuput {
+  answers: AnswerOutput[];
+  other: QuizResultOtherOutput;
 }
 
 export interface UserStats {
@@ -172,15 +208,29 @@ export interface Claim {
   transitionDate: number;
 }
 
-export interface Profile {
+export interface ProfileOther {
   amountMinted: bigint;
   amountClaimedInNative: bigint;
   amountClaimedInERC20: bigint;
   claimed: boolean;
-  points: number;
   passKey: string;
   haskey: boolean;
   totalQuizPerWeek: number;
+}
+
+export interface Profile {
+  quizResults: QuizResultOuput[];
+  other: ProfileOther;
+}
+
+export interface ReadProfile {
+  profile: Profile;
+  campaignHash: `0x${string}`;
+}
+
+export interface Eligibility {
+  value: boolean;
+  campaignHash: `0x${string}`;
 }
 
 export interface Campaign {

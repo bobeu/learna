@@ -41,6 +41,7 @@ export default function AdjustCampaignValues({erc20Values, nativeValues, openDra
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='adjustCampaignValues'
         />
     )
 }

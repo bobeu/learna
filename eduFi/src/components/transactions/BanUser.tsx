@@ -41,6 +41,7 @@ export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }:
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='banUserFromCampaign'
         />
     )
 }

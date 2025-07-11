@@ -14,16 +14,27 @@ const Error = () => {
 }
 
 export default function Message() {
-    const { messages, errorMessage } = useStorage();
+    const { messages, errorMessage, loading, setmessage, setError } = useStorage();
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
     const isEnded = messages.includes('ended') || errorMessage.includes('ended');
     const formattedMessage = isEnded? messages.replace('ended', '').replace('tip', '') : messages;
+
+    React.useEffect(() => {
+        if(!loading) {
+            setTimeout(() => {
+                if(messages !== '') setmessage('');
+                if(errorMessage !== '') setError('');
+            }, 4000);
+            return() => clearTimeout(4000);
+        }
+    }, [messages, loading, errorMessage]);
+
     return(
         <React.Fragment>
             {
                 display && 
-                    <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-pink-200' : 'border-cyan-500/20'} rounded-lg p-4 text-xs space-y-2 `}>
+                    <MotionDisplayWrapper transitionDelay={0.3} className={`border ${isError? 'border-pink-200' : 'border-cyan-500/20'} rounded-lg p-4 space-y-2 `}>
                         {
                             isEnded && messages.includes('tip')?
                                 <MotionDisplayWrapper className=" flex justify-center p-4 rounded-xl">

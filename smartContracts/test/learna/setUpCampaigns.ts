@@ -2,9 +2,9 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { getCampaigns, setUpCampaign } from "../utils";
+import { setUpCampaign, campaigns, getCampaigns } from "../utils";
 import { parseEther } from "viem";
-import { CAMPAIGNS, getCampaignHashes } from "../../hashes";
+import { Address } from "../types";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -17,31 +17,30 @@ describe("Learna", function () {
       let fundERC20 = parseEther('55');
       const value = parseEther('13');
       const { campaignData } = await getCampaigns(learna);
-      const { campaignHashes } = getCampaignHashes(campaignData);
-      const erc20Amount = fundERC20 * BigInt(campaignHashes.length);
+      const campaignHash = campaignData[0].campaignHash as Address;
+      const erc20Amount = fundERC20;
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const {
         balanceOfLeanerB4Tipped,
         balanceOfLeanerAfterTipped, 
         campaigns: cp
-      } = await setUpCampaign({learna, signer: signer1, campaigns: CAMPAIGNS, fundERC20, token: growTokenAddr, value});
-      expect(cp.campaigns.length === campaignHashes.length).to.be.true;
-      cp.campaigns.forEach((campaign, i) => {
-        expect(campaign.activeLearners).to.be.eq(0n);
-        expect(campaign.claimActiveUntil).to.be.eq(0n);
-        expect(campaign.fundsERC20).to.be.eq(fundERC20);
-        expect(campaign.fundsNative).to.be.eq(value);
-        expect(campaign.transitionDate > 0).to.be.true;
-        expect(campaign.totalPoints).to.be.eq(0n);
-        expect(campaign.token).to.be.eq(growTokenAddr);
-        expect(campaign.operator).to.be.eq(signer1Addr);
-        expect(campaign.hash_).to.be.eq(campaignHashes[i]);
-        expect(campaign.lastUpdated > 0n).to.be.true;
-      })
+      } = await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20, token: growTokenAddr, value});
+
+      expect(cp.campaigns.length === 1).to.be.true;
+      expect(cp.campaigns[0].activeLearners).to.be.eq(0n);
+      expect(cp.campaigns[0].claimActiveUntil).to.be.eq(0n);
+      expect(cp.campaigns[0].fundsERC20).to.be.eq(fundERC20);
+      expect(cp.campaigns[0].fundsNative).to.be.eq(value);
+      expect(cp.campaigns[0].transitionDate > 0).to.be.true;
+      expect(cp.campaigns[0].totalPoints).to.be.eq(0n);
+      expect(cp.campaigns[0].token).to.be.eq(growTokenAddr);
+      expect(cp.campaigns[0].operator).to.be.eq(signer1Addr);
+      expect(cp.campaigns[0].hash_).to.be.eq(campaignHash);
+      expect(cp.campaigns[0].lastUpdated > 0n).to.be.true;
       if(balanceOfLeanerAfterTipped && balanceOfLeanerB4Tipped) {
         expect(balanceOfLeanerAfterTipped > balanceOfLeanerB4Tipped).to.be.true;
       }
-    });
+    })
   })
 })

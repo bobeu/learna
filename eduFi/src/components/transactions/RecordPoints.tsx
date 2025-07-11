@@ -1,12 +1,13 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { filterTransactionData } from '../utilities';
+import { filterTransactionData, formatAddr } from '../utilities';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function RecordPoints({openDrawer, toggleDrawer, campaignHashes }: RecordPointsProps) {
+export default function RecordPoints({openDrawer, toggleDrawer, campaignHash }: RecordPointsProps) {
     const { chainId, address } = useAccount();
+    const account = formatAddr(address);
 
     const { transactionData: td, contractAddresses: ca } = React.useMemo(() => {
         const filtered = filterTransactionData({
@@ -21,7 +22,7 @@ export default function RecordPoints({openDrawer, toggleDrawer, campaignHashes }
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [address, [], ca.GrowToken, campaignHashes],
+                args: [account, [], ca.GrowToken, campaignHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: false
@@ -30,13 +31,14 @@ export default function RecordPoints({openDrawer, toggleDrawer, campaignHashes }
         })
         return transactions;
     
-   }, [td, ca, campaignHashes]);
+   }, [td, ca, campaignHash]);
 
     return(
         <Confirmation 
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='recordPoints'
         />
     )
 }
@@ -44,5 +46,5 @@ export default function RecordPoints({openDrawer, toggleDrawer, campaignHashes }
 type RecordPointsProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campaignHashes: Hex[];
+    campaignHash: Hex;
 };

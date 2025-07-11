@@ -44,6 +44,7 @@ export default function SortWeeklyReward({growTokenAmount, campaignString, openD
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='sortWeeklyReward'
         />
     )
 }

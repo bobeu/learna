@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import type { Address,  FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
-import { CAMPAIGNS } from "../hashes";
+import { campaigns } from "./utils";
 
 enum Mode { LOCAL, LIVE }
 
@@ -22,7 +22,7 @@ async function deployFeeManager(deployer: Signer, routeTo: Address) : Promise<Fe
 async function deployLearna(deployer: Signer, admin2: Address, feeManager: Address) : Promise<Learna> {
   const LearnaContract = await ethers.getContractFactory("Learna");
   const deployerAddr = await deployer.getAddress();
-  return (await LearnaContract.connect(deployer).deploy([deployerAddr, admin2], 0, Mode.LOCAL, feeManager, CAMPAIGNS)).waitForDeployment();
+  return (await LearnaContract.connect(deployer).deploy([deployerAddr, admin2], 0, Mode.LOCAL, feeManager, campaigns)).waitForDeployment();
 }
 
 /**
