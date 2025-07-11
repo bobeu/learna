@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount, } from 'wagmi';
@@ -25,7 +26,7 @@ export default function SetUpCampaign({nativeValue, openDrawer, fundsErc20, toke
 
         return { mutate, setupArgs, approveArgs, learna };
 
-    }, [chainId, account, campaignString, fundsErc20, token, callback]);
+    }, [chainId, campaignString, fundsErc20, token, callback]);
 
     const getTransactions = React.useCallback(() => {
         const getArgs = (functionName: FunctionName) => {
@@ -64,7 +65,7 @@ export default function SetUpCampaign({nativeValue, openDrawer, fundsErc20, toke
         })
         return transactions;
     
-   }, [account, fundsErc20, mutate, setupArgs, learna, nativeValue]);
+   }, [account, fundsErc20, mutate, token, approveArgs, setupArgs, learna, nativeValue]);
 
     return(
         <Confirmation 

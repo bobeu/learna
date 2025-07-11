@@ -1,32 +1,13 @@
 import React from "react";
 import { useAccount, useConfig, useConnect, useSwitchChain } from "wagmi";
-// import { Button } from "../ui/button";
 import { celo } from "wagmi/chains";
 import CustomButton from "../peripherals/CustomButton";
-import useStorage from "../hooks/useStorage";
-
-// interface ButtonProps {
-//     onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
-//     overrideClassName: string | undefined;
-//     // variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined;
-//     disabled?: boolean;
-// }
-
-// // Return encapsulated button attributes
-// export const  buttonProps = ({onClick, overrideClassName, disabled} : {onClick: React.MouseEventHandler<HTMLButtonElement> | undefined, disabled: boolean, overrideClassName?: string}) : ButtonProps => {
-//     return {
-//         onClick,
-//         overrideClassName: `font-mono ${overrideClassName}`,
-//         disabled
-//     }
-// } 
 
 export default function ConnectButtons() {
     const { connectAsync, connectors } = useConnect();
     const { isConnected, isConnecting, isReconnecting } = useAccount();
     const config = useConfig();
     const { switchChainAsync } = useSwitchChain({config});
-    const { currentPath, setpath } = useStorage();
     const disabled = isConnecting || isReconnecting;
     
     // Handle Wallet Connection request

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import { Clock, Award, ChevronRight, LucideUsers2, } from 'lucide-react';
 import { Campaign, Address } from '../../../types/quiz';

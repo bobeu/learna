@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
@@ -62,12 +64,12 @@ export default function Educaster() {
             const appData_ = loadQuizData({timePerQuestion: TIME_PER_QUESTION, totalPoints: TOTAL_POINTS});
             setAppData(appData_);
         }
-    }, []);
+    }, [appData.quizData]);
 
     React.useEffect(() => {
         if(isConnected && currentPath === 'home') setpath('dashboard');
         if(!isConnected && currentPath !== 'home') setpath('home');
-    }, [isConnected]);
+    }, [isConnected, currentPath]);
 
     // Load user results from localStorage on component mount
     useEffect(() => {

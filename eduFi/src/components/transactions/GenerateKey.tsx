@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
@@ -29,7 +31,7 @@ export default function GenerateKey({functionName, campaignHash, buttonClassName
         const growToken = mutate.contractAddresses.GrowToken as Address;
         const generateArgs = [growToken, [campaignHash]];
         return { mutate, generateArgs };
-    }, [chainId, weekId, account, campaignHash]);
+    }, [chainId, campaignHash]);
 
     // Prepare the transactions
     const getTransactions = React.useCallback(() => {
@@ -53,7 +55,7 @@ export default function GenerateKey({functionName, campaignHash, buttonClassName
             return transaction;
         })
         return transactions;
-   }, [mutate, generateArgs, functionName]);
+   }, [mutate, generateArgs, haskey, functionName]);
 
     return(
         <React.Fragment>

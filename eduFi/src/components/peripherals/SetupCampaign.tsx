@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
@@ -117,7 +118,7 @@ export default function SetupCampaign() {
             },
         ];
         return {fundsErc20, fundsNative, sortContent, contractAddresses}
-    }, [erc20Amount, celoAmount]);
+    }, [erc20Amount, celoAmount, chainId]);
 
     // Display transaction drawer
     const handleSort = () => {

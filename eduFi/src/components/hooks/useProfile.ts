@@ -57,7 +57,7 @@ export default function useProfile({campaignHash} : {campaignHash?: Address}){
                 }
             })
         }
-    }, [campaignHash]);
+    }, [campaignHash, refetch]);
     
     /**
      * @dev Fetches a single profile from the list of readProfiles using a mapped campaignHash
@@ -89,7 +89,7 @@ export default function useProfile({campaignHash} : {campaignHash?: Address}){
             totalPointsForACampaign,
             isElibigleToClaimForTheWeek
         }
-    }, [data, campaignData, readProfile]);
+    }, [data, campaignData, campaignHash, campaignHashes,  readProfile]);
 
     return { ...result }
 

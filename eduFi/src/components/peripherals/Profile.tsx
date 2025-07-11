@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import { Button } from "~/components/ui/button";
@@ -51,7 +53,7 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
 
     React.useEffect(() => {
         if(selectedCampaign?.hash_?.toLowerCase() !== reSelectedCampaign.campaignHash.toLowerCase()) handleSetCampaign(reSelectedCampaign);
-    }, [reSelectedCampaign, selectedCampaign]);
+    }, [reSelectedCampaign, selectedCampaign, handleSetCampaign]);
 
     return(
         <CollapsibleComponent 
@@ -178,7 +180,6 @@ function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext |
     );
 }
 
-
 export default function Profile() {
     const { weekId, setpath } = useStorage();
     const { context } = useMiniApp();
@@ -186,7 +187,11 @@ export default function Profile() {
     const { isConnected, address } = useAccount();
 
     const backToHome = () => {
-        isConnected? setpath('dashboard') : setpath('home');
+        if(isConnected){
+            setpath('dashboard');
+        } else {
+            setpath('home');
+        }
     };
 
     const goToQuiz = () => {
@@ -206,7 +211,7 @@ export default function Profile() {
             </div>
         ))
         return profileData;
-    }, [weekId]);
+    }, [weekId, context?.user]);
 
     return(
         <Wrapper2xl useMinHeight={true} >

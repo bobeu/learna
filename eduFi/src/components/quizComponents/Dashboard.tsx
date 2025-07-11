@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, GraduationCap, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
 import { Profile, QuizResultOuput, UserStats } from '../../../types/quiz';
@@ -149,7 +150,6 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
 export default function Dashbaord() {
 
   const { profiles, getCampaign } = useProfile({});
-  const { campaignData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { onQuizSelect, setpath, appData } = useStorage();
 

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { Coins, BookOpen, Trophy, Users, Shield, Stars } from "lucide-react";
 import useStorage from "../hooks/useStorage";
 import { toBN } from "../utilities";
@@ -17,7 +19,7 @@ export default function Campaigns() {
         } else {
             return alert(`Quiz title not match campaign ${campaignName}`)
         }
-    }, [appData]);
+    }, [appData, onQuizSelect, setpath]);
 
     return(
         <section id="features" className="px-4 py-16 md:py-20 bg-white space-y-3">

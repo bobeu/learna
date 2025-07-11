@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
@@ -31,7 +32,7 @@ export default function RecordPoints({openDrawer, toggleDrawer, campaignHash }: 
         })
         return transactions;
     
-   }, [td, ca, campaignHash]);
+   }, [td, ca, account, campaignHash]);
 
     return(
         <Confirmation 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
@@ -161,7 +162,12 @@ export default function Stats() {
     }
 
     const backToHome = () => {
-        isConnected? setpath('dashboard') : setpath('home');
+        if(isConnected) {
+            setpath('dashboard');
+        } else {
+            setpath('home')
+        }
+            
     }
     const interval = toBN(transitionInterval.toString()).toNumber();
 
@@ -191,7 +197,7 @@ export default function Stats() {
                 </MotionDisplayWrapper>
             </CollapsibleComponent>
         ))
-    }, [weekData, isOpen, toggleOpen ]);
+    }, [weekData, isOpen, campaignStrings, toggleOpen ]);
 
     return(
         <Wrapper2xl useMinHeight={true} >

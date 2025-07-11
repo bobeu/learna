@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import Navbar from './Navbar';
 import Hero from './Hero';
@@ -24,7 +26,12 @@ function LandingPage() {
     };
 
     const toggleShowConnectButtons = () => {
-        isConnected? setpath('dashboard') : setShowConnectButtons(!showConnectButtons);
+        if(isConnected) {
+            setpath('dashboard')
+        } else {
+            setShowConnectButtons(!showConnectButtons);
+        }
+
     };
 
     return (

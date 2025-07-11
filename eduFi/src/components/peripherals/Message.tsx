@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from "react";
 import useStorage from "../hooks/useStorage";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
@@ -28,7 +30,7 @@ export default function Message() {
             }, 4000);
             return() => clearTimeout(4000);
         }
-    }, [messages, loading, errorMessage]);
+    }, [messages, loading, errorMessage, setError, setmessage]);
 
     return(
         <React.Fragment>

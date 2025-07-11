@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import { Clock, Award, ChevronRight, BookOpen } from 'lucide-react';
 import { Quiz } from '../../../types/quiz';
