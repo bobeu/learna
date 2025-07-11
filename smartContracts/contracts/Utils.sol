@@ -12,7 +12,7 @@ library Utils {
     */
     function calculateShare(
         uint96 fullPoints, 
-        uint16 unitPoint,
+        uint64 unitPoint,
         uint principal,
         uint8 decimals
     )

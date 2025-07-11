@@ -11,7 +11,7 @@ export const LayoutContext = ({overrideClassName, children} : {overrideClassName
                 paddingLeft: context?.client.safeAreaInsets?.left ?? 10,
                 paddingRight: context?.client.safeAreaInsets?.right ?? 10,
             }}
-            className={["relative md:w-[424px] md:h-[695px] pb-4 mx-auto"].join(overrideClassName)}
+            className={["relative pb-4 mx-auto"].join(overrideClassName)}
     >
         { children }
     </div>

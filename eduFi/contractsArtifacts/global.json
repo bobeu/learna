@@ -1,0 +1,55 @@
+{
+  "approvedFunctions": [
+    "checkEligibility",
+    "recordPoints",
+    "banUserFromCampaign",
+    "setAdmin",
+    "getAdminStatus",
+    "hasPassKey",
+    "setTransitionInterval",
+    "claimReward",
+    "sortWeeklyReward",
+    "adjustCampaignValues",
+    "setUpCampaign",
+    "getProfile",
+    "generateKey",
+    "getData",
+    "approve",
+    "setMinimumToken",
+    "owner",
+    "allowance",
+    "getCampaingData"
+  ],
+  "chainName": {
+    "42220": "celo",
+    "44787": "alfajores"
+  },
+  "chainIds": [
+    44787,
+    42220
+  ],
+  "paths": {
+    "42220": [
+      "deployments\\celo\\GrowToken.json",
+      "deployments\\celo\\Learna.json"
+    ],
+    "44787": [
+      "deployments\\alfajores\\FeeManager.json",
+      "deployments\\alfajores\\GrowToken.json",
+      "deployments\\alfajores\\Learna.json"
+    ]
+  },
+  "contractAddresses": [
+    {
+      "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+      "FeeManager": "0x5A458c9fc7C9cf855AA6a54af8059cc2ffCfc225",
+      "GrowToken": "0x6F5065D136b420dCC3BEF51140b8Fa33d6612F7e",
+      "Learna": "0xBAF91f2454944065459c64A0fBCe7CDfFcBe9DB5"
+    },
+    {
+      "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
+      "GrowToken": "0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204",
+      "Learna": "0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB"
+    }
+  ]
+}

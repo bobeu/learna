@@ -1,7 +1,81 @@
-import { parseUnits } from "viem";
+import { Hex, parseEther, parseUnits, stringToHex } from "viem";
 import type { Address, GrowToken, Learna, Null, Signer } from "./types";
-import { Learna as Learn } from "../typechain-types";
+import { Learna as Learn,   } from "../typechain-types";
+import { Campaigns } from "../typechain-types/contracts/Learna";
+
+export const campaigns = ['solidity'];
+// export const campaignHash = '0xa477d97b122e6356d32a064f9ee824230d42d04c7d66d8e7d125a091a42b0b25' as Hex;
   
+interface SortEarnings {
+  learna: Learna; 
+  growToken: GrowToken;
+  deployer: Signer;
+  amountInERC20: bigint;
+  campaigns: string[];
+}
+
+interface ClaimReward {
+  learna: Learna; 
+  weekId: bigint;
+  signer: Signer;
+  growToken: GrowToken;
+  campaignHashes: Hex[];
+}
+
+interface GenerateKey {
+  learna: Learna;
+  signer: Signer;
+  growToken: Address;
+  campaignHashes: Hex[];
+}
+
+interface RecordPoints {
+  user: Address;
+  learna: Learna;
+  quizResult: QuizResultInput;
+  deployer: Signer;
+  token: Address;
+  campaignHash: Hex;
+}
+
+interface Ban {
+  user: Address;
+  weekId: bigint;
+  learna: Learna;
+  deployer: Signer;
+  campaignHashes: Hex[];
+}
+
+interface SetUpCampaign {
+  signer: Signer;
+  fundERC20: bigint;
+  token: Address;
+  learna: Learna;
+  campaign: string;
+  value: bigint;
+}
+
+interface QuizResultOtherInput {
+  id: string;
+  quizId: string;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  timeSpent: number;
+  completedAt: string;
+}
+
+interface AnswerInput {
+  questionHash: string;
+  isUserSelected: boolean;
+  selected: number;
+}
+
+export interface QuizResultInput {
+  answers: AnswerInput[];
+  other: QuizResultOtherInput;
+}
+
 /**
  * @dev Sort weekly earning i.e Set amount to distribute for the week with all necessary paramters
  * @param x : Paramaters
@@ -13,13 +87,13 @@ import { Learna as Learn } from "../typechain-types";
     data
  * }
 */
-export async function sortWeeklyEarning(x: {learna: Learna, growToken: GrowToken, owner: Address, deployer: Signer, amountInERC20: bigint}) {
-  const { learna, owner, amountInERC20, deployer, growToken } = x;
+export async function sortWeeklyEarning(x: SortEarnings) {
+  const { learna, campaigns, amountInERC20, deployer, growToken } = x;
   const learnaAddr = await learna.getAddress();
   const growTokenAddr = await growToken.getAddress();
   const balanceOfLearnaB4Allocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveB4Allocation = await growToken.balanceOf(growTokenAddr);
-  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, owner, amountInERC20);
+  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, amountInERC20, campaigns);
   const balanceOfLearnaAfterAllocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveAfterAllocation = await growToken.balanceOf(growTokenAddr);
   const data = await learna.getData();
@@ -46,18 +120,20 @@ export async function sortWeeklyEarning(x: {learna: Learna, growToken: GrowToken
     profile
  * }
 */
-export async function claimWeeklyReward(x: {learna: Learna, weekId: bigint, signer: Signer, growToken: GrowToken}) {
-  const { learna, signer, weekId, growToken } = x;
+export async function claimReward(x: ClaimReward) {
+  const { learna, signer, weekId, growToken, campaignHashes } = x;
   const signerAddr = await signer.getAddress();
   const learnaAddr = await learna.getAddress();
   const erc20balanceOfSignerB4Claim = await growToken.balanceOf(signerAddr);
   const erc20balanceInLearnaB4Claim = await growToken.balanceOf(learnaAddr);
   const nativeBalOfSignerB4Claim = await signer.provider?.getBalance(signerAddr) as bigint;
-  await learna.connect(signer).claimWeeklyReward(weekId);
+  for(let i = 0; i < campaignHashes.length; i++){
+    await learna.connect(signer).claimReward(weekId, campaignHashes[i]);
+  }
   const erc20balanceOfSignerAfterClaim = await growToken.balanceOf(signerAddr);
   const nativeBalOfSignerAfterClaim = await signer.provider?.getBalance(signerAddr) as bigint;
   const erc20balanceInLearnaAfterClaim = await growToken.balanceOf(learnaAddr);
-  const profile = await learna.getUserData(signerAddr, weekId);
+  const profile = await learna.getProfile(signerAddr, weekId, campaignHashes);
 
   return {
     erc20balanceOfSignerB4Claim,
@@ -75,12 +151,12 @@ export async function claimWeeklyReward(x: {learna: Learna, weekId: bigint, sign
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function getPassKey(x: {learna: Learna, signer: Signer}) {
-  const { learna, signer } = x;
+export async function getPassKey(x: GenerateKey) {
+  const { learna, signer, growToken, campaignHashes } = x;
   const address = await signer.getAddress();
-  await learna.connect(signer).generateKey({value: parseUnits('1', 16)});
+  await learna.connect(signer).generateKey(growToken, campaignHashes, {value: parseUnits('1', 16) * BigInt(campaignHashes.length)});
   const data = await learna.getData();
-  return await learna.getUserData(address, data.state.weekCounter);
+  return await learna.getProfile(address, data.state.weekCounter, campaignHashes);
 }
 
 /**
@@ -88,11 +164,12 @@ export async function getPassKey(x: {learna: Learna, signer: Signer}) {
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function recordPoints(x: {user: Address, learna: Learna, points: number, deployer: Signer}) {
-  const { user, learna, deployer, points } = x;
-  await learna.connect(deployer).recordPoints(user, points);
+export async function recordPoints(x: RecordPoints) {
+  const { user, learna, deployer, quizResult, token, campaignHash } = x;
+  // console.log("X", x)address user, QuizResultInput memory quizResult, address token, bytes32 campaignHash
+  await learna.connect(deployer).recordPoints(user, quizResult, token, campaignHash, {value: parseEther('1')});
   const data = await learna.getData();
-  return await learna.getUserData(user, data.state.weekCounter);
+  return await learna.getProfile(user, data.state.weekCounter, [campaignHash]);
 }
 
 /**
@@ -100,10 +177,10 @@ export async function recordPoints(x: {user: Address, learna: Learna, points: nu
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function unregisterUsersForWeeklyEarning(x: {user: Address, weekId: bigint, learna: Learna, deployer: Signer}) {
-  const { user, learna, deployer, weekId } = x;
-  await learna.connect(deployer).removeUsersForWeeklyEarning([user], weekId);
-  return await learna.getUserData(user, weekId);
+export async function banUserFromCampaig(x: Ban) {
+  const { user, learna, deployer, weekId, campaignHashes } = x;
+  await learna.connect(deployer).banUserFromCampaign([user], campaignHashes);
+  return await learna.getProfile(user, weekId, campaignHashes);
 }
 
 /**
@@ -111,22 +188,32 @@ export async function unregisterUsersForWeeklyEarning(x: {user: Address, weekId:
  * @param x : Parameters
  * @returns : User's profile data
 */
-export async function sendTip(x: {signer: Signer, tipAmount: bigint, learna: Learna}): Promise<{tippers: Learn.TipperStructOutput[], balanceOfLeanerB4Tipped?: bigint, balanceOfLeanerAfterTipped?: bigint}> {
-  const { signer, learna, tipAmount} = x;
+export async function setUpCampaign(x: SetUpCampaign) {
+  const { signer, learna, fundERC20, campaign, token, value } = x;
   const learnaAddr = await learna.getAddress();
   const balanceOfLeanerB4Tipped = await signer.provider?.getBalance(learnaAddr);
-  await learna.connect(signer).tip({value: tipAmount});
+  await learna.connect(signer).setUpCampaign(campaign, fundERC20, token, {value});
+
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
-  let tippers : Learn.TipperStructOutput[] = [];
-  let wd : Learn.WeekDataStructOutput[] = [];
-  wd = (await learna.getData()).wd;
-  console.log("WkD", wd)
-  if(wd && wd.length > 0) tippers = wd[0].tippers;
+  const campaigns_ = await getCampaigns(learna);
   return {
-    tippers,
+    campaigns: campaigns_,
     balanceOfLeanerB4Tipped,
     balanceOfLeanerAfterTipped 
   }
+}
+
+export async function getCampaigns(learna: Learna) {
+  let campaigns : Campaigns.CampaignStructOutput[] = [];
+  let wd : Learn.WeekDataStructOutput[] = [];
+  const data = await learna.getData();
+  const cData = await learna.getCampaingData();
+  wd = data.wd;
+  campaigns = wd[0].campaigns;
+  return {
+    campaigns,
+    campaignData: cData
+  };
 }
 
 /**
@@ -152,5 +239,36 @@ export async function balanceOf({accounts, asset}: {accounts: Address[], asset: 
   for(let i = 0; i < accounts.length; i++) {
     const balance = await asset.balanceOf(accounts[i]);
     result.push(balance);
+  }
+}
+
+export const getQuizResult = (hash: Address, score: number): QuizResultInput => {
+  return {
+    other: {
+      completedAt: new Date().toString(),
+      id: '1',
+      percentage: 20,
+      quizId: 'solidity',
+      score,
+      timeSpent: 70,
+      totalPoints: 100
+    },
+    answers: [
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 0
+      },
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 1
+      },
+      {
+        isUserSelected: false,
+        questionHash: hash,
+        selected: 2
+      },
+    ]
   }
 }

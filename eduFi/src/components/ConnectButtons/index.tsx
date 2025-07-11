@@ -1,24 +1,7 @@
 import React from "react";
 import { useAccount, useConfig, useConnect, useSwitchChain } from "wagmi";
-import { Button } from "../ui/button";
 import { celo } from "wagmi/chains";
-
-interface ButtonProps {
-    onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
-    className: string | undefined;
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined;
-    disabled?: boolean;
-}
-
-// Return encapsulated button attributes
-export const  buttonProps = ({onClick, overrideClassName, disabled} : {onClick: React.MouseEventHandler<HTMLButtonElement> | undefined, disabled?: boolean, overrideClassName?: string}) : ButtonProps => {
-    return {
-        onClick,
-        className: `w-full bg-cyan-500/80 font-mono ${overrideClassName}`,
-        variant: 'outline',
-        disabled: disabled && disabled
-    }
-} 
+import CustomButton from "../peripherals/CustomButton";
 
 export default function ConnectButtons() {
     const { connectAsync, connectors } = useConnect();
@@ -41,17 +24,33 @@ export default function ConnectButtons() {
     }
 
     return(
-        <React.Fragment>
+        <section id="connect" className="px-4 py-16 md:py-20 bg-gradient-to-br from-gray-50 to-cyan-50">
             {
-                !isConnected && <div className="w-full space-y-2 font-mono">
+                !isConnected && <div className="w-full font-mono">
                     {/* <h3>Connect any of the following wallets</h3> */}
-                    <div className="w-full flex flex-col border rounded-lg p-4">
-                        <Button {...buttonProps({onClick: () => handleConnect(0), disabled })}>Connect Farcaster wallet</Button>
-                        <Button {...buttonProps({onClick: () => handleConnect(1), disabled })}>Connect Coinbase Wallet</Button>
-                        <Button {...buttonProps({onClick: () => handleConnect(2), disabled })}>Use Metamask</Button>
+                    <div className="w-full flex flex-col border p-4 rounded-lg gap-3">
+                        {
+                            (['Connect Farcaster', 'Use Coinbase Wallet', 'Use Metamask'] as const)
+                            .map((item, index) => (
+                                <CustomButton 
+                                    onClick={() => handleConnect(index)}
+                                    disabled={disabled}
+                                    exit={false}
+                                    key={index}
+                                >
+                                    <span>{ item }</span>
+                                </CustomButton>
+
+                            ))
+                        }
                     </div>
                 </div>
             }
-        </React.Fragment>
+        </section>
     )
 }
+            // <CustomButton>Connect Coinbase Wallet</CustomButton>
+            // <CustomButton>Use Metamask</CustomButton>
+            // <Button ></Button>
+            // <Button {...buttonProps({onClick: () => handleConnect(1), disabled })}></Button>
+            // <Button {...buttonProps({onClick: () => handleConnect(2), disabled })}></Button>

@@ -1,6 +1,6 @@
 import { ContractTransactionResponse, ethers } from "ethers";
 import { Hex, Address as ContractAddress } from "viem";
-import type { GrowToken as Grow, Learna as Learn } from "../typechain-types";
+import type { GrowToken as Grow, Learna as Learn, FeeManager as Fm } from "../typechain-types";
 
 export type BigNumber = ethers.BigNumberish
 export type AddressReturn = Promise<Address>;
@@ -31,6 +31,7 @@ export type GrowToken = Grow & {
   deploymentTransaction(): ContractTransactionResponse;
 };
 
-// export type ProofOfLearning = Pol & {
-//   deploymentTransaction(): ContractTransactionResponse;
-// };
+export type FeeManager = Fm & {
+  deploymentTransaction(): ContractTransactionResponse;
+};
+ 

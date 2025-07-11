@@ -61,6 +61,11 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`
     },
+    routeTo: {
+      default: 1,
+      44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_ROUTE_0x84F as string}`
+    },
     admin: {
       default: 0,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
@@ -68,8 +73,8 @@ const config: HardhatUserConfig = {
     },
     admin2: {
       default: 0,
-      44787: `privatekey://${PRIVATE_KEY as string}`,
-      42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
+      44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
     }
   },
 

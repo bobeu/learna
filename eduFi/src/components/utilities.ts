@@ -1,209 +1,106 @@
 /* eslint-disable */
-import { formatEther, zeroAddress } from "viem";
+import { formatEther, Hex, keccak256, stringToBytes, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
-import globalContractData from "../../contractsData/global.json";
+import globalContractData from "../../contractsArtifacts/global.json";
 import assert from "assert";
 import { getStepData } from "../../stepsData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
-import d from "../../quiz_with_hashes.json";
+import quizRawData from "../../quizData.json";
+import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
-export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
-export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
-export type Address = `0x${string}`;
-export type FunctionName = '' | 'runall' | 'checkligibility' | 'recordPoints' | 'removeUsersForWeeklyEarning' | 'approve' | 'claimWeeklyReward' | 'sortWeeklyReward' | 'tip' | 'getTippers' | 'getUserData' | 'generateKey' | 'getData' | 'owner' ;
-export type VoidFunc = () => void;
-export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
-export interface QuestionObj {
-  question: string;
-  options: {label: string, value: string}[];
-  answer: string;
-  userAnswer: string;
-  hash: string;
-};
 
-export interface SelectedData {
-    id: number;
-    category: Category;
-    selectedLevel: DifficultyLevel;
-    data: QuestionObj[];
-    scoreParam: ScoresParam;
+export const mockReadData : ReadData = {
+  state: {
+    minimumToken: 0n,
+    weekCounter: 0n,
+    transitionInterval: 0
+  },
+  wd: [
+    {
+      campaigns: [
+        {
+          fundsNative: 0n,
+          fundsERC20: 0n,
+          totalPoints: 0n,
+          lastUpdated: 0,
+          activeLearners: 0n,
+          transitionDate: 0,
+          claimActiveUntil: 0,
+          operator: zeroAddress,
+          token: zeroAddress,
+          hash_: zeroAddress,
+          canClaim: false
+        },
+        {
+          fundsNative: 0n,
+          fundsERC20: 0n,
+          totalPoints: 0n,
+          lastUpdated: 0,
+          activeLearners: 0n,
+          transitionDate: 0,
+          claimActiveUntil: 0,
+          operator: zeroAddress,
+          token: zeroAddress,
+          hash_: zeroAddress,
+          canClaim: false
+        },
+      ]
+    }
+  ],
 }
 
-export interface QuizCategory {
-  easy: {
-    questions: QuestionObj[];
-  };
-  medium: {
-    questions: QuestionObj[];
-  };
-  hard: {
-    questions: QuestionObj[];
-  };
-};
+export const mockCData : CData = [
+  {
+    campaignHash: `0x${''}`,
+    encoded: `0x${''}`
+  }
+];
 
-export interface SelectedQuizData {
-  category: Category, 
-  level: DifficultyLevel, 
-  questions: QuestionObj[];
- 
-};
-export type QuizReturnData = QuizCategory[]; 
-
-export interface QuizDatum {
-  category: string;
-  id: number,
-  difficultyLevel: string;
-  identifier: string;
-  taken: boolean;
-  questions: Array<{
-      quest: string;
-      options: Array<{
-          label: string;
-          value: string;
-      }>;
-      correctAnswer: {
-          label: string;
-          value: string;
-      };
-      userAnswer?: {
-          label: string;
-          value: string;
-      };
-  }>;
-};
-
-export interface Answer {
-  label: string;
-  value: string;
-}
-
-export interface Data {
-  question: string;
-  userAnswer: Answer;
-  correctAnswer: Answer;
-  quizHash?: string;
-  userSelect: boolean;
-  isCorrect: boolean;
-  options: Array<Answer>;
-};
-
-// export interface SelectedData {
-//   category: string;
-//   difficultyLevel: string;
-//   data: Array<Data>;
-//   totalQuestions: number;
-//   scoreParam: ScoresParam;
-// }
-
-export type QuizData = Array<QuizDatum>;
-export type Path = 'selectcategory' | 'review' | 'sendtip' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile';
-export type DisplayQuizProps = {
-  indexedAnswer: number;
-  selectedQuizData: {category: string, data: QuizDatum};
-  setpath: (arg: Path) => void;
-  handleSelectAnswer: (arg: {label: string, value: string}) => void;
-}
-
-interface Values {
-  totalAllocated: bigint;
-  totalClaimed: bigint;
-}
-
-export interface Claim {
-  native: Values;
-  erc20: Values;
-  erc20Addr: Address;
-  claimActiveUntil: number;
-  transitionDate: number;
-}
-
-export interface Profile {
-  amountClaimedInNative: bigint;
-  amountClaimedInERC20: bigint;
-  claimed: boolean;
-  points: number;
-  passKey: string;
-  haskey: boolean;
-  totalQuizPerWeek: number;
-}
-
-interface Tipper {
-  totalTipped: bigint;
-  points: number;
-  lastTippedDate: bigint;
-  id: Address;
-}
-
-export interface State {
-  minimumToken: bigint;
-  weekCounter: bigint;
-  transitionInterval: number; 
-}
-
-export interface WeekData {
-  tippers: Readonly<Tipper[]>;
-  claim: Claim;
-  activeLearners: bigint; 
-  totalPoints: bigint;
-  transitionInterval: number;
-} 
-
-export interface ReadData {
-  state: State;
-  wd: Readonly<WeekData[]>;
-}
-
-export type TransactionCallback = (arg: TrxState) => void;
-export type TransactionData = {
-    contractAddress: string;
-    inputCount: number;
-    functionName: string;
-    abi: any;
-    requireArgUpdate: boolean;
-};
-
-export interface TrxState {
-    message?: string;
-    errorMessage?: any;
-}
-
-export type FilterTransactionDataProps = {
-    chainId: number | undefined;
-    functionNames?: FunctionName[];
-    callback?: TransactionCallback;
-    filter: boolean;
-}
-
-export interface HandleSelectAnswerProps {
-  userAnswer?: Answer; 
-  correctAnswer: Answer; 
-  question: string;
-  userSelect: boolean;
-  options: Array<Answer>;
-}
+export const mockEligibility : Eligibility[] = [
+  {
+    campaignHash: `0x${''}`,
+    value: false
+  }
+]
 
 export const mockProfile : Profile = {
-  amountClaimedInNative: 0n,
-  amountClaimedInERC20: 0n,
-  claimed: false,
-  points: 0,
-  passKey: "0x",
-  haskey: false,
-  totalQuizPerWeek: 0
+  other: {
+    amountClaimedInNative: 0n,
+    amountClaimedInERC20: 0n,
+    claimed: false,
+    passKey: "0x",
+    haskey: false,
+    totalQuizPerWeek: 0,
+    amountMinted: 0n
+  },
+  quizResults: [
+    {
+      answers: [
+        {
+          isUserSelected: false,
+          questionHash: '',
+          selected: 0
+        }
+      ],
+      other: {
+        completedAt: '',
+        id: '',
+        percentage: 0,
+        quizId: '',
+        score: 0,
+        timeSpent: 0,
+        totalPoints: 0
+      }
+    }
+  ]
 }
 
-export interface ScoresParam {
-  category: string;
-  difficultyLevel: string;
-  totalScores: number;
-  questionSize: number;
-  weightPerQuestion: number;
-  totalAnsweredCorrectly: QuestionObj[];
-  noAnswer: number;
-  totalAnsweredIncorrectly: number;
+export const mockReadProfile : ReadProfile = {
+  campaignHash: `0x${''}`,
+  profile: mockProfile
 }
 
 export const mockScoresParam : ScoresParam =  {
@@ -225,75 +122,51 @@ export const mockSelectedData : SelectedData = {
   id: 0
 };
 
-export type ScoresReturn = () => ScoresParam;
-
-export const mockReadData : ReadData = {
-  state: {
-    minimumToken: 0n,
-    weekCounter: 0n,
-    transitionInterval: 0
-  },
-  wd: [
-    {
-      activeLearners: 0n,
-      totalPoints: 0n,
-      transitionInterval: 0,
-      claim: {
-        native: { totalAllocated: 0n, totalClaimed: 0n},
-        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
-        erc20Addr: zeroAddress,
-        claimActiveUntil: 0,
-        transitionDate: 0
-      },
-      tippers: [
-        {
-          id: zeroAddress,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-        {
-          id: `0x${'0'.repeat(41)}1`,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-      ]
-    },
-    {
-      activeLearners: 0n,
-      totalPoints: 0n,
-      transitionInterval: 0,
-      claim: {
-        native: { totalAllocated: 0n, totalClaimed: 0n},
-        erc20: { totalAllocated: 0n, totalClaimed: 0n}, 
-        erc20Addr: zeroAddress,
-        claimActiveUntil: 0,
-        transitionDate: 0
-      },
-      tippers: [
-        {
-          id: zeroAddress,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-        {
-          id: `0x${'0'.repeat(41)}1`,
-          lastTippedDate: 0n,
-          points: 0,
-          totalTipped: 0n,
-        },
-      ]
-    },
-  ] 
-}
-
 export const emptyQuizData : SelectedQuizData = {
   category: "",
   level: "",
   questions: []
 }
+
+export const mockQuiz : Quiz = {
+  id: "",
+  title: "",
+  description: "",
+  questions: [],
+  totalPoints: 0,
+  timeLimit: 0,
+  difficulty: 'easy',
+  category: "",
+  imageUrl: "",
+  createdAt: new Date()
+}
+
+export const mockQuizResult : QuizResultInput = {
+  answers: [],
+  other: {
+    quizId: "",
+    score: 0,
+    totalPoints: 0,
+    percentage: 0,
+    timeSpent: 0,
+    completedAt: new Date().toString(),
+  }
+}
+
+export const mockCampaign : Campaign = {
+  fundsNative: 0n,
+  fundsERC20: 0n,
+  totalPoints: 0n,
+  lastUpdated: 0,
+  activeLearners: 0n,
+  transitionDate: 0,
+  claimActiveUntil: 0,
+  operator: zeroAddress,
+  token: zeroAddress,
+  hash_: zeroAddress,
+  canClaim: false
+}
+
 /**
  * @dev Converts an argument to a bigInt value
  * @param arg : Argument to convert;
@@ -356,12 +229,27 @@ export function getDivviReferralUtilities() {
  * @returns Formatted value.
  */
 export const formatValue = (arg: string | number | ethers.BigNumberish | bigint | undefined) => {
-    const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
-    return {
-      toStr: valueInBigNumber.toString(),
-      toNum: valueInBigNumber.toNumber()
-    }
+  const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
+  return {
+    toStr: valueInBigNumber.toString(),
+    toNum: valueInBigNumber.toNumber()
   }
+}
+
+/**
+ * @dev Accept an array of string. The result is the hashed version of each content in the data object
+ * @param data : An Array of string to hash
+ * @returns Hashed values
+*/
+export function getCampaignHashes(data: string[]) {
+  let result : Hex[] = [];
+  data.forEach((item, i) => {
+    const hash = keccak256(stringToBytes(item));
+    result.push(hash);
+  })
+  console.log("Result", result);
+  return result;
+}
   
 /**
  * @dev Formats an undefined address type object to a defined one
@@ -382,6 +270,7 @@ export const formatAddr = (x: string | (Address | undefined)) : Address => {
 export function filterTransactionData({chainId, filter, functionNames, callback}: FilterTransactionDataProps) {
     const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
     let transactionData : TransactionData[] = [];
+    // console.log("ChainId:", chainId);
     const index = chainIds.indexOf(chainId || chainIds[0]);
     if(filter) {
       assert(functionNames !== undefined, "FunctionNames not provided");
@@ -391,7 +280,7 @@ export function filterTransactionData({chainId, filter, functionNames, callback}
           callback?.({errorMessage});
           throw new Error(errorMessage);
         }
-        const data = getStepData(functionName);
+        const data = getStepData(functionName.concat(chainId?.toString() || '44787'));
         transactionData.push(data);
       })
     }
@@ -418,32 +307,84 @@ export function getCastText(task: FunctionName, weekId: number) {
  * @dev Load and prepare data from the JSON API
  * @returns : Formatted data and categories
  */
-export function loadQuizData() {
-  const difficultyLevels : DifficultyLevel[] = d.difficultylevels.split(',') as DifficultyLevel[];
+export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
+  const d = quizRawData;
+  // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
   const categories : Category[] = d.categories.split(',') as Category[];
-  let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
-  categories.forEach((category, id) => {
-    switch (category) {
-      case 'defi':
-        quizData.push({id, category, selectedLevel: '', data: d.defi});
-        break;
-      case 'reactjs':
-        quizData.push({id, category, selectedLevel: '', data: d.reactjs});
-        break;
-      case 'solidity':
-        quizData.push({id, category, selectedLevel: '', data: d.solidity});
-        break;
-      case 'wagmi':
-        quizData.push({id, category, selectedLevel: '', data: d.wagmi});
-        break;
-      default:
-        break;
-    }
+  // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
+  const quizData : Quiz[] = [];
+
+  // Loop through the categories
+  d.categoryData.forEach(({category, levels, description}) => {
+    // Loop through the levels
+    levels.forEach(({questions, difficulty, id: levelId}) => {
+      let qs : Question[] = [];
+      const questionSize = questions.length;
+      assert(totalPoints >= questionSize, "Totalpoints is invalid");
+      const points = totalPoints / questionSize;
+      const timeLimit = Math.ceil(timePerQuestion * questionSize);
+
+      // Run through the questions
+      questions.forEach(({answer, options, hash, question, explanation}, id) => {
+        let correctAnswer = 0;
+        qs.push({
+          id,
+          question,
+          options,
+          hash: `0x${hash}`,
+          correctAnswer: typeof answer === "number"? answer : options.indexOf(answer),
+          difficulty: difficulty as DifficultyLevel,
+          category,
+          points,
+          explanation:explanation === ""? `The answer to ${question} is ${options[correctAnswer]}` : explanation
+        })
+      });
+
+      quizData.push(
+        {
+          category,
+          description,
+          difficulty: difficulty as DifficultyLevel,
+          id: keccak256(stringToBytes(category)),
+          createdAt: new Date(),
+          questions:qs,
+          title: category,
+          totalPoints,
+          imageUrl: `/assets/${category}-${difficulty}.png`,
+          timeLimit
+        }
+      );
+
+    });
   });
-  assert(quizData.length === categories.length, "Data anomally occurred in utilities.ts");
-  return{
-    difficultyLevels,
-    categories,
-    quizData
+  // console.log("QuizData:", quizData);
+  return {
+    quizData,
+    categories
   };
+
+  // categories.forEach((category, id) => {
+  //   switch (category) {
+  //     case 'defi':
+  //       quizData.push({id, category, selectedLevel: '', data: d.defi});
+  //       break;
+  //     case 'reactjs':
+  //       quizData.push({id, category, selectedLevel: '', data: d.reactjs});
+  //       break;
+  //     case 'solidity':
+  //       quizData.push({id, category, selectedLevel: '', data: d.solidity});
+  //       break;
+  //     case 'wagmi':
+  //       quizData.push({id, category, selectedLevel: '', data: d.wagmi});
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // });
+  // assert(quizData.length === categories.length, "Data anomally occurred in utilities.ts");
+  // return{
+  //   difficultyLevels,
+  //   categories,
+  //   quizData
+  // };
 }

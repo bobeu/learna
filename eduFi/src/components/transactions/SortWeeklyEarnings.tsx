@@ -1,11 +1,11 @@
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
-import { Address, filterTransactionData, FunctionName } from '../utilities';
+import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { zeroAddress } from 'viem';
+import { Address, FunctionName } from '../../../types/quiz';
 
-export default function SortWeeklyReward({token, amountInERC20, owner, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
+export default function SortWeeklyReward({growTokenAmount, campaignString, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -19,14 +19,10 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
 
         const contractAddress = filtered.contractAddresses.Learna as Address;
         const growToken = filtered.contractAddresses.GrowToken as Address;
-        const args = [
-            token? token === zeroAddress? growToken : token : growToken, 
-            owner? owner : zeroAddress, 
-            amountInERC20
-        ];
+        const args = [growToken, growTokenAmount, campaignString];
 
         return { ...filtered, args, contractAddress };
-    }, [chainId, callback, token, amountInERC20, owner]);
+    }, [chainId, callback, growTokenAmount, campaignString]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject) => {
@@ -48,14 +44,14 @@ export default function SortWeeklyReward({token, amountInERC20, owner, openDrawe
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
+            lastStepInList='sortWeeklyReward'
         />
     )
 }
 
 type SortWeeklyRewardProps = {
-    token?: Address;
-    owner?: Address;
-    amountInERC20: bigint;
+    growTokenAmount: bigint;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    campaignString: string[];
 };

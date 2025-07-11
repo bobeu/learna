@@ -10,6 +10,10 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
     address private mainContract;
 
+    modifier onlyMain {
+        require(_msgSender() == mainContract, 'Only main');
+        _;
+    }
     /**
      * @dev Constructor: Totol supply of 21000000 GROW Token is minted at construction to the token address
      * - 50% of the total supply is assigned to the contributors i.e learners sharable and claimable on weekly basis = 10_500_000 GROW
@@ -45,11 +49,18 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
      * @dev Allocate token to the learna contract
      * @param amount : Amount to allocate
      */
-    function allocate(uint amount) external returns(bool) {
-        address approvedSpender = mainContract;
-        require(_msgSender() == approvedSpender, 'Only main'); 
-        _transfer(address(this), approvedSpender, amount);
+    function allocate(uint amount, address to) external onlyMain returns(bool) {
+        _transfer(address(this), to == address(0)? mainContract : to, amount);
         return true;
     }
 
+    /**
+     * @dev Burn certain amount from the holder account
+     * @param holder : Account to burn from
+     * @param amount : Amount to burn
+     */
+    function burn(address holder, uint amount) external returns(bool) {
+        _burn(holder, amount);
+        return true;
+    }
 }
