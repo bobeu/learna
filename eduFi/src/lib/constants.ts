@@ -1,4 +1,4 @@
-import { Address, FunctionName } from "~/components/utilities";
+import { Address, FunctionName } from "../../types/quiz";
 
 export const RECEIVER = "0xa1f70ffA4322E3609dD905b41f17Bf3913366bC1" as Address;
 export const APP_URL = process.env.NEXT_PUBLIC_URL!;
@@ -23,7 +23,7 @@ export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string
         handler: (weekId) => `I just generated my passkey for week ${weekId}`
     },
     {
-        key: 'claimWeeklyReward',
+        key: 'claimReward',
         handler: (weekId) => `Claimed my reward for week ${weekId}`
     },
     {
