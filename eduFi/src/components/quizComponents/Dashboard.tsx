@@ -145,10 +145,7 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
   );
 };
 
-
-
 export default function Dashbaord() {
-
   const { profiles, getCampaign } = useProfile({});
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { onQuizSelect, setpath, appData } = useStorage();
