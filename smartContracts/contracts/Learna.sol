@@ -48,7 +48,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     struct QuizResultOther {
         bytes id;
-        // bytes32[] hashes;
         bytes quizId;
         uint32 score;
         uint64 totalPoints;
@@ -59,7 +58,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     struct QuizResultOtherInput {
         string id;
-        // bytes32[] hashes;
         string quizId;
         uint32 score;
         uint64 totalPoints;
@@ -100,7 +98,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Readonly data
     struct ReadData {
         State state;
-        // CampaignData[] cData;
         WeekData[] wd;
     }
 
@@ -316,7 +313,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         learners[weekId][campaignHash][user].quizResults[index].other.id = bytes(quizResult.other.id);
         learners[weekId][campaignHash][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
         learners[weekId][campaignHash][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
-        // learners[weekId][campaignHash][user].quizResults[index].other.hashes = quizResult.other.hashes;
         learners[weekId][campaignHash][user].quizResults[index].other.score = quizResult.other.score;
         learners[weekId][campaignHash][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
         learners[weekId][campaignHash][user].quizResults[index].other.percentage = quizResult.other.percentage;
@@ -578,7 +574,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             if(fundsErc20 > 0) {
                 if(token == address(0)) revert InvalidAddress(token);
                 if(IERC20(token).transferFrom(sender, recipient, fundsErc20)){
-                    cp.fundsERC20 = fundsErc20;
+                    cp.fundsERC20 += fundsErc20;
                     cp.token = token;
                 }
             }

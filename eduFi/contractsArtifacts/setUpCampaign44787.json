@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xBAF91f2454944065459c64A0fBCe7CDfFcBe9DB5",
+  "contractAddress": "0x05F3c271444cd18615234De4302C2f26dF0E1491",
   "functionName": "setUpCampaign",
   "inputCount": 3,
   "requireArgUpdate": true,

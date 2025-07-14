@@ -18,7 +18,7 @@ import type {
 import Dashboard from '~/components/quizComponents/Dashboard';
 import { QuizInterface } from '~/components/quizComponents/QuizInterface';
 import { QuizResults } from '~/components/quizComponents/QuizResults';
-import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
+import { useAccount, useChainId, useConfig, useConnect, useReadContracts } from 'wagmi';
 import { hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
@@ -56,7 +56,8 @@ export default function Educaster() {
     
     const chainId = useChainId();
     const config = useConfig();
-    const { isConnected, address } = useAccount();
+    const { isConnected, address, connector } = useAccount();
+    const { connect } = useConnect();
     const account = formatAddr(address);
 
     React.useEffect(() => {
@@ -67,9 +68,10 @@ export default function Educaster() {
     }, [appData.quizData]);
 
     React.useEffect(() => {
+        if(!isConnected && connector) connect({connector, chainId});
         if(isConnected && currentPath === 'home') setpath('dashboard');
         if(!isConnected && currentPath !== 'home') setpath('home');
-    }, [isConnected, currentPath]);
+    }, [isConnected, connector, chainId, currentPath]);
 
     // Load user results from localStorage on component mount
     useEffect(() => {
@@ -112,8 +114,10 @@ export default function Educaster() {
         
         setQuizResult(newResult);
         setUserResults(prev => [newResult, ...prev]);
-        setRecordPoints(true);
         setPath('results');
+        setTimeout(() => setRecordPoints(true), 4000);
+        clearTimeout(4000);
+        
     };
 
     const setpath = (arg: Path) => {
@@ -163,7 +167,7 @@ export default function Educaster() {
     const { transactionData: td } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData', 'getProfile'],
+        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);

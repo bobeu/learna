@@ -1,83 +1,176 @@
 /* eslint-disable */
+import React from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { celoAlfajores } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { farcasterFrame as miniAppConnector } from "@farcaster/frame-wagmi-connector";
-import { coinbaseWallet, metaMask } from 'wagmi/connectors';
-import { APP_ICON_URL, APP_NAME, APP_URL } from "~/lib/constants";
-import { useEffect, useState } from "react";
-import { useConnect, useAccount } from "wagmi";
-import React from "react";
+import { coinbaseWallet, metaMask, injected } from 'wagmi/connectors';
+import { APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_URL } from "~/lib/constants";
+// import { useEffect, useState } from "react";
+// import { useConnect, useAccount } from "wagmi";
+import { RainbowKitProvider, lightTheme, getDefaultConfig, connectorsForWallets, } from "@rainbow-me/rainbowkit";
+import { 
+  // frameWallet, 
+  // braveWallet, 
+  metaMaskWallet, 
+  // rabbyWallet, 
+  rainbowWallet, 
+  trustWallet, 
+  valoraWallet,
+  walletConnectWallet
+} from "@rainbow-me/rainbowkit/wallets";
+import { celoAlfajores, celo } from 'wagmi/chains';
 
-// Custom hook for Coinbase Wallet detection and auto-connection
-function useCoinbaseWalletAutoConnect() {
-  const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
-  const { connect, connectors } = useConnect();
-  const { isConnected } = useAccount();
+// Your walletconnect project Id
+const projectId = String(process.env.NEXT_PUBLIC_PROJECT_ID);
 
-  useEffect(() => {
-    // Check if we're running in Coinbase Wallet
-    const checkCoinbaseWallet = () => {
-      const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
-        window.ethereum?.isCoinbaseWalletExtension ||
-        window.ethereum?.isCoinbaseWalletBrowser;
-      setIsCoinbaseWallet(!!isInCoinbaseWallet);
-    };
+if (!projectId) throw new Error('Project ID is undefined');
+
+// // Custom hook for Coinbase Wallet detection and auto-connection
+// function useCoinbaseWalletAutoConnect() {
+//   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
+//   const { connect, connectors } = useConnect();
+//   const { isConnected } = useAccount();
+
+//   useEffect(() => {
+//     // Check if we're running in Coinbase Wallet
+//     const checkCoinbaseWallet = () => {
+//       const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
+//         window.ethereum?.isCoinbaseWalletExtension ||
+//         window.ethereum?.isCoinbaseWalletBrowser;
+//       setIsCoinbaseWallet(!!isInCoinbaseWallet);
+//     };
     
-    checkCoinbaseWallet();
-    window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     checkCoinbaseWallet();
+//     window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
     
-    return () => {
-      window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
-    };
-  }, []);
+//     return () => {
+//       window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     };
+//   }, []);
 
-  useEffect(() => {
-    // Auto-connect if in Coinbase Wallet and not already connected
-    if (isCoinbaseWallet && !isConnected) {
-      connect({ connector: connectors[1] }); // Coinbase Wallet connector
-    }
-  }, [isCoinbaseWallet, isConnected, connect, connectors]);
+//   useEffect(() => {
+//     // Auto-connect if in Coinbase Wallet and not already connected
+//     if (isCoinbaseWallet && !isConnected) {
+//       connect({ connector: connectors[1] }); // Coinbase Wallet connector
+//     }
+//   }, [isCoinbaseWallet, isConnected, connect, connectors]);
 
-  return isCoinbaseWallet;
-}
+//   return isCoinbaseWallet;
+// }
 
-export const config = createConfig({
-  chains: [celoAlfajores],
-  transports: {
-    [celoAlfajores.id]: http(),
-  },
-  connectors: [
-    miniAppConnector(),
-    coinbaseWallet({
-      appName: APP_NAME,
-      appLogoUrl: APP_ICON_URL,
-      preference: 'all',
-    }),
-    metaMask({
-      dappMetadata: {
-        name: APP_NAME,
-        url: APP_URL,
-      },
-    }),
-  ],
-});
-
-const queryClient = new QueryClient();
+// export const config = createConfig({
+//   chains: [celoAlfajores, celo],
+//   transports: {
+//     [celoAlfajores.id]: http(),
+//     [celo.id]: http(),
+//   },
+  
+//   connectors: [
+//     miniAppConnector(),
+//     coinbaseWallet({
+//       appName: APP_NAME,
+//       appLogoUrl: APP_ICON_URL,
+//       preference: 'all',
+//     }),
+//     metaMask({
+//       dappMetadata: {
+//         name: APP_NAME,
+//         url: APP_URL,
+//       },
+//     }),
+//     injected()
+//   ],
+// });
 
 // // Wrapper component that provides Coinbase Wallet auto-connection
-function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
-  useCoinbaseWalletAutoConnect();
-  return <>{children}</>;
-}
+// function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
+//   useCoinbaseWalletAutoConnect();
+//   return <>{children}</>;
+// }
 
 export default function Provider({ children }: { children: React.ReactNode }) {
+  // Load the defaut config from RainbowKit
+  // const config = getDefaultConfig({
+  //   appName: 'Educaster',
+  //   projectId,
+  //   appIcon: '/favicon-32x32.png',
+  //   appDescription: APP_DESCRIPTION,
+  //   appUrl: APP_URL,
+  //   chains: [ celoAlfajores, celo ],
+  //   ssr: true,
+  //   multiInjectedProviderDiscovery: true,
+  //   pollingInterval: 10_000,
+  //   syncConnectedChain: true,
+  //   transports: {
+  //     [celoAlfajores.id]: http(),
+  //     [celo.id]: http(),
+  //   },
+  // });
+  // [
+  //   miniAppConnector(),
+  //   coinbaseWallet({
+  //     appName: APP_NAME,
+  //     appLogoUrl: APP_ICON_URL,
+  //     preference: 'all',
+  //   }),
+  //   metaMask({
+  //     dappMetadata: {
+  //       name: APP_NAME,
+  //       url: APP_URL,
+  //     },
+  //   }),
+  // ],
+
+  const connectors = connectorsForWallets(
+    [
+      {
+        groupName: 'Recommended',
+        wallets: [metaMaskWallet, rainbowWallet]
+      },
+      {
+        groupName: 'Others',
+        wallets: [walletConnectWallet, trustWallet, valoraWallet]
+      }
+    ],
+    {
+      projectId,
+      appName: 'Educaster',
+      appDescription: APP_DESCRIPTION,
+      appIcon: '/favicon-32x32.png',
+      appUrl: APP_URL
+    }
+  );
+
+  const config = createConfig({
+    chains: [celoAlfajores, celo],
+    transports: {
+      [celoAlfajores.id]: http(),
+      [celo.id]: http(),
+    },
+  connectors,
+  ssr: true,
+  // pollingInterval: 10_000,
+  syncConnectedChain: true
+});
+  
+  // Light theme configuration for RainbowKit wallet set up
+  const theme = lightTheme(
+    {
+      ...lightTheme.accentColors.purple,
+      accentColorForeground: '#a855f7',
+      borderRadius: 'large',
+      fontStack: 'system',
+      overlayBlur: 'small',
+      accentColor: '#fff'
+    }
+  );
+
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <CoinbaseWalletAutoConnect>
-          {children}
-        </CoinbaseWalletAutoConnect>
+      <QueryClientProvider client={new QueryClient()}>
+        <RainbowKitProvider modalSize="compact" theme={theme} initialChain={celoAlfajores.id} showRecentTransactions={true}>
+          { children }
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

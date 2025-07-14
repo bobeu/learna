@@ -5,7 +5,7 @@ pragma solidity 0.8.24;
 abstract contract Admins {
     struct Admin {
         address id;
-        bool active;
+        uint8 active;
     }
 
     // All admins
@@ -26,7 +26,7 @@ abstract contract Admins {
 
     function _isAdmin(address target) internal view returns(bool result) {
         uint8 slot = adminSlot[target];
-        result = admins[slot].active;
+        result = admins[slot].active > 0;
     }
     
     /**
@@ -40,12 +40,12 @@ abstract contract Admins {
         if(flag) {
             slot = uint8(admins.length);
             admins.push();
-            assert(!admins[slot].active);
-            admins[slot] = Admin(target, true);
+            assert(admins[slot].active == 0);
+            admins[slot] = Admin(target, 1);
             adminSlot[target] = slot;
         } else {
-            require(admins[slot].active, "Address is inActive");
-            admins[slot].active = false;
+            require(admins[slot].active > 0, "Address is inActive");
+            admins[slot].active = 0;
         }
     }
 

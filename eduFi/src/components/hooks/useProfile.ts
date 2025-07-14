@@ -1,11 +1,12 @@
 import React from 'react';
 import useStorage from "./useStorage";
-import { filterTransactionData, formatAddr, mockEligibility, mockReadProfile } from '../utilities';
+import { filterTransactionData, formatAddr, mockEligibility, mockProfile, mockReadProfile } from '../utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import { Address, Eligibility, ReadProfile } from '../../../types/quiz';
 
 export default function useProfile({campaignHash} : {campaignHash?: Address}){
-    const [readProfile, setReadProfile] = React.useState<ReadProfile>(mockReadProfile);
+    // const [data, setData] = React.useState<{readProfile: ReadProfile[], eligibilities: Eligibility[]}>({readProfile: [mockReadProfile], eligibilities: mockEligibility});
+    // const [readProfile, setReadProfile] = React.useState<ReadProfile>(mockReadProfile);
     const { weekId, campaignHashes, campaignData, callback } = useStorage();
     const chainId = useChainId();
     const config = useConfig();
@@ -35,7 +36,7 @@ export default function useProfile({campaignHash} : {campaignHash?: Address}){
     });
 
     // Fetch the data 
-    const { data, refetch } = useReadContracts({
+    const { data: result } = useReadContracts({
         config,
         contracts: readTxObject,
         allowFailure: true,
@@ -46,51 +47,92 @@ export default function useProfile({campaignHash} : {campaignHash?: Address}){
             refetchOnMount: 'always',
         }
     });
-
-    React.useEffect(() => {
-        if(campaignHash){
-            refetch().then((result) => {
-                const newProfilesData = result?.data?.[0]?.result as ReadProfile[] || [mockReadProfile];
-                const filtered = newProfilesData.filter(({campaignHash: hash}) => hash.toLowerCase() === campaignHash.toLowerCase());
-                if(filtered.length > 0) {
-                    setReadProfile(filtered[0]);
-                }
-            })
-        }
-    }, [campaignHash, refetch]);
     
-    /**
-     * @dev Fetches a single profile from the list of readProfiles using a mapped campaignHash
-     * @param campaignHash : Hash of a campaign e.g keccak256(bytes('solidity'))
-     * @returns Formatted profile contents
-     */
-    const result = React.useMemo(() => {
-        const profiles = data?.[0]?.result as ReadProfile[] || [mockReadProfile];
-        const eligibilities = data?.[1]?.result as Eligibility[] || mockEligibility;
-        const eligibleIndex = campaignHashes.indexOf(campaignHash || `0x${''}`); 
-        const isElibigleToClaimForTheWeek = eligibilities[eligibleIndex]?.value || false;
+    const profiles = result?.[0]?.result as ReadProfile[] || [mockReadProfile];
+    const eligibilities = result?.[1]?.result as Eligibility[] || mockEligibility;
+
+    // const profiles = data?.[0]?.result as ReadProfile[] || [mockReadProfile];
+    
+    const eligibleIndex = campaignHashes.indexOf(campaignHash || `0x${''}`); 
+    const isElibigleToClaimForTheWeek = eligibilities[eligibleIndex]?.value || false;
+    const filtered = profiles.filter(({campaignHash: hash}) => campaignHash?.toLowerCase() === hash.toLowerCase());
+    const profile = filtered?.[0]?.profile || mockProfile;
+    const { other: { claimed, haskey, ...rest }, quizResults } = profile || mockProfile;
+    const disableClaimButton = claimed || !haskey || !isElibigleToClaimForTheWeek;
+    const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
+    const getProfile = (hash: Address) => {
+        const filtered = profiles.filter(({campaignHash}) => campaignHash.toLowerCase() === hash.toLowerCase());
+        return filtered?.[0]?.profile || mockProfile;
+    };
+
+    const getCampaign = (hash_: Address) => {
+        const filtered = campaignData.filter(({campaignHash: hash}) => hash.toLowerCase() === hash_.toLowerCase());
+        return filtered?.[0]?.campaign || '';
+    }
+    
+
+    // React.useEffect(() => {
+    //     if(campaignHash){
+    //         refetch().then((result) => {
+    //             const newProfilesData = result?.data?.[0]?.result as ReadProfile[] || [mockReadProfile];
+    //             const filtered = newProfilesData.filter(({campaignHash: hash}) => hash.toLowerCase() === campaignHash.toLowerCase());
+    //             if(filtered.length > 0) {
+    //                 setReadProfile(filtered[0]);
+    //             }
+    //         })
+    //     }
+    // }, [campaignHash, refetch]);
+    
+    // /**
+    //  * @dev Fetches a single profile from the list of readProfiles using a mapped campaignHash
+    //  * @param campaignHash : Hash of a campaign e.g keccak256(bytes('solidity'))
+    //  * @returns Formatted profile contents
+    //  */
+    // const result = React.useMemo(() => {
+    //     const profiles = data?.[0]?.result as ReadProfile[] || [mockReadProfile];
+    //     const eligibilities = data?.[1]?.result as Eligibility[] || mockEligibility;
+    //     const eligibleIndex = campaignHashes.indexOf(campaignHash || `0x${''}`); 
+    //     const isElibigleToClaimForTheWeek = eligibilities[eligibleIndex]?.value || false;
         
-        const { other: { claimed, haskey, ...rest }, quizResults } = readProfile.profile;
-        const disableClaimButton = claimed || !haskey || !isElibigleToClaimForTheWeek;
-        const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
-        const getCampaign = (hash_: Address) => {
-            const filtered = campaignData.filter(({campaignHash: hash}) => hash.toLowerCase() === hash_.toLowerCase());
-            return filtered?.[0]?.campaign || '';
-        }
-    
-        return {
-            getCampaign,
-            profiles,
-            eligibilities,
-            ...rest,
-            haskey,
-            quizResults,
-            disableClaimButton,
-            totalPointsForACampaign,
-            isElibigleToClaimForTheWeek
-        }
-    }, [data, campaignData, campaignHash, campaignHashes,  readProfile]);
+    //     const { other: { claimed, haskey, ...rest }, quizResults } = readProfile.profile;
+    //     const disableClaimButton = claimed || !haskey || !isElibigleToClaimForTheWeek;
+    //     const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
+    //     const getProfile = (hash: Address) => {
+    //         const filtered = profiles.filter(({campaignHash}) => campaignHash.toLowerCase() === hash.toLowerCase());
+    //         return filtered?.[0]?.profile || mockProfile;
+    //     };
 
-    return { ...result }
+    //     const getCampaign = (hash_: Address) => {
+    //         const filtered = campaignData.filter(({campaignHash: hash}) => hash.toLowerCase() === hash_.toLowerCase());
+    //         return filtered?.[0]?.campaign || '';
+    //     }
+    
+    //     return {
+    //         getCampaign,
+    //         getProfile,
+    //         profiles,
+    //         eligibilities,
+    //         ...rest,
+    //         haskey,
+    //         quizResults,
+    //         disableClaimButton,
+    //         totalPointsForACampaign,
+    //         isElibigleToClaimForTheWeek
+    //     }
+    // }, [data, campaignData, campaignHash, campaignHashes,  readProfile]);
+
+    return { 
+        getCampaign,
+        getProfile,
+        profiles,
+        profile,
+        eligibilities,
+        ...rest,
+        haskey,
+        quizResults,
+        disableClaimButton,
+        totalPointsForACampaign,
+        isElibigleToClaimForTheWeek
+    }
 
 }

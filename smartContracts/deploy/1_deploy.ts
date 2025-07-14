@@ -10,12 +10,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const {deploy} = deployments;
 	let {deployer, reserve, routeTo, admin, admin2 } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
-	const transitionInterval = 7 * (24 * 60 * 60); //7 days 
-	const networkName = network.name
+	const networkName = network.name;
+	const transitionInterval = networkName === 'alfajores'? 0 : (24 * 60 * 60); //7 days 
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 
-	console.log("Mode", mode);
-	console.log("deployer", deployer);
+	console.log("networkName", networkName);
+	console.log("mode", mode);
+	console.log("transitionInterval", transitionInterval);
 
 	/**
 	 * Deploy Fee Manager

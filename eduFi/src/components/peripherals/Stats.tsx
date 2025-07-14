@@ -152,7 +152,7 @@ export default function Stats() {
         setpath, 
         weekData,
         campaignStrings,
-        owner,
+        userAdminStatus,
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
     const { isConnected } = useAccount();
@@ -242,7 +242,7 @@ export default function Stats() {
                 
             </div>
             <div className="flex justify-center items-center w-full" >
-                { (account.toLowerCase() !== zeroAddress && account.toLowerCase() === owner.toLowerCase()) && <SortWeeklyPayout />  }
+                { userAdminStatus && <SortWeeklyPayout />  }
             </div>
             <div className="flex justify-center items-center gap-1 w-full">
                 <CustomButton

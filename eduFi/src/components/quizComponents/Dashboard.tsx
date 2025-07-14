@@ -1,25 +1,30 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, GraduationCap, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { Profile, QuizResultOuput, UserStats } from '../../../types/quiz';
+import { Address, Profile, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
 import useProfile from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
-import { toBN } from '../utilities';
+import { mockProfile, toBN } from '../utilities';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { SelectComponent } from '../peripherals/SelectComponent';
+
+const emptyStats = {
+  totalQuizzes: 0,
+  totalScore: 0,
+  averageScore: 0,
+  bestScore: 0,
+  streak: 0
+};
 
 export const DashboardInfo = ({profile} : {profile: Profile}) => {
-  const [stats, setStats] = useState<UserStats>({
-    totalQuizzes: 0,
-    totalScore: 0,
-    averageScore: 0,
-    bestScore: 0,
-    streak: 0
-  });
+  const [stats, setStats] = useState<UserStats>(emptyStats);
 
   const {  appData } = useStorage();
+  // const { isConnected } = useAccount();
   const { quizResults } = profile;
 
   useEffect(() => {
@@ -36,6 +41,8 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
         bestScore,
         streak: calculateStreak(quizResults)
       });
+    } else {
+      setStats(emptyStats);
     }
   }, [quizResults]);
 
@@ -146,14 +153,24 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
 };
 
 export default function Dashbaord() {
-  const { profiles, getCampaign } = useProfile({});
+  const [campaignHash, setCampaignHash] = React.useState<Address>(`0x${''}`);
+  // const [profile, setSelectedProfile] = React.useState<Profile>(mockProfile);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const { onQuizSelect, setpath, appData } = useStorage();
+
+  const { onQuizSelect, setpath, campaignStrings, campaignData, appData } = useStorage();
+  const { profile } = useProfile({campaignHash});
+  // console.log("profile", profile);
 
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(0, 3);
-  
+
+  const setHash = (arg: string) => {
+    const found = campaignData.filter(({campaign}) => campaign.toLowerCase() === arg.toLowerCase());
+    const hash = found?.[0]?.campaignHash;
+    setCampaignHash(hash);
+  }
+
   const backHome = () => {
     setpath('home');
   }
@@ -161,6 +178,10 @@ export default function Dashbaord() {
   const toggleOpen = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // React.useEffect(() => {
+  //   setSelectedProfile(getProfile(campaignHash));
+  // }, [campaignHash, getProfile]);
 
   return(
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 font-mono">
@@ -182,6 +203,9 @@ export default function Dashbaord() {
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-6">
+            <div className="w-full place-items-center">
+              {isConnected && <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Welcome to Educaster" />}
+            </div>
             <div className="px-4 py-4 flex justify-center items-center gap-4">
               <button onClick={() => setpath('stats')} className="flex justify-start items-center gap-1 w-28 h-12 border rounded-xl p-3 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
                 <ChartBar className="w-4 h-4 text-pink-500" />
@@ -211,7 +235,10 @@ export default function Dashbaord() {
 
           {/* Mobile menu */}
           {isMenuOpen && (
-              <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-lg rounded-b-lg z-20">
+              <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-lg rounded-b-lg z-20 space-y-6">
+                <div className='pl-4'>
+                  { isConnected && <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Welcome to Educaster" />}
+                </div>
                   <div className="px-4 py-4 space-y-4">
                     <button onClick={() => setpath('stats')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
                       <ChartBar className="w-5 h-5" />
@@ -234,14 +261,22 @@ export default function Dashbaord() {
       </div>
 
       {/* Stats card */}
-      {
-        profiles.map(({campaignHash, profile}) => (
-          <section key={campaignHash} className="space-y-4">
-            <h3 className='text-2xl capitalize mt-4 pl-4'>{getCampaign(campaignHash)}</h3>
-            <DashboardInfo profile={profile} />
-          </section>
-        ))
-      }
+      <div className="my-8">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <Star className="w-6 h-6 text-yellow-500" />
+            <h2 className="text-2xl font-bold text-gray-800">Quiz Stats</h2>
+          </div>
+          <div>
+            <SelectComponent 
+              campaigns={campaignStrings}
+              placeHolder='Select campaign'
+              setHash={setHash}
+            />
+          </div>
+        </div>
+        <DashboardInfo profile={profile} />
+      </div>
 
        {/* Featured Quizzes */}
       <div className="mb-12">

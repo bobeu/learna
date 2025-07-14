@@ -19,6 +19,7 @@ import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";
 import { CampaignMap } from "./SetupCampaign";
 import useProfile from "../hooks/useProfile";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 function ProfileComponent({weekId, user} : {weekId: bigint, user?: UserContext | undefined}) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
@@ -218,14 +219,8 @@ export default function Profile() {
             <div className="space-y-6 grid grid-cols-1 ">
                 <div className="w-full relative flex justify-between items-center p-8 border rounded-2xl">
                     {
-                        isConnected? <AddressWrapper account={address || zeroAddress} size={5} display copyIconSize="md" /> : <div>
-                            <div className="w-24 h-24 rounded-full border bg-purple-200 flex justify-center items-center">
-                                <PlugZap className="w-12 h-12 text-pink-500 animate-bounce-gentle" />
-                            </div>
-                            <h3>{"Not Connected To Any Wallet"}</h3>
-                        </div>
+                        isConnected?  <ConnectButton accountStatus={"avatar"} chainStatus={"icon"} showBalance={false} /> : <h3 className="text-center">{"Not Connected To Any Wallet"}</h3>
                     }
-                    { isConnected && <Button onClick={() => disconnect()} variant={'outline'} className="float-right text-cyan-700">Logout</Button>}
                 </div>
                 <CustomButton onClick={goToQuiz} exit={false} disabled={false}>
                     <ArrowRight className="w-5 h-5" />
