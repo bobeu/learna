@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -105,7 +103,6 @@ function ProfileComponent(
                                     <CheckCircle className="w-8 h-8 " />
                                 </h3> : <div className=' p-1 text-cyan-900  text-center'>
                                     <GenerateKey 
-                                        functionName={'generateKey'} 
                                         buttonClassName="text-md fle gap-2" 
                                         campaignHash={hash_}
                                     />
@@ -156,8 +153,9 @@ function ProfileComponent(
 }
 
 export default function Profile() {
+    const { setpath, campaignStrings, wkId, campaignData} = useStorage();
     const [selectedWeek, setSelectedWeek] = React.useState<number>(0);
-    const [requestedHash, setRequestedHash] = React.useState<Hex>(`0x${0}`);
+    const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0].campaignHash);
     const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
@@ -170,7 +168,6 @@ export default function Profile() {
         }
     };
     
-    const { setpath, campaignStrings, wkId, campaignData} = useStorage();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
     const { getCampaignObj } = useProfile();
 
@@ -188,12 +185,13 @@ export default function Profile() {
 
     const setHash = (arg: string) => {
         const found = campaignData.find(q => q.campaign === arg);
-        setRequestedHash(found?.campaignHash as Hex);
+        if(found?.campaignHash !== requestedHash) setRequestedHash(found?.campaignHash as Hex);
     }
 
     React.useEffect(() => {
-        setProfile(getCampaignObj(selectedWeek, requestedHash));
-    }, [selectedWeek, requestedHash, getCampaignObj]);
+        const prof = getCampaignObj(selectedWeek, requestedHash);
+        if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
+    }, [selectedWeek, profile.campaignDatum.campaignHash, requestedHash, getCampaignObj]);
 
     return(
         <Wrapper2xl useMinHeight={true} >

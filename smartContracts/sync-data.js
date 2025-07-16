@@ -85,7 +85,12 @@ try {
                         inputs.push(input.name);
                     });
                     const isReadFunction = readFunctions.includes(item.name);
-                    const stdItemOutPath = path.join(REACT_DATA_PATH, `${item.name.concat(chainId.toString())}.json`);
+                    const dir = `${REACT_DATA_PATH}/${chainId}`;
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true });
+                    }
+                    const stdItemOutPath = path.join(dir, `${item.name}.json`);
+                    console.log("stdItemOutPath", stdItemOutPath);
                     itemOutput.abi = isReadFunction? [item] : artifact.abi;
                     itemOutput.inputCount = inputs.length;
                     itemOutput.functionName = item.name;

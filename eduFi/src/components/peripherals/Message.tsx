@@ -27,8 +27,8 @@ export default function Message() {
             setTimeout(() => {
                 if(messages !== '') setmessage('');
                 if(errorMessage !== '') setError('');
-            }, 4000);
-            return() => clearTimeout(4000);
+            }, 2000);
+            return() => clearTimeout(2000);
         }
     }, [messages, loading, errorMessage, setError, setmessage]);
 

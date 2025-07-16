@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
 import assert from "assert";
-import { getStepData } from "../../stepsData";
+import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import quizRawData from "../../quizData.json";
@@ -243,21 +243,13 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @param param0 : Parameters
  * @returns object containing array of transaction data and approved functions
  */
-export function filterTransactionData({chainId, filter, functionNames, callback}: FilterTransactionDataProps) {
+export function filterTransactionData({chainId, filter, functionNames = [], callback}: FilterTransactionDataProps) {
     const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
     let transactionData : TransactionData[] = [];
-    // console.log("ChainId:", chainId);
     const index = chainIds.indexOf(chainId || chainIds[0]);
     if(filter) {
-      assert(functionNames !== undefined, "FunctionNames not provided");
       functionNames.forEach((functionName) => {
-        if(!approvedFunctions.includes(functionName)) {
-          const errorMessage = `Operation ${functionName} is not supported`;
-          callback?.({errorMessage});
-          throw new Error(errorMessage);
-        }
-        const data = getStepData(functionName.concat(chainId?.toString() || '44787'));
-        transactionData.push(data);
+        transactionData.push(getFunctionData(functionName, chainId));
       })
     }
   

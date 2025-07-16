@@ -6,7 +6,7 @@ import { filterTransactionData, formatAddr } from '../utilities';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function RecordPoints({openDrawer, toggleDrawer, campaignHash }: RecordPointsProps) {
+export default function RecordPoints({openDrawer, useAdmin, toggleDrawer, campaignHash }: RecordPointsProps) {
     const { chainId, address } = useAccount();
     const account = formatAddr(address);
 
@@ -26,13 +26,14 @@ export default function RecordPoints({openDrawer, toggleDrawer, campaignHash }: 
                 args: [account, [], ca.GrowToken, campaignHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
-                requireArgUpdate: false
+                requireArgUpdate: false,
+                useAdmin: useAdmin? 1 : 0
             };
             return transaction;
         })
         return transactions;
     
-   }, [td, ca, account, campaignHash]);
+   }, [td, ca, account, useAdmin, campaignHash]);
 
     return(
         <Confirmation 
@@ -48,4 +49,5 @@ type RecordPointsProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
     campaignHash: Hex;
+    useAdmin: boolean;
 };

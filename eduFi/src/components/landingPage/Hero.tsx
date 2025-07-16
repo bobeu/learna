@@ -1,5 +1,4 @@
 import { Zap, ArrowRight, LucideBox } from "lucide-react";
-// import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
 
 export default function Hero({handleClick} : {handleClick: () => void}) {
@@ -38,7 +37,7 @@ export default function Hero({handleClick} : {handleClick: () => void}) {
                 <button onClick={goToSetupCampaign} className="group border-2 border-cyan-500 text-cyan-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-cyan-500 hover:text-white transition-all duration-300">
                     <span className="flex items-center justify-center">
                         <LucideBox className="w-5 h-5 mr-2" />
-                        Add New Or Fund Existing Campaign
+                        Add & Fund Campaign
                     </span>
                 </button>
             </div>

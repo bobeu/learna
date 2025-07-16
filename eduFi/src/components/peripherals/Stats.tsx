@@ -13,6 +13,11 @@ import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
 import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
+import MinimumToken from "./inputs/MinimumToken";
+import TransitionInterval from "./inputs/TransitionInterval";
+import Admins from "./inputs/Admins";
+import Pause from "../transactions/Pause";
+import UnPause from "../transactions/UnPause";
 
 function Stat({campaign} : {campaign: Campaign}) {
     const { 
@@ -133,9 +138,12 @@ function Stat({campaign} : {campaign: Campaign}) {
 }
 
 export default function Stats() {
-    const [selectedWeek, setSelectedWeek] = React.useState<number>(0);
+    const [ selectedWeek, setSelectedWeek ] = React.useState<number>(0);
+    const [ openPausePopUp, setPausePopUp ] = React.useState<number>(0);
+    const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
+    const [ action, setAction ] = React.useState<string>('none');
     const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${0}`);
-    const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
+    const [ profile, setProfile ] = React.useState<ProfileReturnType>(mockProfileReturn);
     
     const { 
         setpath, 
@@ -169,15 +177,42 @@ export default function Stats() {
         setSelectedWeek(Number(arg));
     }
 
+    const setaction = (arg: string) => {
+        setAction(arg);
+    }
+
+    const togglePausePopUp = (arg: number) => {
+        setPausePopUp(arg);
+    }
+ 
+    const toggleUnPausePopUp = (arg: number) => {
+        setUnPausePopUp(arg);
+    }
+
     const interval = toBN(transitionInterval.toString()).toNumber();
 
     React.useEffect(() => {
-        setProfile(getCampaignObj(selectedWeek, requestedHash));
-    }, [selectedWeek, requestedHash, getCampaignObj]);
+        const prof = getCampaignObj(selectedWeek, requestedHash);
+        if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
+    }, [selectedWeek, requestedHash, profile.campaignDatum.campaignHash]);
+   
+    React.useEffect(() => {
+        if(action === 'pause') setPausePopUp(1);
+        if(action === 'unpause') setUnPausePopUp(1);
+    }, [action]);
 
     return(
         <Wrapper2xl useMinHeight={true} >
             <div className="text-3xl text-left font-bold text-gray-800 mb-4">Analytics</div>
+            <div className="flex justify-center items-center gap-1 w-full mb-2">
+                <CustomButton
+                    exit={true}
+                    onClick={backToHome}
+                    disabled={false}
+                >
+                    <span>Exit</span>
+                </CustomButton>
+            </div>
             <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
                 <div className="glass-card rounded-xl p-4">
                     <div className="flex items-center justify-center mb-3">
@@ -230,10 +265,29 @@ export default function Stats() {
                 <Stat campaign={profile.campaign}/>
             </div>
 
-            {/* Sort Weekly payout */}
-            <div className="flex justify-center items-center w-full" >
-                { (userAdminStatus || owner.toLowerCase() === account.toLowerCase()) && <SortWeeklyPayout />  }
-            </div>
+            {/* Admin and Owner only settings */}
+            {
+                (userAdminStatus || owner.toLowerCase() === account.toLowerCase()) && 
+                    <div className="" >
+                        <SortWeeklyPayout /> 
+                        <MinimumToken />
+                        <TransitionInterval />
+                    </div>
+            }
+
+            {/* Owner only settings */}
+            {
+                owner.toLowerCase() === account.toLowerCase() && <div className="mb-4 w-full">
+                    <Admins />
+                    <SelectComponent 
+                        campaigns={['none', 'pause', 'unpause']}
+                        placeHolder="Set contract state"
+                        setHash={setaction}
+                        title="Set contract state"
+                        width="w-full"
+                    />
+                </div>
+            }
 
             {/* Exit button */}
             <div className="flex justify-center items-center gap-1 w-full">
@@ -245,6 +299,8 @@ export default function Stats() {
                     <span>Exit</span>
                 </CustomButton>
             </div>
+            <Pause openDrawer={openPausePopUp} toggleDrawer={togglePausePopUp} />
+            <UnPause openDrawer={openUnPausePopUp} toggleDrawer={toggleUnPausePopUp} />
         </Wrapper2xl>
     );
 }
