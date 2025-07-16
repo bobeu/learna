@@ -58,9 +58,10 @@ function useCoinbaseWalletAutoConnect() {
 
 // [celoAlfajores.id]: http(),
 export const config = createConfig({
-  chains: [celo],
+  chains: [celo, celoAlfajores],
   transports: {
     [celo.id]: http(),
+    [celoAlfajores.id]: http(),
   },
   
   connectors: [
@@ -86,9 +87,9 @@ export const config = createConfig({
         url: APP_URL,
       },
     }),
-    injected({target: 'metaMask'})
+    // injected({target: 'metaMask'})
   ],
-  // ssr: true,
+  ssr: true,
   syncConnectedChain: true
 });
 

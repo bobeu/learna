@@ -53,6 +53,7 @@ export default function Educaster() {
     const [currentPath, setPath] = React.useState<Path>('home');
     const [selectedCampaign, setSelectedCampaign] = React.useState<Campaign>(mockCampaign);
     const [loading, setLoading] = React.useState<boolean>(false);
+    const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
     
     const chainId = useChainId();
@@ -101,6 +102,10 @@ export default function Educaster() {
         setSelectedQuiz(quiz);
         setPath('quiz');
     };
+
+    const toggleOpen = (arg: boolean) => {
+        setMenu(arg);
+    }
 
     const handleQuizComplete = (result: QuizResultInput) => {
         const resultOtherInput : QuizResultOtherInput = {
@@ -285,11 +290,13 @@ export default function Educaster() {
                 campaignHashes,
                 campaignStrings,
                 recordPoints,
+                isMenuOpen,
                 toggleRecordPoints,
                 appData,
                 setmessage,
                 setselectedCampaign,
                 setError,
+                toggleOpen,
                 result: quizResult? quizResult : mockQuizResult,
                 quiz: selectedQuiz? selectedQuiz : mockQuiz,
                 onPlayAgain: handlePlayAgain,

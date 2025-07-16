@@ -9,37 +9,28 @@ import Stats from './Stats';
 import Ctas from './Ctas';
 import Footer from './Footer';
 import ScrollButton from './ScrollButton';
-import ConnectButtons from '../ConnectButtons';
 import { useAccount } from 'wagmi';
 import useStorage from '../hooks/useStorage';
 
 function LandingPage() {
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    // const [showConnectButtons, setShowConnectButtons] = React.useState(false);
-    
     const windowIsDefined = typeof window !== "undefined";
     const { isConnected } = useAccount();
-    const { setpath } = useStorage();
-
-    const toggleOpen = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
+    const { setpath, toggleOpen } = useStorage();
 
     const toggleShowConnectButtons = () => {
         if(isConnected) {
-            setpath('dashboard')
+            setpath('dashboard');
         } else {
-            alert("Please connect to a wallet")
-            // setShowConnectButtons(!showConnectButtons);
+            toggleOpen(true);
+            alert("Please connect to a wallet");
         }
 
     };
 
     return (
         <div className="min-h-screen overflow-auto bg-white">
-            <Navbar isMenuOpen={isMenuOpen} toggleOpen={toggleOpen} />
+            <Navbar />
             <Hero handleClick={toggleShowConnectButtons}/>
-            {/* { showConnectButtons && <ConnectButtons />}  */}
             <Features />
             <HowItWorks />
             <Stats />

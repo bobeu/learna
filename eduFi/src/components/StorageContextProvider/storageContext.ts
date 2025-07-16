@@ -13,6 +13,8 @@ export interface DataContextProps {
     selectedCampaign: Campaign;
     errorMessage: string;
     currentPath: Path;
+    isMenuOpen: boolean;
+    toggleOpen: (arg: boolean) => void;
     handleStart: VoidFunc;
     setselectedCampaign: (arg: Campaign) => void;
     campaignHashes: Hex[];
