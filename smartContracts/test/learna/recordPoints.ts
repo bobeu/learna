@@ -14,7 +14,7 @@ describe("Learna", function () {
     it("An admin should be able to sort weekly earning payroll", async function () {
         const { learna, growTokenAddr, signers : { deployer, signer1Addr, signer1 },} = await loadFixture(deployContractsFixcture);
         const { campaignData } = await getCampaigns(learna);
-        const campaignHash = campaignData[0].campaignHash as Address;
+        const campaignHash = campaignData.campaignHash as Address;
         const quizResult = getQuizResult(campaignHash, 60);
         await expect( recordPoints({deployer, learna, quizResult, campaignHash, user: signer1Addr, token: growTokenAddr}))
         .to.be.revertedWith('No pass key');

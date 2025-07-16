@@ -20,6 +20,7 @@ abstract contract Campaigns {
         address token;
         bytes32 hash_;
         bool canClaim;
+        CampaignData data;
     }
 
     struct CampaignData {
@@ -27,15 +28,21 @@ abstract contract Campaigns {
         bytes encoded;
     }
 
-    CampaignData[] private campaignData;
+    struct Initializer {
+        bool initialized;
+        uint32 slot;
+    }
+
+    // Campaigns
+    mapping(uint weekId => mapping(bytes32 campaignHash => Initializer)) private initializer;
 
     //week data for all campaigns
     mapping(uint weekId => Campaign[]) private campaigns;
     
-    mapping(uint weekId => mapping(bytes32 campaignHash => bool)) private initializer;
+    // mapping(uint weekId => mapping(bytes32 campaignHash => bool)) private initializer;
 
     // Campaign identifiers
-    mapping(uint weekId => mapping(bytes32 => uint32)) private campaignIds;
+    // mapping(uint weekId => mapping(bytes32 => uint32)) private campaignIds;
 
     /**
      * @dev Only approved campaign can pass
@@ -46,15 +53,15 @@ abstract contract Campaigns {
         require(_isInitializedCampaign(weekId, campaignHash), "Not a valid campaign");
     } 
 
-    /**
-     * @dev Check if a campaign has been funded
-     * @param weekId : Week Id
-     * @param campaignHash : Campaign hash
-     */
-    function _hasFund(uint weekId, bytes32 campaignHash) internal view returns(bool hasFund) {
-        Campaign memory cp = _getCampaign(weekId, campaignHash);
-        hasFund = cp.fundsNative > 0 || cp.fundsERC20 > 0; 
-    }
+    // /**
+    //  * @dev Check if a campaign has been funded
+    //  * @param weekId : Week Id
+    //  * @param campaignHash : Campaign hash
+    //  */
+    // function _hasFund(uint weekId, bytes32 campaignHash) internal view returns(bool hasFund) {
+    //     Campaign memory cp = _getCampaign(weekId, campaignHash);
+    //     hasFund = cp.fundsNative > 0 || cp.fundsERC20 > 0; 
+    // }
     
     /**
      * @dev Only valid campaign id can pass
@@ -72,11 +79,11 @@ abstract contract Campaigns {
 
     /**
      * @dev Check whether a campaign is initialized or not
-     * @param campaignHash : Campaign hash
      * @param weekId : Week Id
+     * @param campaignHash : Campaign hash
     */
     function _isInitializedCampaign(uint weekId, bytes32 campaignHash) internal view returns(bool result) {
-        result = initializer[weekId][campaignHash];
+        result = initializer[weekId][campaignHash].initialized;
     }
 
     /**
@@ -91,23 +98,27 @@ abstract contract Campaigns {
     /**
      * @dev Initializeds a new campaign slot
      * @param weekId : Week Id
-     * @param campaign : Campaign string
+     * @param campaignHash : Hash representation of the campaign
+     * @param encoded : Encoded version of the campaign i.e bytes(campaignstring)
+     * @param transitionDate : Date when the campaign for thr current week we transitioned or sorted
+     * @param fundsERC20 : Initial funding in ERC20 token
+     * @param fundsNative : Initial funding in native asset
+     * @param token : Funding token address
     */
-    function _initializeCampaign(uint weekId, string memory campaign) internal returns(Campaign memory result, bytes32 _campaignHash) {
-        uint32 cId;
-        (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(campaign);
-        if(!_isInitializedCampaign(weekId, campaignHash)){
-            initializer[weekId][campaignHash] = true;
-            campaignData.push(CampaignData(campaignHash, encoded));
-            cId = _getTotalCampaignForAGivenWeek(weekId);
-            campaigns[weekId].push();
-            campaignIds[weekId][campaignHash] = cId;
-            campaigns[weekId][cId].hash_ = campaignHash;
-        } else {
-            cId = _getCampaignId(weekId, campaignHash);
-        }
-        _campaignHash = campaignHash;
-        result = campaigns[weekId][cId];
+    function _initializeCampaign(
+        uint weekId, 
+        uint64 transitionDate,
+        bytes32 campaignHash,
+        bytes memory encoded,
+        address operator,
+        uint256 fundsNative,
+        uint256 fundsERC20,
+        address token
+    ) internal {
+        require(!_isInitializedCampaign(weekId, campaignHash), "Already initialized");
+        uint32 slot = uint32(campaigns[weekId].length);
+        initializer[weekId][campaignHash] = Initializer(true, slot);
+        campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0,  transitionDate, 0, operator, token, campaignHash, false, CampaignData(campaignHash, encoded)));
     }
 
     /**
@@ -117,14 +128,6 @@ abstract contract Campaigns {
      */
     function _getCampaings(uint weekId) internal view returns(Campaign[] memory data) {
         data = campaigns[weekId];
-    }
-
-    /**
-     * Return campaign data with encoded and hashed values
-     */
-    function getCampaingData() public view returns(CampaignData[] memory cData) {
-        cData = campaignData;
-        return cData;
     }
 
     /**
@@ -138,7 +141,7 @@ abstract contract Campaigns {
         bytes32 campaignHash, 
         Campaign memory campaign
     ) internal  {
-        uint32 cId = _getCampaignId(weekId, campaignHash);
+        uint32 cId = _getCampaignSlot(weekId, campaignHash);
         onlyValidCampaignSlot(weekId, cId);
         campaigns[weekId][cId] = campaign;
     }
@@ -150,7 +153,7 @@ abstract contract Campaigns {
      * @return result : Other data 
      */
     function _getCampaign(uint weekId, bytes32 campaignHash) internal view returns(Campaign memory result) {
-        uint32 cId = _getCampaignId(weekId, campaignHash);
+        uint32 cId = _getCampaignSlot(weekId, campaignHash);
         onlyValidCampaignSlot(weekId, cId);
         result = campaigns[weekId][cId];
     }
@@ -160,8 +163,8 @@ abstract contract Campaigns {
      * @param weekId : Week Id
      * @param campaignHash : Campaign hash iD
      */
-    function _getCampaignId(uint weekId, bytes32 campaignHash) internal view returns(uint32 id) {
-        id = campaignIds[weekId][campaignHash]; 
+    function _getCampaignSlot(uint weekId, bytes32 campaignHash) internal view returns(uint32 id) {
+        id = initializer[weekId][campaignHash].slot; 
     }
 
     // Return the current unix time stamp on the network

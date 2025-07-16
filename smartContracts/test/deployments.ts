@@ -34,7 +34,7 @@ async function deployLearna(deployer: Signer, admin2: Address, feeManager: Addre
  */
 async function deployGrowToken(reserve: Address, learna: Address, deployer: Signer) : Promise<GrowToken> {
   const GrowToken = await ethers.getContractFactory("GrowToken");
-  return (await GrowToken.connect(deployer).deploy(reserve, learna)).waitForDeployment();
+  return (await GrowToken.connect(deployer).deploy(reserve, learna, "GrowToken", "GROW")).waitForDeployment();
 }
 
 export async function deployContracts(getSigners_: () => Signers) {

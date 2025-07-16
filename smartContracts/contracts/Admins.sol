@@ -5,7 +5,7 @@ pragma solidity 0.8.24;
 abstract contract Admins {
     struct Admin {
         address id;
-        uint8 active;
+        bool active;
     }
 
     // All admins
@@ -19,14 +19,14 @@ abstract contract Admins {
      * @notice Even if no admin is added, we will always byepass the out-of-bound error since 
      * we already added at least one content to the admins array in the constructor, it wil always fetch zero slot.
     */
-    modifier onlyAdmin(address target) {
-        require(_isAdmin(target), 'Only admin');
+    modifier onlyAdmin() {
+        require(_isAdmin(msg.sender), 'Only admin');
         _;
     }
 
     function _isAdmin(address target) internal view returns(bool result) {
         uint8 slot = adminSlot[target];
-        result = admins[slot].active > 0;
+        result = admins[slot].active;
     }
     
     /**
@@ -40,12 +40,12 @@ abstract contract Admins {
         if(flag) {
             slot = uint8(admins.length);
             admins.push();
-            assert(admins[slot].active == 0);
-            admins[slot] = Admin(target, 1);
+            assert(!admins[slot].active);
+            admins[slot] = Admin(target, true);
             adminSlot[target] = slot;
         } else {
-            require(admins[slot].active > 0, "Address is inActive");
-            admins[slot].active = 0;
+            require(admins[slot].active, "Address is inActive");
+            admins[slot].active = false;
         }
     }
 

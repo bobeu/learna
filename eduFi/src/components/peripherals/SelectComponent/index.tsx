@@ -10,9 +10,9 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 
-export function SelectComponent({placeHolder, campaigns, setHash} : {placeHolder: string, campaigns: string[], setHash: (arg: string) => void}) {
+export function SelectComponent({placeHolder, campaigns, title, setHash} : {placeHolder: string, campaigns: string[], setHash: (arg: string) => void, title?: string}) {
     const onChange = (value: string) => {
-        setHash(value);
+      setHash(value);
     }
 
     React.useEffect(() => {
@@ -21,16 +21,23 @@ export function SelectComponent({placeHolder, campaigns, setHash} : {placeHolder
 
     return (
     <Select onValueChange={onChange} defaultValue={campaigns?.[0]}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[200px] max-w-sm md:max-w-md">
+        { title && <h3 className="text-sm capitalize text-pink-600">{title}</h3>}
         <SelectValue placeholder={placeHolder} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Campaigns</SelectLabel>
+          {/* <SelectLabel>Campaigns</SelectLabel> */}
           {
-            campaigns?.map((campaign) => (
-                <SelectItem key={campaign} value={campaign} >{campaign}</SelectItem>
-            ))
+            campaigns? campaigns?.map((campaign, index) => (
+                <SelectItem 
+                  key={campaign?.concat(index.toString())} 
+                  value={campaign} 
+                  className="capitalize"
+                >
+                  {campaign}
+                </SelectItem>
+            )) : <SelectItem value={"No campaign"}>No campaign</SelectItem>
           }
         </SelectGroup>
       </SelectContent>

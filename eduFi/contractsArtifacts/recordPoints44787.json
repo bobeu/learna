@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x05F3c271444cd18615234De4302C2f26dF0E1491",
+  "contractAddress": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48",
   "functionName": "recordPoints",
   "inputCount": 4,
   "requireArgUpdate": true,
@@ -200,6 +200,23 @@
               "internalType": "bool",
               "name": "canClaim",
               "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Campaigns.CampaignData",
+              "name": "data",
+              "type": "tuple"
             }
           ],
           "indexed": false,
@@ -268,6 +285,11 @@
                       "internalType": "uint32",
                       "name": "score",
                       "type": "uint32"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "title",
+                      "type": "bytes"
                     },
                     {
                       "internalType": "uint64",
@@ -403,6 +425,23 @@
               "internalType": "bool",
               "name": "canClaim",
               "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Campaigns.CampaignData",
+              "name": "data",
+              "type": "tuple"
             }
           ],
           "indexed": false,
@@ -479,6 +518,23 @@
               "internalType": "bool",
               "name": "canClaim",
               "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Campaigns.CampaignData",
+              "name": "data",
+              "type": "tuple"
             }
           ],
           "indexed": false,
@@ -773,31 +829,6 @@
     },
     {
       "inputs": [],
-      "name": "getCampaingData",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bytes",
-              "name": "encoded",
-              "type": "bytes"
-            }
-          ],
-          "internalType": "struct Campaigns.CampaignData[]",
-          "name": "cData",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "getData",
       "outputs": [
         {
@@ -882,6 +913,23 @@
                       "internalType": "bool",
                       "name": "canClaim",
                       "type": "bool"
+                    },
+                    {
+                      "components": [
+                        {
+                          "internalType": "bytes32",
+                          "name": "campaignHash",
+                          "type": "bytes32"
+                        },
+                        {
+                          "internalType": "bytes",
+                          "name": "encoded",
+                          "type": "bytes"
+                        }
+                      ],
+                      "internalType": "struct Campaigns.CampaignData",
+                      "name": "data",
+                      "type": "tuple"
                     }
                   ],
                   "internalType": "struct Campaigns.Campaign[]",
@@ -966,6 +1014,11 @@
                           "internalType": "uint32",
                           "name": "score",
                           "type": "uint32"
+                        },
+                        {
+                          "internalType": "bytes",
+                          "name": "title",
+                          "type": "bytes"
                         },
                         {
                           "internalType": "uint64",
@@ -1162,6 +1215,11 @@
                   "internalType": "uint32",
                   "name": "score",
                   "type": "uint32"
+                },
+                {
+                  "internalType": "string",
+                  "name": "title",
+                  "type": "string"
                 },
                 {
                   "internalType": "uint64",

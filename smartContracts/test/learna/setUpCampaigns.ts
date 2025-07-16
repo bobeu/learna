@@ -17,7 +17,7 @@ describe("Learna", function () {
       let fundERC20 = parseEther('55');
       const value = parseEther('13');
       const { campaignData } = await getCampaigns(learna);
-      const campaignHash = campaignData[0].campaignHash as Address;
+      const campaignHash = campaignData.campaignHash as Address;
       const erc20Amount = fundERC20;
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);

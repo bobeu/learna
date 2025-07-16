@@ -68,6 +68,7 @@ export interface QuizResultOtherInput {
   percentage: number;
   timeSpent: number;
   completedAt: string;
+  title: string;
 }
 
 export interface QuizResultOtherOutput extends QuizResultOtherInput{}
@@ -84,18 +85,6 @@ export interface AnswerOutput {
   isUserSelected: boolean;
 }
 
-// export interface QuizResult {
-//   id: string;
-//   hashes: Hex[];
-//   quizId: string;
-//   score: number;
-//   totalPoints: number;
-//   percentage: number;
-//   timeSpent: number;
-//   answers: Record<string, number>;
-//   completedAt: Date;
-// }
-
 export interface QuizResultOuput {
   answers: AnswerOutput[];
   other: QuizResultOtherOutput;
@@ -108,9 +97,6 @@ export interface UserStats {
   bestScore: number;
   streak: number;
 }
-
-
-
 
 ////////////////////////////////////////////////
 
@@ -233,6 +219,11 @@ export interface Eligibility {
   campaignHash: `0x${string}`;
 }
 
+export interface CampaignData {
+  campaignHash: Hex;
+  encoded: Hex;
+}
+
 export interface Campaign {
   fundsNative: bigint;
   fundsERC20: bigint;
@@ -245,11 +236,7 @@ export interface Campaign {
   token: Address;
   hash_: Hex
   canClaim: boolean;
-}
-
-export interface CampaignData {
-  campaignHash: Hex;
-  encoded: Hex;
+  data: CampaignData;
 }
 
 export interface CampaignDataFormatted {
@@ -264,13 +251,11 @@ export interface State {
 }
 
 export interface WeekData {
-  // weekId: bigint;
   campaigns: Readonly<Campaign[]>;
 } 
 
 export interface ReadData {
   state: State;
-  // cData: Readonly<CampaignData[]>;
   wd: Readonly<WeekData[]>;
 }
 
@@ -315,3 +300,7 @@ export interface ScoresParam {
 }
 
 export type ScoresReturn = () => ScoresParam;
+export interface CampaignDatum {
+  campaignHash: Address;
+  campaign: string;
+}

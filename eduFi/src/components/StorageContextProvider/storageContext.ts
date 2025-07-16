@@ -1,4 +1,4 @@
-import type { Address, State, TransactionCallback, WeekData, Path, Category, VoidFunc, Quiz, Campaign, QuizResultInput} from "../../../types/quiz";
+import type { Address, State, TransactionCallback, WeekData, Path, Category, VoidFunc, Quiz, Campaign, QuizResultInput, CampaignDatum} from "../../../types/quiz";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Hex } from "viem";
 import { ReadContractsErrorType } from "wagmi/actions";
@@ -18,10 +18,7 @@ export interface DataContextProps {
     campaignHashes: Hex[];
     campaignStrings: string[];
     loading: boolean;
-    campaignData: {
-        campaignHash: `0x${string}`;
-        campaign: string;
-    }[];
+    campaignData: CampaignDatum[];
     setpath: (arg: Path) => void;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
@@ -40,6 +37,7 @@ export interface DataContextProps {
     userResults: QuizResultInput[];
     result: QuizResultInput;
     quiz: Quiz;
+    wkId: number;
     recordPoints: boolean;
     toggleRecordPoints: (arg:boolean) => void;
     appData: {categories: Category[], quizData: Quiz[] | null};

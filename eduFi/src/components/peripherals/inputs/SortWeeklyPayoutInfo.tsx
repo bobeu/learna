@@ -70,7 +70,7 @@ export default function SortWeeklyPayout() {
                     onClick={handleSort}
                     exit={false}
                     disabled={false}
-                    overrideClassName='w-2/4 float-right'
+                    overrideClassName='w-full'
                 >
                     <span>Submit</span>
                 </CustomButton>
@@ -80,7 +80,8 @@ export default function SortWeeklyPayout() {
                 growTokenAmount={amount}
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campaignString={campaignStrings}            />
+                campaignString={campaignStrings}
+            />
         </div>
     );
 }

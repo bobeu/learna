@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
     Campaign, 
+    CampaignDatum, 
     Category, 
-    CData, 
     Path, 
     Quiz, 
     QuizResultInput, 
@@ -30,7 +30,8 @@ import {
     mockReadData, 
     loadQuizData, 
     formatAddr, 
-    mockCampaign 
+    mockCampaign, 
+    toBN
 } from './utilities';
 
 import LandingPage from './landingPage';
@@ -115,8 +116,8 @@ export default function Educaster() {
         setQuizResult(newResult);
         setUserResults(prev => [newResult, ...prev]);
         setPath('results');
-        setTimeout(() => setRecordPoints(true), 4000);
-        clearTimeout(4000);
+        setTimeout(() => setRecordPoints(true), 3000);
+        clearTimeout(3000);
         
     };
 
@@ -167,7 +168,7 @@ export default function Educaster() {
     const { transactionData: td } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdminStatus', 'getCampaingData'],
+        functionNames: ['owner', 'getData', 'getAdminStatus'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
@@ -197,23 +198,27 @@ export default function Educaster() {
         }
     });
 
-    const { weekId, state, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
+    const { weekId, state, wkId, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
         const data = result?.[1]?.result as ReadData || mockReadData;
         const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
-        const cData = result?.[3]?.result as CData;
-        const cData_ = cData? [...cData] : [];
-        const campaignData = cData_.map(({campaignHash, encoded}) => {
+        const wkId = toBN(weekId.toString()).toNumber();
+        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
             const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
+        console.log("campaignData", data);
+
         const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
-        const campaignStrings = campaignData.map(({campaign}) => campaign);
+        const campaignStrings = campaignData.map(({campaign}) => {
+            return campaign;
+        });
         const owner = result?.[0]?.result as Address || zeroAddress;
         const weekData = [...data.wd];
         const userAdminStatus = result?.[2]?.result as boolean;
 
         return {
+            wkId,
             weekId,
             state,
             owner,
@@ -276,6 +281,7 @@ export default function Educaster() {
                 weekData,
                 weekId,
                 owner,
+                wkId,
                 refetch,
                 campaignHashes,
                 campaignStrings,

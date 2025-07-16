@@ -1,14 +1,14 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, GraduationCap, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { Address, Profile, QuizResultOuput,UserStats } from '../../../types/quiz';
+import { Address, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-import useProfile from '../hooks/useProfile';
+import useProfile, { mockProfileReturn, type ProfileReturnType } from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
-import { mockProfile, toBN } from '../utilities';
+import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { SelectComponent } from '../peripherals/SelectComponent';
 
@@ -20,11 +20,10 @@ const emptyStats = {
   streak: 0
 };
 
-export const DashboardInfo = ({profile} : {profile: Profile}) => {
+export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
   const [stats, setStats] = useState<UserStats>(emptyStats);
 
   const {  appData } = useStorage();
-  // const { isConnected } = useAccount();
   const { quizResults } = profile;
 
   useEffect(() => {
@@ -132,7 +131,7 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
                         <div>
                           <h3 className="font-semibold text-gray-800">{quiz?.title || 'Unknown Quiz'}</h3>
                           <p className="text-sm text-gray-600">
-                            Completed {new Date(hexToString(result.other.completedAt as Hex)).toLocaleDateString()}
+                            Completed {hexToString(result.other.completedAt as Hex)}
                           </p>
                         </div>
                       </div>
@@ -153,23 +152,20 @@ export const DashboardInfo = ({profile} : {profile: Profile}) => {
 };
 
 export default function Dashbaord() {
-  const [campaignHash, setCampaignHash] = React.useState<Address>(`0x${''}`);
-  // const [profile, setSelectedProfile] = React.useState<Profile>(mockProfile);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-  const { onQuizSelect, setpath, campaignStrings, campaignData, appData } = useStorage();
-  const { profile } = useProfile({campaignHash});
-  // console.log("profile", profile);
-
+  const [requestedHash, setRequestedHash] = React.useState<Hex>(`0x${0}`);
+  const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
+  
+  const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
+  const { getCampaignObj } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(0, 3);
 
   const setHash = (arg: string) => {
-    const found = campaignData.filter(({campaign}) => campaign.toLowerCase() === arg.toLowerCase());
-    const hash = found?.[0]?.campaignHash;
-    setCampaignHash(hash);
-  }
+    const found = campaignData.find(q => q.campaign === arg);
+    setRequestedHash(found?.campaignHash as Address);
+  };
 
   const backHome = () => {
     setpath('home');
@@ -179,9 +175,9 @@ export default function Dashbaord() {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // React.useEffect(() => {
-  //   setSelectedProfile(getProfile(campaignHash));
-  // }, [campaignHash, getProfile]);
+  React.useEffect(() => {
+    setProfile(getCampaignObj(wkId, requestedHash));
+  }, [wkId, requestedHash, getCampaignObj]);
 
   return(
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 font-mono">
@@ -262,13 +258,14 @@ export default function Dashbaord() {
 
       {/* Stats card */}
       <div className="my-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+        <div className="flex justify-between items-center px-4">
+          <div className="w-2/4 flex items-center space-x-3">
             <Star className="w-6 h-6 text-yellow-500" />
             <h2 className="text-2xl font-bold text-gray-800">Quiz Stats</h2>
           </div>
-          <div>
+          <div className="w-2/4">
             <SelectComponent 
+              // title='Campaigns'
               campaigns={campaignStrings}
               placeHolder='Select campaign'
               setHash={setHash}

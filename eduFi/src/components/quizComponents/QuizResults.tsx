@@ -9,11 +9,12 @@ import { Hex } from 'viem';
 import { useAccount, useConnect } from 'wagmi';
 
 export const QuizResults = () => {
+  const [haskey, setHasKey] = React.useState<boolean>(false);
   const [openDrawer, setDrawer] = React.useState<number>(0);
   const [showWarningBeforeExit, setShowWarning] = React.useState<number>(0);
   const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
 
-  const { result, quiz, onBackToHome, setpath } = useStorage();
+  const { result, quiz, wkId, onBackToHome, setpath } = useStorage();
   const { isConnected, connector, chainId } = useAccount();
   const { connect } = useConnect();
 
@@ -22,7 +23,7 @@ export const QuizResults = () => {
   const { other: { percentage, score, timeSpent, totalPoints }} = result;
   const campaignHash = quiz.id as Hex;
 
-  const { haskey } = useProfile({campaignHash});
+  const { getCampaignObj } = useProfile();
 
   const handleSaveScores = () => {
     if(!isConnected && connector) {
@@ -33,8 +34,9 @@ export const QuizResults = () => {
         return alert("Please ensure you're connected to a wallet");
       }
     } 
-    
-    if(!haskey) setShowGenerateUserKey(true);
+    const haskey_ = getCampaignObj(wkId, campaignHash).haskey;
+    setHasKey(haskey_);
+    if(!haskey_) setShowGenerateUserKey(true);
     else setDrawer(1);
   }
 

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xe54F47b2Bc1217b779eaF4aed20326cd03343cEC",
+  "contractAddress": "0x7910cc23B3A3D19d6369871557D867A63Ca93D74",
   "functionName": "approve",
   "inputCount": 2,
   "requireArgUpdate": true,

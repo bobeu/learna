@@ -14,11 +14,9 @@ export default function GenerateKey({functionName, campaignHash, buttonClassName
     const [openDrawer, setDrawer] = React.useState<number>(0);
 
     const toggleDrawer = (arg:number) => setDrawer(arg); 
-    const { chainId, address } = useAccount();
-    const account = address as Address;
-    // const config = useConfig();
-    const { weekId } = useStorage();
-    const { haskey } = useProfile({campaignHash});
+    const { chainId } = useAccount();
+    const { weekId, wkId } = useStorage();
+    const { haskey } = useProfile().getCampaignObj(wkId, campaignHash);
 
     // Build the transactions to run
     const { mutate, generateArgs } = React.useMemo(() => {

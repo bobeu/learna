@@ -37,7 +37,7 @@ export const QuizInterface = () => {
     if (selectedAnswer !== null) {
       answersCopy.push(selectedAnswer);
     } else {
-      answersCopy.push({questionHash: currentQuestion.hash, isUserSelected: false, selected: 0});
+      answersCopy.push({questionHash: currentQuestion?.hash, isUserSelected: false, selected: 0});
     }
     
     setAnswers(answersCopy);
@@ -63,9 +63,8 @@ export const QuizInterface = () => {
 
   // Finalize quiz completion
   const handleQuizComplete = (finalAnswers = answers) => {
-    // const hashes : Hex[] = quiz.questions.map(({hash}) => hash);
     const score = quiz.questions.reduce((total, question) => {
-      const userAnswer = finalAnswers[question.id]; //////////////////////////////////////////////////////
+      const userAnswer = finalAnswers[question.id]; 
       return total + (userAnswer.selected === question.correctAnswer ? question.points : 0);
     }, 0);
 
@@ -77,6 +76,7 @@ export const QuizInterface = () => {
         timeSpent: Math.round((Date.now() - startTime) / 1000),
         completedAt: new Date().toString(),
         quizId: quiz.id,
+        title: quiz.title
       },
       answers
     }
@@ -155,35 +155,35 @@ export const QuizInterface = () => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <span className={`px-4 py-2 rounded-full text-sm font-medium border ${
-                currentQuestion.difficulty === 'easy' ? 'bg-green-100 text-green-800 border-green-200' :
-                currentQuestion.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                currentQuestion?.difficulty === 'easy' ? 'bg-green-100 text-green-800 border-green-200' :
+                currentQuestion?.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                 'bg-red-100 text-red-800 border-red-200'
               }`}>
-                {currentQuestion.difficulty.charAt(0).toUpperCase() + currentQuestion.difficulty.slice(1)}
+                {currentQuestion?.difficulty.charAt(0).toUpperCase() + currentQuestion?.difficulty.slice(1)}
               </span>
               <div className="flex items-center space-x-2 text-purple-600">
                 <Award className="w-5 h-5" />
-                <span className="font-semibold text-lg">{currentQuestion.points} pts</span>
+                <span className="font-semibold text-lg">{currentQuestion?.points} pts</span>
               </div>
             </div>
             
             <h2 className="text-2xl font-semibold text-gray-800 leading-relaxed mb-2">
-              {currentQuestion.question}
+              {currentQuestion?.question}
             </h2>
-            <p className="text-sm text-gray-500">{currentQuestion.category}</p>
+            <p className="text-sm text-gray-500">{currentQuestion?.category}</p>
           </div>
 
           {/* Answer Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
-            {currentQuestion.options.map((option, index) => {
+            {currentQuestion?.options?.map((option, index) => {
               const isSelected = selectedAnswer?.selected === index;
-              const isCorrect = index === currentQuestion.correctAnswer;
+              const isCorrect = index === currentQuestion?.correctAnswer;
               const isWrong = showResult && isSelected && !isCorrect;
               
               return (
                 <button
                   key={option}
-                  onClick={() => !showResult && handleAnswerSelect(index, currentQuestion.hash, true)}
+                  onClick={() => !showResult && handleAnswerSelect(index, currentQuestion?.hash, true)}
                   disabled={showResult}
                   className={`
                     w-full p-4 rounded-xl text-left transition-all duration-300 border-2
@@ -208,10 +208,10 @@ export const QuizInterface = () => {
           </div>
 
           {/* Explanation */}
-          {showResult && currentQuestion.explanation && (
+          {showResult && currentQuestion?.explanation && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
               <h4 className="font-semibold text-blue-800 mb-2">Explanation:</h4>
-              <p className="text-blue-700">{currentQuestion.explanation}</p>
+              <p className="text-blue-700">{currentQuestion?.explanation}</p>
             </div>
           )}
 
