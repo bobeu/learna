@@ -5,7 +5,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select"
@@ -15,9 +14,9 @@ export function SelectComponent({placeHolder, campaigns, title, setHash} : {plac
       setHash(value);
     }
 
-    React.useEffect(() => {
-      setHash(campaigns?.[0]);
-    }, []);
+    // React.useEffect(() => {
+    //   setHash(campaigns?.[0]);
+    // }, [campaigns, setHash]);
 
     return (
     <Select onValueChange={onChange} defaultValue={campaigns?.[0]}>

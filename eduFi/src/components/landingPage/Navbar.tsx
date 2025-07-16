@@ -5,7 +5,6 @@ import useStorage from '../hooks/useStorage';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Navbar({isMenuOpen, toggleOpen} : {isMenuOpen: boolean, toggleOpen: () => void}) {
-    const { setpath } = useStorage();
     return(
         <nav className="relative z-50 px-4 py-3 bg-white border-b border-gray-100 sticky top-0">
             <div className="max-w-6xl mx-auto flex items-center justify-between">

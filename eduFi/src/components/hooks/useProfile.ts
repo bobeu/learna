@@ -143,7 +143,7 @@ export default function useProfile(){
            totalPointsForACampaign
        };
 
-   }, [result, campaignHashes, weekData]);
+   }, [result, campaignHashes, weekData, campaignData, wId]);
  
     return { getCampaignObj }
 
