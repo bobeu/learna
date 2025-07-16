@@ -174,8 +174,7 @@ export default function Educaster() {
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-
-    const readArgs = [[], [], [account], []];
+    const readArgs = [[], [], [account]];
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
