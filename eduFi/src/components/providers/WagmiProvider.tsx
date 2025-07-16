@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { farcasterFrame as miniAppConnector } from "@farcaster/frame-wagmi-connector";
 import { coinbaseWallet, metaMask, walletConnect, injected } from 'wagmi/connectors';
 import { APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_URL } from "~/lib/constants";
-import { RainbowKitProvider, lightTheme, } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
 // import { 
 //   // frameWallet, 
 //   // braveWallet, 
@@ -57,41 +57,41 @@ function useCoinbaseWalletAutoConnect() {
 }
 
 // [celoAlfajores.id]: http(),
-export const config = createConfig({
-  chains: [celo, celoAlfajores],
-  transports: {
-    [celo.id]: http(),
-    [celoAlfajores.id]: http(),
-  },
+// export const config = createConfig({
+//   chains: [celo, celoAlfajores],
+//   transports: {
+//     [celo.id]: http(),
+//     [celoAlfajores.id]: http(),
+//   },
   
-  connectors: [
-    miniAppConnector(),
-    walletConnect({
-      projectId,
-      name: APP_NAME,
-      metadata: {
-        description: String(APP_DESCRIPTION),
-        icons: [String(APP_ICON_URL)],
-        name: APP_NAME,
-        url: APP_URL
-      }
-    }),
-    coinbaseWallet({
-      appName: APP_NAME,
-      appLogoUrl: APP_ICON_URL,
-      preference: 'all',
-    }),
-    metaMask({
-      dappMetadata: {
-        name: APP_NAME,
-        url: APP_URL,
-      },
-    }),
-    // injected({target: 'metaMask'})
-  ],
-  ssr: true,
-  syncConnectedChain: true
-});
+//   connectors: [
+//     miniAppConnector(),
+//     walletConnect({
+//       projectId,
+//       name: APP_NAME,
+//       metadata: {
+//         description: String(APP_DESCRIPTION),
+//         icons: [String(APP_ICON_URL)],
+//         name: APP_NAME,
+//         url: APP_URL
+//       }
+//     }),
+//     coinbaseWallet({
+//       appName: APP_NAME,
+//       appLogoUrl: APP_ICON_URL,
+//       preference: 'all',
+//     }),
+//     metaMask({
+//       dappMetadata: {
+//         name: APP_NAME,
+//         url: APP_URL,
+//       },
+//     }),
+//     injected({target: 'metaMask'})
+//   ],
+//   // ssr: true,
+//   syncConnectedChain: true
+// });
 
 // Wrapper component that provides Coinbase Wallet auto-connection
 function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
@@ -101,22 +101,22 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
 
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the defaut config from RainbowKit
-  // const config = getDefaultConfig({
-  //   appName: 'Educaster',
-  //   projectId,
-  //   appIcon: '/favicon-32x32.png',
-  //   appDescription: APP_DESCRIPTION,
-  //   appUrl: APP_URL,
-  //   chains: [ celoAlfajores, celo ],
-  //   ssr: true,
-  //   multiInjectedProviderDiscovery: true,
-  //   pollingInterval: 10_000,
-  //   syncConnectedChain: true,
-  //   transports: {
-  //     [celoAlfajores.id]: http(),
-  //     [celo.id]: http(),
-  //   },
-  // });
+  const config = getDefaultConfig({
+    appName: 'Educaster',
+    projectId,
+    appIcon: 'https://learna.vercel.app/favicon-32x32.png',
+    appDescription: APP_DESCRIPTION,
+    appUrl: APP_URL,
+    chains: [ celoAlfajores, celo ],
+    ssr: true,
+    multiInjectedProviderDiscovery: true,
+    pollingInterval: 10_000,
+    syncConnectedChain: true,
+    transports: {
+      [celoAlfajores.id]: http(),
+      [celo.id]: http(),
+    },
+  });
   // [
   //   miniAppConnector(),
   //   coinbaseWallet({
@@ -179,7 +179,17 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={new QueryClient()}>
-        <RainbowKitProvider modalSize="compact" theme={theme} initialChain={celo.id} showRecentTransactions={true}>
+        <RainbowKitProvider 
+          coolMode={true}
+          modalSize="compact" 
+          theme={theme} 
+          initialChain={celo.id} 
+          showRecentTransactions={true}
+          appInfo={{
+            appName: "Educaster",
+            learnMoreUrl: 'https://learna.vercel.app'
+          }}
+        >
           <CoinbaseWalletAutoConnect>
             { children }
           </CoinbaseWalletAutoConnect>

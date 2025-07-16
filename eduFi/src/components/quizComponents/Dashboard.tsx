@@ -152,11 +152,11 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 };
 
 export default function Dashbaord() {
+  const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [requestedHash, setRequestedHash] = React.useState<Hex>(`0x${0}`);
+  const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0]?.campaignHash);
   const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
   
-  const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
   const { getCampaignObj } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;

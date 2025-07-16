@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from 'react';
 import { Confirmation } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
@@ -5,7 +7,7 @@ import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 
-export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminProps) {
+export default function Pause({openDrawer, toggleDrawer }: SetMiniTokenProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -13,15 +15,15 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['setAdmin'],
+            functionNames: ['pause'],
             callback
         });
         
-        const setupArgs = [admin];
+        const setupArgs : any[] = [];
 
         return { mutate, setupArgs, };
 
-    }, [chainId, admin, callback]);
+    }, [chainId, callback]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = mutate.transactionData.map((txObject) => {
@@ -42,13 +44,12 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='setAdmin'
+            lastStepInList='pause'
         />
     )
 }
 
-interface SetAdminProps {
+interface SetMiniTokenProps {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    admin: Address;
 };

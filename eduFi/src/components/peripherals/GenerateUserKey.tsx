@@ -4,7 +4,7 @@ import GenerateKey from "../transactions/GenerateKey";
 import { ArrowLeft, Key } from "lucide-react";
 import type { Address } from "../../../types/quiz";
 
-export default function GenerateUserKey({exit, runAll, campaignHash} : {exit: () => void, runAll: boolean, campaignHash: Address}) {
+export default function GenerateUserKey({exit, campaignHash} : {exit: () => void, campaignHash: Address}) {
     return(
         <MotionDisplayWrapper className="max-w-2xl w-full bg-white animate-fade-in slide-in-from-top-2 space-y-4 glass-card rounded-3xl p-8 text-center mb-6">
             <div className="p-8 space-y-6">
@@ -15,7 +15,6 @@ export default function GenerateUserKey({exit, runAll, campaignHash} : {exit: ()
                 <div className="flex flex-col gap-4">
                     <GenerateKey 
                         buttonClassName="w-full" 
-                        functionName={runAll? 'runall' : 'generateKey' } 
                         campaignHash={campaignHash}
                     />
                     <button

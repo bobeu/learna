@@ -1,14 +1,12 @@
 /* eslint-disable */
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
-import { Button } from "~/components/ui/button";
 import useStorage from "../hooks/useStorage";
 import { useChainId, } from "wagmi";
 import { filterTransactionData, formatAddr } from "../utilities";
 import { parseUnits, zeroAddress } from "viem";
 import { Address, CampaignDataFormatted } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
-import CollapsibleComponent from "./Collapsible";
 import CustomButton from "./CustomButton";
 import { Info, Award } from "lucide-react";
 import SetUpCampaign from "../transactions/SetupCampaigns";
@@ -25,19 +23,13 @@ import {
   } from "~/components/ui/select";
 
 export function CampaignMap(
-    {selectedCampaign,campaignData, setCampaign} : 
+    {campaignData, setCampaign} : 
     {
         selectedCampaign: string; 
         campaignData: CampaignDataFormatted[];
         setCampaign: (data: CampaignDataFormatted) => void;
     }) 
 {
-    // const [isOpen, setIsOpen] = React.useState<boolean>(false);
-
-    // const toggleOpen = (arg: boolean) => {
-    //     setIsOpen(arg)
-    // }
-
     const onChange = (value: string) => {
         const filtered : CampaignDataFormatted[] = campaignData.filter(({campaign}) => value === campaign);
         setCampaign(filtered?.[0]);
@@ -159,7 +151,7 @@ export default function SetupCampaign() {
                 <SelectGroup>
                 <SelectLabel>Tokens</SelectLabel>
                 {
-                    contractAddresses?.map(({address,name}, index) => (
+                    contractAddresses?.map(({name}, index) => (
                         <SelectItem
                             key={name.concat(index.toString())} 
                             value={name} 

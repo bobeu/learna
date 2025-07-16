@@ -22,6 +22,8 @@ export type FunctionName =
   'owner'|
   'allowance'|
   'approve'|
+  'pause' | 
+  'unpause' |
   'getCampaingData' |
   'setMinimumToken';
 

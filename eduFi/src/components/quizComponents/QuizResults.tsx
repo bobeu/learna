@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { Trophy, RotateCcw, Home, Award, Clock, Target, CheckCircle, Share2 } from 'lucide-react';
 import useStorage from '../hooks/useStorage';
@@ -9,7 +10,6 @@ import { Hex } from 'viem';
 import { useAccount, useConnect } from 'wagmi';
 
 export const QuizResults = () => {
-  const [haskey, setHasKey] = React.useState<boolean>(false);
   const [openDrawer, setDrawer] = React.useState<number>(0);
   const [showWarningBeforeExit, setShowWarning] = React.useState<number>(0);
   const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
@@ -35,7 +35,6 @@ export const QuizResults = () => {
       }
     } 
     const haskey_ = getCampaignObj(wkId, campaignHash).haskey;
-    setHasKey(haskey_);
     if(!haskey_) setShowGenerateUserKey(true);
     else setDrawer(1);
   }
@@ -102,7 +101,7 @@ export const QuizResults = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       {
-        showGenerateUserKey? <GenerateUserKey exit={backToScores} campaignHash={campaignHash} runAll={haskey? false : true} /> : 
+        showGenerateUserKey? <GenerateUserKey exit={backToScores} campaignHash={campaignHash} /> : 
           <div className="max-w-2xl w-full animate-fade-in">
             {/* Main Results Card */}
             <div className="glass-card rounded-3xl p-8 text-center mb-6">
@@ -177,6 +176,7 @@ export const QuizResults = () => {
                   <span>Share To Farcaster</span>
                 </button>
                 <button
+                  disabled={true}
                   onClick={handleSaveScores}
                   className="flex-1 btn-primary flex items-center justify-center space-x-2"
                 >
@@ -209,6 +209,7 @@ export const QuizResults = () => {
           openDrawer={openDrawer}
           toggleDrawer={toggleDrawer}
           campaignHash={campaignHash}
+          useAdmin={false}
         />
         <WarnBeforeClearScoresAndData 
           openDrawer={showWarningBeforeExit}

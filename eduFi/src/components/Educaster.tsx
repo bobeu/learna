@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
@@ -62,6 +61,7 @@ export default function Educaster() {
     const { connect } = useConnect();
     const account = formatAddr(address);
 
+    // Update quiz data
     React.useEffect(() => {
         if(!appData.quizData) {
             const appData_ = loadQuizData({timePerQuestion: TIME_PER_QUESTION, totalPoints: TOTAL_POINTS});
@@ -69,6 +69,7 @@ export default function Educaster() {
         }
     }, [appData.quizData]);
 
+    // Update current page based on connection state
     React.useEffect(() => {
         if(!isConnected && connector) connect({connector, chainId});
         if(isConnected && currentPath === 'home') setpath('dashboard');
@@ -91,12 +92,12 @@ export default function Educaster() {
         }
     }, []);
 
-    // Save user results to localStorage whenever userResults changes
-    useEffect(() => {
-        if (userResults.length > 0) {
-            localStorage.setItem('quizResults', JSON.stringify(userResults));
-        }
-    }, [userResults]);
+    // // Save user results to localStorage whenever userResults changes
+    // useEffect(() => {
+    //     if (userResults.length > 0) {
+    //         localStorage.setItem('quizResults', JSON.stringify(userResults));
+    //     }
+    // }, [userResults]);
 
     const handleQuizSelect = (quiz: Quiz) => {
         setSelectedQuiz(quiz);
@@ -201,9 +202,9 @@ export default function Educaster() {
             refetchInterval: 5000,
         }
     });
+    const data = result?.[1]?.result as ReadData || mockReadData;
 
-    const { weekId, state, wkId, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
-        const data = result?.[1]?.result as ReadData || mockReadData;
+    const { weekId, app, state, wkId, owner, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
         const weekId = data.state.weekCounter; // Current week Id
         const state = data.state;
         const wkId = toBN(weekId.toString()).toNumber();
@@ -211,7 +212,6 @@ export default function Educaster() {
             const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
-        console.log("campaignData", data);
 
         const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
         const campaignStrings = campaignData.map(({campaign}) => {
@@ -221,20 +221,6 @@ export default function Educaster() {
         const weekData = [...data.wd];
         const userAdminStatus = result?.[2]?.result as boolean;
 
-        return {
-            wkId,
-            weekId,
-            state,
-            owner,
-            weekData,
-            campaignData,
-            campaignStrings,
-            campaignHashes,
-            userAdminStatus
-        }
-    }, [result]);
-
-    const renderedApp = React.useMemo(() => {
         let app = <></>;
         switch (currentPath) {
             case 'dashboard':
@@ -270,8 +256,19 @@ export default function Educaster() {
                 break;
         }
 
-        return app;
-    }, [currentPath]);
+        return {
+            app,
+            wkId,
+            weekId,
+            state,
+            owner,
+            weekData,
+            campaignData,
+            campaignStrings,
+            campaignHashes,
+            userAdminStatus
+        }
+    }, [data, currentPath]);
 
     return (  
         <StorageContextProvider
@@ -313,7 +310,7 @@ export default function Educaster() {
                 selectedCampaign
             }}
         >
-            <LayoutContext> { renderedApp }</LayoutContext>
+            <LayoutContext> { app }</LayoutContext>
         </StorageContextProvider>
     )
 }

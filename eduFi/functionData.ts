@@ -30,6 +30,10 @@ import getAdminStatus42220 from "./contractsArtifacts/42220/getAdminStatus.json"
 import owner42220 from "./contractsArtifacts/42220/owner.json";
 import setMinimumToken42220 from "./contractsArtifacts/42220/setMinimumToken.json";
 import approve42220 from "./contractsArtifacts/42220/approve.json";
+import pause42220 from "./contractsArtifacts/42220/pause.json";
+import unpause42220 from "./contractsArtifacts/42220/unpause.json";
+import pause44787 from "./contractsArtifacts/44787/pause.json";
+import unpause44787 from "./contractsArtifacts/44787/unpause.json";
 import allowance42220 from "./contractsArtifacts/42220/allowance.json";
 import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransitionInterval.json";
 import banUserFromCampaign42220 from "./contractsArtifacts/42220/banUserFromCampaign.json";
@@ -42,6 +46,8 @@ const functionData = [
     [
         { key: 'banUserFromCampaign', value: { ...banUserFromCampaign44787} },
         { key: 'owner', value: { ...owner44787} },
+        { key: 'pause', value: { ...pause44787} },
+        { key: 'unpause', value: { ...unpause44787} },
         { key: 'allowance', value: { ...allowance44787} },
         { key: 'approve', value: { ...approve44787} },
         { key: 'setUpCampaign', value: { ...setUpCampaign44787} },
@@ -62,6 +68,8 @@ const functionData = [
     [
         { key: 'banUserFromCampaign', value: { ...banUserFromCampaign42220} },
         { key: 'owner', value: { ...owner42220} },
+        { key: 'pause', value: { ...pause42220} },
+        { key: 'unpause', value: { ...unpause42220} },
         { key: 'allowance', value: { ...allowance42220} },
         { key: 'approve', value: { ...approve42220} },
         { key: 'setUpCampaign', value: { ...setUpCampaign42220} },

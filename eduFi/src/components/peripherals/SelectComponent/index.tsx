@@ -9,18 +9,18 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 
-export function SelectComponent({placeHolder, campaigns, title, setHash} : {placeHolder: string, campaigns: string[], setHash: (arg: string) => void, title?: string}) {
+export function SelectComponent({placeHolder, width, campaigns, title, setHash} : {placeHolder: string, campaigns: string[]; width?: string; setHash: (arg: string) => void; title?: string;}) {
     const onChange = (value: string) => {
       setHash(value);
     }
 
-    // React.useEffect(() => {
-    //   setHash(campaigns?.[0]);
-    // }, [campaigns, setHash]);
+    React.useEffect(() => {
+      setHash(campaigns?.[0]);
+    }, [campaigns, setHash]);
 
     return (
     <Select onValueChange={onChange} defaultValue={campaigns?.[0]}>
-      <SelectTrigger className="w-[200px] max-w-sm md:max-w-md">
+      <SelectTrigger className={`${width || 'w-[200px]'} max-w-sm md:max-w-md`}>
         { title && <h3 className="text-sm capitalize text-pink-600">{title}</h3>}
         <SelectValue placeholder={placeHolder} />
       </SelectTrigger>

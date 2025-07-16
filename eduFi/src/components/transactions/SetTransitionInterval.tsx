@@ -5,7 +5,7 @@ import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 
-export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminProps) {
+export default function SetTransitionInterval({openDrawer, interval, toggleDrawer }: SetMiniTokenProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -13,15 +13,15 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['setAdmin'],
+            functionNames: ['setTransitionInterval'],
             callback
         });
         
-        const setupArgs = [admin];
+        const setupArgs = [interval];
 
         return { mutate, setupArgs, };
 
-    }, [chainId, admin, callback]);
+    }, [chainId, interval, callback]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = mutate.transactionData.map((txObject) => {
@@ -42,13 +42,13 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='setAdmin'
+            lastStepInList='setTransitionInterval'
         />
     )
 }
 
-interface SetAdminProps {
+interface SetMiniTokenProps {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    admin: Address;
+    interval: number;
 };
