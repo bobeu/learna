@@ -20,7 +20,7 @@ describe("Learna", function () {
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20, token: growTokenAddr, value});
       const { campaignData } = await getCampaigns(learna);
-      const campaignHash = campaignData[0].campaignHash;
+      const campaignHash = campaignData.campaignHash;
       const newErc20Values = fundERC20 / 2n;
 
       const newNativeValues = value / 2n;

@@ -20,7 +20,7 @@ describe("Learna", function () {
       const valuePerCampaign = parseEther('1');
       const { state: {weekCounter: weekId} } = await learna.getData();
       const { campaignData } = await getCampaigns(learna);
-      const campaignHash = campaignData[0].campaignHash as Address;
+      const campaignHash = campaignData.campaignHash as Address;
       console.log("campaignHash", campaignHash);
       const nativeBalOfLearnerB4 = await signer1.provider?.getBalance(learnaAddr);
       await growToken.connect(deployer).approve(learnaAddr, fundERC20 * campaignSize);

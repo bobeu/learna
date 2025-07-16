@@ -15,7 +15,7 @@ describe("Learna", function () {
       const { learna, growTokenAddr, signers : { deployer, signer1Addr, signer1 },} = await loadFixture(deployContractsFixcture);
       const { state: {weekCounter: weekId}, } = await learna.getData();
       const { campaignData } = await getCampaigns(learna);
-      const campaignHash = campaignData[0].campaignHash as Address;
+      const campaignHash = campaignData.campaignHash as Address;
 
       const initialProfile = await learna.getProfile(signer1Addr, weekId, [campaignHash]);
       const iniP = initialProfile[0].profile;

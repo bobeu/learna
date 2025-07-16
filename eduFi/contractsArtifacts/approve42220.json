@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204",
+  "contractAddress": "0x1440779dedF0d5083F68229E01d1D42D5dc77819",
   "functionName": "approve",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -15,6 +15,16 @@
           "internalType": "address",
           "name": "_mainContract",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "name_",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "symbol_",
+          "type": "string"
         }
       ],
       "stateMutability": "nonpayable",
@@ -203,6 +213,11 @@
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
         }
       ],
       "name": "allocate",
@@ -281,6 +296,30 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "holder",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "burn",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

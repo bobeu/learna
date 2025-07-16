@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { formatEther, Hex, keccak256, stringToBytes, zeroAddress } from "viem";
+import { formatEther, Hex, keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
@@ -12,44 +12,31 @@ import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, Filte
 
 export const TOTAL_WEIGHT = 100;
 
+export const mockCampaign : Campaign = {
+  fundsNative: 0n,
+  fundsERC20: 0n,
+  totalPoints: 0n,
+  lastUpdated: 0,
+  activeLearners: 0n,
+  transitionDate: 0,
+  claimActiveUntil: 0,
+  operator: zeroAddress,
+  token: zeroAddress,
+  hash_: zeroAddress,
+  canClaim: false,
+  data: {
+    campaignHash: keccak256(stringToBytes('solidity'), 'hex'),
+    encoded: stringToHex("solidity")
+  }
+}
+
 export const mockReadData : ReadData = {
   state: {
     minimumToken: 0n,
     weekCounter: 0n,
     transitionInterval: 0
   },
-  wd: [
-    {
-      campaigns: [
-        {
-          fundsNative: 0n,
-          fundsERC20: 0n,
-          totalPoints: 0n,
-          lastUpdated: 0,
-          activeLearners: 0n,
-          transitionDate: 0,
-          claimActiveUntil: 0,
-          operator: zeroAddress,
-          token: zeroAddress,
-          hash_: zeroAddress,
-          canClaim: false
-        },
-        {
-          fundsNative: 0n,
-          fundsERC20: 0n,
-          totalPoints: 0n,
-          lastUpdated: 0,
-          activeLearners: 0n,
-          transitionDate: 0,
-          claimActiveUntil: 0,
-          operator: zeroAddress,
-          token: zeroAddress,
-          hash_: zeroAddress,
-          canClaim: false
-        },
-      ]
-    }
-  ],
+  wd: [{campaigns: [mockCampaign,]}],
 }
 
 export const mockCData : CData = [
@@ -88,6 +75,7 @@ export const mockProfile : Profile = {
       other: {
         completedAt: '',
         id: '',
+        title: '',
         percentage: 0,
         quizId: '',
         score: 0,
@@ -146,25 +134,12 @@ export const mockQuizResult : QuizResultInput = {
   other: {
     quizId: "",
     score: 0,
+    title: '',
     totalPoints: 0,
     percentage: 0,
     timeSpent: 0,
     completedAt: new Date().toString(),
   }
-}
-
-export const mockCampaign : Campaign = {
-  fundsNative: 0n,
-  fundsERC20: 0n,
-  totalPoints: 0n,
-  lastUpdated: 0,
-  activeLearners: 0n,
-  transitionDate: 0,
-  claimActiveUntil: 0,
-  operator: zeroAddress,
-  token: zeroAddress,
-  hash_: zeroAddress,
-  canClaim: false
 }
 
 /**
@@ -252,13 +227,14 @@ export function getCampaignHashes(data: string[]) {
 }
   
 /**
- * @dev Formats an undefined address type object to a defined one
- * @param arg : string or undefined;
+ * @dev Converts a string to a hexadecimal representation. If no parameter was parsed, the default return 
+ * value is a hex with length 42 compatible with an Ethereum address type padded with zero value.
+ * @param x : string or undefined;
  * @returns Address
  */
-export const formatAddr = (x: string | (Address | undefined)) : Address => {
+export const formatAddr = (x: string | undefined) : Address => {
     if(!x || x === "") return `0x${'0'.repeat(40)}`;
-    return `0x${x.substring(2, 42)}`;
+    return `0x${x.substring(2, x.length)}`;
 };
 
 /**
@@ -363,28 +339,4 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
     categories
   };
 
-  // categories.forEach((category, id) => {
-  //   switch (category) {
-  //     case 'defi':
-  //       quizData.push({id, category, selectedLevel: '', data: d.defi});
-  //       break;
-  //     case 'reactjs':
-  //       quizData.push({id, category, selectedLevel: '', data: d.reactjs});
-  //       break;
-  //     case 'solidity':
-  //       quizData.push({id, category, selectedLevel: '', data: d.solidity});
-  //       break;
-  //     case 'wagmi':
-  //       quizData.push({id, category, selectedLevel: '', data: d.wagmi});
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // });
-  // assert(quizData.length === categories.length, "Data anomally occurred in utilities.ts");
-  // return{
-  //   difficultyLevels,
-  //   categories,
-  //   quizData
-  // };
 }

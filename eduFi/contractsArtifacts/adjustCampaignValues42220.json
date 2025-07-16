@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48",
-  "functionName": "claimReward",
-  "inputCount": 2,
+  "contractAddress": "0x78D92f85045cE169877f31A7424899B4Da83F2B4",
+  "functionName": "adjustCampaignValues",
+  "inputCount": 3,
   "requireArgUpdate": true,
   "abi": [
     {

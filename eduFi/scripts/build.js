@@ -182,8 +182,8 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
       homeUrl: `https://${domain}`,
       imageUrl: `https://${domain}/api/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT,
-      splashImageUrl: `https://${domain}/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
+      splashImageUrl: `https://${domain}/splash-screen.png`,
+      splashBackgroundColor: "#fff",
       webhookUrl,
       description: process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION,
       primaryCategory: process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY,
@@ -220,7 +220,7 @@ async function main() {
     // ]);
 
     // Get frame name from user
-    const frameName = 'eduFi'
+    const frameName = 'Educaster'
     // const { frameName } = await inquirer.prompt([
     //   {
     //     type: 'input',

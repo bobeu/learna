@@ -68,3 +68,18 @@ GrowToken deployed to: 0x800B1666d554e249FCCf5f0855455F43a140d2e5
 🔄 Syncing contracts data to Next App...
 ✅ Data synchronization completed!
 Done in 48.95s -->
+
+<!-- networkName celo
+mode 1
+transitionInterval 86400
+deploying "FeeManager" (tx: 0xbd919926fde60c9be757b2d78be888fee9441007827e85da9a8cc147d0ba0812)...: deployed at 0xb8772c21f779d7b7fC37B1faD02c0850893D6518 with 307030 gas
+Learna contract deployed to: 0xb8772c21f779d7b7fC37B1faD02c0850893D6518
+deploying "Learna" (tx: 0x688af233ff52f2d087b9b3dfc518664edacb0cf40554b05c0108845bb6da7e5c)...: deployed at 0x78D92f85045cE169877f31A7424899B4Da83F2B4 with 6789930 gas
+Learna contract deployed to: 0x78D92f85045cE169877f31A7424899B4Da83F2B4
+deploying "GrowToken" (tx: 0x01caf37183fbc78f9d728c6470d1c8c732a61b4073702a3d807f2b7b0082d8ba)...: deployed at 0x1440779dedF0d5083F68229E01d1D42D5dc77819 with 834257 gas
+GrowToken deployed to: 0x1440779dedF0d5083F68229E01d1D42D5dc77819
+isAdmin1 true
+isAdmin2 true
+🔄 Syncing contracts data to Next App...
+✅ Data synchronization completed!
+Done in 30.34s. -->

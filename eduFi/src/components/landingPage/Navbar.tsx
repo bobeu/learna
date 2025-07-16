@@ -1,14 +1,11 @@
+/* eslint-disable */
+
 import React from 'react';
 import { GraduationCap, Menu, X } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import useStorage from '../hooks/useStorage';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Navbar({isMenuOpen, toggleOpen} : {isMenuOpen: boolean, toggleOpen: () => void}) {
-    const { setpath } = useStorage();
-    const goToDashboard = () => {
-        setpath('dashboard');
-    };
-
     return(
         <nav className="relative z-50 px-4 py-3 bg-white border-b border-gray-100 sticky top-0">
             <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -35,9 +32,10 @@ export default function Navbar({isMenuOpen, toggleOpen} : {isMenuOpen: boolean, 
                     <a href="#features" className="text-gray-600 hover:text-cyan-600 transition-colors font-medium">Features</a>
                     <a href="#how-it-works" className="text-gray-600 hover:text-cyan-600 transition-colors font-medium">How it Works</a>
                     <a href="#stats" className="text-gray-600 hover:text-cyan-600 transition-colors font-medium">Stats</a>
-                    <Button onClick={goToDashboard} variant={'outline'} className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-medium">
+                    {/* <Button onClick={goToDashboard} variant={'outline'} className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-medium">
                         Get Started
-                    </Button>
+                    </Button> */}
+                    <ConnectButton />
                 </div>
             </div>
     
@@ -48,9 +46,10 @@ export default function Navbar({isMenuOpen, toggleOpen} : {isMenuOpen: boolean, 
                         <a href="#features" className="block text-gray-600 hover:text-cyan-600 transition-colors font-medium">Features</a>
                         <a href="#how-it-works" className="block text-gray-600 hover:text-cyan-600 transition-colors font-medium">How it Works</a>
                         <a href="#stats" className="block text-gray-600 hover:text-cyan-600 transition-colors font-medium">Stats</a>
-                        <Button variant={'outline'} className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-medium">
+                        {/* <Button variant={'outline'} className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all duration-300 font-medium">
                             Get Started
-                        </Button>
+                        </Button> */}
+                        <ConnectButton />
                     </div>
                 </div>
             )}

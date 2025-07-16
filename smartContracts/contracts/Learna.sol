@@ -48,9 +48,9 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     struct QuizResultOther {
         bytes id;
-        // bytes32[] hashes;
         bytes quizId;
         uint32 score;
+        bytes title;
         uint64 totalPoints;
         uint16 percentage;
         uint64 timeSpent;
@@ -59,9 +59,9 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
 
     struct QuizResultOtherInput {
         string id;
-        // bytes32[] hashes;
         string quizId;
         uint32 score;
+        string title;
         uint64 totalPoints;
         uint16 percentage;
         uint64 timeSpent;
@@ -100,7 +100,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     // Readonly data
     struct ReadData {
         State state;
-        // CampaignData[] cData;
         WeekData[] wd;
     }
 
@@ -180,7 +179,21 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         }
 
         for(uint i = 0; i < _campaigns.length; i++) {
-            _initializeCampaign(weekId, _campaigns[i]);
+            unchecked {
+                (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
+                if(!_isInitializedCampaign(weekId, campaignHash)) {
+                    _initializeCampaign(
+                        weekId, 
+                        transitionInterval + _now(), 
+                        campaignHash, 
+                        encoded,
+                        _msgSender(),
+                        0,
+                        0,
+                        address(0)
+                    );
+                }
+            }
         }
     }
 
@@ -197,7 +210,6 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         return true;
     }
 
-    
     /**
      * Fetch profile
      * @param weekId : Week id
@@ -250,13 +262,8 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         for(uint i = 0; i < campaignHashes.length; i++){
             bytes32 campaignHash = campaignHashes[i];
             _validateCampaign(campaignHash, weekId); 
-            Campaign memory cpo = _getCampaign(weekId, campaignHash);
-            unchecked {
-                cpo.activeLearners += 1;
-            }
             Profile memory pf = _getProfile(weekId, campaignHash, sender);
             require(!pf.other.haskey, 'Passkey exist');
-            // slot = _generateAndSaveSlot(weekId, sender, campaignHash, _initializeProfile); 
             pf.other.haskey = true;
             pf.other.amountMinted = st.minimumToken ;
             pf.other.passKey = keccak256(abi.encodePacked(sender, weekId, pf.other.haskey, st.minimumToken));
@@ -289,7 +296,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     function recordPoints(address user, QuizResultInput memory quizResult, address token, bytes32 campaignHash) 
         public 
         payable
-        onlyAdmin(_msgSender())
+        onlyAdmin
         whenNotPaused 
         validateAddress(token)
         returns(bool) 
@@ -307,6 +314,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         require(pf.other.totalQuizPerWeek <= 14, 'Storage limit exceeded');
     
         unchecked {
+            cpo.activeLearners += 1;
             pf.other.totalQuizPerWeek += 1;
             cpo.totalPoints += quizResult.other.score; 
         }
@@ -316,7 +324,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         learners[weekId][campaignHash][user].quizResults[index].other.id = bytes(quizResult.other.id);
         learners[weekId][campaignHash][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
         learners[weekId][campaignHash][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
-        // learners[weekId][campaignHash][user].quizResults[index].other.hashes = quizResult.other.hashes;
+        learners[weekId][campaignHash][user].quizResults[index].other.title = bytes(quizResult.other.title);
         learners[weekId][campaignHash][user].quizResults[index].other.score = quizResult.other.score;
         learners[weekId][campaignHash][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
         learners[weekId][campaignHash][user].quizResults[index].other.percentage = quizResult.other.percentage;
@@ -343,7 +351,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         bytes32[] memory campaignHashes
     ) 
         public 
-        onlyAdmin(_msgSender())
+        onlyAdmin
         whenNotPaused 
         returns(bool) 
     {
@@ -447,7 +455,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         (uint erc20, uint native) = _calculateShare(totalScore, cp);
         erc20Amount = erc20;
         nativeAmount = native;
-        isEligible = (erc20Amount > 0 || nativeAmount > 0) && cp.canClaim; 
+        isEligible = (erc20Amount > 0 || nativeAmount > 0) && cp.canClaim && (mode == Mode.LIVE? _now() <= cp.claimActiveUntil : true); 
     }
 
     /**
@@ -486,7 +494,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         returns(bool) 
     {
         require(weekId <= state.weekCounter, "Week not ready");
-        _validateCampaign(campaignHash, weekId);
+        // _validateCampaign(campaignHash, weekId);
         address sender = _msgSender();
         (
             Profile memory pf,
@@ -496,12 +504,12 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             bool isEligible
         ) = _checkEligibility(weekId, sender, campaignHash);
         if(!isEligible) revert NotEligible();
-        if(!pf.other.haskey) revert NoPasskey();
-        require(cp.canClaim, "Claim not active");
-        require(_hasFund(weekId, campaignHash), "No funds in campaign");
+        // if(!pf.other.haskey) revert NoPasskey();
+        // require(cp.canClaim, "Claim not active");
+        // require(_hasFund(weekId, campaignHash), "No funds in campaign");
         require(!pf.other.claimed, 'Already claimed');
         pf.other.claimed = true;
-        if(mode == Mode.LIVE) require(_now() <= cp.claimActiveUntil, 'Claim ended'); 
+        // if(mode == Mode.LIVE) require(_now() <= cp.claimActiveUntil, 'Claim ended'); 
         unchecked {
             if(cp.fundsNative > nativeAmount) cp.fundsNative -= nativeAmount;
             if(cp.fundsERC20 > nativeAmount) cp.fundsERC20 -= erc20Amount;
@@ -565,9 +573,22 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         address token
     ) public payable returns(bool) {
         uint weekId = state.weekCounter;
-        (Campaign memory cp, bytes32 campaignHash) = _initializeCampaign(weekId, campaign);
         address sender = _msgSender();
+        (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(campaign);
+        if(!_isInitializedCampaign(weekId, campaignHash)) {
+            _initializeCampaign(
+                weekId, 
+                state.transitionInterval + _now(), 
+                campaignHash, 
+                encoded,
+                _msgSender(),
+                msg.value,
+                fundsErc20,
+                token
+            );
+        }
         address recipient = address(this);
+        Campaign memory cp = _getCampaign(weekId, campaignHash);
         unchecked {
             if(msg.value > 0){
                 cp.fundsNative += msg.value;
@@ -576,18 +597,19 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             }
             
             if(fundsErc20 > 0) {
-                if(token == address(0)) revert InvalidAddress(token);
+                if(cp.fundsERC20 > 0) require(cp.token == token, "Changing token is not permitted");
+                if(token == address(0)) revert InvalidAddress(token); 
                 if(IERC20(token).transferFrom(sender, recipient, fundsErc20)){
-                    cp.fundsERC20 = fundsErc20;
+                    cp.fundsERC20 += fundsErc20;
                     cp.token = token;
                 }
             }
+            cp.lastUpdated = _now();
+            if(cp.operator != sender) cp.operator = sender;
+            if(cp.transitionDate == 0) cp.transitionDate = _now() + state.transitionInterval;
+            _setCampaign(weekId, campaignHash, cp);
+            emit NewCampaign(campaignHash, cp);
         }
-        cp.lastUpdated = _now();
-        if(cp.operator != sender) cp.operator = sender;
-        if(cp.transitionDate == 0) cp.transitionDate = _now() + state.transitionInterval;
-        _setCampaign(weekId, campaignHash, cp);
-        emit NewCampaign(campaignHash, cp);
 
         return true;
     }
@@ -607,7 +629,8 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     ) 
         public 
         whenNotPaused 
-        onlyAdmin(_msgSender())
+        // onlyOwner
+        onlyAdmin
         returns(bool) 
     {
         State memory st = state;
@@ -617,8 +640,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         require(growTokenContract != address(0), 'Token is zero');
         uint256 totalBalInNative;
         for(uint i=0; i < _campaigns.length; i++) {
-            string memory campaign = _campaigns[i];
-            (Campaign memory newCp, bytes32 campaignHash) = _initializeCampaign(newWeekId, campaign);
+            (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
             _validateCampaign(campaignHash, pastWeekId);
             Campaign memory cp = _getCampaign(pastWeekId, campaignHash);
             if(mode == Mode.LIVE) {
@@ -628,13 +650,24 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
             unchecked {
                 totalBalInNative += nativeBalance;
                 cp.claimActiveUntil = _now() + st.transitionInterval;
-                newCp.transitionDate = _now() + st.transitionInterval;
             }
             cp.canClaim = true;
             cp.fundsNative = nativeBalance;
             cp.fundsERC20 = erc20Balance;
             _setCampaign(pastWeekId, campaignHash, cp);
-            _setCampaign(newWeekId, campaignHash, newCp);
+            if(!_isInitializedCampaign(newWeekId, campaignHash)) {
+                _initializeCampaign(
+                    newWeekId, 
+                    st.transitionInterval + _now(), 
+                    campaignHash, 
+                    encoded,
+                    _msgSender(),
+                    0,
+                    0,
+                    address(0)
+                );
+            }
+            
         }
         
         if(amountInGrowToken > 0) {
@@ -659,7 +692,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         bytes32[] memory campaignHashes, 
         uint[] memory erc20Values,
         uint[] memory nativeValues
-    ) public onlyAdmin(_msgSender()) returns(bool) {
+    ) public onlyAdmin returns(bool) {
         uint weekId = state.weekCounter;
         uint totalNativeValues;
         require(campaignHashes.length == erc20Values.length && erc20Values.length == nativeValues.length, '2: Array mismatch');
@@ -695,13 +728,13 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     } 
 
     // Set minimum payable token by users when signing up
-    function setMinimumToken(uint newToken) public onlyAdmin(_msgSender()) whenNotPaused  returns(bool) {
+    function setMinimumToken(uint newToken) public onlyAdmin whenNotPaused  returns(bool) {
         state.minimumToken = newToken;
         return true; 
     }
 
     // Set minimum payable token by users when signing up
-    function setTransitionInterval(uint64 newInternal) public onlyAdmin(_msgSender()) whenNotPaused returns(bool) {
+    function setTransitionInterval(uint64 newInternal) public onlyAdmin whenNotPaused returns(bool) {
         state.minimumToken = newInternal;
         return true;
     }

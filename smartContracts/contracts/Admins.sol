@@ -19,8 +19,8 @@ abstract contract Admins {
      * @notice Even if no admin is added, we will always byepass the out-of-bound error since 
      * we already added at least one content to the admins array in the constructor, it wil always fetch zero slot.
     */
-    modifier onlyAdmin(address target) {
-        require(_isAdmin(target), 'Only admin');
+    modifier onlyAdmin() {
+        require(_isAdmin(msg.sender), 'Only admin');
         _;
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Star, CheckCircle } from "lucide-react";
 
 export default function Stats() {

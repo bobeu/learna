@@ -15,7 +15,7 @@ import useStorage from '../hooks/useStorage';
 
 function LandingPage() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const [showConnectButtons, setShowConnectButtons] = React.useState(false);
+    // const [showConnectButtons, setShowConnectButtons] = React.useState(false);
     
     const windowIsDefined = typeof window !== "undefined";
     const { isConnected } = useAccount();
@@ -29,7 +29,8 @@ function LandingPage() {
         if(isConnected) {
             setpath('dashboard')
         } else {
-            setShowConnectButtons(!showConnectButtons);
+            alert("Please connect to a wallet")
+            // setShowConnectButtons(!showConnectButtons);
         }
 
     };
@@ -38,7 +39,7 @@ function LandingPage() {
         <div className="min-h-screen overflow-auto bg-white">
             <Navbar isMenuOpen={isMenuOpen} toggleOpen={toggleOpen} />
             <Hero handleClick={toggleShowConnectButtons}/>
-            { showConnectButtons && <ConnectButtons />} 
+            {/* { showConnectButtons && <ConnectButtons />}  */}
             <Features />
             <HowItWorks />
             <Stats />

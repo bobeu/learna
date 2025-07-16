@@ -14,6 +14,15 @@ import { Info, Award } from "lucide-react";
 import SetUpCampaign from "../transactions/SetupCampaigns";
 import { Input, InputTag } from "./inputs/Input";
 import { ContentType } from "./inputs/SortWeeklyPayoutInfo";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+  } from "~/components/ui/select";
 
 export function CampaignMap(
     {selectedCampaign,campaignData, setCampaign} : 
@@ -23,61 +32,56 @@ export function CampaignMap(
         setCampaign: (data: CampaignDataFormatted) => void;
     }) 
 {
-    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+    // const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
-    const toggleOpen = (arg: boolean) => {
-        setIsOpen(arg)
-    }
+    // const toggleOpen = (arg: boolean) => {
+    //     setIsOpen(arg)
+    // }
+
+    const onChange = (value: string) => {
+        const filtered : CampaignDataFormatted[] = campaignData.filter(({campaign}) => value === campaign);
+        setCampaign(filtered?.[0]);
+    };
+
     return (
-        <CollapsibleComponent
-            isOpen={isOpen}
-            toggleOpen={toggleOpen}
-            header="Select campaign"
-            selected={selectedCampaign}
-            overrideClassName="relative"
-            triggerClassName="border rounded-xl p-4 bg-gradient-to-r from-cyan-400 to-purple-300 text-white"
-        >
-            <div className="w-full absolute top-16 text-cyan-900 slide-in-from-top-1 p-4 bg-white z-50 border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
+        <Select onValueChange={onChange}>
+            <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue className="font-mono" placeholder={"Select campaign"} />
+            </SelectTrigger>
+            <SelectContent className="font-mono">
+                <SelectGroup>
+                <SelectLabel>Campaigns</SelectLabel>
                 {
-                    (campaignData && campaignData.length > 0)? campaignData.map((data) => (
-                        <Button 
-                            key={data.campaignHash}
-                            onClick={() => {
-                                setCampaign(data);
-                                setIsOpen(false)
-                            }}
-                            variant={'ghost'}
-                            className="w-2/4 p-6"
+                    (campaignData && campaignData.length > 0)? campaignData?.map((data, index) => (
+                        <SelectItem
+                            key={data.campaign.concat(index.toString())} 
+                            value={data.campaign} 
+                            className="capitalize text-cyan-900"
                         >
-                            { data.campaign }
-                        </Button>
-                    )) : <h3>Please check your network</h3>
+                            {data.campaign}
+                        </SelectItem>
+                    )) : <h3 className="p-4 text-center">Please check your network</h3>
                 }
-            </div>
-        </CollapsibleComponent>
+                </SelectGroup>
+            </SelectContent>
+        </Select>
     );
 }
 
 export default function SetupCampaign() {
-    // const [ showSendCelo, setShowSendCelo ] = React.useState<boolean>(false);
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
     const [ celoAmount, setCeloAmount ] = React.useState<string>('0');
     const [ token, setToken ] = React.useState<{address: Address, name: string}>({address: zeroAddress, name: ''});
     const [ erc20Amount, setErc20Amount ] = React.useState<string>('0');
     const [ selectedCampaign, setCampaign ] = React.useState<string>('');
-    // const [isOpen, setIsOpen] = React.useState<boolean>(false);
-    const [isAddressesOpen, setIsAddressesOpen] = React.useState<boolean>(false);
 
     const { setpath, campaignData } = useStorage();
     const toggleDrawer = (arg: number) => {
         setDrawer(arg);
     }
-    // const toggleOpen = (arg: boolean) => {
-    //     setIsOpen(arg)
-    // };
-
-    const toggleOpenAddresses = (arg: boolean) => {
-        setIsAddressesOpen(arg)
+    const onValueChange = (arg: string) => {
+        const filtered = contractAddresses.filter(({name}) => name === arg);
+        setToken(filtered?.[0])
     };
 
     const backToDashboard = () => setpath('dashboard');
@@ -90,7 +94,6 @@ export default function SetupCampaign() {
         const fundsNative = parseUnits(celoAmount, 18);
         const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
         const contractAddresses = [{name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.GrowToken as Address}];
-        // console.log("contractAddresses", contractAddresses) 
         const sortContent : ContentType[] = [
             {
                 tag: 'campaignhash',
@@ -139,7 +142,6 @@ export default function SetupCampaign() {
                 break;
 
             case 'campaignhash':
-                // const hashes = getCampaignHashes([value]);
                 setCampaign(value);
                 break;
 
@@ -149,32 +151,27 @@ export default function SetupCampaign() {
     } 
 
     const renderAssets = (
-        <CollapsibleComponent
-            isOpen={isAddressesOpen}
-            toggleOpen={toggleOpenAddresses}
-            header="Select funding asset"
-            selected={token.name}
-            overrideClassName="relative"
-            triggerClassName="border rounded-xl p-4 bg-gradient-to-r border"
-        >
-            <div className="w-ful absolute top-[62px] slide-in-from-top-10 p-4 bg-white z-50 border rounded-xl max-h-[250px] overflow-hidden md:overflow-auto">
+        <Select onValueChange={onValueChange}>
+            <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue className="font-mono" placeholder={"Select funding asset"} />
+            </SelectTrigger>
+            <SelectContent className="font-mono">
+                <SelectGroup>
+                <SelectLabel>Tokens</SelectLabel>
                 {
-                    contractAddresses?.map(({address, name}) => (
-                        <Button 
-                            key={name}
-                            onClick={() => {
-                                setToken({address, name});
-                                setIsAddressesOpen(false);
-                            }}
-                            variant={'ghost'}
-                            className="w-full p-6"
+                    contractAddresses?.map(({address,name}, index) => (
+                        <SelectItem
+                            key={name.concat(index.toString())} 
+                            value={name} 
+                            className="capitalize text-cyan-900 cursor-pointer"
                         >
                             { name }
-                        </Button>
+                        </SelectItem>
                     ))
                 }
-            </div>
-        </CollapsibleComponent>
+                </SelectGroup>
+            </SelectContent>
+        </Select>
     );
 
     return(

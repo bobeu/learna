@@ -12,7 +12,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
-import { APP_URL, RECEIVER } from "~/lib/constants";
+import { APP_URL } from "~/lib/constants";
 import { Address, FunctionName } from "../../../../types/quiz";
 
 export const Confirmation : 
@@ -27,7 +27,6 @@ export const Confirmation :
     const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
-    // const { data: blockNonce, refetch: getNonce } = useBlockTransactionCount({chainId, config});
 
     React.useEffect(() => {
         callback({message: '', errorMessage: ''});
@@ -143,6 +142,7 @@ export const Confirmation :
 
     const waitForConfirmation = async(hash: `0x${string}`, functionName: FunctionName | string) => {
         const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
+
         callback({message: `Completed in ${functionName} task!`});
         return receipt.transactionHash;
     } 
@@ -164,100 +164,171 @@ export const Confirmation :
         const celoBalance = (await fetchBalance()).data?.value;
         console.log("CeloBalance", celoBalance);
         const amount = parseUnits('8', 15)
-        if(celoBalance && celoBalance > amount) {
-            const hash_ = await sendTransactionAsync({
-                account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                to: RECEIVER,
-                value: amount
-            });
-            await waitForConfirmation(hash_, "Rebalancing completed");
-        }
+        // if(celoBalance && celoBalance > amount) {
+        //     const hash_ = await sendTransactionAsync({
+        //         account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+        //         to: RECEIVER,
+        //         value: amount
+        //     });
+        //     await waitForConfirmation(hash_, "Rebalancing completed");
+        // }
     }
 
     const runTransaction = async(arg: Transaction) => {
+        console.log("Args1: ", arg)
         const { abi, functionName, args, contractAddress, value} = arg;
         const { getDataSuffix } = getDivviReferralUtilities();
         const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
         let hash : Address = '0x';
         try {
-            switch (functionName) {
-                case 'recordPoints':
-                    await delegateTransactionTask();
-                    callback({message: "Now saving your points..."});
-                    const args_ = args;
-                    args_[1] = result;
-                    console.log("args_", args_); 
+            if(functionName === 'recordPoints') {
+                await delegateTransactionTask();
+                callback({message: "Now saving your points..."});
+                const args_ = args;
+                args_[1] = result;
 
-                    hash = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address: contractAddress,
-                        account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                        args: args_,
-                        dataSuffix
-                    });
-                    hash = await waitForConfirmation(hash, '');
-                    await forwardBalances();         
-                    await setCompletion(functionName, useDivvi, hash);
-                    break;
-                
-                case 'generateKey':
-                    hash = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address: contractAddress,
-                        account,
-                        args,
-                        dataSuffix,
-                        value
-                    });
-                    hash = await waitForConfirmation(hash, '');
-                    await setCompletion(functionName, useDivvi, hash);
-                    break;
-    
-                case 'runall':
-                    hash = await writeContractAsync({
-                        abi,
-                        functionName: 'generateKey',
-                        address: contractAddress,
-                        account,
-                        args,
-                        dataSuffix,
-                        value
-                    });
-                    hash = await waitForConfirmation(hash, '');
-                    await delegateTransactionTask();
-                    callback({message: "Now saving your points..."});
-                    const recordArg = args;
-                    recordArg[1] = result;
-                    console.log("args_", recordArg); 
-                    hash = await writeContractAsync({
-                        abi,
-                        functionName: 'recordPoints',
-                        address: contractAddress,
-                        account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                        args: recordArg,
-                        dataSuffix
-                    });
-                    hash = await waitForConfirmation(hash, '');
-                    await setCompletion('recordPoints', useDivvi, hash);
-                    
-                    break;
-                default:
-                    console.log("Args: ", arg)
-                    hash = await writeContractAsync({
-                        abi,
-                        functionName,
-                        address: contractAddress,
-                        account: account,
-                        args,
-                        value
-                    });
-                    hash = await waitForConfirmation(hash, '');
-                    await setCompletion(functionName, useDivvi, hash);
-                    break;
+                hash = await writeContractAsync({
+                    abi,
+                    functionName,
+                    address: contractAddress,
+                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+                    args: args_,
+                    dataSuffix
+                });
+                hash = await waitForConfirmation(hash, '');
+                await forwardBalances();         
+                await setCompletion(functionName, useDivvi, hash);
+            } else if(functionName === 'generateKey') {
+                hash = await writeContractAsync({
+                    abi,
+                    functionName,
+                    address: contractAddress,
+                    account: account,
+                    args,
+                    dataSuffix,
+                    value
+                });
+                hash = await waitForConfirmation(hash, '');
+                await setCompletion(functionName, useDivvi, hash);
+            } else if(functionName === 'runall'){
+                hash = await writeContractAsync({
+                    abi,
+                    functionName: 'generateKey',
+                    address: contractAddress,
+                    account: account,
+                    args,
+                    dataSuffix,
+                    value
+                });
+                hash = await waitForConfirmation(hash, '');
+                await delegateTransactionTask();
+                callback({message: "Now saving your points..."});
+                const recordArg = args;
+                recordArg[1] = result;
+                // console.log("args_", recordArg); 
+                hash = await writeContractAsync({
+                    abi,
+                    functionName: 'recordPoints',
+                    address: contractAddress,
+                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+                    args: recordArg,
+                    dataSuffix
+                });
+                hash = await waitForConfirmation(hash, '');
+                await setCompletion('recordPoints', useDivvi, hash);
+            } else {
+                hash = await writeContractAsync({
+                    abi,
+                    functionName,
+                    address: contractAddress,
+                    account,
+                    args,
+                    value
+                });
+                hash = await waitForConfirmation(hash, '');
+                await setCompletion(functionName, useDivvi, hash);
             }
+
+
+            // switch (functionName) {
+            //     case 'recordPoints':
+            //         await delegateTransactionTask();
+            //         callback({message: "Now saving your points..."});
+            //         const args_ = args;
+            //         args_[1] = result;
+            //         console.log("args_", args_); 
+
+            //         hash = await writeContractAsync({
+            //             abi,
+            //             functionName,
+            //             address: contractAddress,
+            //             account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+            //             args: args_,
+            //             dataSuffix
+            //         });
+            //         hash = await waitForConfirmation(hash, '');
+            //         await forwardBalances();         
+            //         await setCompletion(functionName, useDivvi, hash);
+            //         break;
+                
+            //     case 'generateKey':
+            //         hash = await writeContractAsync({
+            //             abi,
+            //             functionName,
+            //             address: contractAddress,
+            //             account: account,
+            //             args,
+            //             dataSuffix,
+            //             value
+            //         });
+            //         hash = await waitForConfirmation(hash, '');
+            //         await setCompletion(functionName, useDivvi, hash);
+            //         break;
+    
+            //     case 'runall':
+            //         hash = await writeContractAsync({
+            //             abi,
+            //             functionName: 'generateKey',
+            //             address: contractAddress,
+            //             account: account,
+            //             args,
+            //             dataSuffix,
+            //             value
+            //         });
+            //         hash = await waitForConfirmation(hash, '');
+            //         await delegateTransactionTask();
+            //         callback({message: "Now saving your points..."});
+            //         const recordArg = args;
+            //         recordArg[1] = result;
+            //         // console.log("args_", recordArg); 
+            //         hash = await writeContractAsync({
+            //             abi,
+            //             functionName: 'recordPoints',
+            //             address: contractAddress,
+            //             account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+            //             args: recordArg,
+            //             dataSuffix
+            //         });
+            //         hash = await waitForConfirmation(hash, '');
+            //         await setCompletion('recordPoints', useDivvi, hash);
+                    
+            //         break;
+            //     default:
+            //         console.log("Args account: ", account)
+            //         console.log("Args: ", args)
+            //         hash = await writeContractAsync({
+            //             abi,
+            //             functionName,
+            //             address: contractAddress,
+            //             account,
+            //             args,
+            //             value
+            //         });
+            //         hash = await waitForConfirmation(hash, '');
+            //         await setCompletion(functionName, useDivvi, hash);
+            //         break;
+            // }
         } catch (error) {
             console.log("ErrorOccured: ", error);
             setmessage("Oops! We are unable to complete your transaction. Please send us feedback on Telegram @cryptopreach");
@@ -296,10 +367,6 @@ export const Confirmation :
                     toggleLoading(true);
                     const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
                     const args : any[] = [account, result, GrowToken as Address, result.other.quizId];
-                    // let nonce = blockNonce;
-                    // if(!nonce) {
-                    //     nonce = (await getNonce()).data
-                    // }
                     const hash = await writeContractAsync({
                         abi: td.abi,
                         functionName: td.functionName,

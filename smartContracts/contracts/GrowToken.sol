@@ -26,7 +26,7 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
      * 
      * @param reserve : Address where other apportionments other than the dev's will be sent to. 
      */
-    constructor(address reserve, address _mainContract) ERC20('GrowToken', 'GROW') Ownable(_msgSender()) {
+    constructor(address reserve, address _mainContract, string memory name_, string memory symbol_) ERC20(name_, symbol_) Ownable(_msgSender()) {
         unchecked {
             uint tSupply = 21_000_000 * (10**decimals());
             uint dev = 630000 * (10**decimals());

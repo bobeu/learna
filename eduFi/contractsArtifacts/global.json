@@ -17,8 +17,7 @@
     "approve",
     "setMinimumToken",
     "owner",
-    "allowance",
-    "getCampaingData"
+    "allowance"
   ],
   "chainName": {
     "42220": "celo",
@@ -30,6 +29,7 @@
   ],
   "paths": {
     "42220": [
+      "deployments\\celo\\FeeManager.json",
       "deployments\\celo\\GrowToken.json",
       "deployments\\celo\\Learna.json"
     ],
@@ -43,13 +43,14 @@
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
       "FeeManager": "0x5A458c9fc7C9cf855AA6a54af8059cc2ffCfc225",
-      "GrowToken": "0x6F5065D136b420dCC3BEF51140b8Fa33d6612F7e",
-      "Learna": "0xBAF91f2454944065459c64A0fBCe7CDfFcBe9DB5"
+      "GrowToken": "0x7910cc23B3A3D19d6369871557D867A63Ca93D74",
+      "Learna": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "GrowToken": "0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204",
-      "Learna": "0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB"
+      "FeeManager": "0xb8772c21f779d7b7fC37B1faD02c0850893D6518",
+      "GrowToken": "0x1440779dedF0d5083F68229E01d1D42D5dc77819",
+      "Learna": "0x78D92f85045cE169877f31A7424899B4Da83F2B4"
     }
   ]
 }

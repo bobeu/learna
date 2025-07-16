@@ -5,17 +5,23 @@ import { CAMPAIGNS  } from "../hashes";
 
 dotconfig();
 enum Mode { LOCAL, LIVE }
+const NAME = "LEARNA Token";
+const SYMBOL = "GROT";
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  	const {deployments, getNamedAccounts, network} = hre;
-	const {deploy} = deployments;
+  	const {deployments, getNamedAccounts,  network} = hre;
+	const {deploy, read} = deployments;
 	let {deployer, reserve, routeTo, admin, admin2 } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
-	const transitionInterval = 7 * (24 * 60 * 60); //7 days 
-	const networkName = network.name
+	const networkName = network.name;
+	const transitionInterval = networkName === 'alfajores'? 60 * 5 : (24 * 60 * 60); //1 day 
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 
-	console.log("Mode", mode);
-	console.log("deployer", deployer);
+	console.log("admin", admin);
+	console.log("admin2", admin2);
+	console.log("networkName", networkName);
+	console.log("mode", mode);
+	console.log("transitionInterval", transitionInterval);
 
 	/**
 	 * Deploy Fee Manager
@@ -44,10 +50,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	 */
 	  const growToken = await deploy("GrowToken", {
 		from: deployer,
-		args: [reserve, learna.address],
+		args: [reserve, learna.address, NAME, SYMBOL],
 		log: true,
 	  });
 	  console.log(`GrowToken deployed to: ${growToken.address}`);
+
+	  const isAdmin1 = await read("Learna", "getAdminStatus", admin);
+	  const isAdmin2 = await read("Learna", "getAdminStatus", admin2);
+
+	  console.log("isAdmin1", isAdmin1);
+	  console.log("isAdmin2", isAdmin2);
 	
 }
 export default func;

@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
+import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
 interface MiniAppMetadata {
@@ -121,25 +121,43 @@ export async function getMiniAppMetadata(): Promise<MiniAppManifest> {
   return {
     accountAssociation:  {
       header: "eyJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4M0EwMTA5MDVEY0Q3MkY0YTc4YTc3ZjU2MzYwMTc4MEFGQWU1NjUyRiIsImZpZCI6OTQwOTI5fQ==",
-      payload: "eyJkb21haW4iOiJsZWFybmEudmVyY2VsLmFwcCJ9",
-      signature: "MHhhOTY0ZmVmZWIzMmU3YmU3YTczYWRmNDlhNmVkMzdjM2E2ODRiNzA5ZTc1MWQ4Nzk3YWFjNzhkNzVjZDY4MDM5MzU5YTlhYzM5YzRiZDUxMWJjYjcyYjMwMmI4Yzc5YTgyODQ0ZTE5MmNjOGZiYjVmODY2ZGJhZWU2YWFjMGU1ODFj"
+      payload:"eyJkb21haW4iOiJsZWFybmEudmVyY2VsLmFwcCJ9",
+      signature:"MHhhOTY0ZmVmZWIzMmU3YmU3YTczYWRmNDlhNmVkMzdjM2E2ODRiNzA5ZTc1MWQ4Nzk3YWFjNzhkNzVjZDY4MDM5MzU5YTlhYzM5YzRiZDUxMWJjYjcyYjMwMmI4Yzc5YTgyODQ0ZTE5MmNjOGZiYjVmODY2ZGJhZWU2YWFjMGU1ODFj"
     },
     frame: {
-      version: "1",
-      name: APP_NAME ?? "Educaster",
-      iconUrl: APP_ICON_URL,
-      homeUrl: APP_URL,
-      imageUrl: APP_OG_IMAGE_URL,
-      buttonTitle: APP_BUTTON_TEXT ?? "Launch Mini App",
-      splashImageUrl: APP_SPLASH_URL,
-      splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
-      webhookUrl: APP_WEBHOOK_URL,
-      description: APP_DESCRIPTION,
-      primaryCategory: APP_PRIMARY_CATEGORY,
-      tags: APP_TAGS,
+      version:"1",
+      name:"Educaster",
+      iconUrl:"https://learna.vercel.app/icon.png",
+      homeUrl:"https://learna.vercel.app",
+      imageUrl:"https://learna.vercel.app/api/opengraph-image",
+      buttonTitle:"open",
+      splashImageUrl:"https://learna.vercel.app/splash-screen.png",
+      splashBackgroundColor:"#fff",
+      webhookUrl:"https://api.neynar.com/f/app/98274362-f69a-41fa-a581-ffabf5423b50/event",
+      description:"Test your knowledge with engaging quizzes across various topics. Challenge yourself, track your progress and get rewarded every week.",
+      primaryCategory:"education",
+      tags:["education","developers","crypto","earning","quiz"],
       requiredChains: [
         'eip155:42220'
       ]
     },
   };
 }
+// screenshots:["https://learna.vercel.app/screenshot1.png","https://learna.vercel.app/screenshot2.png","https://learna.vercel.app/screenshot3.png"],
+// frame: {
+//   version: "1",
+//   name: APP_NAME ?? "Educaster",
+//   iconUrl: APP_ICON_URL,
+//   homeUrl: APP_URL,
+//   imageUrl: APP_OG_IMAGE_URL,
+//   buttonTitle: APP_BUTTON_TEXT ?? "Launch Mini App",
+//   splashImageUrl: APP_SPLASH_URL,
+//   splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
+//   webhookUrl: APP_WEBHOOK_URL,
+//   description: APP_DESCRIPTION,
+//   primaryCategory: APP_PRIMARY_CATEGORY,
+//   tags: APP_TAGS,
+//   requiredChains: [
+//     'eip155:42220'
+//   ]
+// },

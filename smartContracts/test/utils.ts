@@ -57,6 +57,7 @@ interface SetUpCampaign {
 
 interface QuizResultOtherInput {
   id: string;
+  title: string;
   quizId: string;
   score: number;
   totalPoints: number;
@@ -196,6 +197,7 @@ export async function setUpCampaign(x: SetUpCampaign) {
 
   const balanceOfLeanerAfterTipped = await signer.provider?.getBalance(learnaAddr);
   const campaigns_ = await getCampaigns(learna);
+  console.log("campaigns_", campaigns_.campaignData)
   return {
     campaigns: campaigns_,
     balanceOfLeanerB4Tipped,
@@ -207,12 +209,11 @@ export async function getCampaigns(learna: Learna) {
   let campaigns : Campaigns.CampaignStructOutput[] = [];
   let wd : Learn.WeekDataStructOutput[] = [];
   const data = await learna.getData();
-  const cData = await learna.getCampaingData();
   wd = data.wd;
   campaigns = wd[0].campaigns;
   return {
     campaigns,
-    campaignData: cData
+    campaignData: campaigns[0].data
   };
 }
 
@@ -247,6 +248,7 @@ export const getQuizResult = (hash: Address, score: number): QuizResultInput => 
     other: {
       completedAt: new Date().toString(),
       id: '1',
+      title: "solidity",
       percentage: 20,
       quizId: 'solidity',
       score,
