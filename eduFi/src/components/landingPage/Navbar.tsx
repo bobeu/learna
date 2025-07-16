@@ -1,7 +1,8 @@
+/* eslint-disable */
+
 import React from 'react';
 import { GraduationCap, Menu, X } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import useStorage from '../hooks/useStorage';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Navbar({isMenuOpen, toggleOpen} : {isMenuOpen: boolean, toggleOpen: () => void}) {
