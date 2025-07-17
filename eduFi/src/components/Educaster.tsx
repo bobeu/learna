@@ -22,6 +22,17 @@ import { hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
 
+// Self///////////////////////////////
+import { useRouter } from "next/navigation";
+import { countries, getUniversalLink } from "@selfxyz/core";
+import {
+  SelfQRcode,
+  SelfAppBuilder,
+  type SelfApp,
+} from "@selfxyz/qrcode";
+
+// /////////////////////////////
+
 import { 
     filterTransactionData, 
     mockQuiz, 
@@ -38,7 +49,6 @@ import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import SetupCampaign from './peripherals/SetupCampaign';
 
-
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
 
@@ -54,6 +64,45 @@ export default function Educaster() {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
+
+    // Self////////////////////////////////
+    const router = useRouter();
+    const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
+    const [universalLink, setUniversalLink] = useState("");
+    const [userId, setUserId] = useState(zeroAddress);
+    const excludedCountries = React.useMemo(() => [countries.NORTH_KOREA], []);
+
+     useEffect(() => {
+        try {
+        const app = new SelfAppBuilder({
+            version: 2,
+            appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Workshop",
+            scope: process.env.NEXT_PUBLIC_SELF_SCOPE || "self-workshop",
+            endpoint: `${process.env.NEXT_PUBLIC_SELF_ENDPOINT}`,
+            logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png",
+            userId: userId,
+            endpointType: "staging_https",
+            userIdType: "hex",
+            userDefinedData: "Bonjour Cannes!",
+            disclosures: {
+            minimumAge: 18,
+            nationality: true,
+            gender: true,
+            }
+        }).build();
+
+        setSelfApp(app);
+        setUniversalLink(getUniversalLink(app));
+        } catch (error) {
+        console.error("Failed to initialize Self app:", error);
+        }
+    }, []);
+
+    const handleSuccessfulVerification = () => {
+        router.push("/verified");
+    };
+
+    ////////////////////////////////////////
     
     const chainId = useChainId();
     const config = useConfig();
@@ -310,7 +359,31 @@ export default function Educaster() {
                 selectedCampaign
             }}
         >
-            <LayoutContext> { app }</LayoutContext>
+            <LayoutContext>
+                <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-auto">
+                        <div className="flex justify-center mb-6">
+                        {selfApp ? (
+                            <SelfQRcode
+                                selfApp={selfApp}
+                                onSuccess={handleSuccessfulVerification}
+                                onError={(error) => {
+                                    const errorCode = error.error_code || 'Unknown';
+                                    const reason = error.reason || 'Unknown error';
+                                    console.error(`Error ${errorCode}: ${reason}`);
+                                    console.error("Error: Failed to verify identity");
+                                }}
+                            />
+                        ) : (
+                            <div className="w-[256px] h-[256px] bg-gray-200 animate-pulse flex items-center justify-center">
+                            <p className="text-gray-500 text-sm">Loading QR Code...</p>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+                    </div>
+                { app }
+            </LayoutContext>
         </StorageContextProvider>
     )
 }

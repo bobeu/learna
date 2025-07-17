@@ -2,117 +2,26 @@
 
 pragma solidity 0.8.24;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+// import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IGrowToken } from "./IGrowToken.sol";
 import { Utils } from "./Utils.sol";
 import { Admins } from "./Admins.sol";
-import { Campaigns } from "./Campaigns.sol";
+import { Campaigns, IERC20 } from "./Campaigns.sol";
+import { ILearna } from "./ILearna.sol";
+import { Approved } from "./Approved.sol";
 
-contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
+contract Learna is 
+    ILearna, 
+    Approved,
+    Campaigns, 
+    Admins, 
+    ReentrancyGuard, 
+    Pausable 
+{
     using Utils for uint96;
-    enum Mode { LOCAL, LIVE }
-
-    error NoPasskey();
-    error NotEligible();
-    error InvalidAddress(address);
-    error InsufficientAllowance(uint256);
-
-    event NewCampaign(bytes32 campaignHash, Campaign campaign);
-    event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
-    event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32 campainHash);
-    event Banned(address[] indexed users, uint weekId, bytes32[] campainHashes);
-    event Sorted(uint _weekId, uint newWeekId, string[] campainHashes);
-    event PasskeyGenerated(address indexed sender, uint weekId, bytes32[] campainHashes);
-    event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
-
-    struct ReadProfile {
-        Profile profile;
-        bytes32 campaignHash;
-    }
-
-    struct Answer {
-        bytes questionHash;
-        uint64 selected;
-        bool isUserSelected;
-    }
-
-    struct AnswerInput {
-        string questionHash;
-        uint64 selected;
-        bool isUserSelected;
-    }
-
-    struct QuizResultOther {
-        bytes id;
-        bytes quizId;
-        uint32 score;
-        bytes title;
-        uint64 totalPoints;
-        uint16 percentage;
-        uint64 timeSpent;
-        bytes completedAt;
-    }
-
-    struct QuizResultOtherInput {
-        string id;
-        string quizId;
-        uint32 score;
-        string title;
-        uint64 totalPoints;
-        uint16 percentage;
-        uint64 timeSpent;
-        string completedAt;
-    }
-
-    struct QuizResultInput {
-        AnswerInput[] answers;
-        QuizResultOtherInput other;
-    }
-
-    struct QuizResult {
-        Answer[] answers;
-        QuizResultOther other;
-    }
-
-    struct ProfileOther {
-        uint amountMinted;
-        uint amountClaimedInNative;
-        uint amountClaimedInERC20;
-        bool claimed;
-        bytes32 passKey;
-        bool haskey;
-        uint8 totalQuizPerWeek;
-    }
-
-    struct Profile {
-        QuizResult[] quizResults;
-        ProfileOther other;
-    }
-
-    struct WeekData {
-        Campaign[] campaigns;
-    } 
-
-    // Readonly data
-    struct ReadData {
-        State state;
-        WeekData[] wd;
-    }
-
-    struct State {
-        uint minimumToken;
-        uint64 transitionInterval; 
-        uint weekCounter;
-    }
-
-    struct Eligibility {
-        bool value;
-        bytes32 campaignHash;
-    }
 
     Mode private mode;
 
@@ -163,7 +72,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         Mode _mode, 
         address _feeManager,
         string[] memory _campaigns
-    ) Ownable(_msgSender()) {
+    ) {
         _initializeEmptyAdminSlot();
         state.minimumToken = 1e16;
         mode = _mode;
@@ -374,32 +283,32 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
         return true;
     }
 
-    /**
-     * @dev Claim ero20 token
-     * @param recipient : Recipient
-     * @param amount : Amount to transfer
-     * @param token : token contract
-     */
-    function _claimErc20(address recipient, uint amount, IERC20 token) internal {
-        if(address(token) != address(0)) {
-            uint balance = token.balanceOf(address(this));
-            if(balance > 0 && balance >= amount) {
-                token.transfer(recipient, amount);
-            }
-        }
-    }
+    // /**
+    //  * @dev Claim ero20 token
+    //  * @param recipient : Recipient
+    //  * @param amount : Amount to transfer
+    //  * @param token : token contract
+    //  */
+    // function _claimErc20(address recipient, uint amount, IERC20 token) internal {
+    //     if(address(token) != address(0)) {
+    //         uint balance = token.balanceOf(address(this));
+    //         if(balance > 0 && balance >= amount) {
+    //             token.transfer(recipient, amount);
+    //         }
+    //     }
+    // }
 
-    /**
-     * @dev Claim ero20 token
-     * @param recipient : Recipient
-     * @param amount : Amount to transfer
-     */
-    function _claimNativeToken(address recipient, uint amount) internal {
-        uint balance = address(this).balance;
-        if(balance > 0 && balance >= amount) {
-            payable(recipient).transfer(amount);
-        }
-    }
+    // /**
+    //  * @dev Claim ero20 token
+    //  * @param recipient : Recipient
+    //  * @param amount : Amount to transfer
+    //  */
+    // function _claimNativeToken(address recipient, uint amount) internal {
+    //     uint balance = address(this).balance;
+    //     if(balance > 0 && balance >= amount) {
+    //         payable(recipient).transfer(amount);
+    //     }
+    // }
     
     /**
      * @dev Calculates user's share of the weekly payout
@@ -427,7 +336,7 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
      * @param user : Target user
      * @param campaignHash : Hash of the campaign name
      */
-    function _checkEligibility(
+    function _getEligibility(
         uint weekId, 
         address user, 
         bytes32 campaignHash
@@ -466,64 +375,92 @@ contract Learna is Campaigns, Admins, Ownable, ReentrancyGuard, Pausable {
     function checkEligibility(
         uint weekId, 
         address user, 
-        bytes32[] memory campaignHashes
+        bytes32 memory campaignHash
     ) 
-        public 
+        external 
         view 
-        returns(Eligibility[] memory result) 
+        returns(Eligibility memory result) 
     {
         uint campaignSize = campaignHashes.length;
-        result = new Eligibility[](campaignSize);
-        for(uint i = 0; i < campaignSize; i++){
-            bytes32 campaignHash = campaignHashes[i];
-            (,,,,bool isEligible) = _checkEligibility(weekId, user, campaignHash);
-            result[i] = Eligibility(isEligible, campaignHash);
-        }
+        (Profile memory pf, Campaign memory cp, uint erc20, uint native, bool isEligible) = _getEligibility(weekId, user, campaignHash);
+        result = Eligibility({
+            canClaim: isEligible,
+            profile: pf,
+            campaignHash: campaignHash,
+            erc20Amount: erc20,
+            nativeAmount: native,
+            mode: mode,
+            campaign: cp
+        });
+
         return result;
     } 
- 
+
     /**
-     * @dev claim reward
-     * @param weekId : Week id for the specific week user want to withdraw from
-     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
+     * @dev To be invoked after an user claimed reward
+     * @param weekId : week Id
+     * @param user : target user account
+     * @param campaignHash : Campaign hash
+     * @param elg : Eligibility object
      */
-    function claimReward(uint weekId, bytes32 campaignHash) 
-        public 
-        whenNotPaused 
-        nonReentrant 
-        returns(bool) 
+    function onClaimed(
+        uint weekId, 
+        address user, 
+        bytes32 campaignHash,
+        Eligibility memory elg
+    ) 
+        external 
+        whenNotPaused
+        onlyApproved
     {
         require(weekId <= state.weekCounter, "Week not ready");
-        // _validateCampaign(campaignHash, weekId);
-        address sender = _msgSender();
-        (
-            Profile memory pf,
-            Campaign memory cp,
-            uint erc20Amount, 
-            uint nativeAmount,
-            bool isEligible
-        ) = _checkEligibility(weekId, sender, campaignHash);
-        if(!isEligible) revert NotEligible();
-        // if(!pf.other.haskey) revert NoPasskey();
-        // require(cp.canClaim, "Claim not active");
-        // require(_hasFund(weekId, campaignHash), "No funds in campaign");
-        require(!pf.other.claimed, 'Already claimed');
-        pf.other.claimed = true;
-        // if(mode == Mode.LIVE) require(_now() <= cp.claimActiveUntil, 'Claim ended'); 
-        unchecked {
-            if(cp.fundsNative > nativeAmount) cp.fundsNative -= nativeAmount;
-            if(cp.fundsERC20 > nativeAmount) cp.fundsERC20 -= erc20Amount;
-            pf.other.amountClaimedInNative += nativeAmount;
-            pf.other.amountClaimedInERC20 += erc20Amount;
-        }
-        _setProfile(weekId,  campaignHash, sender, pf.other);
-        _setCampaign(weekId, campaignHash, cp);
-        if(erc20Amount > 0) _claimErc20(sender, erc20Amount, IERC20(cp.token)); 
-        if(nativeAmount > 0) _claimNativeToken(sender, nativeAmount);
- 
-        emit ClaimedWeeklyReward(sender, pf, cp);
-        return true; 
+        _setProfile(weekId,  campaignHash, user, elg.pf.other);
+        _setCampaign(weekId, campaignHash, elg.cp);
+        emit ClaimedWeeklyReward(user, elg.pf, elg.cp);
     }
+ 
+    // /**
+    //  * @dev claim reward
+    //  * @param weekId : Week id for the specific week user want to withdraw from
+    //  * @notice Users cannot claim for the current week. They can only claim for the week that has ended
+    //  */
+    // function claimReward(uint weekId, bytes32 campaignHash) 
+    //     public 
+    //     whenNotPaused 
+    //     nonReentrant 
+    //     returns(bool) 
+    // {
+    //     require(weekId <= state.weekCounter, "Week not ready");
+    //     // _validateCampaign(campaignHash, weekId);
+    //     address sender = _msgSender();
+    //     (
+    //         Profile memory pf,
+    //         Campaign memory cp,
+    //         uint erc20Amount, 
+    //         uint nativeAmount,
+    //         bool isEligible
+    //     ) = _getEligibility(weekId, sender, campaignHash);
+    //     if(!isEligible) revert NotEligible();
+    //     // if(!pf.other.haskey) revert NoPasskey();
+    //     // require(cp.canClaim, "Claim not active");
+    //     // require(_hasFund(weekId, campaignHash), "No funds in campaign");
+    //     require(!pf.other.claimed, 'Already claimed');
+    //     pf.other.claimed = true;
+    //     // if(mode == Mode.LIVE) require(_now() <= cp.claimActiveUntil, 'Claim ended'); 
+    //     unchecked {
+    //         if(cp.fundsNative > nativeAmount) cp.fundsNative -= nativeAmount;
+    //         if(cp.fundsERC20 > nativeAmount) cp.fundsERC20 -= erc20Amount;
+    //         pf.other.amountClaimedInNative += nativeAmount;
+    //         pf.other.amountClaimedInERC20 += erc20Amount;
+    //     }
+    //     _setProfile(weekId,  campaignHash, sender, pf.other);
+    //     _setCampaign(weekId, campaignHash, cp);
+    //     if(erc20Amount > 0) _claimErc20(sender, erc20Amount, IERC20(cp.token)); 
+    //     if(nativeAmount > 0) _claimNativeToken(sender, nativeAmount);
+ 
+    //     emit ClaimedWeeklyReward(sender, pf, cp);
+    //     return true; 
+    // }
 
     // Transition into new week
     function _transitionToNewWeek() internal returns(uint newWeekId) { 

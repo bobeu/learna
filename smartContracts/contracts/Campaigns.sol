@@ -2,37 +2,14 @@
 
 pragma solidity 0.8.24;
 
+import { ILearna } from "/.ILearna.sol";
+
 /**
  * @title Campaigns. 
  * @author : Bobeu - https://github.com/bobeu
  * @notice A non-deployable parent contract that perform CRUD operation on campaigns
 */
-abstract contract Campaigns {
-    struct Campaign {
-        uint256 fundsNative;
-        uint256 fundsERC20;
-        uint96 totalPoints;
-        uint64 lastUpdated;
-        uint activeLearners; 
-        uint64 transitionDate;
-        uint64 claimActiveUntil;
-        address operator;
-        address token;
-        bytes32 hash_;
-        bool canClaim;
-        CampaignData data;
-    }
-
-    struct CampaignData {
-        bytes32 campaignHash;
-        bytes encoded;
-    }
-
-    struct Initializer {
-        bool initialized;
-        uint32 slot;
-    }
-
+abstract contract Campaigns is ILearna {
     // Campaigns
     mapping(uint weekId => mapping(bytes32 campaignHash => Initializer)) private initializer;
 
