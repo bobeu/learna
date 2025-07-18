@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48",
+  "contractAddress": "0xD48A552a06700CA7B4B8a987456F28c6D379367a",
   "functionName": "getData",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -28,7 +28,7 @@
                   "type": "uint256"
                 }
               ],
-              "internalType": "struct Learna.State",
+              "internalType": "struct ILearna.State",
               "name": "state",
               "type": "tuple"
             },
@@ -104,22 +104,22 @@
                           "type": "bytes"
                         }
                       ],
-                      "internalType": "struct Campaigns.CampaignData",
+                      "internalType": "struct ILearna.CampaignData",
                       "name": "data",
                       "type": "tuple"
                     }
                   ],
-                  "internalType": "struct Campaigns.Campaign[]",
+                  "internalType": "struct ILearna.Campaign[]",
                   "name": "campaigns",
                   "type": "tuple[]"
                 }
               ],
-              "internalType": "struct Learna.WeekData[]",
+              "internalType": "struct ILearna.WeekData[]",
               "name": "wd",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct Learna.ReadData",
+          "internalType": "struct ILearna.ReadData",
           "name": "data",
           "type": "tuple"
         }

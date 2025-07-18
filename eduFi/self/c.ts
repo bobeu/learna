@@ -485,3 +485,60 @@ const selfApp = new SelfAppBuilder({
 }).build();
 
 
+
+
+// const selfApp = new SelfAppBuilder({
+//   appName: "My App",
+//   scope: "my-app",
+//   endpoint: "https://api.myapp.com/verify",
+//   userId: uuidv4(),
+//   version: 2,
+//   userDefinedData: "0x" + Buffer.from(JSON.stringify({
+//     action: "create_account",
+//     referralCode: "SUMMER2024",
+//     tier: "premium"
+//   })).toString('hex').slice(0, 128), // Ensure exactly 64 bytes
+//   disclosures: { /* ... */ }
+// }).build();
+
+// Backend
+// class ConfigStorage implements IConfigStorage {
+//   async getActionId(userIdentifier: string, userDefinedData: string): Promise<string> {
+//     // userIdentifier is already extracted for you
+//     console.log('User ID:', userIdentifier);
+    
+//     // Decode the user-defined portion
+//     const decoded = Buffer.from(userDefinedData, 'hex').toString();
+    
+//     try {
+//       const data = JSON.parse(decoded);
+      
+//       // Use the data to determine configuration
+//       if (data.action === 'withdraw' && data.amount > 10000) {
+//         return 'high_value_config';
+//       }
+      
+//       return 'standard_config';
+//     } catch {
+//       // Handle non-JSON data
+//       return 'default_config';
+//     }
+//   }
+// }
+
+{
+//   "olderThanEnabled": true,
+//   "olderThan": "16",
+//   "forbiddenCountriesEnabled": false,
+//   "forbiddenCountriesListPacked": [
+//     "0",
+//     "0",
+//     "0",
+//     "0"
+//   ],
+//   "ofacEnabled": [
+//     true,
+//     true,
+//     true
+//   ]
+// }

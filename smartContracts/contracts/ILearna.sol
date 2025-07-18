@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.24;
+pragma solidity 0.8.28;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -8,8 +8,10 @@ interface ILearna {
     enum Mode { LOCAL, LIVE }
 
     error NoPasskey();
-    // error NotEligible();
+    error NotEligible();
+    error ClaimEnded(uint64);
     error InvalidAddress(address);
+    error CampaignClaimNotActivated();
     error InsufficientAllowance(uint256);
 
     event NewCampaign(bytes32 campaignHash, Campaign campaign);
@@ -127,23 +129,13 @@ interface ILearna {
 
     struct Eligibility {
         bool canClaim;
-        Profile profile;
-        bytes32 campaignHash;
         uint erc20Amount;
         uint nativeAmount;
-        Mode mode;
-        Campaign campaign;
+        uint weekId;
+        address token;
+        bytes32 campaignHash;
     }
 
-    function checkEligibility(
-        uint weekId, 
-        address user, 
-        bytes32 campaignHash
-    ) 
-        external 
-        view 
-    returns (Eligibility memory);
-  
-    function onClaimed(uint weekId, address user, bytes32 campaignHash,Eligibility memory elg) external returns(bool);
-
+    function checkEligibility(address user,  bytes32 campaignHash) external view returns (Eligibility memory);
+    function onClaimed(Eligibility memory elg, address user) external returns(bool);
 }

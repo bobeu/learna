@@ -3,6 +3,11 @@ pragma solidity 0.8.28;
 
 import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
+
+import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
+// import { SelfStructs } from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
+import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
+
 // import { SelfCircuitLibrary } from "@selfxyz/contracts/contracts/libraries/SelfCircuitLibrary.sol";
 import { Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -18,60 +23,69 @@ import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerklePr
 contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
+    // Errors
     error NativeClaimUnsuccessful();
     error TokenIsZeroAddress();
+    error WeekNotReady();
+    error NoClaimable();
     error ClaimUnsuccessful();
-    // error RegisteredNullifier();
-
-    /// @notice Reverts when an invalid Merkle proof is provided.
+    error NationalityRequired();
+    error EligibilityCheckDenied();
     error InvalidProof();
-
-    /// @notice Reverts when an invalid user identifier is provided.
     error InvalidUserIdentifier();
+    error UserIdentifierAlreadyVerified();
 
-    /// @notice Reverts when a user identifier has already been registered
-    error UserIdentifierAlreadyRegistered();
-
-    /// @notice Emitted when a user identifier is registered.
-    event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
-
-    /// @notice Emitted when the Merkle root is updated.
+    // Events
+    event UserIdentifierVerified(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
+    // Learna contract
     ILearna public learna;
 
-    /// @notice Merkle root used to validate airdrop claims.
+    /// @notice Verification config ID for identity verification
+    bytes32 public configId;
+
+    /// @notice Merkle root used to validate reward claims.
     bytes32 public merkleRoot;
 
     /// @notice Maps nullifiers to user identifiers for registration tracking
     mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
 
-    /// @notice Maps user identifiers to registration status
-    mapping(uint256 userIdentifier => bool registered) internal _registeredUserIdentifiers;
+    // /// @notice Maps user identifiers to registration status
+    mapping(uint256 userIdentifier => bool registered) internal verified;
+    // _registeredUserIdentifiers[uint256(uint160(registeredAddress))];  ///////////////////////// converts user address to idenfitiers
 
-    constructor(
-        address identityVerificationHubAddress,
-        uint256 scopeValue
-    )
-        SelfVerificationRoot(identityVerificationHubAddress, scopeValue)
+    mapping(address user => ILearna.Eligibility) private claimables;
+
+    /**
+     * @dev Constructor
+     * @param identityVerificationHubAddress : Hub verification address
+     * @notice We set the scope to zero value hoping to set the real value immediately after deployment. This saves 
+     * us the headache of generating the contract address ahead of time 
+     */
+    constructor(address identityVerificationHubAddress)
+        SelfVerificationRoot(identityVerificationHubAddress, 0)
         Ownable(_msgSender())
     { }
 
-    /**
-     * @notice Updates the scope used for verification.
-     * @dev Only callable by the contract owner.
-     * @param newScope The new scope to set.
-     */
-    function setScope(uint256 newScope) external onlyOwner {
-        _setScope(newScope);
+    function getConfigId(
+        bytes32 destinationChainId,
+        bytes32 userIdentifier, 
+        bytes memory userDefinedData // Custom data from the qr code configuration
+    ) public view override returns (bytes32) {
+        // Return your app's configuration ID
+        return configId;
     }
 
-    /**
-     * @notice Retrieves the expected proof scope.
-     * @return The scope value used for registration verification.
-     */
-    function getScope() external view returns (uint256) {
-        return _scope;
+    // function setVerificationConfig(
+    //     ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
+    // ) external onlyOwner {
+    //     _setVerificationConfig(newVerificationConfig);
+    // }
+
+    // Set verification config ID
+    function setConfigId(bytes32 _configId) external onlyOwner {
+        configId = _configId;
     }
 
     /**
@@ -84,6 +98,15 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
         emit MerkleRootUpdated(newMerkleRoot);
     }
 
+    /**
+     * @notice Updates the scope used for verification.
+     * @dev Only callable by the contract owner.
+     * @param newScope The new scope to set.
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+    }
+    
     /**
      * @dev Claim ero20 token
      * @param recipient : Recipient
@@ -114,49 +137,45 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
 
     /**
      * @dev claim reward
-     * @param weekId : Week id for the specific week user want to withdraw from
-     * @param campaignHash : Hash of the campaign to claim from.
-     * @param token  : Token address to claim from if any
+     * @param claimIndex: position og the claim in the merkle tree
+     * @param merkleProof  : Hash of the merkle proof
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimReward(
-        uint weekId, 
-        bytes32 campaignHash, 
-        IERC20 token
-        uint256 claimIndex, 
-        uint256 amount, 
-        bytes32[] memory merkleProof
-    ) 
-        external
-        nonReentrant 
-        returns(bool) 
-    {
-        address sender = _msgSender();
-        ILearna.Eligibility memory _e = learna.checkEligibility(weekId, sender, campaignHash);
-        require(_e.canClaim, "Cannot claim at this time");
-        require(!_e.profile.other.claimed, 'Already claimed for the given week Id');
-        _e.profile.other.claimed = true;
-        if(_e.mode == Mode.LIVE) require(_now() <= _e.campaign.claimActiveUntil, 'Claim ended'); 
-        
+    function claimReward(uint256 claimIndex, bytes32[] memory merkleProof) external nonReentrant returns(bool done) {
+        ILearna.Eligibility memory clm = claimables[_msgSender()];
+        claimables[_msgSender()] = ILearna.Eligibility(false, 0, 0, 0, address(0), bytes32(0));
         unchecked {
-            if(_e.campaign.fundsNative > _e.nativeAmount) _e.campaign.fundsNative -= _e.nativeAmount;
-            if(_e.campaign.fundsERC20 > _e.nativeAmount) _e.campaign.fundsERC20 -= _e.erc20Amount;
-            _e.profile.other.amountClaimedInNative += _e.nativeAmount;
-            _e.profile.other.amountClaimedInERC20 += _e.erc20Amount;
+            if (!MerkleProof.verify(
+                merkleProof, 
+                merkleRoot, 
+                keccak256(abi.encodePacked(claimIndex, _msgSender(), clm.erc20Amount + clm.nativeAmount))
+            )) revert InvalidProof();
         }
-        
-        if(!learna.onClaimed(weekId, sender, campaignHash, _e)) revert ClaimUnsuccessful();
+        done = learna.onClaimed(clm, _msgSender());
+        if(clm.erc20Amount > 0) _claimErc20(_msgSender(), clm.erc20Amount, IERC20(clm.token)); 
+        if(clm.nativeAmount > 0) _claimNativeToken(_msgSender(), clm.nativeAmount);
+        return done; 
+    }
 
-        // Verify the Merkle proof.
-        bytes32 node = keccak256(abi.encodePacked(claimIndex, msg.sender, amount));
-        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
-
-        if(_e.erc20Amount > 0) {
-            if(token == address(0)) revert TokenIsZeroAddress();
-            _claimErc20(sender, _e.erc20Amount, IERC20(_e.campaign.token)); 
+    /**
+     * @dev Registers user for the claim. 
+     * @param campaignHash : Campaign hash
+     * @param user : User account
+     * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
+     * user cannot make eligibity check twice in the same week.
+     */
+    function setClaim(bytes32 campaignHash, address user) external returns(bool) {
+        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignHash);
+        ILearna.Eligibility memory amt = claimables[user];
+        if(amt.weekId == elg.weekId) revert EligibilityCheckDenied();
+        if(!elg.canClaim) revert ILearna.NotEligible();
+        unchecked {
+            if((elg.nativeAmount + elg.erc20Amount) == 0) revert NoClaimable();
         }
-        if(_e.nativeAmount > 0) _claimNativeToken(sender, _e.nativeAmount);
-        return true; 
+        if(elg.token == address(0)) revert ILearna.InvalidAddress(elg.token);
+        claimables[user] = elg;
+
+        return true;
     }
 
     /**
@@ -164,14 +183,26 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
      * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
      * @param output The verification output containing user data
     */
+//    struct GenericDiscloseOutputV2 {
+//         bytes32 attestationId;
+//         uint256 userIdentifier;
+//         uint256 nullifier;
+//         uint256[4] forbiddenCountriesListPacked;
+//         string issuingState;
+//         string[] name;
+//         string idNumber;
+//         string nationality;
+//         string dateOfBirth;
+//         string gender;
+//         string expiryDate;
+//         uint256 olderThan;
+//         bool[3] ofac;
+//     }
+    
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory /* userData */
     ) internal override {
-        // Check if registration is open
-        // if (!isRegistrationOpen) {
-        //     revert RegistrationNotOpen();
-        // }
 
         // // Check if nullifier has already been registered
         // if (_nullifierToUserIdentifier[output.nullifier] != 0) {
@@ -179,27 +210,30 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
         // }
 
         // Check if user identifier is valid
-        if (output.userIdentifier == 0) {
+        if(output.userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
         // Check if user identifier has already been registered
-        if (_registeredUserIdentifiers[output.userIdentifier]) {
-            revert UserIdentifierAlreadyRegistered();
+        if(verified[output.userIdentifier]) {
+            revert UserIdentifierAlreadyVerified();
         }
 
-        _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
-        _registeredUserIdentifiers[output.userIdentifier] = true;
+        // _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
+        if(bytes(output.nationality).length == 0) revert NationalityRequired();
+        verified[output.userIdentifier] = true;
 
         // Emit registration event
-        emit UserIdentifierRegistered(output.userIdentifier, output.nullifier);
+        emit UserIdentifierVerified(output.userIdentifier, output.nullifier);
     }
 
     /**
      * @dev Update learna contract instance address
      */
     function setLearna(address _learna) public onlyOwner {
-        require(_learna != learna, "Address is the same");
+        require(_learna != address(learna), "Address is the same");
         learna = ILearna(_learna);
     }
 }
+
+// https://docs.self.xyz/concepts/user-context-data

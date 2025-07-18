@@ -45,8 +45,16 @@ abstract contract Approved is Ownable {
      * @dev Set approval for target
      * @param target : Account to set approval for
      */
-    function _isApproved(address target) internal return(bool result) {
+    function _isApproved(address target) internal view returns(bool result) {
         result = approval[target];
+    }
+
+    /**
+     * @dev Set approval for target
+     * @param target : Account to set approval for
+     */
+    function isApproved(address target) public view returns(bool) {
+        return _isApproved(target);
     }
 
     /**
