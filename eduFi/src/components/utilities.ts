@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { formatEther, Hex, keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
+import { formatEther, Hex,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
@@ -48,8 +48,14 @@ export const mockCData : CData = [
 
 export const mockEligibility : Eligibility[] = [
   {
-    campaignHash: `0x${''}`,
-    value: false
+    canClaim: false,
+    erc20Amount: 0n,
+    nativeAmount: 0n,
+    weekId: 0n,
+    token: `0x`,
+    campaignHash: `0x`,
+    isVerified: false,
+    isClaimed: false
   }
 ]
 
@@ -243,21 +249,23 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @param param0 : Parameters
  * @returns object containing array of transaction data and approved functions
  */
-export function filterTransactionData({chainId, filter, functionNames = [], callback}: FilterTransactionDataProps) {
-    const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
-    let transactionData : TransactionData[] = [];
-    const index = chainIds.indexOf(chainId || chainIds[0]);
-    if(filter) {
-      functionNames.forEach((functionName) => {
-        transactionData.push(getFunctionData(functionName, chainId));
-      })
-    }
-  
-    return {
-      transactionData,
-      approvedFunctions,
-      contractAddresses: contractAddresses[index],
-    }
+export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
+  // console.log("Function", functionNames)
+  // console.log("chainId", chainId)
+  const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
+  let transactionData : TransactionData[] = [];
+  const index = chainIds.indexOf(chainId || chainIds[0]);
+  if(filter) {
+    functionNames.forEach((functionName) => {
+      transactionData.push(getFunctionData(functionName, chainId));
+    })
+  }
+
+  return {
+    transactionData,
+    approvedFunctions,
+    contractAddresses: contractAddresses[index],
+  }
 }
 
 /**
@@ -330,5 +338,19 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
     quizData,
     categories
   };
+}
 
+// Encode multiple values in binary format
+export function encodeUserData(campaignHash: Hex): string {
+  // Frontend: Creating user defined data
+  const actionData = {
+    action: 1,
+    campaignHash: campaignHash,
+  };
+
+  const userDefinedData = "0x" + Buffer.from(
+    JSON.stringify(actionData)
+  ).toString('hex').padEnd(128, '0'); 
+  
+  return userDefinedData;
 }

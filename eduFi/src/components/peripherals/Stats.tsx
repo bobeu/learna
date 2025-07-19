@@ -12,7 +12,7 @@ import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
-import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
+import useProfile from "../hooks/useProfile";
 import MinimumToken from "./inputs/MinimumToken";
 import TransitionInterval from "./inputs/TransitionInterval";
 import Admins from "./inputs/Admins";
@@ -143,7 +143,7 @@ export default function Stats() {
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
     const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${0}`);
-    const [ profile, setProfile ] = React.useState<ProfileReturnType>(mockProfileReturn);
+    // const [ profile, setProfile ] = React.useState<ProfileReturnType>(mockProfileReturn);
     
     const { 
         setpath, 
@@ -155,7 +155,7 @@ export default function Stats() {
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
 
-    const { getCampaignObj } = useProfile();
+    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -191,10 +191,10 @@ export default function Stats() {
 
     const interval = toBN(transitionInterval.toString()).toNumber();
 
-    React.useEffect(() => {
-        const prof = getCampaignObj(selectedWeek, requestedHash);
-        if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
-    }, [selectedWeek, requestedHash, profile.campaignDatum.campaignHash]);
+    // React.useEffect(() => {
+    //     const prof = getCampaignObj(selectedWeek, requestedHash);
+    //     if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
+    // }, [selectedWeek, requestedHash, profile.campaignDatum.campaignHash]);
    
     React.useEffect(() => {
         if(action === 'pause') setPausePopUp(1);

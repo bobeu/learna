@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48",
+  "contractAddress": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B",
   "functionName": "hasPassKey",
   "inputCount": 2,
   "requireArgUpdate": true,

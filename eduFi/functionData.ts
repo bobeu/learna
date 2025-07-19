@@ -16,6 +16,12 @@ import allowance44787 from "./contractsArtifacts/44787/allowance.json";
 import setTransitionInterval44787 from "./contractsArtifacts/44787/setTransitionInterval.json";
 import banUserFromCampaign44787 from "./contractsArtifacts/44787/banUserFromCampaign.json";
 import adjustCampaignValues44787 from "./contractsArtifacts/44787/adjustCampaignValues.json";
+import configId44787 from "./contractsArtifacts/44787/configId.json";
+import getClaimable44787 from "./contractsArtifacts/44787/getClaimable.json";
+import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
+import setScope44787 from "./contractsArtifacts/44787/setScope.json";
+
+// Mainnet contract configs
 import claimReward42220 from "./contractsArtifacts/42220/claimReward.json";
 import getProfile42220 from "./contractsArtifacts/42220/getProfile.json";
 import generateKey42220 from "./contractsArtifacts/42220/generateKey.json";
@@ -39,6 +45,10 @@ import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransition
 import banUserFromCampaign42220 from "./contractsArtifacts/42220/banUserFromCampaign.json";
 import adjustCampaignValues42220 from "./contractsArtifacts/42220/adjustCampaignValues.json";
 import globalData from "./contractsArtifacts/global.json";
+// import configId44787 from "./contractsArtifacts/44787/configId.json";
+// import getClaimable44787 from "./contractsArtifacts/44787/getClaimable.json";
+// import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
+// import setScope44787 from "./contractsArtifacts/44787/setScope.json";
 
 const { chainIds, approvedFunctions } = globalData;
 
@@ -64,6 +74,10 @@ const functionData = [
         { key: 'hasPassKey', value: { ...hasPassKey44787} },
         { key: 'setTransitionInterval', value: { ...setTransitionInterval44787} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues44787} },
+        { key: 'configId', value: { ...configId44787} },
+        { key: 'setConfigId', value: { ...setConfigId44787} },
+        { key: 'setScope', value: { ...setScope44787} },
+        { key: 'getClaimable', value: { ...getClaimable44787} },
     ],
     [
         { key: 'banUserFromCampaign', value: { ...banUserFromCampaign42220} },
@@ -86,6 +100,10 @@ const functionData = [
         { key: 'hasPassKey', value: { ...hasPassKey42220} },
         { key: 'setTransitionInterval', value: { ...setTransitionInterval42220} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues42220} },
+        // { key: 'configId', value: { ...configId42220} },
+        // { key: 'setConfigId', value: { ...setConfigId42220} },
+        // { key: 'setScope', value: { ...setScope42220} },
+        // { key: 'getClaimable', value: { ...getClaimable42220} },
     ]
 ];
 

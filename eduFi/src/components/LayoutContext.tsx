@@ -2,7 +2,7 @@ import { useMiniApp } from "@neynar/react";
 import React from "react";
 
 export const LayoutContext = ({overrideClassName, children} : {overrideClassName?: string | undefined, children: React.ReactNode}) => {
-    const { context } = useMiniApp();
+    const { context, isSDKLoaded } = useMiniApp();
     return(
         <div 
             style={{
@@ -13,7 +13,7 @@ export const LayoutContext = ({overrideClassName, children} : {overrideClassName
             }}
             className={["relative pb-4 mx-auto"].join(overrideClassName)}
     >
-        { children }
+        { isSDKLoaded && children }
     </div>
     );
 }

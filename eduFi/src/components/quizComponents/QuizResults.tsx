@@ -5,7 +5,7 @@ import useStorage from '../hooks/useStorage';
 import RecordPoints from '../transactions/RecordPoints';
 import { WarnBeforeClearScoresAndData } from './WarnBeforeClearScores';
 import GenerateUserKey from '../peripherals/GenerateUserKey';
-import useProfile from '../hooks/useProfile';
+// import useProfile from '../hooks/useProfile';
 import { Hex } from 'viem';
 import { useAccount, useConnect } from 'wagmi';
 
@@ -14,7 +14,7 @@ export const QuizResults = () => {
   const [showWarningBeforeExit, setShowWarning] = React.useState<number>(0);
   const [showGenerateUserKey, setShowGenerateUserKey] = React.useState<boolean>(false);
 
-  const { result, quiz, wkId, onBackToHome, setpath } = useStorage();
+  const { result, quiz, onBackToHome, setpath } = useStorage();
   const { isConnected, connector, chainId } = useAccount();
   const { connect } = useConnect();
 
@@ -23,7 +23,7 @@ export const QuizResults = () => {
   const { other: { percentage, score, timeSpent, totalPoints }} = result;
   const campaignHash = quiz.id as Hex;
 
-  const { getCampaignObj } = useProfile();
+  // const profile = useProfile({inHash: campaignHash, wkId});
 
   const handleSaveScores = () => {
     if(!isConnected && connector) {
@@ -34,9 +34,10 @@ export const QuizResults = () => {
         return alert("Please ensure you're connected to a wallet");
       }
     } 
-    const haskey_ = getCampaignObj(wkId, campaignHash).haskey;
-    if(!haskey_) setShowGenerateUserKey(true);
-    else setDrawer(1);
+    setDrawer(1);
+    // const haskey_ = profile.profile.other.haskey;
+    // if(!haskey_) setShowGenerateUserKey(true);
+    // else 
   }
 
   const getPerformanceMessage = () => {

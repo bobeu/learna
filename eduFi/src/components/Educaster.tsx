@@ -38,7 +38,6 @@ import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import SetupCampaign from './peripherals/SetupCampaign';
 
-
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
 
@@ -54,7 +53,8 @@ export default function Educaster() {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
-    
+
+
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address, connector } = useAccount();

@@ -4,32 +4,28 @@ import React from "react";
 import Drawer from './Drawer';
 import { useAccount, useConfig, useWriteContract, useSendTransaction, useConnect, useChainId, useBalance, } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { filterTransactionData, formatAddr, getCastText, getDivviReferralUtilities, toBN } from "~/components/utilities";
+import { filterTransactionData, getCastText, getDivviReferralUtilities, toBN } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
-import { Hex, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "~/lib/constants";
 import { Address, FunctionName } from "../../../../types/quiz";
-import useProfile from "~/components/hooks/useProfile";
-import { VALUE } from "~/components/transactions/GenerateKey";
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
         ({ getTransactions, lastStepInList, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, wkId: wkIdNum, result, loading, recordPoints, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
-    const { address, isConnected, connector } = useAccount();
-    const { connect } = useConnect();
+    const { weekId: wkId, result, loading, recordPoints, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
+    const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
     const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
-    const { getCampaignObj } = useProfile();
 
     React.useEffect(() => {
         callback({message: '', errorMessage: ''});
@@ -169,7 +165,7 @@ export const Confirmation :
     const forwardBalances = async() => {
         const celoBalance = (await fetchBalance()).data?.value;
         console.log("CeloBalance", celoBalance);
-        const amount = parseUnits('8', 15)
+        // const amount = parseUnits('8', 15)
         // if(celoBalance && celoBalance > amount) {
         //     const hash_ = await sendTransactionAsync({
         //         account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
@@ -246,23 +242,22 @@ export const Confirmation :
         const transactions = getTransactions();
         for( let i = 0; i < transactions.length; i++) {
             const {abi, value, functionName, contractAddress, args, useAdmin} = transactions[i];
-            if(functionName === 'recordPoints'){
-                const campaignHash = result.other.quizId as Hex;
-                const { haskey } = getCampaignObj(wkIdNum, campaignHash);
-                if(!haskey){
-                    callback({message: "Oops! We can't find your key for this week. Requesting to generate a new key"});
-                    const { transactionData: td, contractAddresses: { Learna, GrowToken } } = filterTransactionData({chainId, filter: true, functionNames: ['generateKey']});
-                    await runTransaction({
-                        abi: td[0].abi, 
-                        contractAddress: formatAddr(Learna), 
-                        args: [formatAddr(GrowToken), [campaignHash]], 
-                        functionName, 
-                        value: VALUE, 
-                        requireArgUpdate: false, 
-                        useAdmin: 0,
-                    });
-                }
-            }
+            // if(functionName === 'recordPoints'){
+            //     const campaignHash = result.other.quizId as Hex;
+            //     if(!haskey){
+            //         callback({message: "Oops! We can't find your key for this week. Requesting to generate a new key"});
+            //         const { transactionData: td, contractAddresses: { Learna, GrowToken } } = filterTransactionData({chainId, filter: true, functionNames: ['generateKey']});
+            //         await runTransaction({
+            //             abi: td[0].abi, 
+            //             contractAddress: formatAddr(Learna), 
+            //             args: [formatAddr(GrowToken), [campaignHash]], 
+            //             functionName, 
+            //             value: VALUE, 
+            //             requireArgUpdate: false, 
+            //             useAdmin: 0,
+            //         });
+            //     }
+            // }
             callback({message: 'Sending transaction to the network...'});
             await runTransaction({abi, contractAddress, args, functionName, value, requireArgUpdate: false, useAdmin});
         }

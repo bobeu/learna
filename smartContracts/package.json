@@ -23,6 +23,8 @@
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "^5.0.2",
     "@pythnetwork/pyth-sdk-solidity": "^4.1.0",
+    "@selfxyz/contracts": "^1.2.0",
+    "@selfxyz/core": "^1.0.6",
     "@thirdweb-dev/contracts": "^3.15.0",
     "dotenv": "^16.4.5",
     "hardhat": "^2.22.17",

@@ -6,18 +6,15 @@ import dynamic from "next/dynamic";
 // note: dynamic import is required for components that use the Frame SDK
 const Educaster = dynamic(() => import("~/components/Educaster"), {
   ssr: false,
+  loading: () => (
+      <div className="h-screen w-full flex items-center justify-center text-sm font-mono">
+        <h3 className="py-12 p-5 text-center rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white animate-bounce-gentle">
+          Loading...
+        </h3>
+      </div>
+    ),
 });
 export default function App() {
-  // React.useEffect(() => {
-  //   const add = async () => {
-  //     try {
-  //       await sdk.actions.addMiniApp();
-  //     } catch (err) {
-  //       console.error("Failed to add mini app:", err);
-  //     }
-  //   };
-  //   add();
-  // }, []);
   return <Educaster />;
 }
 

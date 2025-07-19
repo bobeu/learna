@@ -61,6 +61,11 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`
     },
+    identityVerificationHub: {
+      default: 0,
+      44787: '0x68c931C9a534D37aa78094877F46fE46a49F1A51',
+      42220: '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF'
+    },
     routeTo: {
       default: 1,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
@@ -79,7 +84,7 @@ const config: HardhatUserConfig = {
   },
 
   solidity: {
-    version: "0.8.24",
+    version: "0.8.28",
     settings: {          // See the solidity docs for advice about optimization and evmVersion
       optimizer: {
         enabled: true,

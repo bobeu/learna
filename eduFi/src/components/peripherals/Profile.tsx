@@ -3,49 +3,74 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
-import GenerateKey from "../transactions/GenerateKey";
 import ClaimReward from "../transactions/ClaimReward";
-import { useMiniApp, } from "@neynar/react";
-import { UserContext } from "@farcaster/frame-core/dist/context";
-import { ArrowLeft, ArrowRight, CheckCircle, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
+import { useMiniApp } from "@neynar/react";
+import { ArrowLeft, ArrowRight, StopCircle, Verified, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
 import CustomButton from "./CustomButton"
-import Wrapper2xl from "./Wrapper2xl";
-import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
+import Wrapper2xl from "./Wrapper2xl";                                                                      
+import useProfile, { ProfileReturnType } from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
+import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
 
 interface ProfileComponentProps {
-    user: UserContext | undefined;
+    fid: number | undefined;
     weekId: number;
     profileData: ProfileReturnType;
 }
 
 function ProfileComponent(
     {
-        user,
+        fid,
         weekId,
         profileData: {
-            haskey,
-            isElibigleToClaimForTheWeek,
+            profile: {
+                other: {
+                    amountClaimedInERC20,
+                    amountClaimedInNative,
+                    totalQuizPerWeek,
+                }
+            },
+            showVerificationButton,
+            showWithdrawalButton,
+            // claimable: { isVerified },
             totalPointsForACampaign,
-            totalQuizPerWeek,
-            amountClaimedInERC20,
-            amountClaimedInNative,
-            disableClaimButton,
             campaign
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
+
     const toggleDrawer = (arg:number) => setDrawer(arg);
-    const handleClaim = () => setDrawer(1);
+    const back = () => {
+        setShowQRCode(false);
+    }
+
+    const handleClaim = () => {
+        if(!showVerificationButton && !showWithdrawalButton) return null;
+        if(showWithdrawalButton) setDrawer(1);
+        if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
+    };
     const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = campaign;
+
+    if(showQRCode) {
+        return(
+            <MotionDisplayWrapper>
+                <SelfQRCodeVerifier 
+                    toggleDrawer={toggleDrawer} 
+                    back={back}
+                    campaignHash={campaign.hash_}
+                />
+            </MotionDisplayWrapper>
+        );
+    }
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
             {/* <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3> */}
             <div className="space-y-2">
-                <div className="bg-brand-gradient rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+                <div className="bg-brand-gradien rounded-2xl p-8 mb-8 bg-white border relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                         <div className="relative z-10">
                             <div className="text-6xl font-bold mb-2">
@@ -55,33 +80,33 @@ function ProfileComponent(
                             You earned {totalPointsForACampaign} out of {totalPoints.toString()} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
-                            Your FID: {user?.fid || 'NA'}
+                            Your FID: {fid || 'NA'}
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             <h3>Learners: {activeLearners.toString()}</h3>
                         </div>
-                        <div className={`border rounded-xl grid grid-cols-1 bg-white p-4 text-lg mt-2 space-y-2 opacity-80 capitalize ${canClaim? 'text-cyan-900' : 'text-red-600'}`}>
+                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${canClaim? 'text-cyan-900' : ''}`}>
                             <div className="flex justify-between gap-3 p-2">
-                                <BaggageClaim className={`w-5 h-5 text-gray-900`} />
+                                <BaggageClaim className={`w-5 h-5 text-gray-`} />
                                 <h3>{canClaim? 'Ready to claim' : 'Claim not Ready'}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
-                                <h3 className="text-gray-900">Sorted date</h3>
+                                <h3 className="text-gray-9">Sorted date</h3>
                                 <h3>{getTimeFromEpoch(transitionDate)}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
-                                <h3 className="text-gray-900">Claim ends: </h3>
+                                <h3 className="text-gray-">Claim ends: </h3>
                                 <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
-                                <h3 className="text-gray-900">Reward: </h3>
-                                <h3 className={`${isElibigleToClaimForTheWeek? 'text-green-600' : 'text-red-600'}`}>{isElibigleToClaimForTheWeek? 'Eligible' : 'NotEligible'}</h3>
+                                <h3 className="text-gray-9">Reward: </h3>
+                                <h3 className={`${showVerificationButton? 'text-green-600' : ''}`}>{showVerificationButton? 'Eligible' : 'NotEligible'}</h3>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Stats Grid */}
+                {/* Stats Grid  & QRCode*/}
                 <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
                     <div className="glass-card rounded-xl p-4">
                         <div className="flex items-center justify-center mb-3">
@@ -98,18 +123,17 @@ function ProfileComponent(
                             <Key className={`w-8 h-8 text-blue-600`} />
                         </div>
                         <div className="text-3xl font-bold text-gray-800 mb-1">
-                            { 
-                                haskey? <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'>
-                                    <CheckCircle className="w-8 h-8 " />
-                                </h3> : <div className=' p-1 text-cyan-900  text-center'>
-                                    <GenerateKey 
-                                        buttonClassName="text-md fle gap-2" 
-                                        campaignHash={hash_}
-                                    />
-                                </div>
+                            {
+                                (showVerificationButton && !showWithdrawalButton) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                            }
+                            {
+                                (showVerificationButton && showWithdrawalButton) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                            }
+                            {
+                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <StopCircle className="w-8 h-8 " /> </h3> 
                             }
                         </div>
-                        <div className="text-sm text-gray-600">Passkey</div>
+                        <div className="text-sm text-gray-600">{}</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -136,11 +160,13 @@ function ProfileComponent(
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
-                disabled={disableClaimButton}
+                disabled={(!showVerificationButton && !showWithdrawalButton) || showQRCode}
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />
-                <span>Claim</span>
+                <span>{(showVerificationButton && !showWithdrawalButton) && 'Verify To Claim'}</span>
+                <span>{showWithdrawalButton && 'Withdraw'}</span>
+                <span>{(!showVerificationButton && !showWithdrawalButton) && 'Not Eligible'}</span>
             </CustomButton>
             <ClaimReward 
                 openDrawer={openDrawer}
@@ -156,7 +182,6 @@ export default function Profile() {
     const { setpath, campaignStrings, wkId, campaignData} = useStorage();
     const [selectedWeek, setSelectedWeek] = React.useState<number>(0);
     const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0].campaignHash);
-    const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -169,7 +194,7 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const { getCampaignObj } = useProfile();
+    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
 
     const setselectedWeek = (arg: string) => {
         setSelectedWeek(Number(arg));
@@ -188,21 +213,21 @@ export default function Profile() {
         if(found?.campaignHash !== requestedHash) setRequestedHash(found?.campaignHash as Hex);
     }
 
-    React.useEffect(() => {
-        const prof = getCampaignObj(selectedWeek, requestedHash);
-        if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
-    }, [selectedWeek, profile.campaignDatum.campaignHash, requestedHash, getCampaignObj]);
-
     return(
         <Wrapper2xl useMinHeight={true} >
             <div className="space-y-6 grid grid-cols-1 ">
-                <div className="w-full relative flex justify-between items-center bg-gradient-to-r p-4 gap-4 border rounded-2xl">
+                <div className="w-full relative flex justify-between items-center bg-white p-4 gap-4 rounded-2xl">
                     {
-                        isConnected?  <ConnectButton accountStatus={"avatar"} chainStatus={"icon"} showBalance={false} /> : <h3 className="text-center">{"Not Connected To Any Wallet"}</h3>
+                        isConnected?  <ConnectButton accountStatus={"avatar"} chainStatus={"icon"} showBalance={false} /> : <h3 className="text-center">{"Not Connected"}</h3>
                     }
-                    <CustomButton onClick={goToStats} exit={true} disabled={false} overrideClassName="w-2/4 bg-white border-none">
+                    <CustomButton 
+                        onClick={goToStats} 
+                        exit={true} 
+                        disabled={false} 
+                        overrideClassName="w-2/4 bg-none hover:bg-gradient-to-r border-none "
+                    >
                         <ArrowRight className="w-5 h-5" />
-                        <span>Go To Stat</span>
+                        <span>Stats</span>
                     </CustomButton>
                 </div>
                 <CustomButton onClick={goToQuiz} exit={false} disabled={false}>
@@ -210,29 +235,38 @@ export default function Profile() {
                     <span>Take A Quiz</span>
                 </CustomButton>
                 
-                <div className="flex justify-between gap-4">
+                <div className="flex justify-between gap-4 max-w-sm">
                     {/* User can view their profile in a selected campaign */}
-                    <SelectComponent 
-                        title="Campaigns"
-                        setHash={setHash}
-                        campaigns={campaignStrings}
-                        placeHolder="Select campaign"
-                    />
+                    <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Campaigns</h3>
+                        <SelectComponent 
+                            setHash={setHash}
+                            campaigns={campaignStrings}
+                            placeHolder="Select campaign"
+                            width="w-"
+                        />
+                    </div>
                     {/* User can view their profile in a selected campaign */}
-                    <SelectComponent 
-                        title="Week"
-                        setHash={setselectedWeek}
-                        campaigns={weekIds}
-                        placeHolder="Select campaign"
-                    />
+                     <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Week</h3>
+                        <SelectComponent 
+                            setHash={setselectedWeek}
+                            campaigns={weekIds}
+                            placeHolder="Select campaign"
+                            width="w-"
+                        />
+                    </div>
+                    
                 </div>
                 
+                {/* Main profile component */}
                 <ProfileComponent 
                     weekId={wkId}
-                    user={context?.user} 
+                    fid={context?.user?.fid} 
                     profileData={profile}
                 />
-
+                
+                {/* Exit button */}
                 <CustomButton onClick={backToHome} exit={true} disabled={false} >
                     <ArrowLeft className="w-5 h-5" />
                     <span>Exit</span>

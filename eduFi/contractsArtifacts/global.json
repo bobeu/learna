@@ -19,7 +19,12 @@
     "owner",
     "allowance",
     "pause",
-    "unpause"
+    "unpause",
+    "claimReward",
+    "setScope",
+    "setConfigId",
+    "getClaimable",
+    "configId"
   ],
   "chainName": {
     "42220": "celo",
@@ -36,6 +41,7 @@
       "deployments\\celo\\Learna.json"
     ],
     "44787": [
+      "deployments\\alfajores\\Claim.json",
       "deployments\\alfajores\\FeeManager.json",
       "deployments\\alfajores\\GrowToken.json",
       "deployments\\alfajores\\Learna.json"
@@ -44,9 +50,10 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "FeeManager": "0x5A458c9fc7C9cf855AA6a54af8059cc2ffCfc225",
-      "GrowToken": "0x7910cc23B3A3D19d6369871557D867A63Ca93D74",
-      "Learna": "0x76C1271da6D0daa8f2FD2f3D15cFb12c5C12EC48"
+      "Claim": "0x7688A9e17ca6275421d3BE2521f0013c7b30c06b",
+      "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
+      "GrowToken": "0x68F896623FA0FA22b073fA29144B5E3A3D5e1190",
+      "Learna": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
