@@ -22,17 +22,6 @@ import { hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
 
-// Self///////////////////////////////
-import { useRouter } from "next/navigation";
-import { countries, getUniversalLink } from "@selfxyz/core";
-import {
-  SelfQRcode,
-  SelfAppBuilder,
-  type SelfApp,
-} from "@selfxyz/qrcode";
-
-// /////////////////////////////
-
 import { 
     filterTransactionData, 
     mockQuiz, 
@@ -65,45 +54,7 @@ export default function Educaster() {
     const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
 
-    // Self////////////////////////////////
-    const router = useRouter();
-    const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
-    const [universalLink, setUniversalLink] = useState("");
-    const [userId, setUserId] = useState(zeroAddress);
-    const excludedCountries = React.useMemo(() => [countries.NORTH_KOREA], []);
 
-     useEffect(() => {
-        try {
-        const app = new SelfAppBuilder({
-            version: 2,
-            appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Workshop",
-            scope: process.env.NEXT_PUBLIC_SELF_SCOPE || "self-workshop",
-            endpoint: `${process.env.NEXT_PUBLIC_SELF_ENDPOINT}`,
-            logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png",
-            userId: userId,
-            endpointType: "staging_https",
-            userIdType: "hex",
-            userDefinedData: "Bonjour Cannes!",
-            disclosures: {
-            minimumAge: 18,
-            nationality: true,
-            gender: true,
-            }
-        }).build();
-
-        setSelfApp(app);
-        setUniversalLink(getUniversalLink(app));
-        } catch (error) {
-        console.error("Failed to initialize Self app:", error);
-        }
-    }, []);
-
-    const handleSuccessfulVerification = () => {
-        router.push("/verified");
-    };
-    
-    ////////////////////////////////////////
-    
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address, connector } = useAccount();

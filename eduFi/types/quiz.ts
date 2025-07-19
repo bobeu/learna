@@ -219,11 +219,6 @@ export interface ReadProfile {
   campaignHash: `0x${string}`;
 }
 
-export interface Eligibility {
-  value: boolean;
-  campaignHash: `0x${string}`;
-}
-
 export interface CampaignData {
   campaignHash: Hex;
   encoded: Hex;
@@ -308,4 +303,15 @@ export type ScoresReturn = () => ScoresParam;
 export interface CampaignDatum {
   campaignHash: Address;
   campaign: string;
+}
+
+export interface Eligibility {
+  canClaim: boolean;
+  erc20Amount: bigint;
+  nativeAmount: bigint;
+  weekId: bigint;
+  token: Address;
+  campaignHash: Hex;
+  isVerified: boolean;
+  isClaimed: boolean;
 }

@@ -6,7 +6,7 @@ import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-import useProfile, { mockProfileReturn, type ProfileReturnType } from '../hooks/useProfile';
+import useProfile, { type ProfileReturnType } from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -24,7 +24,7 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
   const [stats, setStats] = useState<UserStats>(emptyStats);
 
   const {  appData } = useStorage();
-  const { quizResults } = profile;
+  const { profile: { quizResults} } = profile;
 
   useEffect(() => {
     if (quizResults && quizResults.length > 0) {
@@ -155,9 +155,9 @@ export default function Dashbaord() {
   const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0]?.campaignHash);
-  const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
+  // const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
   
-  const { getCampaignObj } = useProfile();
+  const profile = useProfile({inHash: requestedHash, wkId});
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(0, 3);
@@ -175,9 +175,9 @@ export default function Dashbaord() {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  React.useEffect(() => {
-    setProfile(getCampaignObj(wkId, requestedHash));
-  }, [wkId, requestedHash, getCampaignObj]);
+  // React.useEffect(() => {
+  //   setProfile(getCampaignObj(wkId, requestedHash));
+  // }, [wkId, requestedHash, getCampaignObj]);
 
   return(
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 font-mono">

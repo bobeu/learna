@@ -4,8 +4,9 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
+import type { Hex } from "viem";
 
-export default function SetScope({openDrawer, scope, toggleDrawer }: SetScopenProps) {
+export default function SetConfigId({openDrawer, configId, toggleDrawer }: SetConfigIdProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -13,15 +14,15 @@ export default function SetScope({openDrawer, scope, toggleDrawer }: SetScopenPr
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['setScope'],
+            functionNames: ['setConfigId'],
             callback
         });
         
-        const setupArgs = [scope];
+        const setupArgs = [configId];
 
         return { mutate, setupArgs, };
 
-    }, [chainId, scope, callback]);
+    }, [chainId, configId, callback]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = mutate.transactionData.map((txObject) => {
@@ -42,13 +43,13 @@ export default function SetScope({openDrawer, scope, toggleDrawer }: SetScopenPr
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='setScope'
+            lastStepInList='setConfigId'
         />
     )
 }
 
-interface SetScopenProps {
+interface SetConfigIdProps {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    scope: bigint;
+    configId: Hex;
 };

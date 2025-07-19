@@ -1,16 +1,14 @@
 /* eslint-disable */
-import { formatEther, Hex, keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
+import { formatEther, Hex,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
 import assert from "assert";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
-import { APP_ICON_URL, APP_NAME, CAST_MESSAGES } from "~/lib/constants";
+import { CAST_MESSAGES } from "~/lib/constants";
 import quizRawData from "../../quizData.json";
 import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
-import { SelfAppBuilder } from "@selfxyz/qrcode";
-import { IConfigStorage, VerificationConfig } from '@selfxyz/core';
 
 export const TOTAL_WEIGHT = 100;
 
@@ -50,8 +48,14 @@ export const mockCData : CData = [
 
 export const mockEligibility : Eligibility[] = [
   {
-    campaignHash: `0x${''}`,
-    value: false
+    canClaim: false,
+    erc20Amount: 0n,
+    nativeAmount: 0n,
+    weekId: 0n,
+    token: `0x`,
+    campaignHash: `0x`,
+    isVerified: false,
+    isClaimed: false
   }
 ]
 
@@ -245,21 +249,23 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @param param0 : Parameters
  * @returns object containing array of transaction data and approved functions
  */
-export function filterTransactionData({chainId, filter, functionNames = [], callback}: FilterTransactionDataProps) {
-    const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
-    let transactionData : TransactionData[] = [];
-    const index = chainIds.indexOf(chainId || chainIds[0]);
-    if(filter) {
-      functionNames.forEach((functionName) => {
-        transactionData.push(getFunctionData(functionName, chainId));
-      })
-    }
-  
-    return {
-      transactionData,
-      approvedFunctions,
-      contractAddresses: contractAddresses[index],
-    }
+export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
+  // console.log("Function", functionNames)
+  // console.log("chainId", chainId)
+  const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
+  let transactionData : TransactionData[] = [];
+  const index = chainIds.indexOf(chainId || chainIds[0]);
+  if(filter) {
+    functionNames.forEach((functionName) => {
+      transactionData.push(getFunctionData(functionName, chainId));
+    })
+  }
+
+  return {
+    transactionData,
+    approvedFunctions,
+    contractAddresses: contractAddresses[index],
+  }
 }
 
 /**
@@ -334,46 +340,17 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
   };
 }
 
-function selfConfiguration(chainId: number, account: Address) {
-  const { contractAddresses } = filterTransactionData({chainId, filter: false});
-  // const config : IConfigStorage = {
-  //   getConfig: function (id: string): Promise<VerificationConfig> {
-  //     throw new Error("Function not implemented.");
-  //   },
-  //   setConfig: function (id: string, config: VerificationConfig): Promise<boolean> {
-  //     throw new Error("Function not implemented.");
-  //   },
-  //   getActionId: function (userIdentifier: string, data: string): Promise<string> {
-  //     throw new Error("Function not implemented.");
-  //   }
-  // }
-  
-  const verificationConfig : VerificationConfig = {
-    minimumAge: 16,
-    ofac: true,
-    excludedCountries: []
-  }
+// Encode multiple values in binary format
+export function encodeUserData(campaignHash: Hex): string {
+  // Frontend: Creating user defined data
+  const actionData = {
+    action: 1,
+    campaignHash: campaignHash,
+  };
 
-  return new SelfAppBuilder({
-    appName: APP_NAME,
-    scope: process.env.SCOPE as string,
-    endpoint: contractAddresses.Claim as Address,
-    endpointType: "staging_celo", // "staging_celo" for testnet, "celo" for mainnet
-    logoBase64: APP_ICON_URL,
-    userId: account,
-    userIdType: "hex",
-    disclosures: { 
-      // Passport data fields
-      date_of_birth: true,
-      // nationality: true,
-      name: true,
-      // issuing_state: true,
-      // passport_number: true, // Passport number field
-      // gender: true,
-      // expiry_date: true,
-      
-      ...verificationConfig,
-    },
-    devMode: true, // Set to true for development/testing, false for production
-  }).build();
+  const userDefinedData = "0x" + Buffer.from(
+    JSON.stringify(actionData)
+  ).toString('hex').padEnd(128, '0'); 
+  
+  return userDefinedData;
 }
