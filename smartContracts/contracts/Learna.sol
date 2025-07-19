@@ -358,7 +358,7 @@ contract Learna is
         if(weekId == 0) return result;
         weekId -= 1;
         (,Campaign memory cp, uint erc20, uint native, bool isEligible) = _getEligibility(weekId, user, campaignHash);
-        result = Eligibility(isEligible, erc20, native, weekId, cp.token, campaignHash);
+        result = Eligibility(isEligible, erc20, native, weekId, cp.token, campaignHash, false, false);
 
         return result;
     } 

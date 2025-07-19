@@ -101,7 +101,7 @@ export default function Educaster() {
     const handleSuccessfulVerification = () => {
         router.push("/verified");
     };
-
+    
     ////////////////////////////////////////
     
     const chainId = useChainId();
@@ -359,31 +359,7 @@ export default function Educaster() {
                 selectedCampaign
             }}
         >
-            <LayoutContext>
-                <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-auto">
-                        <div className="flex justify-center mb-6">
-                        {selfApp ? (
-                            <SelfQRcode
-                                selfApp={selfApp}
-                                onSuccess={handleSuccessfulVerification}
-                                onError={(error) => {
-                                    const errorCode = error.error_code || 'Unknown';
-                                    const reason = error.reason || 'Unknown error';
-                                    console.error(`Error ${errorCode}: ${reason}`);
-                                    console.error("Error: Failed to verify identity");
-                                }}
-                            />
-                        ) : (
-                            <div className="w-[256px] h-[256px] bg-gray-200 animate-pulse flex items-center justify-center">
-                            <p className="text-gray-500 text-sm">Loading QR Code...</p>
-                            </div>
-                        )}
-                        </div>
-                    </div>
-                    </div>
-                { app }
-            </LayoutContext>
+            <LayoutContext> { app }</LayoutContext>
         </StorageContextProvider>
     )
 }

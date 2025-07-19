@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xD48A552a06700CA7B4B8a987456F28c6D379367a",
+  "contractAddress": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B",
   "functionName": "banUserFromCampaign",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -825,6 +825,16 @@
               "internalType": "bytes32",
               "name": "campaignHash",
               "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "isVerified",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isClaimed",
+              "type": "bool"
             }
           ],
           "internalType": "struct ILearna.Eligibility",
@@ -1251,6 +1261,16 @@
               "internalType": "bytes32",
               "name": "campaignHash",
               "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "isVerified",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isClaimed",
+              "type": "bool"
             }
           ],
           "internalType": "struct ILearna.Eligibility",

@@ -1,0 +1,74 @@
+{
+  "contractAddress": "0x7688A9e17ca6275421d3BE2521f0013c7b30c06b",
+  "functionName": "getClaimable",
+  "inputCount": 2,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getClaimable",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "canClaim",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "erc20Amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nativeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "weekId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "campaignHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "isVerified",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isClaimed",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ILearna.Eligibility",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

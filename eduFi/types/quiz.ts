@@ -23,7 +23,10 @@ export type FunctionName =
   'allowance'|
   'approve'|
   'pause' | 
-  'unpause' |
+  'configId' |
+  'setConfigId' |
+  'getClaimable' |
+  'setScope' |
   'getCampaingData' |
   'setMinimumToken';
 

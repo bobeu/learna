@@ -134,6 +134,8 @@ interface ILearna {
         uint weekId;
         address token;
         bytes32 campaignHash;
+        bool isVerified;
+        bool isClaimed;
     }
 
     function checkEligibility(address user,  bytes32 campaignHash) external view returns (Eligibility memory);

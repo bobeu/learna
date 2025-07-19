@@ -454,35 +454,20 @@ const selfApp = new SelfAppBuilder({
 
 
 const deeplink = getUniversalLink(selfApp);
-disclosures: {
-    // Identity fields (optional)
-    issuing_state?: boolean,      // Country that issued the passport
-    name?: boolean,               // Full name
-    passport_number?: boolean,    // Passport number
-    nationality?: boolean,        // Nationality
-    date_of_birth?: boolean,      // Date of birth
-    gender?: boolean,             // Gender
-    expiry_date?: boolean,        // Passport expiry date
-    
-    // Verification requirements (optional)
-    minimumAge?: number,          // Minimum age requirement (e.g., 18, 21)
-    excludedCountries?: string[], // ISO 3-letter codes (e.g., ['IRN', 'PRK'])
-    ofac?: boolean,               // Enable OFAC sanctions checking
-}
 
 // For Ethereum/blockchain addresses
-const selfApp = new SelfAppBuilder({
-    // ... other config
-    userId: "0x1234567890abcdef...",  // User's address
-    userIdType: 'hex',                 // Specify hex for addresses
-}).build();
+// const selfApp = new SelfAppBuilder({
+//     // ... other config
+//     userId: "0x1234567890abcdef...",  // User's address
+//     userIdType: 'hex',                 // Specify hex for addresses
+// }).build();
 
 // For regular UUIDs
-const selfApp = new SelfAppBuilder({
-    // ... other config
-    userId: "550e8400-e29b-41d4-a716-446655440000",  // UUID v4
-    userIdType: 'uuid',  // Default, can be omitted
-}).build();
+// const selfApp = new SelfAppBuilder({
+//     // ... other config
+//     userId: "550e8400-e29b-41d4-a716-446655440000",  // UUID v4
+//     userIdType: 'uuid',  // Default, can be omitted
+// }).build();
 
 
 

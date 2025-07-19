@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 60 * 5 : (24 * 60 * 60); //1 day 
-	const scopeValue = BigInt(14652748505293966212940837902653821153494751230975283497696704387898316054240n);
+	const scopeValue = BigInt(18602360624846318324803160706975563132768650215275175699779958311829163023208n);
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const merkleRoot = keccak256(stringToHex('merkleRoot'));
@@ -75,12 +75,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const isAdmin1 = await read("Learna", "getAdminStatus", admin);
 	const isAdmin2 = await read("Learna", "getAdminStatus", admin2);
 	await execute('Learna', {from: deployer}, 'approve', claim.address);
-	// await execute('Claim', {from: deployer}, 'setLearna', learna.address);
+	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setMerkleRoot', merkleRoot);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
 
-	const config = await read('Claim', 'getConfigId');
+	const config = await read('Claim', 'configId');
 	const scope = await read('Claim', 'scope');
 
 	console.log("scope", toBigInt(scope.toString()));

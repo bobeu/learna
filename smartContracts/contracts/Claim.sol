@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
 
-import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
+// import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
 // import { SelfStructs } from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
 
@@ -33,10 +33,12 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     error EligibilityCheckDenied();
     error InvalidProof();
     error InvalidUserIdentifier();
+    error NotVerified();
+    error AlreadyClaimed();
     error UserIdentifierAlreadyVerified();
 
     // Events
-    event UserIdentifierVerified(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
+    event UserIdentifierVerified(address indexed registeredUserIdentifier, bytes32 indexed campaignHash);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
     // Learna contract
@@ -49,13 +51,13 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     bytes32 public merkleRoot;
 
     /// @notice Maps nullifiers to user identifiers for registration tracking
-    mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
+    // mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
 
-    // /// @notice Maps user identifiers to registration status
-    mapping(uint256 userIdentifier => bool registered) internal verified;
+    // /// @notice Maps of campaigns to user identifiers to registration status
+    mapping(bytes32 campaignHash => mapping(address user => ILearna.Eligibility)) internal claimables;
     // _registeredUserIdentifiers[uint256(uint160(registeredAddress))];  ///////////////////////// converts user address to idenfitiers
 
-    mapping(address user => ILearna.Eligibility) private claimables;
+    // mapping(address user => ILearna.Eligibility) private claimables;
 
     /**
      * @dev Constructor
@@ -82,6 +84,10 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     // ) external onlyOwner {
     //     _setVerificationConfig(newVerificationConfig);
     // }
+
+    function getClaimable(bytes32 campaignHash, address user) external view returns(ILearna.Eligibility memory) {
+        return claimables[campaignHash][user];
+    }
 
     // Set verification config ID
     function setConfigId(bytes32 _configId) external onlyOwner {
@@ -137,20 +143,16 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
 
     /**
      * @dev claim reward
-     * @param claimIndex: position og the claim in the merkle tree
-     * @param merkleProof  : Hash of the merkle proof
+     * @param campaignHash  : Hash of the selected campaign
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimReward(uint256 claimIndex, bytes32[] memory merkleProof) external nonReentrant returns(bool done) {
-        ILearna.Eligibility memory clm = claimables[_msgSender()];
-        claimables[_msgSender()] = ILearna.Eligibility(false, 0, 0, 0, address(0), bytes32(0));
-        unchecked {
-            if (!MerkleProof.verify(
-                merkleProof, 
-                merkleRoot, 
-                keccak256(abi.encodePacked(claimIndex, _msgSender(), clm.erc20Amount + clm.nativeAmount))
-            )) revert InvalidProof();
-        }
+    function claimReward(bytes32 campaignHash) external nonReentrant returns(bool done) {
+        ILearna.Eligibility memory clm = claimables[campaignHash][_msgSender()];
+        if(!clm.isVerified) revert NotVerified();
+        if(clm.isClaimed) revert AlreadyClaimed();
+        clm.isClaimed = true;
+        claimables[campaignHash][_msgSender()] = clm;
+        require(clm.erc20Amount > 0 || clm.nativeAmount > 0, "No claim found");
         done = learna.onClaimed(clm, _msgSender());
         if(clm.erc20Amount > 0) _claimErc20(_msgSender(), clm.erc20Amount, IERC20(clm.token)); 
         if(clm.nativeAmount > 0) _claimNativeToken(_msgSender(), clm.nativeAmount);
@@ -164,16 +166,16 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      */
-    function setClaim(bytes32 campaignHash, address user) external returns(bool) {
-        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignHash);
-        ILearna.Eligibility memory amt = claimables[user];
-        if(amt.weekId == elg.weekId) revert EligibilityCheckDenied();
-        if(!elg.canClaim) revert ILearna.NotEligible();
+    function _setClaim(bytes32 campaignHash, address user) internal returns(bool) {
+        ILearna.Eligibility memory oldElg = claimables[campaignHash][user];
+        ILearna.Eligibility memory newElg = learna.checkEligibility(user, campaignHash);
+        if(oldElg.weekId == newElg.weekId) revert EligibilityCheckDenied();
+        if(!newElg.canClaim) revert ILearna.NotEligible();
         unchecked {
-            if((elg.nativeAmount + elg.erc20Amount) == 0) revert NoClaimable();
+            if((newElg.nativeAmount + newElg.erc20Amount) == 0) revert NoClaimable();
         }
-        if(elg.token == address(0)) revert ILearna.InvalidAddress(elg.token);
-        claimables[user] = elg;
+        if(newElg.token == address(0)) revert ILearna.InvalidAddress(newElg.token);
+        claimables[campaignHash][user] = newElg;
 
         return true;
     }
@@ -201,30 +203,36 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory /* userData */
+        bytes memory userData 
     ) internal override {
 
-        // // Check if nullifier has already been registered
-        // if (_nullifierToUserIdentifier[output.nullifier] != 0) {
-        //     revert RegisteredNullifier();
-        // }
+        // uint8 action = uint8(userDefinedData[0]);
+        address user = address(uint160(output.userIdentifier));
+        (uint8 action, bytes32 campaignHash) = abi.decode(userData, (uint8, bytes32));
+        
+        if(action == 1) {
+            if(output.userIdentifier == 0) {
+                revert InvalidUserIdentifier();
+            }
+            // bytes32 campaignHash = bytes32(userDefinedData[1:33]);
+            if(claimables[campaignHash][user].isVerified) {
+                revert UserIdentifierAlreadyVerified();
+            }
 
-        // Check if user identifier is valid
-        if(output.userIdentifier == 0) {
-            revert InvalidUserIdentifier();
+            if(bytes(output.nationality).length == 0) revert NationalityRequired();
+            // Check that user age is min 16
+
+            _setClaim(campaignHash, user);
+            claimables[campaignHash][user].isVerified = true;
+
         }
 
-        // Check if user identifier has already been registered
-        if(verified[output.userIdentifier]) {
-            revert UserIdentifierAlreadyVerified();
-        }
-
-        // _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
-        if(bytes(output.nationality).length == 0) revert NationalityRequired();
-        verified[output.userIdentifier] = true;
+    
+        // address user = address(uint160(output.userIdentifier));
+        // // bytes memory userDefinedData = userData[64:];
 
         // Emit registration event
-        emit UserIdentifierVerified(output.userIdentifier, output.nullifier);
+        emit UserIdentifierVerified(user, campaignHash);
     }
 
     /**
@@ -237,3 +245,10 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
 }
 
 // https://docs.self.xyz/concepts/user-context-data
+//  unchecked {
+//             if (!MerkleProof.verify(
+//                 merkleProof, 
+//                 merkleRoot, 
+//                 keccak256(abi.encodePacked(claimIndex, _msgSender(), clm.erc20Amount + clm.nativeAmount))
+//             )) revert InvalidProof();
+//         }

@@ -5,25 +5,24 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import GenerateKey from "../transactions/GenerateKey";
 import ClaimReward from "../transactions/ClaimReward";
-import { useMiniApp, } from "@neynar/react";
-import { UserContext } from "@farcaster/frame-core/dist/context";
+import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, CheckCircle, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
 import CustomButton from "./CustomButton"
-import Wrapper2xl from "./Wrapper2xl";
+import Wrapper2xl from "./Wrapper2xl";                                                                      
 import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
 
 interface ProfileComponentProps {
-    user: UserContext | undefined;
+    fid: number | undefined;
     weekId: number;
     profileData: ProfileReturnType;
 }
 
 function ProfileComponent(
     {
-        user,
+        fid,
         weekId,
         profileData: {
             haskey,
@@ -55,7 +54,7 @@ function ProfileComponent(
                             You earned {totalPointsForACampaign} out of {totalPoints.toString()} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
-                            Your FID: {user?.fid || 'NA'}
+                            Your FID: {fid || 'NA'}
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             <h3>Learners: {activeLearners.toString()}</h3>
@@ -227,12 +226,14 @@ export default function Profile() {
                     />
                 </div>
                 
+                {/* Main profile component */}
                 <ProfileComponent 
                     weekId={wkId}
-                    user={context?.user} 
+                    fid={context?.user?.fid} 
                     profileData={profile}
                 />
-
+                
+                {/* Exit button */}
                 <CustomButton onClick={backToHome} exit={true} disabled={false} >
                     <ArrowLeft className="w-5 h-5" />
                     <span>Exit</span>

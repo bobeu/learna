@@ -78,11 +78,3 @@ However, this does not fully replicate the npx install flow and may not catch al
 ### Environment Variables and Scripts
 
 If you update environment variable handling, remember to replicate any changes in the `dev`, `build`, and `deploy` scripts as needed. The `build` and `deploy` scripts may need further updates and are less critical for most development workflows.
-
-<!-- https://miniapps.farcaster.xyz/docs/guides/publishing -->
-<!-- https://web.dev/learn/performance -->
-<!-- https://pagespeed.web.dev/analysis/https-pagespeed-web-dev/bywca5kqd1?form_factor=mobile -->
-<!-- https://farcaster.xyz/~/developers/mini-apps/debug -->
-
-<!-- "I want to create a set of quizzes on the following subjects: Web3Js, Wagmi, ReactJs, Javascript, Typescript, Hardhat, Farcaster SDK, Python, Rust, Defi, Celo, self-protocol sdk, NextJS, and cryptocurrency. Each subject should be a parent category in a JSON object. Under each category, create three difficulty levels, such as easy, medium, and hard. Each difficulty level should contain at least 10 uniquely crafted questions with a single correct answer. Each question should contain the following fields: question, options, answer, userAnswer, and a hash. The option should be an array of objects. Each object should contain 'label' and 'value'. Use alphabets to denote the label, while the value should be the actual option to the question. The 'answer' field should be the correct answer to the question. 'userAnswer' should have no value, and the hash is a unique hexadecimal value gotten by hashing the question text. Take this prompt and add to the result as a parent category using the key as 'prompt'. Add a 'categories' category as a parent category with the value being all the subjects separated by a comma. Add all the difficulty levels to a parent category called 'difficultylevels' separated by a comma. Note that the format should be grouped by category as specified.", -->
-

@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import type { Address,  FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
+import type { Address,  Claim,  FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
 import { campaigns } from "./utils";
 
 enum Mode { LOCAL, LIVE }
