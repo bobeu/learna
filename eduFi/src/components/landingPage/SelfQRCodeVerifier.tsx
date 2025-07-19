@@ -2,7 +2,6 @@ import React from "react";
 import { SelfQRcodeWrapper, SelfAppBuilder, type SelfApp } from "@selfxyz/qrcode";
 import { APP_ICON_URL, APP_NAME } from "~/lib/constants";
 import { encodeUserData, filterTransactionData, formatAddr } from "../utilities";
-// import { useRouter } from "next/navigation";
 import { useAccount, useChainId } from "wagmi";
 import { Address } from "../../../types/quiz";
 import {  VerificationConfig, countries, getUniversalLink } from "@selfxyz/core";
@@ -19,26 +18,6 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
 
     const chainId = useChainId();
     const account = formatAddr(useAccount().address);
-    // const router = useRouter();
-
-
-    // Frontend
-    // userDefinedData: encodeUserData(
-    //     1,      // Action: 1 = transfer
-    //     50000,  // Amount: $50,000
-    //     0b1101  // Flags: enhanced_checks | ofac | fast_track
-    // )
-
-// Backend
-// function decodeUserData(hex: string): { action: number, amount: number, flags: number } {
-//   const buffer = Buffer.from(hex, 'hex');
-  
-//   return {
-//     action: buffer.readUInt8(0),
-//     amount: Number(buffer.readBigUInt64BE(1)),
-//     flags: buffer.readUInt32BE(9)
-//   };
-// }
 
     const { verificationConfig, claim } = React.useMemo(
         () => {
@@ -61,7 +40,6 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
-        console.log("process.env.SCOPE as string", process.env.NEXT_PUBLIC_SCOPE as string);
         const userDefinedData = encodeUserData(campaignHash);
         try {
             const app = new SelfAppBuilder({
@@ -85,7 +63,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
         } catch (error) {
             console.error("Failed to initialize Self app:", error);
         }
-    }, []);
+    }, [campaignHash, account, claim, verificationConfig]);
 
     const displayToast = (message: string) => {
         setToastMessage(message);
