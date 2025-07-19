@@ -35,7 +35,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
                 claim,
             }
         },  
-        [chainId, countries]
+        [chainId]
     );
 
     // Use useEffect to ensure code only executes on the client side

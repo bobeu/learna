@@ -16,7 +16,7 @@ export default function GenerateKey({campaignHash, buttonClassName} : {campaignH
     const { chainId, address } = useAccount();
     const account = formatAddr(address);
     const { weekId, wkId } = useStorage();
-    const { haskey } = useProfile().getCampaignObj(wkId, campaignHash);
+    const { profile: { other: { haskey}} } = useProfile({wkId, inHash: campaignHash});
 
     // Build the transactions to run
     const { mutate, funcArgs } = React.useMemo(() => {

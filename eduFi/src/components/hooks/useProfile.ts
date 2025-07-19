@@ -138,7 +138,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             claimed: claimed && claim.isClaimed
        };
 
-   }, [result, campaignHashes, requestedHash, weekData, campaignData, requestedWkId]);
+   }, [result, campaignHashes, requestedHash, wkId, weekData, campaignData, requestedWkId]);
 
     // Update the campaignHash in state whenever the inHash or requested weekId changes
     React.useEffect(() => {
