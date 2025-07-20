@@ -28,9 +28,6 @@ contract Learna is
     // Dev Address
     address private dev;
 
-    ///@dev Flag to show whether to ask for key before claim or not
-    bool public enforceKey;
-
     // Campaign fee manager
     address private immutable feeManager;
 
@@ -44,15 +41,6 @@ contract Learna is
 
     modifier validateAddress(address token) {
         require(token != address(0), "Token is zero");
-        _;
-    }
-
-    // Only registered users
-    modifier onlyPasskeyHolder(uint weekId, address user, bytes32[] memory campaignHashes) {
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
-            require(learners[weekId][campaignHash][user].other.haskey, 'Only passkey holders');
-        }
         _;
     }
 
@@ -150,52 +138,6 @@ contract Learna is
     }
 
     /**
-     * @dev Generate new key for campaigns in the current week.
-     * @param token : GROW Token address
-     * @param campaignHashes : Campaign hash
-     * @notice If minimum token paid for generating a key is greater than 0, the amount payable by the sender is 
-     * a multiple of the msg.value by total campaign they're subscribing to.
-     */
-    function generateKey(address token, bytes32[] memory campaignHashes) 
-        public 
-        payable 
-        whenNotPaused 
-        validateAddress(token) 
-        returns(bool)
-    {
-        State memory st = state;
-        uint weekId = st.weekCounter;
-        require(msg.value >= (st.minimumToken * campaignHashes.length), "Insufficient token");
-        address sender = _msgSender();
-        _forwardFee(msg.value);
-        for(uint i = 0; i < campaignHashes.length; i++){
-            bytes32 campaignHash = campaignHashes[i];
-            _validateCampaign(campaignHash, weekId); 
-            Profile memory pf = _getProfile(weekId, campaignHash, sender);
-            require(!pf.other.haskey, 'Passkey exist');
-            pf.other.haskey = true;
-            pf.other.amountMinted = st.minimumToken ;
-            pf.other.passKey = keccak256(abi.encodePacked(sender, weekId, pf.other.haskey, st.minimumToken));
-            _setProfile(weekId, campaignHash, sender, pf.other);
-
-        }
-        require(IGrowToken(token).allocate(msg.value, sender), 'Gen: Allocation failed');
-
-        emit PasskeyGenerated(sender, weekId, campaignHashes);
-        return true;
-    }
-
-    /**
-     * @dev Check whether user has generated a passkey for the current week
-     * @param user : User 
-     * @param campaignHash : User 
-     * @return : True or False
-    */
-    function hasPassKey(address user, bytes32 campaignHash) public view returns(bool) {
-        return _getProfile(state.weekCounter, campaignHash, user).other.haskey;
-    }
- 
-    /**
      * @dev Register users for weekly reward
      * @param user : User 
      * @param campaignHash : Campaign hash 
@@ -216,11 +158,11 @@ contract Learna is
         _validateCampaign(campaignHash, weekId);
         Campaign memory cpo = _getCampaign(weekId, campaignHash);
         Profile memory pf = _getProfile(weekId, campaignHash, user);
+        if(pf.other.blacklisted) revert UserBlacklisted();
         if(msg.value > 0) {
-            require(pf.other.haskey, 'No pass key');
             IGrowToken(token).burn(user, pf.other.amountMinted);
         }
-        require(pf.other.totalQuizPerWeek <= 14, 'Storage limit exceeded');
+        require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
     
         unchecked {
             cpo.activeLearners += 1;
@@ -246,7 +188,7 @@ contract Learna is
         }
         _setCampaign(weekId, campaignHash, cpo);
 
-        emit RegisteredForWeeklyEarning(user, weekId, campaignHash);
+        emit PointRecorded(user, weekId, campaignHash, quizResult);
         return true;
     }
 
@@ -272,14 +214,47 @@ contract Learna is
                     bytes32 campaignHash = campaignHashes[j];
                     _validateCampaign(campaignHash, weekId);
                     Profile memory pf = _getProfile(weekId, campaignHash, user);
-                    if(pf.other.haskey) {
-                        pf.other.haskey = false;
+                    if(!pf.other.blacklisted) {
+                        pf.other.blacklisted = true;
                         _setProfile(weekId, campaignHash, user, pf.other);
                     }
                 }
             }
         }
-        emit Banned(_users, weekId, campaignHashes);
+        emit Blacklisted(_users, weekId, campaignHashes);
+        return true;
+    }
+
+    /**
+     * @dev Remove users from the list of campaigns in the current week
+     * @param _users : List of users 
+     * @notice Only owner function
+    */
+    function unbanUserFromCampaign(
+        address[] memory _users, 
+        bytes32[] memory campaignHashes
+    ) 
+        public 
+        onlyAdmin
+        whenNotPaused 
+        returns(bool) 
+    {
+        uint weekId = state.weekCounter;
+        for(uint i = 0; i < _users.length; i++) {
+            address user = _users[i];
+            if(user != address(0)) {
+                for(uint j=0; j<campaignHashes.length; j++){
+                    bytes32 campaignHash = campaignHashes[j];
+                    _validateCampaign(campaignHash, weekId);
+                    Profile memory pf = _getProfile(weekId, campaignHash, user);
+                    if(pf.other.blacklisted) {
+                        pf.other.blacklisted = false;
+                        _setProfile(weekId, campaignHash, user, pf.other);
+                    }
+                }
+            }
+        }
+        emit Unbanned(_users, weekId, campaignHashes);
         return true;
     }
     
@@ -333,11 +308,10 @@ contract Learna is
                 totalScore += pf.quizResults[i].other.score;
             }
         }
-        // if(totalScore == 0) revert("here");
         (uint erc20, uint native) = _calculateShare(totalScore, cp);
         erc20Amount = erc20;
         nativeAmount = native;
-        isEligible = mode == Mode.LIVE? _now() <= cp.claimActiveUntil && !pf.other.claimed && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
+        isEligible = mode == Mode.LIVE? _now() <= cp.claimActiveUntil && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
     }
 
     /**
@@ -377,9 +351,6 @@ contract Learna is
     {
         Campaign memory cp = _getCampaign(elg.weekId, elg.campaignHash);
         Profile memory pf = _getProfile(elg.weekId, elg.campaignHash, sender);
-        if(enforceKey){
-            if(!pf.other.haskey) revert NoPasskey();
-        }
         pf.other.claimed = true;
         unchecked {
             if(cp.fundsNative > elg.nativeAmount) cp.fundsNative -= elg.nativeAmount;
@@ -498,7 +469,6 @@ contract Learna is
     ) 
         public 
         whenNotPaused 
-        // onlyOwner
         onlyAdmin
         returns(bool) 
     {
@@ -551,35 +521,30 @@ contract Learna is
 
     /**
      * @dev Adjust funds in campaigns. Only admin function
-     * @param campaignHashes : Campaign hashes
-     * @param erc20Values : ERC20 values.
-     * @param nativeValues : Values in native coin e.g CELO
+     * @param campaignHash : Campaign hashes
+     * @param erc20Value : ERC20 values.
+     * @param nativeValue : Values in native coin e.g CELO
      * @notice The function can increase or decrease the values in a campaign. Just parse desired values.
      *         - For each campaign, values cannot be adjusted beyond the balances in this contract.
      */
     function adjustCampaignValues(
-        bytes32[] memory campaignHashes, 
-        uint[] memory erc20Values,
-        uint[] memory nativeValues
+        bytes32 campaignHash, 
+        uint erc20Value,
+        uint nativeValue
     ) public onlyAdmin returns(bool) {
         uint weekId = state.weekCounter;
         uint totalNativeValues;
-        require(campaignHashes.length == erc20Values.length && erc20Values.length == nativeValues.length, '2: Array mismatch');
-        for(uint i = 0; i < campaignHashes.length; i++){
-            bytes32 campaignHash = campaignHashes[i];
-            uint erc20Value = erc20Values[i];
-            uint nativeValue = nativeValues[i];
-            unchecked {
-                totalNativeValues += nativeValue;
-            }
-            Campaign memory cp = _getCampaign(weekId, campaignHash);
-            require(IERC20(cp.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
-            cp.fundsERC20 = erc20Value;
-            cp.fundsNative = nativeValue;
-            cp.lastUpdated = _now();
-            _setCampaign(weekId, campaignHash, cp);
+        unchecked {
+            totalNativeValues += nativeValue;
         }
-        require(address(this).balance >= totalNativeValues, "NtiveBal inconsistent");
+        Campaign memory cp = _getCampaign(weekId, campaignHash);
+        require(IERC20(cp.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
+        require(address(this).balance >= totalNativeValues, "NativeBal inconsistent");
+        cp.fundsERC20 = erc20Value;
+        cp.fundsNative = nativeValue;
+        cp.lastUpdated = _now();
+        _setCampaign(weekId, campaignHash, cp);
+
         return true;
     }
 
@@ -603,25 +568,14 @@ contract Learna is
     }
 
     // Set minimum payable token by users when signing up
-    function setEnforcekey(bool _enforcekey) public onlyAdmin whenNotPaused  returns(bool) {
-        enforceKey = _enforcekey;
-        return true; 
-    }
-
-    // Set minimum payable token by users when signing up
     function setTransitionInterval(uint64 newInternal) public onlyAdmin whenNotPaused returns(bool) {
         state.minimumToken = newInternal;
         return true;
     }
 
     // Get user's data
-    function getProfile(address user, uint weekId, bytes32[] memory campaignHashes) public view returns(ReadProfile[] memory result) {
-        result = new ReadProfile[](campaignHashes.length);
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
-            result[i] = ReadProfile(_getProfile(weekId, campaignHash, user), campaignHash);
-        } 
-        return result; 
+    function getProfile(address user, uint weekId, bytes32 campaignHash) public view returns(ReadProfile memory result) {
+        return result = ReadProfile(_getProfile(weekId, campaignHash, user), campaignHash);
     }
 
     /**

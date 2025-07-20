@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function ClaimReward({weekId, campainHash, openDrawer, toggleDrawer }: claimProps) {
+export default function Unban({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -14,7 +14,7 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['claimReward'],
+            functionNames: ['unbanUserFromCampaign'],
             callback
         });
 
@@ -25,7 +25,7 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [campainHash],
+                args: [[user], [campaignHash]],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -34,21 +34,21 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
         })
         return transactions;
     
-   }, [td, weekId, campainHash]);
+   }, [td, user, campaignHash]);
 
     return(
         <Confirmation 
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='claimReward'
+            lastStepInList='unbanUserFromCampaign'
         />
     )
 }
-
-type claimProps = {
-    weekId: bigint;
+// unbanUserFromCampaign
+type RegisterUsersForWeeklyEarningProps = {
+    user: Address;
+    campaignHash: Hex;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campainHash: Hex;
 };

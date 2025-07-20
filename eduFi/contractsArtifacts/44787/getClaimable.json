@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x7688A9e17ca6275421d3BE2521f0013c7b30c06b",
+  "contractAddress": "0x17a6a588Af098B71f790d84BefDaA03E8BF0A438",
   "functionName": "getClaimable",
   "inputCount": 2,
   "requireArgUpdate": true,

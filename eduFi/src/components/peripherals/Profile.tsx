@@ -5,7 +5,7 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
-import { ArrowLeft, ArrowRight, StopCircle, Verified, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
+import { ArrowLeft, ArrowRight, Verified, Store, Key, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
 import useProfile, { ProfileReturnType } from "../hooks/useProfile";
@@ -70,7 +70,7 @@ function ProfileComponent(
         <MotionDisplayWrapper className="space-y-2 font-mono">
             {/* <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3> */}
             <div className="space-y-2">
-                <div className="bg-brand-gradien rounded-2xl p-8 mb-8 bg-white border relative overflow-hidden">
+                <div className="bg-brand-gradient  rounded-2xl p-8 mb-8 text-white border relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                         <div className="relative z-10">
                             <div className="text-6xl font-bold mb-2">
@@ -120,7 +120,7 @@ function ProfileComponent(
 
                     <div className="glass-card rounded-xl p-4">
                         <div className="flex items-center justify-center mb-3">
-                            <Key className={`w-8 h-8 text-blue-600`} />
+                            <IdCard className={`w-8 h-8 text-blue-600`} />
                         </div>
                         <div className="text-3xl font-bold text-gray-800 mb-1">
                             {
@@ -130,10 +130,10 @@ function ProfileComponent(
                                 (showVerificationButton && showWithdrawalButton) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                             }
                             {
-                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <StopCircle className="w-8 h-8 " /> </h3> 
+                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
                             }
                         </div>
-                        <div className="text-sm text-gray-600">{}</div>
+                        <div className="text-sm text-gray-600">Verification status</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -217,9 +217,12 @@ export default function Profile() {
         <Wrapper2xl useMinHeight={true} >
             <div className="space-y-6 grid grid-cols-1 ">
                 <div className="w-full relative flex justify-between items-center bg-white p-4 gap-4 rounded-2xl">
-                    {
-                        isConnected?  <ConnectButton accountStatus={"avatar"} chainStatus={"icon"} showBalance={false} /> : <h3 className="text-center">{"Not Connected"}</h3>
-                    }
+                    <ConnectButton 
+                        accountStatus={"avatar"} 
+                        chainStatus={"icon"} 
+                        showBalance={false} 
+                        label="Reconnect"
+                    />
                     <CustomButton 
                         onClick={goToStats} 
                         exit={true} 

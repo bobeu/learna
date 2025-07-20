@@ -233,7 +233,7 @@ export default function Dashbaord() {
           {isMenuOpen && (
               <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-lg rounded-b-lg z-20 space-y-6">
                 <div className='pl-4'>
-                  { isConnected && <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Welcome to Educaster" />}
+                  <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Reconnect" />
                 </div>
                   <div className="px-4 py-4 space-y-4">
                     <button onClick={() => setpath('stats')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
@@ -258,17 +258,17 @@ export default function Dashbaord() {
 
       {/* Stats card */}
       <div className="my-8">
-        <div className="flex justify-between items-center px-4">
+        <div className="flex justify-between items-center gap-4">
           <div className="w-2/4 flex items-center space-x-3">
             <Star className="w-6 h-6 text-yellow-500" />
             <h2 className="text-2xl font-bold text-gray-800">Quiz Stats</h2>
           </div>
-          <div className="w-2/4">
+          <div className='w-2/4'>
             <SelectComponent 
-              // title='Campaigns'
               campaigns={campaignStrings}
               placeHolder='Select campaign'
               setHash={setHash}
+              width='w-full'
             />
           </div>
         </div>

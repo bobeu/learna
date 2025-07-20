@@ -25,7 +25,7 @@ describe("Learna", function () {
 
       const newNativeValues = value / 2n;
 
-      await learna.connect(admin2).adjustCampaignValues([campaignHash], [newErc20Values], [newNativeValues]);
+      await learna.connect(admin2).adjustCampaignValues(campaignHash, newErc20Values, newNativeValues);
       const newCampaigns = (await getCampaigns(learna)).campaigns;
 
       // console.log("CP", cp.campaigns);

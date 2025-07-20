@@ -16,8 +16,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let {deployer, reserve, routeTo, admin, admin2, identityVerificationHub } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
-	const transitionInterval = networkName === 'alfajores'? 60 * 5 : (24 * 60 * 60); //1 day 
-	const scopeValue = BigInt(18602360624846318324803160706975563132768650215275175699779958311829163023208n);
+	const transitionInterval = networkName === 'alfajores'? 60 * 15 : (24 * 60 * 60); //1 day 
+	const scopeValue = BigInt(17861766011286678596260863231331416723713612743228727339231780108618036579776n);
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const merkleRoot = keccak256(stringToHex('merkleRoot'));

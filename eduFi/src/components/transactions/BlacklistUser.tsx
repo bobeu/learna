@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
+export default function BlacklistUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 

@@ -46,18 +46,16 @@ export const mockCData : CData = [
   }
 ];
 
-export const mockEligibility : Eligibility[] = [
-  {
-    canClaim: false,
-    erc20Amount: 0n,
-    nativeAmount: 0n,
-    weekId: 0n,
-    token: `0x`,
-    campaignHash: `0x`,
-    isVerified: false,
-    isClaimed: false
-  }
-]
+export const mockEligibility : Eligibility = {
+  canClaim: false,
+  erc20Amount: 0n,
+  nativeAmount: 0n,
+  weekId: 0n,
+  token: `0x`,
+  campaignHash: `0x`,
+  isVerified: false,
+  isClaimed: false
+}
 
 export const mockProfile : Profile = {
   other: {

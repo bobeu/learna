@@ -7,7 +7,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 interface ILearna {
     enum Mode { LOCAL, LIVE }
 
-    error NoPasskey();
+    error UserBlacklisted();
     error NotEligible();
     error ClaimEnded(uint64);
     error InvalidAddress(address);
@@ -15,11 +15,11 @@ interface ILearna {
     error InsufficientAllowance(uint256);
 
     event NewCampaign(bytes32 campaignHash, Campaign campaign);
+    event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
     event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
-    event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32 campainHash);
-    event Banned(address[] indexed users, uint weekId, bytes32[] campainHashes);
+    event Blacklisted(address[] indexed users, uint weekId, bytes32[] indexed campainHashes);
+    event Unbanned(address[] indexed users, uint weekId, bytes32[] indexed campainHashes);
     event Sorted(uint _weekId, uint newWeekId, string[] campainHashes);
-    event PasskeyGenerated(address indexed sender, uint weekId, bytes32[] campainHashes);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
 
     struct Campaign {
@@ -101,9 +101,8 @@ interface ILearna {
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
         bool claimed;
-        bytes32 passKey;
-        bool haskey;
         uint8 totalQuizPerWeek;
+        bool blacklisted;
     }
 
     struct Profile {
