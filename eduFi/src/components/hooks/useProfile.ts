@@ -11,7 +11,7 @@ export const toHash = (arg: string) => {
     return keccak256(stringToHex(arg));
 }
 
-export interface UseProfileType { inHash: Hex, wkId: number }
+export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface ProfileReturnType {
     profile: Profile;
     claimable: Eligibility;
@@ -87,17 +87,24 @@ export const mockProfileReturn : ProfileReturnType = {
 };
 
 export default function useProfile({ inHash, wkId }: UseProfileType){
+    const { campaignData, callback, weekId, weekData } = useStorage();
     const [firstRead, setRead] = React.useState<boolean>(false);
-    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash);
-    const [requestedWkId, setRequestedId] = React.useState<number>(wkId);
+    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash?? campaignData[0].campaignHash);
+    const [requestedWkId, setRequestedId] = React.useState<number>(wkId?? 0);
     const [returnObj, setReturnObj] = React.useState<ProfileReturnType>(mockProfileReturn);
 
     const chainId = useChainId();
     const config = useConfig();
     const { address, isConnected } = useAccount();
     const account = formatAddr(address);
-    const { campaignData, callback, weekId, weekData } = useStorage();
 
+    const setHash = (arg: Hex) => {
+        if(requestedHash !== arg) setCampaignHash(arg);
+    }
+
+    const setWeekId = (arg: number) => {
+        if(requestedWkId !== arg) setRequestedId(arg);
+    }
     /**
      * @dev Fetches the profile for the connected account for all the campaigns in the current week
      * It also fetches the claim eligibility for the same week. This can be used in any of the components inside 
@@ -161,13 +168,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             }
         }
     }, [firstRead, data]);
- 
-    // Update the campaignHash in state whenever the inHash or requested weekId changes
-    React.useEffect(() => {
-        if(requestedHash !== inHash) setCampaignHash(inHash);
-        if(requestedWkId !== wkId) setRequestedId(wkId);
-    }, [inHash, wkId]);
-   
+
     // Update the campaignHash in state whenever the inHash or requested weekId changes
     React.useEffect(() => {
         const controller = new AbortController();
@@ -195,6 +196,10 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
     }, [inHash, wkId, campaignData, weekData, requestedWkId, requestedHash]);
 
  
-    return { ...returnObj } 
+    return { 
+        ...returnObj,
+        setHash,
+        setWeekId
+    } 
 
 }

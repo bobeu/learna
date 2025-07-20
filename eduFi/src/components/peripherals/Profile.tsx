@@ -180,8 +180,6 @@ function ProfileComponent(
 
 export default function Profile() {
     const { setpath, campaignStrings, wkId, campaignData} = useStorage();
-    const [selectedWeek, setSelectedWeek] = React.useState<number>(0);
-    const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0].campaignHash);
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -194,10 +192,10 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
+    const { setWeekId, setHash: setCampaignHash, ...rest } = useProfile({});
 
     const setselectedWeek = (arg: string) => {
-        setSelectedWeek(Number(arg));
+        setWeekId(Number(arg));
     }
 
     const goToQuiz = () => {
@@ -210,7 +208,7 @@ export default function Profile() {
 
     const setHash = (arg: string) => {
         const found = campaignData.find(q => q.campaign === arg);
-        if(found?.campaignHash !== requestedHash) setRequestedHash(found?.campaignHash as Hex);
+        if(found) setCampaignHash(found.campaignHash as Hex);
     }
 
     return(
@@ -266,7 +264,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={profile}
+                    profileData={rest}
                 />
                 
                 {/* Exit button */}

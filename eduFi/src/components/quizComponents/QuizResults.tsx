@@ -23,8 +23,6 @@ export const QuizResults = () => {
   const { other: { percentage, score, timeSpent, totalPoints }} = result;
   const campaignHash = quiz.id as Hex;
 
-  // const profile = useProfile({inHash: campaignHash, wkId});
-
   const handleSaveScores = () => {
     if(!isConnected && connector) {
       if(connector) {
@@ -35,9 +33,6 @@ export const QuizResults = () => {
       }
     } 
     setDrawer(1);
-    // const haskey_ = profile.profile.other.haskey;
-    // if(!haskey_) setShowGenerateUserKey(true);
-    // else 
   }
 
   const getPerformanceMessage = () => {

@@ -27,7 +27,7 @@ import {
     mockQuiz, 
     mockQuizResult, 
     mockReadData, 
-    loadQuizData, 
+    load_d_, 
     formatAddr, 
     mockCampaign, 
     toBN
@@ -64,7 +64,7 @@ export default function Educaster() {
     // Update quiz data
     React.useEffect(() => {
         if(!appData.quizData) {
-            const appData_ = loadQuizData({timePerQuestion: TIME_PER_QUESTION, totalPoints: TOTAL_POINTS});
+            const appData_ = load_d_({timePerQuestion: TIME_PER_QUESTION, totalPoints: TOTAL_POINTS});
             setAppData(appData_);
         }
     }, [appData.quizData]);

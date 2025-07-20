@@ -138,12 +138,9 @@ function Stat({campaign} : {campaign: Campaign}) {
 }
 
 export default function Stats() {
-    const [ selectedWeek, setSelectedWeek ] = React.useState<number>(0);
     const [ openPausePopUp, setPausePopUp ] = React.useState<number>(0);
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
-    const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${0}`);
-    // const [ profile, setProfile ] = React.useState<ProfileReturnType>(mockProfileReturn);
     
     const { 
         setpath, 
@@ -155,7 +152,7 @@ export default function Stats() {
         state: { minimumToken, transitionInterval, weekCounter }
     } = useStorage();
 
-    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
+    const { setHash, setWeekId, ...rest } = useProfile({});
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -170,11 +167,11 @@ export default function Stats() {
 
     const setCampaignStr = (arg: string) => {
         const fd = campaignData.find(q => q.campaign === arg);
-        setRequestedHash(fd?.campaignHash || `0x${0}`);
+        if(fd) setHash(fd?.campaignHash);
     }
 
     const setselectedWeek = (arg: string) => {
-        setSelectedWeek(Number(arg));
+        setWeekId(toBN(arg).toNumber());
     }
 
     const setaction = (arg: string) => {
@@ -262,7 +259,7 @@ export default function Stats() {
                         placeHolder="Weeks"
                     />
                 </div>
-                <Stat campaign={profile.campaign}/>
+                <Stat campaign={rest.campaign}/>
             </div>
 
             {/* Admin and Owner only settings */}

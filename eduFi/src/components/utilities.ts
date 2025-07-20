@@ -7,7 +7,7 @@ import assert from "assert";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
-import quizRawData from "../../quizData.json";
+import _d_ from "../../_d_.json";
 import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
@@ -281,8 +281,8 @@ export function getCastText(task: FunctionName, weekId: number) {
  * @dev Load and prepare data from the JSON API
  * @returns : Formatted data and categories
  */
-export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
-  const d = quizRawData;
+export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
+  const d = _d_;
   // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
   const categories : Category[] = d.categories.split(',') as Category[];
   // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
