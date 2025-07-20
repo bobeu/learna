@@ -5,7 +5,7 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
-import { ArrowLeft, ArrowRight, Verified, Store, Key, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard } from "lucide-react";
+import { ArrowLeft, ArrowRight, Verified, Store, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
 import useProfile, { ProfileReturnType } from "../hooks/useProfile";
@@ -23,7 +23,6 @@ interface ProfileComponentProps {
 function ProfileComponent(
     {
         fid,
-        weekId,
         profileData: {
             profile: {
                 other: {
@@ -171,7 +170,6 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                weekId={BigInt(weekId)}
                 campainHash={hash_}
             />
         </MotionDisplayWrapper>
