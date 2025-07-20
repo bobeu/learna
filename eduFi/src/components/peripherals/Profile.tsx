@@ -207,8 +207,10 @@ export default function Profile() {
     };
 
     const setHash = (arg: string) => {
-        const found = campaignData.find(q => q.campaign === arg);
-        if(found) setCampaignHash(found.campaignHash as Hex);
+        const found = campaignData.filter(q => q.campaign === arg);
+        console.log("Arg", arg);
+        console.log("Found", found);
+        if(found.length > 0) setCampaignHash(found[0].campaignHash as Hex);
     }
 
     return(

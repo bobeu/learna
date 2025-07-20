@@ -291,7 +291,7 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
   // Loop through the categories
   d.categoryData.forEach(({category, levels, description}) => {
     // Loop through the levels
-    levels.forEach(({questions, difficulty, id: levelId}) => {
+    levels.forEach(({questions, difficulty,}) => {
       let qs : Question[] = [];
       const questionSize = questions.length;
       assert(totalPoints >= questionSize, "Totalpoints is invalid");

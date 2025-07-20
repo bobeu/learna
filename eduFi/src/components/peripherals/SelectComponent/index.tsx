@@ -1,3 +1,5 @@
+/**eslint-disable */
+
 import * as React from "react"
 
 import {
@@ -16,7 +18,7 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash} 
 
     React.useEffect(() => {
       setHash(campaigns?.[0]);
-    }, [campaigns, setHash]);
+    }, []);
 
     return (
     <Select onValueChange={onChange} defaultValue={campaigns?.[0]}>

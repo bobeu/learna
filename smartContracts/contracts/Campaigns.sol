@@ -70,7 +70,7 @@ abstract contract Campaigns is ILearna {
     function _initializeCampaign(
         uint weekId, 
         uint64 transitionDate,
-        bytes32 campaignHash,
+        bytes32 campaignHash, 
         bytes memory encoded,
         address operator,
         uint256 fundsNative,
@@ -80,7 +80,7 @@ abstract contract Campaigns is ILearna {
         require(!_isInitializedCampaign(weekId, campaignHash), "Already initialized");
         uint32 slot = uint32(campaigns[weekId].length);
         initializer[weekId][campaignHash] = Initializer(true, slot);
-        campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0,  transitionDate, 0, operator, token, campaignHash, false, CampaignData(campaignHash, encoded)));
+        campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, transitionDate, 0, operator, token, campaignHash, false, CampaignData(campaignHash, encoded)));
     }
 
     /**

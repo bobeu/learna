@@ -28,6 +28,7 @@ export type FunctionName =
   'setConfigId' |
   'getClaimable' |
   'setScope' |
+  'setPermission' |
   'unbanUserFromCampaign'|
   'getCampaingData' |
   'setMinimumToken';

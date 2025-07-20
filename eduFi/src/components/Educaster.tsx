@@ -71,9 +71,9 @@ export default function Educaster() {
 
     // Update current page based on connection state
     React.useEffect(() => {
-        // if(!isConnected && connector) connect({connector, chainId});
-        // if(isConnected && currentPath === 'home') setpath('dashboard');
-        // if(!isConnected && currentPath !== 'home') setpath('home');
+        if(!isConnected && connector) connect({connector, chainId});
+        if(isConnected && currentPath === 'home') setpath('dashboard');
+        if(!isConnected && currentPath !== 'home') setpath('home');
     }, [isConnected, connector, chainId, currentPath]);
 
     // Load user results from localStorage on component mount

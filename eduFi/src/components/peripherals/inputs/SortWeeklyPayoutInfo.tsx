@@ -4,10 +4,12 @@ import { parseUnits } from 'viem';
 import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
 import useStorage from '~/components/hooks/useStorage';
 import CustomButton from '../CustomButton';
+import { toBN } from '~/components/utilities';
 
 export default function SortWeeklyPayout() {
     const [ growTokenAmount, setGrowTokenAmount ] = React.useState<string>('0');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
+    const [ newClaimDeadline, setNewDeadline ] = React.useState<number>(0);
 
     const { weekId, campaignStrings } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
@@ -19,6 +21,7 @@ export default function SortWeeklyPayout() {
                 setGrowTokenAmount(value);
                 break;
             default:
+                setNewDeadline(toBN(value).toNumber());
                 break;
         }
     } 
@@ -35,6 +38,14 @@ export default function SortWeeklyPayout() {
                 placeHolder: 'Enter amount',
                 type: 'text',
                 required: true
+            },
+            {
+                tag: 'celoamount',
+                id: 'GrowTokenAmount',
+                label: 'New claim deadline',
+                placeHolder: 'Deadline',
+                type: 'number',
+                required: false
             }
         ];
         return {argsReady, amount, sortContent}
@@ -81,6 +92,7 @@ export default function SortWeeklyPayout() {
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
                 campaignString={campaignStrings}
+                newClaimUntil={newClaimDeadline}
             />
         </div>
     );

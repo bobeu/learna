@@ -243,21 +243,27 @@ export default function Stats() {
             </div>
             
             {/* Week Data - Select week and campaign */}
-            <div className="space-y-1 mb-4">
+            <div className="space-y-4 mb-2">
                 <div className="text-2xl text-left font-bold text-gray-800 mb-2">Weeks Data</div>
                 <div className="w-full flex justify-between items-center gap-2">
-                    <SelectComponent 
-                        title="Campaigns"
-                        setHash={setCampaignStr}
-                        campaigns={campaignStrings}
-                        placeHolder="Campaigns"
-                    />
-                    <SelectComponent 
-                        title="Week"
-                        setHash={setselectedWeek}
-                        campaigns={weekIds}
-                        placeHolder="Weeks"
-                    />
+                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Campaigns</h3>
+                        <SelectComponent 
+                            setHash={setCampaignStr}
+                            campaigns={campaignStrings}
+                            placeHolder="Campaigns"
+                            width="w-"
+                        />
+                    </div>
+                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Week</h3>
+                         <SelectComponent 
+                            setHash={setselectedWeek}
+                            campaigns={weekIds}
+                            placeHolder="Weeks"
+                            width="w-"
+                        />
+                    </div>
                 </div>
                 <Stat campaign={rest.campaign}/>
             </div>

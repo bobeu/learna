@@ -94,7 +94,7 @@ export async function sortWeeklyEarning(x: SortEarnings) {
   const growTokenAddr = await growToken.getAddress();
   const balanceOfLearnaB4Allocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveB4Allocation = await growToken.balanceOf(growTokenAddr);
-  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, amountInERC20, campaigns);
+  await learna.connect(deployer).sortWeeklyReward(growTokenAddr, amountInERC20, campaigns, 0);
   const balanceOfLearnaAfterAllocation = await growToken.balanceOf(learnaAddr);
   const balanceInGrowReserveAfterAllocation = await growToken.balanceOf(growTokenAddr);
   const data = await learna.getData();

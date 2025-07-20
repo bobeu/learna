@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { filterTransactionData, formatAddr, mockCampaign, mockEligibility, mockProfile, mockReadProfile } from '../utilities';
+import { filterTransactionData, formatAddr, mockCampaign, mockEligibility, mockProfile, mockReadProfile, toBN } from '../utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
 import { Address, Campaign, CampaignDatum, Eligibility, Profile, ReadProfile, WeekData } from '../../../types/quiz';
 import { Hex, keccak256, stringToHex, zeroAddress } from "viem";
@@ -87,10 +87,10 @@ export const mockProfileReturn : ProfileReturnType = {
 };
 
 export default function useProfile({ inHash, wkId }: UseProfileType){
-    const { campaignData, callback, weekId, weekData } = useStorage();
+    const { campaignData, callback, wkId: weekId, weekData } = useStorage();
     const [firstRead, setRead] = React.useState<boolean>(false);
     const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash?? campaignData[0].campaignHash);
-    const [requestedWkId, setRequestedId] = React.useState<number>(wkId?? 0);
+    const [requestedWkId, setRequestedId] = React.useState<bigint>(BigInt(wkId?? weekId));
     const [returnObj, setReturnObj] = React.useState<ProfileReturnType>(mockProfileReturn);
 
     const chainId = useChainId();
@@ -103,7 +103,8 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
     }
 
     const setWeekId = (arg: number) => {
-        if(requestedWkId !== arg) setRequestedId(arg);
+        const arg_ = BigInt(arg);
+        if(requestedWkId !== arg_) setRequestedId(arg_);
     }
     /**
      * @dev Fetches the profile for the connected account for all the campaigns in the current week
@@ -120,7 +121,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             functionNames: ['getProfile', 'checkEligibility', 'getClaimable'],
             callback
         });
-        const readArgs = [[account, weekId, requestedHash], [account, requestedHash], [requestedHash, account]];
+        const readArgs = [[account, requestedWkId, requestedHash], [account, requestedHash], [requestedHash, account]];
         const readTxObject = td.map((item, i) => {
             return{
                 abi: item.abi,
@@ -159,7 +160,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
                     eligibility,
                     readProfile,
                     requestedHash,
-                    requestedWkId,
+                    requestedWkId: toBN(requestedWkId.toString()).toNumber(),
                     weekData
                 });
         
@@ -172,7 +173,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
     // Update the campaignHash in state whenever the inHash or requested weekId changes
     React.useEffect(() => {
         const controller = new AbortController();
-        if(requestedWkId !== wkId || inHash !== requestedHash){
+        if(requestedWkId !== BigInt(wkId?? weekId) || inHash !== requestedHash){
             const refresh = async() => {
                 const res = await refetch();
                 const readProfile = res?.data?.[0]?.result as ReadProfile ?? mockReadProfile;
@@ -184,7 +185,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
                     eligibility,
                     readProfile,
                     requestedHash,
-                    requestedWkId,
+                    requestedWkId: toBN(requestedWkId.toString()).toNumber(),
                     weekData
                 });
         

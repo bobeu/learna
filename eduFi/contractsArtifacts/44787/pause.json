@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x4A137Ee610b9F708b3C94DF3CDCC8640fE2e0962",
+  "contractAddress": "0xF4dD02Ba43BBcDCB2D6d39724296369089A4021e",
   "functionName": "pause",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -43,6 +43,11 @@
     {
       "inputs": [],
       "name": "CampaignClaimNotActivated",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ClaimAddressNotSet",
       "type": "error"
     },
     {
@@ -817,19 +822,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "approve",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address[]",
           "name": "_users",
           "type": "address[]"
@@ -918,6 +910,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "claim",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -953,6 +958,11 @@
                   "internalType": "uint64",
                   "name": "transitionInterval",
                   "type": "uint64"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "transitionDate",
+                  "type": "uint96"
                 },
                 {
                   "internalType": "uint256",
@@ -1223,7 +1233,7 @@
           "type": "address"
         }
       ],
-      "name": "isApproved",
+      "name": "isPermitted",
       "outputs": [
         {
           "internalType": "bool",
@@ -1472,6 +1482,25 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "newClaim",
+          "type": "address"
+        }
+      ],
+      "name": "setClaimAddress",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "newToken",
           "type": "uint256"
@@ -1485,6 +1514,19 @@
           "type": "bool"
         }
       ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "setPermission",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -1552,6 +1594,11 @@
           "internalType": "string[]",
           "name": "_campaigns",
           "type": "string[]"
+        },
+        {
+          "internalType": "uint64",
+          "name": "newClaimDeadline",
+          "type": "uint64"
         }
       ],
       "name": "sortWeeklyReward",

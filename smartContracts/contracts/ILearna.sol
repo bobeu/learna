@@ -13,6 +13,7 @@ interface ILearna {
     error InvalidAddress(address);
     error CampaignClaimNotActivated();
     error InsufficientAllowance(uint256);
+    error ClaimAddressNotSet();
 
     event NewCampaign(bytes32 campaignHash, Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
@@ -122,7 +123,8 @@ interface ILearna {
 
     struct State {
         uint minimumToken;
-        uint64 transitionInterval; 
+        uint64 transitionInterval;
+        uint96 transitionDate;
         uint weekCounter;
     }
 

@@ -28,6 +28,8 @@ contract Learna is
     // Dev Address
     address private dev;
 
+    address public claim;
+
     // Campaign fee manager
     address private immutable feeManager;
 
@@ -95,6 +97,15 @@ contract Learna is
     }
 
     receive() external payable {}
+
+    /**
+     * @dev Set approval for target
+     * @param newClaim : Account to set approval for
+     */
+    function setClaimAddress(address newClaim) public onlyOwner returns(bool) {
+        claim = newClaim;
+        return true;
+    }
 
     /**
      * @dev Approve or deactivate admin
@@ -427,7 +438,6 @@ contract Learna is
                 token
             );
         }
-        address recipient = address(this);
         Campaign memory cp = _getCampaign(weekId, campaignHash);
         unchecked {
             if(msg.value > 0){
@@ -439,7 +449,7 @@ contract Learna is
             if(fundsErc20 > 0) {
                 if(cp.fundsERC20 > 0) require(cp.token == token, "Changing token is not permitted");
                 if(token == address(0)) revert InvalidAddress(token); 
-                if(IERC20(token).transferFrom(sender, recipient, fundsErc20)){
+                if(IERC20(token).transferFrom(sender, address(this), fundsErc20)){
                     cp.fundsERC20 += fundsErc20;
                     cp.token = token;
                 }
@@ -465,7 +475,8 @@ contract Learna is
     function sortWeeklyReward(
         address growTokenContract,
         uint amountInGrowToken, 
-        string[] memory _campaigns
+        string[] memory _campaigns,
+        uint64 newClaimDeadline
     ) 
         public 
         whenNotPaused 
@@ -476,44 +487,49 @@ contract Learna is
         uint pastWeekId = st.weekCounter;
         uint newWeekId = _transitionToNewWeek();
         assert(newWeekId > pastWeekId);
+        if(claim == address(0)) revert ClaimAddressNotSet();
         require(growTokenContract != address(0), 'Token is zero');
-        uint256 totalBalInNative;
         for(uint i=0; i < _campaigns.length; i++) {
             (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
             _validateCampaign(campaignHash, pastWeekId);
             Campaign memory cp = _getCampaign(pastWeekId, campaignHash);
             if(mode == Mode.LIVE) {
-                require(cp.transitionDate > 0 && _now() >= cp.transitionDate, 'Transition date in future');
+                if(cp.transitionDate > 0 && _now() >= cp.transitionDate) {
+                    (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
+                    IERC20(cp.token).transfer(claim, IERC20(cp.token).balanceOf(address(this)));
+                    unchecked { 
+                        cp.claimActiveUntil = newClaimDeadline > 0? newClaimDeadline : _now() + st.transitionInterval;
+                    }
+                    cp.canClaim = true;
+                    cp.fundsNative = nativeBalance;
+                    cp.fundsERC20 = erc20Balance;
+                    _setCampaign(pastWeekId, campaignHash, cp);
+                    if(!_isInitializedCampaign(newWeekId, campaignHash)) {
+                        _initializeCampaign(
+                            newWeekId, 
+                            st.transitionInterval + _now(), 
+                            campaignHash, 
+                            encoded,
+                            _msgSender(),
+                            0,
+                            0,
+                            address(0)
+                        );
+                    }
+                        
+                }
             }
-            (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
-            unchecked {
-                totalBalInNative += nativeBalance;
-                cp.claimActiveUntil = _now() + st.transitionInterval;
-            }
-            cp.canClaim = true;
-            cp.fundsNative = nativeBalance;
-            cp.fundsERC20 = erc20Balance;
-            _setCampaign(pastWeekId, campaignHash, cp);
-            if(!_isInitializedCampaign(newWeekId, campaignHash)) {
-                _initializeCampaign(
-                    newWeekId, 
-                    st.transitionInterval + _now(), 
-                    campaignHash, 
-                    encoded,
-                    _msgSender(),
-                    0,
-                    0,
-                    address(0)
-                );
-            }
-            
         }
-        
+
+        if(address(this).balance > 0) {
+            if(claim == address(0)) revert ClaimAddressNotSet();
+            (bool done,) = claim.call{value: address(this).balance}('');
+            require(done, 'Failed');
+        }
         if(amountInGrowToken > 0) {
             require(growTokenContract != address(0), "Sort: Token is empty");
             require(IGrowToken(growTokenContract).allocate(amountInGrowToken, address(0)), 'Allocation failed');
         }
-        require(address(this).balance >= totalBalInNative, "Balance anomally");
 
         emit Sorted(pastWeekId, newWeekId, _campaigns);   
         return true;

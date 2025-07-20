@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x4A137Ee610b9F708b3C94DF3CDCC8640fE2e0962",
+  "contractAddress": "0xF4dD02Ba43BBcDCB2D6d39724296369089A4021e",
   "functionName": "getAdminStatus",
   "inputCount": 1,
   "requireArgUpdate": true,
