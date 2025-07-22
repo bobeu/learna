@@ -5,7 +5,7 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
-import { ArrowLeft, ArrowRight, Verified, Store, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard } from "lucide-react";
+import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
 import useProfile, { ProfileReturnType } from "../hooks/useProfile";
@@ -204,6 +204,10 @@ export default function Profile() {
         setpath('stats');
     };
 
+    const createCampaign = () => {
+        setpath('setupcampaign');
+    };
+
     const setHash = (arg: string) => {
         const found = campaignData.filter(q => q.campaign === arg);
         console.log("Arg", arg);
@@ -231,10 +235,16 @@ export default function Profile() {
                         <span>Stats</span>
                     </CustomButton>
                 </div>
-                <CustomButton onClick={goToQuiz} exit={false} disabled={false}>
-                    <ArrowRight className="w-5 h-5" />
-                    <span>Take A Quiz</span>
-                </CustomButton>
+                <div className="w-full space-y-2">
+                    <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-full">
+                        <ArrowRightCircle className="w-5 h-5" />
+                        <span>Take A Quiz</span>
+                    </CustomButton>
+                    <CustomButton onClick={createCampaign} exit={true} disabled={false} overrideClassName="w-full">
+                        <PlusCircle className="w-5 h-5" />
+                        <span>New Campaign</span>
+                    </CustomButton>
+                </div>
                 
                 <div className="flex justify-between gap-4 max-w-sm">
                     {/* User can view their profile in a selected campaign */}

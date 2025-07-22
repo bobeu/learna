@@ -57,27 +57,27 @@ const config: HardhatUserConfig = {
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`,
     },
     reserve: {
-      default: 0,
+      default: 1,
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`
     },
     identityVerificationHub: {
-      default: 0,
+      default: 2,
       44787: '0x68c931C9a534D37aa78094877F46fE46a49F1A51',
       42220: '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF'
     },
     routeTo: {
-      default: 1,
+      default: 3,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_ROUTE_0x84F as string}`
     },
     admin: {
-      default: 0,
+      default: 4,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
     },
     admin2: {
-      default: 0,
+      default: 5,
       44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
     }

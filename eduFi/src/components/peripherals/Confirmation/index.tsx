@@ -273,7 +273,7 @@ export const Confirmation :
                     callback({message: "We're saving your score"});
                     toggleDrawer(1);
                     toggleLoading(true);
-                    const args : any[] = [account, result, GrowToken as Address, result.other.quizId];
+                    const args : any[] = [account, result, result.other.quizId];
                     await runTransaction({abi: td.abi, contractAddress: td.contractAddress as Address, args, functionName: td.functionName as FunctionName, value: 0n, requireArgUpdate: false, useAdmin: 1});
                     callback({message: "Your scores was successfully updated"})
                 } catch (error: any) {

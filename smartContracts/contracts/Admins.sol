@@ -2,17 +2,21 @@
 
 pragma solidity 0.8.28;
 
-abstract contract Admins {
+import { Approved } from "./Approved.sol";
+
+abstract contract Admins is Approved {
     struct Admin {
         address id;
         bool active;
     }
 
-    // All admins
-    Admin[] private admins;
+    uint private adminCount;
 
-    // Admin slots
-    mapping(address => uint8) private adminSlot;
+    /// Admins slots
+    mapping(uint8 => address) private slots;
+
+    /// @dev Mapping of slots to admin data
+    mapping(address => bool) private isAdmin;
 
     /**
      * @dev Only admin
@@ -20,42 +24,49 @@ abstract contract Admins {
      * we already added at least one content to the admins array in the constructor, it wil always fetch zero slot.
     */
     modifier onlyAdmin() {
-        require(_isAdmin(msg.sender), 'Only admin');
-        _;
+        require(_isAdmin(_msgSender()), 'Only admin');
+        _; 
     }
 
     function _isAdmin(address target) internal view returns(bool result) {
-        uint8 slot = adminSlot[target];
-        result = admins[slot].active;
+        result = isAdmin[target];
     }
     
     /**
-     * @dev Add or remove an admin
+     * @dev Add admin and activate them
      * @param target : Account to add
-     * @param flag : Whether to add or remove. If true, add else remove
      */
-    function _setAdmin(address target, bool flag) internal {
-        uint8 slot = adminSlot[target];
+    function _addAdmin(address target) internal {
+        require(!isAdmin[target], 'Admin already added');
+        isAdmin[target] = true;
+        uint8 slot = uint8(adminCount);
+        adminCount = slot + 1;
+        slots[slot] = target;
+    }
 
-        if(flag) {
-            slot = uint8(admins.length);
-            admins.push();
-            assert(!admins[slot].active);
-            admins[slot] = Admin(target, true);
-            adminSlot[target] = slot;
-        } else {
-            require(admins[slot].active, "Address is inActive");
-            admins[slot].active = false;
+    /**
+     * @dev Toggle admin status either activate or deactivate them by toggling back and forth. 
+     * @param target : Target account
+     */
+    function toggleAdminStatus(address target) public onlyOwner {
+        bool status = isAdmin[target];
+        isAdmin[target] = !status;
+    }
+
+    /// Initialize an empty slot in the admins array
+    function setAdmin(address target) public onlyOwner {
+        _addAdmin(target);
+    }
+
+    /// Return all admins
+    function getAdmins() public view returns(Admin[] memory _admins) {
+        uint8 _adminCount = uint8(adminCount);
+        if(_adminCount == 0) return _admins;
+        _admins = new Admin[](_adminCount);
+        for(uint8 i = 0; i < _adminCount; i++) {
+            address target = slots[i];
+            _admins[i] = Admin(target, isAdmin[target]);
         }
-    }
-
-    // Initialize an empty slot in the admins array
-    function _initializeEmptyAdminSlot() internal {
-        admins.push(); 
-    }
-
-    // Check if account is an admin
-    function getAdminStatus(address target) public view returns(bool) {
-        return _isAdmin(target);
+        return _admins;
     }
 }

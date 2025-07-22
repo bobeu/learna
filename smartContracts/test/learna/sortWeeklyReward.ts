@@ -2,7 +2,7 @@ import { deployContracts } from "../deployments";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { campaigns, sortWeeklyEarning } from "../utils";
+import { sortWeeklyEarning } from "../utils";
 import { parseEther } from "viem";
 
 describe("Learna", function () {
@@ -20,7 +20,7 @@ describe("Learna", function () {
         balanceOfLearnaAfterAllocation,
         balanceOfLearnaB4Allocation,
         data
-      } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna, campaigns});
+      } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna});
 
       expect(balanceInGrowReserveAfterAllocation < balanceInGrowReserveB4Allocation).to.be.true;
       expect(balanceOfLearnaAfterAllocation > balanceOfLearnaB4Allocation).to.be.true;

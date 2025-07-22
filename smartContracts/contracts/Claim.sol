@@ -13,7 +13,7 @@ import { AttestationId } from "@selfxyz/contracts/contracts/constants/Attestatio
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { ILearna } from "./ILearna.sol";
+import { ILearna } from "./interfaces/ILearna.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import { Approved } from "./Approved.sol";
 

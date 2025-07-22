@@ -172,7 +172,7 @@ export const QuizResults = () => {
                   <span>Share To Farcaster</span>
                 </button>
                 <button
-                  disabled={true}
+                  // disabled={true}
                   onClick={handleSaveScores}
                   className="flex-1 btn-primary flex items-center justify-center space-x-2"
                 >

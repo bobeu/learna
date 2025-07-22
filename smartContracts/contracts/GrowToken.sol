@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IGrowToken } from './IGrowToken.sol';
+import { IGrowToken } from './interfaces/IGrowToken.sol';
 
 contract GrowToken is IGrowToken, ERC20, Ownable {
     // Contract allowed to send allocation request

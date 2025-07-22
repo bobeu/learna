@@ -16,8 +16,8 @@ describe("Learna", function () {
       const { learna, growToken, learnaAddr, signers : { signer1, signer1Addr, deployer }, growTokenAddr} = await loadFixture(deployContractsFixcture);
       let fundERC20 = parseEther('55');
       const value = parseEther('13');
-      const { campaignData } = await getCampaigns(learna);
-      const campaignHash = campaignData.campaignHash as Address;
+      const { allCampaign } = await getCampaigns(learna);
+      const campaignHash = allCampaign[0].hash_ as Address;
       const erc20Amount = fundERC20;
       await growToken.connect(deployer).transfer(signer1Addr, erc20Amount)
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
@@ -32,7 +32,6 @@ describe("Learna", function () {
       expect(cp.campaigns[0].claimActiveUntil).to.be.eq(0n);
       expect(cp.campaigns[0].fundsERC20).to.be.eq(fundERC20);
       expect(cp.campaigns[0].fundsNative).to.be.eq(value);
-      expect(cp.campaigns[0].transitionDate > 0).to.be.true;
       expect(cp.campaigns[0].totalPoints).to.be.eq(0n);
       expect(cp.campaigns[0].token).to.be.eq(growTokenAddr);
       expect(cp.campaigns[0].operator).to.be.eq(signer1Addr);

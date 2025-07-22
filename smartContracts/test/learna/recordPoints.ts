@@ -13,8 +13,8 @@ describe("Learna", function () {
   describe("Should record weekly payout", function () {
     it("An admin should be able to sort weekly earning payroll", async function () {
         const { learna, growTokenAddr, signers : { deployer, signer1Addr },} = await loadFixture(deployContractsFixcture);
-        const { campaignData } = await getCampaigns(learna);
-        const campaignHash = campaignData.campaignHash as Address;
+        const { allCampaign } = await getCampaigns(learna);
+        const campaignHash = allCampaign[0].hash_ as Address;
         const quizResult = getQuizResult(campaignHash, 60);
         const pf = await recordPoints({deployer, learna, quizResult, campaignHash, user: signer1Addr, token: growTokenAddr});
 

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
-import { Hex, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -9,7 +9,7 @@ import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
-import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
+import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
 import useProfile from "../hooks/useProfile";
@@ -149,7 +149,7 @@ export default function Stats() {
         campaignStrings,
         userAdminStatus,
         campaignData,
-        state: { minimumToken, transitionInterval, weekCounter }
+        state: { transitionInterval, weekCounter }
     } = useStorage();
 
     const { setHash, setWeekId, ...rest } = useProfile({});
@@ -165,9 +165,17 @@ export default function Stats() {
         }
     }
 
+    const goToQuiz = () => {
+        if(isConnected) {
+            setpath('quiz');
+        } else {
+            setpath('home')
+        }
+    }
+
     const setCampaignStr = (arg: string) => {
-        const fd = campaignData.find(q => q.campaign === arg);
-        if(fd) setHash(fd?.campaignHash);
+        const fd = campaignData.filter(q => q.campaign === arg);
+        if(fd) setHash(fd?.[0]?.campaignHash);
     }
 
     const setselectedWeek = (arg: string) => {
@@ -201,12 +209,13 @@ export default function Stats() {
     return(
         <Wrapper2xl useMinHeight={true} >
             <div className="text-3xl text-left font-bold text-gray-800 mb-4">Analytics</div>
-            <div className="flex justify-center items-center gap-1 w-full mb-2">
-                <CustomButton
-                    exit={true}
-                    onClick={backToHome}
-                    disabled={false}
-                >
+            <div className="w-full space-y-2 mb-2">
+                <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-full">
+                    <ArrowRightCircle className="w-5 h-5" />
+                    <span>Take A Quiz</span>
+                </CustomButton>
+                <CustomButton onClick={backToHome} exit={true} disabled={false} overrideClassName="w-full">
+                    <ArrowLeftCircle className="w-5 h-5" />
                     <span>Exit</span>
                 </CustomButton>
             </div>
@@ -231,7 +240,7 @@ export default function Stats() {
                     <div className="text-sm text-gray-600">Transition interval</div>
                 </div>
 
-                <div className="glass-card rounded-xl p-4">
+                {/* <div className="glass-card rounded-xl p-4">
                     <div className="flex items-center justify-center mb-3">
                         <Fuel className="w-8 h-8 text-purple-600" />
                     </div>
@@ -239,7 +248,7 @@ export default function Stats() {
                         {`${formatValue(minimumToken.toString()).toStr || 0} Celo`}
                     </div>
                     <div className="text-sm text-gray-600">Min. Token</div>
-                </div>
+                </div> */}
             </div>
             
             {/* Week Data - Select week and campaign */}

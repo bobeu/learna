@@ -2,8 +2,9 @@
 pragma solidity 0.8.28;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
-abstract contract Approved is Ownable {
+abstract contract Approved is Ownable, Pausable {
     error AddressIsZero();
     
     event Approval(address indexed);

@@ -212,6 +212,7 @@ export default function Educaster() {
             const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
+        console.log("Dataaaa", data);
 
         const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
         const campaignStrings = campaignData.map(({campaign}) => {

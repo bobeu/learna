@@ -89,7 +89,7 @@ export const mockProfileReturn : ProfileReturnType = {
 export default function useProfile({ inHash, wkId }: UseProfileType){
     const { campaignData, callback, wkId: weekId, weekData } = useStorage();
     const [firstRead, setRead] = React.useState<boolean>(false);
-    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash?? campaignData[0].campaignHash);
+    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash?? campaignData?.[0]?.campaignHash);
     const [requestedWkId, setRequestedId] = React.useState<bigint>(BigInt(wkId?? weekId));
     const [returnObj, setReturnObj] = React.useState<ProfileReturnType>(mockProfileReturn);
 
