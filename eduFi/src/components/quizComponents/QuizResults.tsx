@@ -5,7 +5,6 @@ import useStorage from '../hooks/useStorage';
 import RecordPoints from '../transactions/RecordPoints';
 import { WarnBeforeClearScoresAndData } from './WarnBeforeClearScores';
 import GenerateUserKey from '../peripherals/GenerateUserKey';
-// import useProfile from '../hooks/useProfile';
 import { Hex } from 'viem';
 import { useAccount, useConnect } from 'wagmi';
 

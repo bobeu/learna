@@ -31,6 +31,7 @@ function ProfileComponent(
                     totalQuizPerWeek,
                 }
             },
+            claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
             // claimable: { isVerified },
@@ -96,11 +97,11 @@ function ProfileComponent(
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-">Claim ends: </h3>
-                                <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                                <h3>{getTimeFromEpoch(claimDeadline)}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Reward: </h3>
-                                <h3 className={`${showVerificationButton? 'text-green-600' : ''}`}>{showVerificationButton? 'Eligible' : 'NotEligible'}</h3>
+                                <h3 className={`${showVerificationButton? 'text-white' : ''}`}>{showVerificationButton? 'Eligible' : 'NotEligible'}</h3>
                             </div>
                         </div>
                     </div>
@@ -211,8 +212,6 @@ export default function Profile() {
 
     const setHash = (arg: string) => {
         const found = campaignData.filter(q => q.campaign === arg);
-        console.log("Arg", arg);
-        console.log("Found", found);
         if(found.length > 0) setCampaignHash(found[0].campaignHash as Hex);
     }
 

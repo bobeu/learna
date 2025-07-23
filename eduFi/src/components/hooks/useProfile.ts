@@ -52,6 +52,7 @@ export const mockProfileReturn : ProfileReturnType = {
 
  const getReturnObj = (arg: {requestedHash: Hex, weekData: WeekData[], campaignData:CampaignDatum[], requestedWkId: number, readProfile: ReadProfile, eligibility: Eligibility, claimable: Eligibility}) : ProfileReturnType => {
     const { readProfile, eligibility, weekData, campaignData, claimable, requestedHash, requestedWkId } = arg;
+    
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
     const sorted = eligibility.canClaim;
@@ -60,8 +61,8 @@ export const mockProfileReturn : ProfileReturnType = {
     const showWithdrawalButton = claimable.isVerified && !claimable.isClaimed;
 
     // Eligibility criteria. To show verification button user must have earned points, week sorted, and have not claim for this campaign
-    const { other: { claimed, amountClaimedInERC20, amountClaimedInNative }, quizResults } = readProfile.profile;
-    const showVerificationButton = !claimed && (amountClaimedInERC20 > 0n || amountClaimedInNative > 0n) && sorted;
+    const { other: { claimed }, quizResults } = readProfile.profile;
+    const showVerificationButton = !claimed && (eligibility.erc20Amount > 0n || eligibility.nativeAmount > 0n) && sorted;
 
     // Total points earned in a campaign
     const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);

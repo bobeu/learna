@@ -5,7 +5,7 @@ import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import useProfile from '../hooks/useProfile';
-import { Hex, hexToString, stringToHex } from 'viem';
+import { Hex, hexToString } from 'viem';
 
 export const QuizInterface = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -92,7 +92,6 @@ export const QuizInterface = () => {
     const score = quiz.questions.reduce((total, question) => {
       const userAnswer = finalAnswers[question.id]; 
       const attempted = screenQuiz(userAnswer?.questionHash);
-      // console.log("attempted", attempted);
       return total + (userAnswer.selected === question.correctAnswer && !attempted? question.points : 0);
     }, 0);
 

@@ -12,7 +12,7 @@ export default function SortWeeklyPayout() {
     const [ newClaimDeadline, setNewDeadline ] = React.useState<number>(0);
     const [ newInterval, setNewInterval ] = React.useState<number>(0);
 
-    const { weekId, campaignStrings } = useStorage();
+    const { weekId } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
     const onChange = (e: React.ChangeEvent<HTMLInputElement>, tag: InputTag) => {
         e.preventDefault();
@@ -47,7 +47,7 @@ export default function SortWeeklyPayout() {
             {
                 tag: 'celoamount',
                 id: 'GrowTokenAmount',
-                label: 'New claim deadline (In hrs)',
+                label: 'New claim deadline (In Min)',
                 placeHolder: 'Deadline',
                 type: 'number',
                 required: false
@@ -119,9 +119,3 @@ export interface ContentType {
     id: string, 
     required: boolean
 };
-// case 'tokenaddress':
-//                 if(value.length === 42 && value.startsWith('0x')) setTokenAddress(value as Address);
-//                 break;
-//             case 'owner':
-//                 if(value.length === 42 && value.startsWith('0x')) setTokenOwner(value as Address);
-//                 break;

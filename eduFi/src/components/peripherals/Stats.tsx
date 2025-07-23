@@ -19,10 +19,9 @@ import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
 
-function Stat({campaign, transitionDate} : {campaign: Campaign, transitionDate: number}) {
+function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, transitionDate: number, claimDeadline: number}) {
     const { 
         activeLearners, 
-        claimActiveUntil,
         totalPoints, 
         canClaim,
         fundsERC20,
@@ -70,7 +69,7 @@ function Stat({campaign, transitionDate} : {campaign: Campaign, transitionDate: 
                         <Fuel className="w-4 h-4 text-purple-600" />
                     </div>
                     <div className="font-semibold text-gray-800 mb-1">
-                        {getTimeFromEpoch(claimActiveUntil)}
+                        {getTimeFromEpoch(claimDeadline)}
                     </div>
                     <div className="text-xs text-gray-600">Claimable until</div>
                 </div>
@@ -91,7 +90,7 @@ function Stat({campaign, transitionDate} : {campaign: Campaign, transitionDate: 
                         <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
                     </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                        {getTimeFromEpoch(claimActiveUntil)}
+                        {getTimeFromEpoch(claimDeadline)}
                     </div>
                     <div className="text-xs text-cyan-600">Claim ends</div>
                 </div>
@@ -273,7 +272,11 @@ export default function Stats() {
                         />
                     </div>
                 </div>
-                <Stat campaign={rest.campaign} transitionDate={transitionDate}/>
+                <Stat 
+                    campaign={rest.campaign} 
+                    transitionDate={transitionDate}
+                    claimDeadline={rest.claimDeadline}
+                />
             </div>
 
             {/* Admin and Owner only settings */}
