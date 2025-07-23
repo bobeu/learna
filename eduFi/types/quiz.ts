@@ -7,7 +7,6 @@ export type FunctionName =
   'runall' | 
   "checkEligibility"|
   'recordPoints'|
-  'banUserFromCampaign'|
   'setAdmin'|
   'getAdmins'|
   'hasPassKey'|

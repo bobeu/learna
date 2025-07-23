@@ -14,7 +14,7 @@ interface QuizCardProps {
 }
 
 export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, onSelect }) => {
-    const { activeLearners, lastUpdated, totalPoints, transitionDate, operator, token, fundsERC20, fundsNative } = campaign;
+    const { activeLearners, lastUpdated, totalPoints, operator, token, fundsERC20, fundsNative } = campaign;
     const chainId = useChainId();
     const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
     const growToken = ca.GrowToken as Address;
@@ -36,9 +36,9 @@ export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, o
         {/* Campaign Image */}
             <div className="w-full h-32 mb-4 rounded-xl overflow-hidden">
                 <img 
-                src={`/assets/${campaignName}.png`} 
-                alt={campaignName}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    src={`/assets/${campaignName}.png`} 
+                    alt={campaignName}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
             </div>
 
@@ -49,7 +49,7 @@ export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, o
                 </h3>
                 <div className="text-gray-600 text-sm leading-relaxed line-clamp-2">
                     <h3>Transition Date</h3>
-                    <h3>{getTimeFromEpoch(transitionDate)}</h3>
+                    <h3>{getTimeFromEpoch(0)}</h3>
                 </div>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all ml-4 flex-shrink-0" />
