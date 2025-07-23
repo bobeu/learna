@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import type { Address,  Claim,  FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
+import type { Address, FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
 import { campaigns } from "./utils";
 
 enum Mode { LOCAL, LIVE }
@@ -38,13 +38,14 @@ async function deployGrowToken(reserve: Address, learna: Address, deployer: Sign
 }
 
 export async function deployContracts(getSigners_: () => Signers) {
-  const [deployer, signer1, signer2, reserve, routeTo, admin2 ] = await getSigners_();
+  const [deployer, signer1, signer2, reserve, routeTo, admin2, claim ] = await getSigners_();
   const deployerAddr = await deployer.getAddress() as Address;
   const reserveAddr = await reserve.getAddress() as Address;
   const signer1Addr = await signer1.getAddress() as Address;
   const signer2Addr = await signer2.getAddress() as Address;
   const routeToAddr = await routeTo.getAddress() as Address;
   const admin2Addr = await admin2.getAddress() as Address;
+  const claimAddr = await claim.getAddress() as Address;
   // const signers = [deployerAddr, reserveAddr, signer2Addr, signer1Addr] as Address[];
 
   const feeManager = await deployFeeManager(deployer, routeToAddr);
@@ -55,6 +56,8 @@ export async function deployContracts(getSigners_: () => Signers) {
 
   const growToken = await deployGrowToken(reserveAddr, learnaAddr, deployer);
   const growTokenAddr = await growToken.getAddress() as Address;
+
+  await learna.connect(deployer).setClaimAddress(claimAddr);
 
   return {
     growToken,

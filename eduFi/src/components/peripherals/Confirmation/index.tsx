@@ -265,7 +265,7 @@ export const Confirmation :
 
     // Record points silently
     React.useEffect(() => {
-        if(recordPoints) {
+        if(recordPoints && result.other.score > 0) {
             const { transactionData, contractAddresses: { GrowToken} } = filterTransactionData({chainId, filter: true, functionNames: ['recordPoints']});
             const td = transactionData[0];
             const sendScore = async() => {
@@ -273,7 +273,7 @@ export const Confirmation :
                     callback({message: "We're saving your score"});
                     toggleDrawer(1);
                     toggleLoading(true);
-                    const args : any[] = [account, result, GrowToken as Address, result.other.quizId];
+                    const args : any[] = [account, result, result.other.quizId];
                     await runTransaction({abi: td.abi, contractAddress: td.contractAddress as Address, args, functionName: td.functionName as FunctionName, value: 0n, requireArgUpdate: false, useAdmin: 1});
                     callback({message: "Your scores was successfully updated"})
                 } catch (error: any) {
@@ -284,6 +284,10 @@ export const Confirmation :
                 toggleRecordPoints(false);
             }
             sendScore();
+        } else {
+            toggleRecordPoints(false);
+            toggleDrawer(0);
+            toggleLoading(false);
         }
     }, [recordPoints]);
 

@@ -7,19 +7,17 @@ import assert from "assert";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
-import quizRawData from "../../quizData.json";
-import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import _d_ from "../../_d_.json";
+import { Address, Admin, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
 export const mockCampaign : Campaign = {
   fundsNative: 0n,
   fundsERC20: 0n,
-  totalPoints: 0n,
+  totalPoints: 0n, 
   lastUpdated: 0,
   activeLearners: 0n,
-  transitionDate: 0,
-  claimActiveUntil: 0,
   operator: zeroAddress,
   token: zeroAddress,
   hash_: zeroAddress,
@@ -33,10 +31,11 @@ export const mockCampaign : Campaign = {
 export const mockReadData : ReadData = {
   state: {
     minimumToken: 0n,
-    weekCounter: 0n,
-    transitionInterval: 0
+    weekId: 0n,
+    transitionInterval: 0,
+    transitionDate: 0
   },
-  wd: [{campaigns: [mockCampaign,]}],
+  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n}],
 }
 
 export const mockCData : CData = [
@@ -46,18 +45,21 @@ export const mockCData : CData = [
   }
 ];
 
-export const mockEligibility : Eligibility[] = [
-  {
-    canClaim: false,
-    erc20Amount: 0n,
-    nativeAmount: 0n,
-    weekId: 0n,
-    token: `0x`,
-    campaignHash: `0x`,
-    isVerified: false,
-    isClaimed: false
-  }
-]
+export const mockAdmins : Admin = {
+  id: zeroAddress,
+  active: false
+}
+
+export const mockEligibility : Eligibility = {
+  canClaim: false,
+  erc20Amount: 0n,
+  nativeAmount: 0n,
+  weekId: 0n,
+  token: `0x`,
+  campaignHash: `0x`,
+  isVerified: false,
+  isClaimed: false
+}
 
 export const mockProfile : Profile = {
   other: {
@@ -283,8 +285,8 @@ export function getCastText(task: FunctionName, weekId: number) {
  * @dev Load and prepare data from the JSON API
  * @returns : Formatted data and categories
  */
-export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
-  const d = quizRawData;
+export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
+  const d = _d_;
   // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
   const categories : Category[] = d.categories.split(',') as Category[];
   // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
@@ -293,7 +295,7 @@ export function loadQuizData({totalPoints, timePerQuestion}: {totalPoints: numbe
   // Loop through the categories
   d.categoryData.forEach(({category, levels, description}) => {
     // Loop through the levels
-    levels.forEach(({questions, difficulty, id: levelId}) => {
+    levels.forEach(({questions, difficulty,}) => {
       let qs : Question[] = [];
       const questionSize = questions.length;
       assert(totalPoints >= questionSize, "Totalpoints is invalid");

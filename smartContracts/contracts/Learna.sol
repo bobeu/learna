@@ -2,34 +2,21 @@
 
 pragma solidity 0.8.28;
 
-import { IERC20, IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { IGrowToken } from "./IGrowToken.sol";
-import { Utils } from "./Utils.sol";
-import { Admins } from "./Admins.sol";
-import { Campaigns } from "./Campaigns.sol";
-import { Approved } from "./Approved.sol";
+import { IGrowToken } from "./interfaces/IGrowToken.sol";
+import { Utils } from "./libraries/Utils.sol";
+import { Campaigns, IERC20 } from "./Campaigns.sol";
 
-contract Learna is 
-    Approved,
-    Campaigns, 
-    Admins, 
-    ReentrancyGuard, 
-    Pausable 
-{
+contract Learna is Campaigns, ReentrancyGuard {
     using Utils for uint96;
 
     Mode private mode;
 
-    // Other state variables
-    State private state;
-
     // Dev Address
     address private dev;
 
-    ///@dev Flag to show whether to ask for key before claim or not
-    bool public enforceKey;
+    address public claim;
 
     // Campaign fee manager
     address private immutable feeManager;
@@ -42,17 +29,13 @@ contract Learna is
      * @notice An user can have previous claims
     */
 
-    modifier validateAddress(address token) {
-        require(token != address(0), "Token is zero");
+   modifier validateUser(address target, uint weekId, bytes32 hash_) {
+        require(!learners[weekId][hash_][target].other.blacklisted, "Blacklisted");
         _;
-    }
+   }    
 
-    // Only registered users
-    modifier onlyPasskeyHolder(uint weekId, address user, bytes32[] memory campaignHashes) {
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
-            require(learners[weekId][campaignHash][user].other.haskey, 'Only passkey holders');
-        }
+    modifier validateAddress(address target) {
+        require(target != address(0), "Token is zero");
         _;
     }
 
@@ -68,54 +51,37 @@ contract Learna is
      */
     constructor(
         address[] memory _admins, 
-        uint64 transitionInterval, 
+        uint32 transitionInterval, 
         Mode _mode, 
         address _feeManager,
         string[] memory _campaigns
     ) {
-        _initializeEmptyAdminSlot();
-        state.minimumToken = 1e16;
+        _setMinimumToken(1e16);
         mode = _mode;
         dev = _msgSender();
         require(_feeManager != address(0), "Fee manager is zero");
         feeManager = _feeManager;
-        uint weekId = state.weekCounter;
         if(mode == Mode.LIVE){
-            state.transitionInterval = transitionInterval;
+            _setTransitionInterval(transitionInterval, 30, _getState().weekId);
         } 
         for(uint i = 0; i < _admins.length; i++) {
-            if(_admins[i] != address(0)) _setAdmin(_admins[i], true); 
-        }
+            if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
+        } 
 
         for(uint i = 0; i < _campaigns.length; i++) {
-            unchecked {
-                (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
-                if(!_isInitializedCampaign(weekId, campaignHash)) {
-                    _initializeCampaign(
-                        weekId, 
-                        transitionInterval + _now(), 
-                        campaignHash, 
-                        encoded,
-                        _msgSender(),
-                        0,
-                        0,
-                        address(0)
-                    );
-                }
-            }
+            (bytes32 hash_, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
+            _tryInitializeCampaign(hash_, encoded, _msgSender(), 0, 0, address(0));
         }
     }
 
     receive() external payable {}
 
     /**
-     * @dev Approve or deactivate admin
-     * @param target : Target address
-     * @param flag : Boolean value showing whether to activate or deactive
-     * @notice False will remove admin vice versa
+     * @dev Set approval for target
+     * @param newClaim : Account to set approval for
      */
-    function setAdmin(address target, bool flag) public onlyOwner returns(bool) {
-        _setAdmin(target, flag); 
+    function setClaimAddress(address newClaim) public onlyOwner returns(bool) {
+        claim = newClaim;
         return true;
     }
 
@@ -149,52 +115,73 @@ contract Learna is
         }
     }
 
+    ///////////////////////////////////////////////////////////
+    //     PUBLIC FUNCTION : SET UP A CAMPAIGN               //
+    ///////////////////////////////////////////////////////////
     /**
-     * @dev Generate new key for campaigns in the current week.
-     * @param token : GROW Token address
-     * @param campaignHashes : Campaign hash
-     * @notice If minimum token paid for generating a key is greater than 0, the amount payable by the sender is 
-     * a multiple of the msg.value by total campaign they're subscribing to.
+     * @dev Add new campaign to the current week and fund it. Also, can be used to increase the funds in existing campaign for the week.
+     * @param _campaign : Campaign string
+     * @param token : ERC20 contract address if fundsErc20 is greater than 0
+     * @param fundsErc20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
+     * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
+     * - ERC20. If the amount in fundsErc20 is greater than 0, it is suppose that the sender intends to also fund the campaign
+     *    in ERC20-based asset hence the 'token' parameter must not be zero.
+     * - Native such as CELO.
      */
-    function generateKey(address token, bytes32[] memory campaignHashes) 
-        public 
-        payable 
-        whenNotPaused 
-        validateAddress(token) 
-        returns(bool)
-    {
-        State memory st = state;
-        uint weekId = st.weekCounter;
-        require(msg.value >= (st.minimumToken * campaignHashes.length), "Insufficient token");
-        address sender = _msgSender();
-        _forwardFee(msg.value);
-        for(uint i = 0; i < campaignHashes.length; i++){
-            bytes32 campaignHash = campaignHashes[i];
-            _validateCampaign(campaignHash, weekId); 
-            Profile memory pf = _getProfile(weekId, campaignHash, sender);
-            require(!pf.other.haskey, 'Passkey exist');
-            pf.other.haskey = true;
-            pf.other.amountMinted = st.minimumToken ;
-            pf.other.passKey = keccak256(abi.encodePacked(sender, weekId, pf.other.haskey, st.minimumToken));
-            _setProfile(weekId, campaignHash, sender, pf.other);
+    function setUpCampaign(
+        string memory _campaign, 
+        uint256 fundsErc20,
+        address token
+    ) public payable returns(bool) {
+        (bytes32 hash_, bytes memory encoded) = _getCampaignHash(_campaign);
+        _tryInitializeCampaign(
+            hash_,
+            encoded,
+            _msgSender(),
+            msg.value,
+            fundsErc20,
+            token
+        );
 
-        }
-        require(IGrowToken(token).allocate(msg.value, sender), 'Gen: Allocation failed');
-
-        emit PasskeyGenerated(sender, weekId, campaignHashes);
         return true;
     }
 
+
+    /////////////////////////////////////////////////////////////////////////
+    //     PUBLIC FUNCTION :  ADJUST THE FUNDS IN A CAMPAING              //
+    ////////////////////////////////////////////////////////////////////////
+    
     /**
-     * @dev Check whether user has generated a passkey for the current week
-     * @param user : User 
-     * @param campaignHash : User 
-     * @return : True or False
-    */
-    function hasPassKey(address user, bytes32 campaignHash) public view returns(bool) {
-        return _getProfile(state.weekCounter, campaignHash, user).other.haskey;
+     * @dev Adjust funds in campaigns. Only admin function
+     * @param campaignHash : Campaign hashes
+     * @param erc20Value : ERC20 values.
+     * @param nativeValue : Values in native coin e.g CELO
+     * @notice The function can increase or decrease the values in a campaign. Just parse desired values.
+     *         - Value cannot be adjusted beyond the balances in this contract.
+     */
+    function adjustCampaignValues(
+        bytes32 campaignHash, 
+        uint erc20Value,
+        uint nativeValue
+    ) public onlyAdmin returns(bool) {
+        uint weekId = _getState().weekId;
+        _validateCampaign(campaignHash, weekId);
+        GetCampaign memory res = _getCampaign(weekId, campaignHash);
+        require(res.cp.token != address(0), "Token is empty");
+        require(IERC20(res.cp.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
+        require(address(this).balance >= nativeValue, "New value exceeds balance");
+        res.cp.fundsERC20 = erc20Value;
+        res.cp.fundsNative = nativeValue;
+        res.cp.lastUpdated = _now();
+        _setCampaign(res.slot, weekId, res.cp);
+
+        return true;
     }
- 
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    //    PUBLIC FUNCTION : KEEP TRACK OF POINTS EARNED FROM PARTICIPATING IN QUIZZES     //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * @dev Register users for weekly reward
      * @param user : User 
@@ -202,30 +189,27 @@ contract Learna is
      * @param quizResult : Array of quiz result for a campaign
      * @notice Only owner function
     */
-    function recordPoints(address user, QuizResultInput memory quizResult, address token, bytes32 campaignHash) 
+    function recordPoints(address user, QuizResultInput memory quizResult, bytes32 campaignHash) 
         public 
         payable
         onlyAdmin
         whenNotPaused 
-        validateAddress(token)
+        validateUser(user, _getState().weekId, campaignHash)
         returns(bool) 
-    {
-        uint weekId = state.weekCounter;
+    { 
+        uint weekId = _getState().weekId;
         _forwardFee(msg.value);
         require(user != address(0), "Invalid user");
         _validateCampaign(campaignHash, weekId);
-        Campaign memory cpo = _getCampaign(weekId, campaignHash);
+        GetCampaign memory res = _getCampaign(weekId, campaignHash);
         Profile memory pf = _getProfile(weekId, campaignHash, user);
-        if(msg.value > 0) {
-            require(pf.other.haskey, 'No pass key');
-            IGrowToken(token).burn(user, pf.other.amountMinted);
-        }
-        require(pf.other.totalQuizPerWeek <= 14, 'Storage limit exceeded');
+        if(pf.other.blacklisted) revert UserBlacklisted();
+        require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
     
         unchecked {
-            cpo.activeLearners += 1;
+            res.cp.activeLearners += 1;
             pf.other.totalQuizPerWeek += 1;
-            cpo.totalPoints += quizResult.other.score; 
+            res.cp.totalPoints += quizResult.other.score; 
         }
         _setProfile(weekId,  campaignHash, user, pf.other);
         uint index = learners[weekId][campaignHash][user].quizResults.length;
@@ -244,18 +228,22 @@ contract Learna is
             learners[weekId][campaignHash][user].quizResults[index].answers.push();
             learners[weekId][campaignHash][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
         }
-        _setCampaign(weekId, campaignHash, cpo);
+        _setCampaign(res.slot, weekId, res.cp); 
 
-        emit RegisteredForWeeklyEarning(user, weekId, campaignHash);
+        emit PointRecorded(user, weekId, campaignHash, quizResult);
         return true;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                       PUBLIC FUNCTIONS                                    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * @dev Remove users from the list of campaigns in the current week
      * @param _users : List of users 
      * @notice Only owner function
     */
-    function banUserFromCampaign(
+    function banOrUnbanUser(
         address[] memory _users, 
         bytes32[] memory campaignHashes
     ) 
@@ -264,7 +252,8 @@ contract Learna is
         whenNotPaused 
         returns(bool) 
     {
-        uint weekId = state.weekCounter;
+        uint weekId = _getState().weekId;
+        bool status;
         for(uint i = 0; i < _users.length; i++) {
             address user = _users[i];
             if(user != address(0)) {
@@ -272,15 +261,80 @@ contract Learna is
                     bytes32 campaignHash = campaignHashes[j];
                     _validateCampaign(campaignHash, weekId);
                     Profile memory pf = _getProfile(weekId, campaignHash, user);
-                    if(pf.other.haskey) {
-                        pf.other.haskey = false;
-                        _setProfile(weekId, campaignHash, user, pf.other);
-                    }
+                    pf.other.blacklisted = !pf.other.blacklisted;
+                    if(i == 0) status = pf.other.blacklisted;
+                    _setProfile(weekId, campaignHash, user, pf.other);
                 }
             }
         }
-        emit Banned(_users, weekId, campaignHashes);
+        emit UserStatusChanged(_users, weekId, campaignHashes, status);
         return true;
+    } 
+
+     /**
+     * @dev Allocate weekly earnings
+     * @param growTokenContract : Grow Token contract address.
+     * @param amountInGrowToken : Amount to allocate in GROW token
+     * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
+     * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
+    */
+    function sortWeeklyReward(
+        address growTokenContract,
+        uint amountInGrowToken, 
+        uint32 claimDeadlineInMin,
+        uint32 newIntervalInMin
+    ) 
+        public 
+        whenNotPaused 
+        onlyAdmin
+        returns(bool) 
+    {
+        (uint pastWeekId, uint newWeekId, Initializer[] memory _campaigns) = _initializeAllCampaigns(newIntervalInMin, claimDeadlineInMin, _callback);
+        if(address(this).balance > 0) {
+            require(claim != address(0), "Claim not set");
+            (bool done,) = claim.call{value: address(this).balance}('');
+            require(done, 'Tf Failed');
+        }
+        if(amountInGrowToken > 0) {
+            require(growTokenContract != address(0), "Tk empty");
+            require(IGrowToken(growTokenContract).allocate(amountInGrowToken, address(0)), 'Allocation failed');
+        }
+
+        emit Sorted(pastWeekId, newWeekId, _campaigns);  
+ 
+        return true;
+    }
+
+    /**
+     * @dev Triggers stopped state.
+    */
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Returns to normal state.
+     */
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    ///////////////////////////////////
+    //        INTERNAL FUNCTIONS     //
+    ///////////////////////////////////
+
+    function _callback(Campaign memory _cp) internal returns(Campaign memory cp) {
+        cp = _cp;
+        (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
+        if(cp.token != address(0)){
+            uint balLeft = IERC20(cp.token).balanceOf(address(this));
+            if(balLeft > 0) {
+                IERC20(cp.token).transfer(claim, balLeft);   
+            }
+        }
+        cp.canClaim = true;
+        cp.fundsNative = nativeBalance;
+        cp.fundsERC20 = erc20Balance;
     }
     
     /**
@@ -304,16 +358,11 @@ contract Learna is
     }
 
     /**
-     * Check Eligibility
-     * @param weekId : Week Id
+     * Check reward eligibility for the concluded week
      * @param user : Target user
      * @param campaignHash : Hash of the campaign name
      */
-    function _getEligibility(
-        uint weekId, 
-        address user, 
-        bytes32 campaignHash
-    ) 
+    function _getEligibility(address user, bytes32 campaignHash) 
         internal 
         view 
         returns(
@@ -321,83 +370,28 @@ contract Learna is
             Campaign memory cp,
             uint erc20Amount, 
             uint nativeAmount,
-            bool isEligible
+            bool isEligible,
+            uint weekId
         ) 
     {
-        _validateCampaign(campaignHash, weekId);
-        cp = _getCampaign(weekId, campaignHash);
-        pf = _getProfile(weekId, campaignHash, user);
-        uint64 totalScore;
-        for(uint i = 0; i < pf.quizResults.length; i++) { 
-            unchecked {
-                totalScore += pf.quizResults[i].other.score;
+        State memory st = _getState();
+        weekId = st.weekId;
+        if(weekId > 0) {
+            weekId --;
+            _validateCampaign(campaignHash, weekId);
+            cp = _getCampaign(weekId, campaignHash).cp;
+            pf = _getProfile(weekId, campaignHash, user);
+            uint64 totalScore;
+            for(uint i = 0; i < pf.quizResults.length; i++) { 
+                unchecked {
+                    totalScore += pf.quizResults[i].other.score;
+                }
             }
+            (uint erc20, uint native) = _calculateShare(totalScore, cp);
+            erc20Amount = erc20;
+            nativeAmount = native;
+            isEligible = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
         }
-        // if(totalScore == 0) revert("here");
-        (uint erc20, uint native) = _calculateShare(totalScore, cp);
-        erc20Amount = erc20;
-        nativeAmount = native;
-        isEligible = mode == Mode.LIVE? _now() <= cp.claimActiveUntil && !pf.other.claimed && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
-    }
-
-    /**
-     * Check Eligibility
-     * @param user : User
-     * @param campaignHash: 
-     * @notice Claim will always be for the concluded week. 
-     */
-    function checkEligibility(
-        address user, 
-        bytes32 campaignHash
-    ) 
-        external 
-        view 
-        returns(Eligibility memory result) 
-    {
-        uint weekId = state.weekCounter;
-        if(weekId == 0) return result;
-        weekId -= 1;
-        (,Campaign memory cp, uint erc20, uint native, bool isEligible) = _getEligibility(weekId, user, campaignHash);
-        result = Eligibility(isEligible, erc20, native, weekId, cp.token, campaignHash, false, false);
-
-        return result;
-    } 
- 
-    /**
-     * @dev claim reward
-     * @param elg : Eligibility object
-     * @param sender : User account not msg.sender
-     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
-    */
-    function onClaimed(Eligibility memory elg, address sender) 
-        external
-        whenNotPaused 
-        onlyApproved
-        returns(bool) 
-    {
-        Campaign memory cp = _getCampaign(elg.weekId, elg.campaignHash);
-        Profile memory pf = _getProfile(elg.weekId, elg.campaignHash, sender);
-        if(enforceKey){
-            if(!pf.other.haskey) revert NoPasskey();
-        }
-        pf.other.claimed = true;
-        unchecked {
-            if(cp.fundsNative > elg.nativeAmount) cp.fundsNative -= elg.nativeAmount;
-            if(cp.fundsERC20 > elg.nativeAmount) cp.fundsERC20 -= elg.erc20Amount;
-            pf.other.amountClaimedInNative += elg.nativeAmount;
-            pf.other.amountClaimedInERC20 += elg.erc20Amount;
-        }
-        _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
-        _setCampaign(elg.weekId, elg.campaignHash, cp);
- 
-        emit ClaimedWeeklyReward(sender, pf, cp);
-        return true;
-    }
-
-    // Transition into new week
-    function _transitionToNewWeek() internal returns(uint newWeekId) { 
-        state.weekCounter ++; 
-        newWeekId = state.weekCounter;
     }
 
     /**
@@ -420,222 +414,93 @@ contract Learna is
             }
             if(erc20Balance > 0 && (IERC20(token).balanceOf(address(this)) >= erc20Balance)) {
                 devShare = (erc20Balance * devRate) / 100;
-                require(IERC20(token).transfer(dev, devShare), 'ERC20 TFailed');
+                if(token != address(0)){
+                    require(IERC20(token).transfer(dev, devShare), 'ERC20 TFailed');
+                }
                 erc20Balance -= devShare; 
             }
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    //                          EXTERNAL VIEW FUNCTIONS                            //
+    /////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @dev Add new campaign to the current week
-     * @param campaign : Campaign string
-     * @param token : ERC20 contract address if fundsErc20 is greater than 0
-     * @param fundsErc20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
-     * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
-     * - ERC20. If the amount in fundsErc20 is greater than 0, it is suppose that the sender intends to also fund the campaign
-     *    in ERC20-based asset hence the 'token' parameter must not be zero.
-     * - Native such as CELO.
+     * Check Eligibility
+     * @param user : User
+     * @param campaignHash: 
+     * @notice Claim will always be for the concluded week. 
      */
-    function setUpCampaign(
-        string memory campaign, 
-        uint256 fundsErc20,
-        address token
-    ) public payable returns(bool) {
-        uint weekId = state.weekCounter;
-        address sender = _msgSender();
-        (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(campaign);
-        if(!_isInitializedCampaign(weekId, campaignHash)) {
-            _initializeCampaign(
-                weekId, 
-                state.transitionInterval + _now(), 
-                campaignHash, 
-                encoded,
-                _msgSender(),
-                msg.value,
-                fundsErc20,
-                token
-            );
-        }
-        address recipient = address(this);
-        Campaign memory cp = _getCampaign(weekId, campaignHash);
-        unchecked {
-            if(msg.value > 0){
-                cp.fundsNative += msg.value;
-            } else {
-                if(!_isAdmin(sender)) require(fundsErc20 > 0, "At least one funding");
-            }
-            
-            if(fundsErc20 > 0) {
-                if(cp.fundsERC20 > 0) require(cp.token == token, "Changing token is not permitted");
-                if(token == address(0)) revert InvalidAddress(token); 
-                if(IERC20(token).transferFrom(sender, recipient, fundsErc20)){
-                    cp.fundsERC20 += fundsErc20;
-                    cp.token = token;
-                }
-            }
-            cp.lastUpdated = _now();
-            if(cp.operator != sender) cp.operator = sender;
-            if(cp.transitionDate == 0) cp.transitionDate = _now() + state.transitionInterval;
-            _setCampaign(weekId, campaignHash, cp);
-            emit NewCampaign(campaignHash, cp);
-        }
-
-        return true;
-    }
-
-    /**
-     * @dev Allocate weekly earnings
-     * @param growTokenContract : Grow Token contract address.
-     * @param _campaigns : Campaign hashes.
-     * @param amountInGrowToken : Amount to allocate in GROW token
-     * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
-     * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
-    */
-    function sortWeeklyReward(
-        address growTokenContract,
-        uint amountInGrowToken, 
-        string[] memory _campaigns
+    function checkEligibility(
+        address user, 
+        bytes32 campaignHash
     ) 
-        public 
+        external 
+        view 
+        returns(Eligibility memory result) 
+    {
+        (,Campaign memory cp, uint erc20, uint native, bool isEligible, uint weekId) = _getEligibility(user, campaignHash);
+        result = Eligibility(isEligible, erc20, native, weekId, cp.token, campaignHash, false, false);
+
+        return result;
+    } 
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    //                          EXTERNAL FUNCTIONS                                 //
+    /////////////////////////////////////////////////////////////////////////////////
+ 
+    /**
+     * @dev claim reward
+     * @param elg : Eligibility object
+     * @param sender : User account not msg.sender
+     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
+    */
+    function onClaimed(Eligibility memory elg, address sender) 
+        external
         whenNotPaused 
-        // onlyOwner
-        onlyAdmin
+        onlyApproved
+        validateUser(sender, elg.weekId, elg.campaignHash)
         returns(bool) 
     {
-        State memory st = state;
-        uint pastWeekId = st.weekCounter;
-        uint newWeekId = _transitionToNewWeek();
-        assert(newWeekId > pastWeekId);
-        require(growTokenContract != address(0), 'Token is zero');
-        uint256 totalBalInNative;
-        for(uint i=0; i < _campaigns.length; i++) {
-            (bytes32 campaignHash, bytes memory encoded) = _getCampaignHash(_campaigns[i]);
-            _validateCampaign(campaignHash, pastWeekId);
-            Campaign memory cp = _getCampaign(pastWeekId, campaignHash);
-            if(mode == Mode.LIVE) {
-                require(cp.transitionDate > 0 && _now() >= cp.transitionDate, 'Transition date in future');
-            }
-            (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
-            unchecked {
-                totalBalInNative += nativeBalance;
-                cp.claimActiveUntil = _now() + st.transitionInterval;
-            }
-            cp.canClaim = true;
-            cp.fundsNative = nativeBalance;
-            cp.fundsERC20 = erc20Balance;
-            _setCampaign(pastWeekId, campaignHash, cp);
-            if(!_isInitializedCampaign(newWeekId, campaignHash)) {
-                _initializeCampaign(
-                    newWeekId, 
-                    st.transitionInterval + _now(), 
-                    campaignHash, 
-                    encoded,
-                    _msgSender(),
-                    0,
-                    0,
-                    address(0)
-                );
-            }
-            
+       GetCampaign memory res = _getCampaign(elg.weekId, elg.campaignHash);
+        Profile memory pf = _getProfile(elg.weekId, elg.campaignHash, sender);
+        pf.other.claimed = true;
+        unchecked {
+            if(res.cp.fundsNative > elg.nativeAmount) res.cp.fundsNative -= elg.nativeAmount;
+            if(res.cp.fundsERC20 > elg.nativeAmount) res.cp.fundsERC20 -= elg.erc20Amount;
+            pf.other.amountClaimedInNative += elg.nativeAmount;
+            pf.other.amountClaimedInERC20 += elg.erc20Amount;
         }
-        
-        if(amountInGrowToken > 0) {
-            require(growTokenContract != address(0), "Sort: Token is empty");
-            require(IGrowToken(growTokenContract).allocate(amountInGrowToken, address(0)), 'Allocation failed');
-        }
-        require(address(this).balance >= totalBalInNative, "Balance anomally");
-
-        emit Sorted(pastWeekId, newWeekId, _campaigns);   
+        _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
+        _setCampaign(res.slot, elg.weekId, res.cp);
+ 
+        emit ClaimedWeeklyReward(sender, pf, res.cp);
         return true;
     }
 
-    /**
-     * @dev Adjust funds in campaigns. Only admin function
-     * @param campaignHashes : Campaign hashes
-     * @param erc20Values : ERC20 values.
-     * @param nativeValues : Values in native coin e.g CELO
-     * @notice The function can increase or decrease the values in a campaign. Just parse desired values.
-     *         - For each campaign, values cannot be adjusted beyond the balances in this contract.
-     */
-    function adjustCampaignValues(
-        bytes32[] memory campaignHashes, 
-        uint[] memory erc20Values,
-        uint[] memory nativeValues
-    ) public onlyAdmin returns(bool) {
-        uint weekId = state.weekCounter;
-        uint totalNativeValues;
-        require(campaignHashes.length == erc20Values.length && erc20Values.length == nativeValues.length, '2: Array mismatch');
-        for(uint i = 0; i < campaignHashes.length; i++){
-            bytes32 campaignHash = campaignHashes[i];
-            uint erc20Value = erc20Values[i];
-            uint nativeValue = nativeValues[i];
-            unchecked {
-                totalNativeValues += nativeValue;
-            }
-            Campaign memory cp = _getCampaign(weekId, campaignHash);
-            require(IERC20(cp.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
-            cp.fundsERC20 = erc20Value;
-            cp.fundsNative = nativeValue;
-            cp.lastUpdated = _now();
-            _setCampaign(weekId, campaignHash, cp);
-        }
-        require(address(this).balance >= totalNativeValues, "NtiveBal inconsistent");
-        return true;
-    }
+    /////////////////////////////////////////////////////////////////////////////////
+    //                          READ-ONLY FUNCTIONS                                //
+    /////////////////////////////////////////////////////////////////////////////////
 
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
-        data.state = state;
-        uint weekId = data.state.weekCounter;
+        data.state = _getState();
+        data.approved = _getApprovedCampaigns();
+        uint weekId = data.state.weekId;
         data.wd = new WeekData[](weekId + 1);
         weekId += 1;
         for(uint i = 0; i < weekId; i++) {
             data.wd[i].campaigns = _getCampaings(i);
+            data.wd[i].claimDeadline = _getDeadline(i);
         }
 
         return data;
     } 
 
-    // Set minimum payable token by users when signing up
-    function setMinimumToken(uint newToken) public onlyAdmin whenNotPaused  returns(bool) {
-        state.minimumToken = newToken;
-        return true; 
-    }
-
-    // Set minimum payable token by users when signing up
-    function setEnforcekey(bool _enforcekey) public onlyAdmin whenNotPaused  returns(bool) {
-        enforceKey = _enforcekey;
-        return true; 
-    }
-
-    // Set minimum payable token by users when signing up
-    function setTransitionInterval(uint64 newInternal) public onlyAdmin whenNotPaused returns(bool) {
-        state.minimumToken = newInternal;
-        return true;
-    }
-
     // Get user's data
-    function getProfile(address user, uint weekId, bytes32[] memory campaignHashes) public view returns(ReadProfile[] memory result) {
-        result = new ReadProfile[](campaignHashes.length);
-        for(uint i = 0; i < campaignHashes.length; i++) {
-            bytes32 campaignHash = campaignHashes[i];
-            result[i] = ReadProfile(_getProfile(weekId, campaignHash, user), campaignHash);
-        } 
-        return result; 
-    }
-
-    /**
-     * @dev Triggers stopped state.
-    */
-    function pause() public onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @dev Returns to normal state.
-     */
-    function unpause() public onlyOwner {
-        _unpause();
+    function getProfile(address user, uint weekId, bytes32 campaignHash) public view returns(ReadProfile memory result) {
+        return result = ReadProfile(_getProfile(weekId, campaignHash, user), campaignHash);
     }
 
 }

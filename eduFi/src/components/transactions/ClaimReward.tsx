@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function ClaimReward({weekId, campainHash, openDrawer, toggleDrawer }: claimProps) {
+export default function ClaimReward({ campainHash, openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -25,7 +25,7 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [weekId, campainHash],
+                args: [campainHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -34,7 +34,7 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
         })
         return transactions;
     
-   }, [td, weekId, campainHash]);
+   }, [td, campainHash]);
 
     return(
         <Confirmation 
@@ -47,7 +47,6 @@ export default function ClaimReward({weekId, campainHash, openDrawer, toggleDraw
 }
 
 type claimProps = {
-    weekId: bigint;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
     campainHash: Hex;

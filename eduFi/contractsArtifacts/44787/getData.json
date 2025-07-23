@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B",
+  "contractAddress": "0xfd81946506b23C08D8e2126cBBbFdE12298D8ABf",
   "functionName": "getData",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -18,13 +18,18 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint32",
                   "name": "transitionInterval",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "transitionDate",
                   "type": "uint64"
                 },
                 {
                   "internalType": "uint256",
-                  "name": "weekCounter",
+                  "name": "weekId",
                   "type": "uint256"
                 }
               ],
@@ -60,16 +65,6 @@
                       "internalType": "uint256",
                       "name": "activeLearners",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "transitionDate",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "claimActiveUntil",
-                      "type": "uint64"
                     },
                     {
                       "internalType": "address",
@@ -112,10 +107,42 @@
                   "internalType": "struct ILearna.Campaign[]",
                   "name": "campaigns",
                   "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "claimDeadline",
+                  "type": "uint96"
                 }
               ],
               "internalType": "struct ILearna.WeekData[]",
               "name": "wd",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "initialized",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "index",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "hash_",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct ILearna.Initializer[]",
+              "name": "approved",
               "type": "tuple[]"
             }
           ],

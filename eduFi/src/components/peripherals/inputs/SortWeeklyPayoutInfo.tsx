@@ -4,12 +4,15 @@ import { parseUnits } from 'viem';
 import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
 import useStorage from '~/components/hooks/useStorage';
 import CustomButton from '../CustomButton';
+import { toBN } from '~/components/utilities';
 
 export default function SortWeeklyPayout() {
     const [ growTokenAmount, setGrowTokenAmount ] = React.useState<string>('0');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
+    const [ newClaimDeadline, setNewDeadline ] = React.useState<number>(0);
+    const [ newInterval, setNewInterval ] = React.useState<number>(0);
 
-    const { weekId, campaignStrings } = useStorage();
+    const { weekId } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
     const onChange = (e: React.ChangeEvent<HTMLInputElement>, tag: InputTag) => {
         e.preventDefault();
@@ -18,7 +21,12 @@ export default function SortWeeklyPayout() {
             case 'growtokenamount':
                 setGrowTokenAmount(value);
                 break;
+            case 'celoamount':
+                setNewDeadline(toBN(value).toNumber());
+                break;
             default:
+                // 360 = 1hr i.e 60 * 60
+                setNewInterval(toBN(value).toNumber() * 360);
                 break;
         }
     } 
@@ -35,6 +43,22 @@ export default function SortWeeklyPayout() {
                 placeHolder: 'Enter amount',
                 type: 'text',
                 required: true
+            },
+            {
+                tag: 'celoamount',
+                id: 'GrowTokenAmount',
+                label: 'New claim deadline (In Min)',
+                placeHolder: 'Deadline',
+                type: 'number',
+                required: false
+            },
+            {
+                tag: 'erc20amount',
+                id: 'GrowTokenAmount',
+                label: 'New transition interval (In hrs)',
+                placeHolder: 'Deadline',
+                type: 'number',
+                required: false
             }
         ];
         return {argsReady, amount, sortContent}
@@ -80,7 +104,8 @@ export default function SortWeeklyPayout() {
                 growTokenAmount={amount}
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campaignString={campaignStrings}
+                newClaimUntil={newClaimDeadline}
+                newInterval={newInterval}
             />
         </div>
     );
@@ -94,9 +119,3 @@ export interface ContentType {
     id: string, 
     required: boolean
 };
-// case 'tokenaddress':
-//                 if(value.length === 42 && value.startsWith('0x')) setTokenAddress(value as Address);
-//                 break;
-//             case 'owner':
-//                 if(value.length === 42 && value.startsWith('0x')) setTokenOwner(value as Address);
-//                 break;

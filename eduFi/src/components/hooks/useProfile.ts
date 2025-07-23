@@ -1,6 +1,8 @@
-import { filterTransactionData, formatAddr, mockCampaign, mockEligibility, mockProfile, mockReadProfile } from '../utilities';
+/* eslint-disable */
+
+import { filterTransactionData, formatAddr, mockCampaign, mockEligibility, mockProfile, mockReadProfile, toBN } from '../utilities';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
-import { Address, Campaign, CampaignDatum, Eligibility, Profile, ReadProfile } from '../../../types/quiz';
+import { Address, Campaign, CampaignDatum, Eligibility, Profile, ReadProfile, WeekData } from '../../../types/quiz';
 import { Hex, keccak256, stringToHex, zeroAddress } from "viem";
 import React from "react";
 import useStorage from './useStorage';
@@ -9,12 +11,14 @@ export const toHash = (arg: string) => {
     return keccak256(stringToHex(arg));
 }
 
-export interface UseProfileType { inHash: Hex, wkId: number }
+export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface ProfileReturnType {
     profile: Profile;
     claimable: Eligibility;
     claimed: boolean;
     campaign: Campaign;
+    campaignHash: Hex;
+    claimDeadline: number;
     campaignDatum: CampaignDatum;
     totalPointsForACampaign: number;
     showVerificationButton: boolean;
@@ -25,6 +29,8 @@ export const mockProfileReturn : ProfileReturnType = {
     showVerificationButton: false,
     showWithdrawalButton: false,
     profile: mockProfile,
+    claimDeadline: 0,
+    campaignHash: toHash('solidity'),
     claimable: {
         campaignHash: toHash('solidity'),
         canClaim: false,
@@ -44,20 +50,73 @@ export const mockProfileReturn : ProfileReturnType = {
     totalPointsForACampaign: 0
 }
 
+ const getReturnObj = (arg: {requestedHash: Hex, weekData: WeekData[], campaignData:CampaignDatum[], requestedWkId: number, readProfile: ReadProfile, eligibility: Eligibility, claimable: Eligibility}) : ProfileReturnType => {
+    const { readProfile, eligibility, weekData, campaignData, claimable, requestedHash, requestedWkId } = arg;
+    
+    // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
+    // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
+    const sorted = eligibility.canClaim;
+
+    // Reward claim criteria. To show withdrawal button, user must have been verified
+    const showWithdrawalButton = claimable.isVerified && !claimable.isClaimed;
+
+    // Eligibility criteria. To show verification button user must have earned points, week sorted, and have not claim for this campaign
+    const { other: { claimed }, quizResults } = readProfile.profile;
+    const showVerificationButton = !claimed && (eligibility.erc20Amount > 0n || eligibility.nativeAmount > 0n) && sorted;
+
+    // Total points earned in a campaign
+    const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
+    
+    // Search campaign campaignData 
+    const fcd = campaignData.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
+    const cmd : CampaignDatum = fcd[0] || mockProfileReturn.campaignDatum;
+
+    // Search campaign
+    const filteredWk = weekData?.[requestedWkId]?.campaigns?.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+    const foundCampaign = filteredWk[0] || mockCampaign;
+    
+    return {
+        claimable,
+        claimDeadline: toBN(weekData?.[0]?.claimDeadline.toString()).toNumber(),
+        campaignHash: readProfile.campaignHash,
+        profile: readProfile.profile,
+        campaign: foundCampaign,
+        campaignDatum: cmd,
+        showWithdrawalButton,
+        showVerificationButton,
+        totalPointsForACampaign,
+        claimed: claimed && claimable.isClaimed
+    };
+
+};
+
 export default function useProfile({ inHash, wkId }: UseProfileType){
-    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash);
-    const [requestedWkId, setRequestedId] = React.useState<number>(wkId);
+    const { campaignData, callback, wkId: weekId, weekData } = useStorage();
+    const [firstRead, setRead] = React.useState<boolean>(false);
+    const [requestedHash, setCampaignHash] = React.useState<Hex>(inHash?? campaignData?.[0]?.campaignHash);
+    const [requestedWkId, setRequestedId] = React.useState<bigint>(BigInt(wkId?? weekId));
+    const [returnObj, setReturnObj] = React.useState<ProfileReturnType>(mockProfileReturn);
 
     const chainId = useChainId();
     const config = useConfig();
     const { address, isConnected } = useAccount();
     const account = formatAddr(address);
-    const { campaignHashes, campaignData, callback, weekId, weekData } = useStorage();
 
+    const setHash = (arg: Hex) => {
+        if(requestedHash !== arg) setCampaignHash(arg);
+    }
+
+    const setWeekId = (arg: number) => {
+        const arg_ = BigInt(arg);
+        if(requestedWkId !== arg_) setRequestedId(arg_);
+    }
     /**
      * @dev Fetches the profile for the connected account for all the campaigns in the current week
      * It also fetches the claim eligibility for the same week. This can be used in any of the components inside 
      * this app. 
+     * @notice 'getProfile' fetches the profile for the connected account based on the weekId parsed
+     *         'checkEligibility' Fetches reward eligibility data for thepast week since a week must end before users can be eiligible to see what they earn..
+     *         'getClaimable' Gets the withdrawable amount for the past week 
      */
     const { readTxObject } = React.useMemo(() => {
         const { transactionData: td} = filterTransactionData({
@@ -66,7 +125,7 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             functionNames: ['getProfile', 'checkEligibility', 'getClaimable'],
             callback
         });
-        const readArgs = [[account, weekId, campaignHashes], [weekId, account, campaignHashes], [requestedHash, account]];
+        const readArgs = [[account, requestedWkId, requestedHash], [account, requestedHash], [requestedHash, account]];
         const readTxObject = td.map((item, i) => {
             return{
                 abi: item.abi,
@@ -76,10 +135,10 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             }
         });
         return { readTxObject }
-    }, [chainId, callback, account, weekId, campaignHashes, requestedHash]);
+    }, [chainId, callback, account, weekId, requestedHash]);
 
     // Fetch the data 
-    const { data: result, refetch } = useReadContracts({
+    const { data, refetch } = useReadContracts({
         config,
         contracts: readTxObject,
         allowFailure: true,
@@ -90,77 +149,62 @@ export default function useProfile({ inHash, wkId }: UseProfileType){
             refetchOnMount: 'always',
         }
     });
-    
-    /**
-        *  @dev Return a single profile from a campaign ne  , 
-        *  @param hash : Campaign hash
-        *  @returns : profile of type Profil. { See types/quiz.ts}
-    */
-   const getCampaignObj = React.useMemo(() : ProfileReturnType => {
-        const profiles = result?.[0]?.result as ReadProfile[] || [mockReadProfile];
-        const eligibilities = result?.[1]?.result as Eligibility[] || mockEligibility;
-
-        // User profile for the selected campaign
-        const filtered = profiles?.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
-        const found = filtered?.[0]?.profile || mockProfile;
-
-        //Reward eligibility for the selected campaign
-        const eligibleIndex = campaignHashes.indexOf(requestedHash); 
-        const sorted = eligibilities[eligibleIndex].canClaim;
-
-        // Reward claim criteria
-        const claim = result?.[2]?.result as Eligibility || mockEligibility;
-        const showWithdrawalButton = claim.isVerified && !claim.isClaimed;
-
-        // Eligibility criteria
-        const { other: { claimed, amountClaimedInERC20, amountClaimedInNative }, quizResults } = found;
-        const showVerificationButton = !claimed && (amountClaimedInERC20 > 0n || amountClaimedInNative > 0n) && sorted;
-
-        // Total points earned in a campaign
-        const totalPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
-        
-        // Search campaign campaignData 
-        const fcd = campaignData.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
-        const cmd : CampaignDatum = fcd[0] || mockProfileReturn.campaignDatum;
-
-        // Search campaign
-        const filteredWk = weekData?.[wkId]?.campaigns?.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
-        const foundCampaign = filteredWk[0] || mockCampaign;
-       
-        return {
-            claimable: claim,
-            profile: found,
-            campaign: foundCampaign,
-            campaignDatum: cmd,
-            showWithdrawalButton,
-            showVerificationButton,
-            totalPointsForACampaign,
-            claimed: claimed && claim.isClaimed
-       };
-
-   }, [result, campaignHashes, requestedHash, wkId, weekData, campaignData, requestedWkId]);
 
     // Update the campaignHash in state whenever the inHash or requested weekId changes
     React.useEffect(() => {
-        if(requestedHash !== inHash){
-            setCampaignHash(inHash);
-            refetch()
-            .then(() => {
-                console.log("Data refetched")
-            })
+        if(!firstRead) {
+            if(data && data.length > 0){
+                const readProfile = data[0]?.result as ReadProfile ?? mockReadProfile;
+                const eligibility = data[1]?.result as Eligibility ?? mockEligibility;
+                const claimable = data[2]?.result as Eligibility?? mockEligibility;
+        
+                const res = getReturnObj({
+                    campaignData,
+                    claimable,
+                    eligibility,
+                    readProfile,
+                    requestedHash,
+                    requestedWkId: toBN(requestedWkId.toString()).toNumber(),
+                    weekData
+                });
+        
+                setReturnObj(res);
+                setRead(true);
+            }
         }
+    }, [firstRead, data]);
 
-        if(requestedWkId !== wkId){
-            setRequestedId(wkId);
-            refetch()
-            .then(() => {
-                console.log("Data refetched");
-            })
+    // Update the campaignHash in state whenever the inHash or requested weekId changes
+    React.useEffect(() => {
+        const controller = new AbortController();
+        if(requestedWkId !== BigInt(wkId?? weekId) || inHash !== requestedHash){
+            const refresh = async() => {
+                const res = await refetch();
+                const readProfile = res?.data?.[0]?.result as ReadProfile ?? mockReadProfile;
+                const eligibility = res?.data?.[1]?.result as Eligibility ?? mockEligibility;
+                const claimable = res?.data?.[2]?.result as Eligibility?? mockEligibility;
+                const returnObj_ = getReturnObj({
+                    campaignData,
+                    claimable,
+                    eligibility,
+                    readProfile,
+                    requestedHash,
+                    requestedWkId: toBN(requestedWkId.toString()).toNumber(),
+                    weekData
+                });
+        
+                setReturnObj(returnObj_);
+            }
+            refresh();
+            return () => controller.abort();
         }
-
-    }, [inHash, refetch, wkId, requestedWkId, requestedHash]);
+    }, [inHash, wkId, campaignData, weekData, requestedWkId, requestedHash]);
 
  
-    return { ...getCampaignObj }
+    return { 
+        ...returnObj,
+        setHash,
+        setWeekId
+    } 
 
 }

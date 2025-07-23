@@ -2,8 +2,9 @@
 pragma solidity 0.8.28;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
-abstract contract Approved is Ownable {
+abstract contract Approved is Ownable, Pausable {
     error AddressIsZero();
     
     event Approval(address indexed);
@@ -18,16 +19,18 @@ abstract contract Approved is Ownable {
         _;
     }
 
-    constructor() Ownable(_msgSender()) {}
+    constructor() Ownable(_msgSender()) {
+       _setPermission(_msgSender(), true);
+         
+    }
     //    _approve(toApprove, true);
-    //    _approve(_msgSender(), true);
 
     /**
      * @dev Set approval for
      * @param target : Account to set approval for
      * @param value : Approval state - true or false
      */
-    function _approve(address target, bool value) internal {
+    function _setPermission(address target, bool value) internal {
         if(target == address(0)) revert AddressIsZero();
         approval[target] = value;
     }
@@ -36,8 +39,8 @@ abstract contract Approved is Ownable {
      * @dev Set approval for target
      * @param target : Account to set approval for
      */
-    function approve(address target) public onlyOwner {
-        _approve(target, true);
+    function setPermission(address target) public onlyOwner {
+        _setPermission(target, true);
         emit Approval(target);
     }
 
@@ -53,7 +56,7 @@ abstract contract Approved is Ownable {
      * @dev Set approval for target
      * @param target : Account to set approval for
      */
-    function isApproved(address target) public view returns(bool) {
+    function isPermitted(address target) public view returns(bool) {
         return _isApproved(target);
     }
 
@@ -62,7 +65,8 @@ abstract contract Approved is Ownable {
      * @param target : Account to set approval for
      */
     function unApprove(address target) public onlyOwner {
-        _approve(target, false);
+        _setPermission(target, false);
         emit UnApproval(target);
     }
+
 }

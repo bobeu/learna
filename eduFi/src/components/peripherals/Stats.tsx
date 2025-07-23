@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
-import { Hex, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -9,7 +9,7 @@ import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
-import { Timer, Fuel, Calendar, BaggageClaim} from "lucide-react";
+import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
 import useProfile from "../hooks/useProfile";
@@ -19,11 +19,9 @@ import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
 
-function Stat({campaign} : {campaign: Campaign}) {
+function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, transitionDate: number, claimDeadline: number}) {
     const { 
         activeLearners, 
-        claimActiveUntil,
-        transitionDate,
         totalPoints, 
         canClaim,
         fundsERC20,
@@ -71,7 +69,7 @@ function Stat({campaign} : {campaign: Campaign}) {
                         <Fuel className="w-4 h-4 text-purple-600" />
                     </div>
                     <div className="font-semibold text-gray-800 mb-1">
-                        {getTimeFromEpoch(claimActiveUntil)}
+                        {getTimeFromEpoch(claimDeadline)}
                     </div>
                     <div className="text-xs text-gray-600">Claimable until</div>
                 </div>
@@ -92,7 +90,7 @@ function Stat({campaign} : {campaign: Campaign}) {
                         <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
                     </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                        {getTimeFromEpoch(claimActiveUntil)}
+                        {getTimeFromEpoch(claimDeadline)}
                     </div>
                     <div className="text-xs text-cyan-600">Claim ends</div>
                 </div>
@@ -138,12 +136,9 @@ function Stat({campaign} : {campaign: Campaign}) {
 }
 
 export default function Stats() {
-    const [ selectedWeek, setSelectedWeek ] = React.useState<number>(0);
     const [ openPausePopUp, setPausePopUp ] = React.useState<number>(0);
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
-    const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${0}`);
-    // const [ profile, setProfile ] = React.useState<ProfileReturnType>(mockProfileReturn);
     
     const { 
         setpath, 
@@ -152,10 +147,10 @@ export default function Stats() {
         campaignStrings,
         userAdminStatus,
         campaignData,
-        state: { minimumToken, transitionInterval, weekCounter }
+        state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
-    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
+    const { setHash, setWeekId, ...rest } = useProfile({});
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -168,13 +163,21 @@ export default function Stats() {
         }
     }
 
+    const goToQuiz = () => {
+        if(isConnected) {
+            setpath('quiz');
+        } else {
+            setpath('home')
+        }
+    }
+
     const setCampaignStr = (arg: string) => {
-        const fd = campaignData.find(q => q.campaign === arg);
-        setRequestedHash(fd?.campaignHash || `0x${0}`);
+        const fd = campaignData.filter(q => q.campaign === arg);
+        if(fd) setHash(fd?.[0]?.campaignHash);
     }
 
     const setselectedWeek = (arg: string) => {
-        setSelectedWeek(Number(arg));
+        setWeekId(toBN(arg).toNumber());
     }
 
     const setaction = (arg: string) => {
@@ -204,12 +207,13 @@ export default function Stats() {
     return(
         <Wrapper2xl useMinHeight={true} >
             <div className="text-3xl text-left font-bold text-gray-800 mb-4">Analytics</div>
-            <div className="flex justify-center items-center gap-1 w-full mb-2">
-                <CustomButton
-                    exit={true}
-                    onClick={backToHome}
-                    disabled={false}
-                >
+            <div className="w-full space-y-2 mb-2">
+                <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-full">
+                    <ArrowRightCircle className="w-5 h-5" />
+                    <span>Take A Quiz</span>
+                </CustomButton>
+                <CustomButton onClick={backToHome} exit={true} disabled={false} overrideClassName="w-full">
+                    <ArrowLeftCircle className="w-5 h-5" />
                     <span>Exit</span>
                 </CustomButton>
             </div>
@@ -219,7 +223,7 @@ export default function Stats() {
                         <Calendar className="w-8 h-8 text-green-600" />
                     </div>
                     <div className="text-2xl font-bold text-gray-800 mb-1">
-                        {weekCounter.toString() || 0}
+                        {weekId.toString() || 0}
                     </div>
                     <div className="text-sm text-gray-600">Current week</div>
                 </div>
@@ -234,7 +238,7 @@ export default function Stats() {
                     <div className="text-sm text-gray-600">Transition interval</div>
                 </div>
 
-                <div className="glass-card rounded-xl p-4">
+                {/* <div className="glass-card rounded-xl p-4">
                     <div className="flex items-center justify-center mb-3">
                         <Fuel className="w-8 h-8 text-purple-600" />
                     </div>
@@ -242,27 +246,37 @@ export default function Stats() {
                         {`${formatValue(minimumToken.toString()).toStr || 0} Celo`}
                     </div>
                     <div className="text-sm text-gray-600">Min. Token</div>
-                </div>
+                </div> */}
             </div>
             
             {/* Week Data - Select week and campaign */}
-            <div className="space-y-1 mb-4">
+            <div className="space-y-4 mb-2">
                 <div className="text-2xl text-left font-bold text-gray-800 mb-2">Weeks Data</div>
                 <div className="w-full flex justify-between items-center gap-2">
-                    <SelectComponent 
-                        title="Campaigns"
-                        setHash={setCampaignStr}
-                        campaigns={campaignStrings}
-                        placeHolder="Campaigns"
-                    />
-                    <SelectComponent 
-                        title="Week"
-                        setHash={setselectedWeek}
-                        campaigns={weekIds}
-                        placeHolder="Weeks"
-                    />
+                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Campaigns</h3>
+                        <SelectComponent 
+                            setHash={setCampaignStr}
+                            campaigns={campaignStrings}
+                            placeHolder="Campaigns"
+                            width="w-"
+                        />
+                    </div>
+                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Week</h3>
+                         <SelectComponent 
+                            setHash={setselectedWeek}
+                            campaigns={weekIds}
+                            placeHolder="Weeks"
+                            width="w-"
+                        />
+                    </div>
                 </div>
-                <Stat campaign={profile.campaign}/>
+                <Stat 
+                    campaign={rest.campaign} 
+                    transitionDate={transitionDate}
+                    claimDeadline={rest.claimDeadline}
+                />
             </div>
 
             {/* Admin and Owner only settings */}

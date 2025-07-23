@@ -31,8 +31,12 @@ export function CampaignMap(
     }) 
 {
     const onChange = (value: string) => {
-        const filtered : CampaignDataFormatted[] = campaignData.filter(({campaign}) => value === campaign);
-        setCampaign(filtered?.[0]);
+        if(campaignData && campaignData.length > 0){
+            const filtered : CampaignDataFormatted[] = campaignData.filter(({campaign}) => value === campaign);
+            setCampaign(filtered?.[0]);
+        } else {
+            alert('Please check you connection.')
+        }
     };
 
     return (
@@ -74,7 +78,7 @@ export default function SetupCampaign() {
     const onValueChange = (arg: string) => {
         const filtered = contractAddresses.filter(({name}) => name === arg);
         setToken(filtered?.[0])
-    };
+    };campaignData
 
     const backToDashboard = () => setpath('dashboard');
     const chainId = useChainId();

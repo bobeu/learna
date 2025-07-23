@@ -4,19 +4,27 @@ import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucid
 import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
+import useProfile from '../hooks/useProfile';
+import { Hex, hexToString } from 'viem';
 
 export const QuizInterface = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerInput[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerInput | null>(null);
   const [showResult, setShowResult] = useState(false);
+
   const { quiz, onComplete, onBack } = useStorage();
+  const { setHash, profile } = useProfile({});
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
   const [startTime] = useState(Date.now());
 
   const currentQuestion = quiz?.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+
+  React.useEffect(() => { 
+    setHash(quiz.id as Hex);
+  }, [quiz]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -31,6 +39,24 @@ export const QuizInterface = () => {
     }
   };
 
+  // Search for a question using its hashed value from the list of answered questions to prevent abuse 
+  // by ensure that learners don't get rewarded for the questions they've previously attempted in a week.
+  const screenQuiz = (hash: Hex) => {
+    let taken = false;
+    if(profile.quizResults.length > 0){
+      profile.quizResults.forEach(({answers: answs}) => {
+        for(let i = 0; i < answs.length; i++) {
+          const questionHash = hexToString(answs[i].questionHash as Hex);
+          if(questionHash.toLowerCase() === hash.toLowerCase()){
+            taken = true;
+            break;
+          }
+        }
+      })
+    }
+    return taken;
+  }
+
   // Handles request to display next question
   const handleNextQuestion = () => {
     const answersCopy =  answers;
@@ -39,7 +65,7 @@ export const QuizInterface = () => {
     } else {
       answersCopy.push({questionHash: currentQuestion?.hash, isUserSelected: false, selected: 0});
     }
-    
+  
     setAnswers(answersCopy);
     if (isLastQuestion) {
       handleQuizComplete(answersCopy);
@@ -65,7 +91,8 @@ export const QuizInterface = () => {
   const handleQuizComplete = (finalAnswers = answers) => {
     const score = quiz.questions.reduce((total, question) => {
       const userAnswer = finalAnswers[question.id]; 
-      return total + (userAnswer.selected === question.correctAnswer ? question.points : 0);
+      const attempted = screenQuiz(userAnswer?.questionHash);
+      return total + (userAnswer.selected === question.correctAnswer && !attempted? question.points : 0);
     }, 0);
 
     const result : QuizResultInput = {
@@ -121,7 +148,7 @@ export const QuizInterface = () => {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
-              <h1 className="text-2xl font-bold text-gradient">
+              <h1 className="text-2xl font-bold text-gradient capitalize">
                 {quiz.title}
               </h1>
             </div>
@@ -163,7 +190,7 @@ export const QuizInterface = () => {
               </span>
               <div className="flex items-center space-x-2 text-purple-600">
                 <Award className="w-5 h-5" />
-                <span className="font-semibold text-lg">{currentQuestion?.points} pts</span>
+                <span className="font-semibold text-lg">{Math.round(currentQuestion?.points)} pts</span>
               </div>
             </div>
             
@@ -216,11 +243,11 @@ export const QuizInterface = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center">
+          <div className="w-full flex justify-between items-center gap-4">
             <Button
               onClick={handlePreviousQuestion}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center space-x-2 btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-2/4 flex items-center gap-2 btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Previous</span>
@@ -230,7 +257,7 @@ export const QuizInterface = () => {
               <Button
                 onClick={showAnswerResult}
                 disabled={selectedAnswer === null}
-                className="flex items-center space-x-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-2/4 flex items-center gap-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{isLastQuestion ? 'Complete Quiz' : 'Next Question'}</span>
                 <ArrowRight className="w-4 h-4" />

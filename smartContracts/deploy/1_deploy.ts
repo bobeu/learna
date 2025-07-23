@@ -16,13 +16,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let {deployer, reserve, routeTo, admin, admin2, identityVerificationHub } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
-	const transitionInterval = networkName === 'alfajores'? 60 * 5 : (24 * 60 * 60); //1 day 
-	const scopeValue = BigInt(18602360624846318324803160706975563132768650215275175699779958311829163023208n);
+	const transitionInterval = networkName === 'alfajores'? 60 * 15 : (24 * 60 * 60); //1 day 
+	const scopeValue = BigInt(1536475986654929405976671078198070494428113187740467658697561596404228251395n);
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const merkleRoot = keccak256(stringToHex('merkleRoot'));
-	// const merkleRoot = '0x';
+	const accounts = [admin, admin2];
+	const newAdmins: string[] = [];
+	accounts.forEach((account) => {
+		if(account.toLowerCase() !== deployer.toLowerCase()){
+			newAdmins.push(account);
+		}
+	});
+	newAdmins.push(deployer);
 
+	console.log("NewAdmins: ", newAdmins);
 	console.log("deployer", deployer);
 	console.log("identityVerificationHub", identityVerificationHub);
 	console.log("admin", admin);
@@ -47,7 +55,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	*/
 	const learna = await deploy("Learna", {
 		from: deployer,
-		args: [[admin, admin2, deployer], transitionInterval, mode, feeManager.address, CAMPAIGNS],
+		args: [newAdmins, transitionInterval, mode, feeManager.address, CAMPAIGNS],
 		log: true,
 	});
 	console.log(`Learna contract deployed to: ${learna.address}`);
@@ -72,9 +80,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`GrowToken deployed to: ${growToken.address}`);
 	
-	const isAdmin1 = await read("Learna", "getAdminStatus", admin);
-	const isAdmin2 = await read("Learna", "getAdminStatus", admin2);
-	await execute('Learna', {from: deployer}, 'approve', claim.address);
+	const admins = await read("Learna", "getAdmins");
+	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
+	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
 	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setMerkleRoot', merkleRoot);
@@ -85,8 +93,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	console.log("scope", toBigInt(scope.toString()));
 	console.log("config", config);
-	console.log("isAdmin1", isAdmin1);
-	console.log("isAdmin2", isAdmin2);
+	console.log("isAdmin1", admins?.[0].active);
+	console.log("isAdmin2", admins?.[1].active);
 	
 }
 export default func;

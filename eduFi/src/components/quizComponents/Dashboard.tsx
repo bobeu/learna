@@ -154,17 +154,15 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 export default function Dashbaord() {
   const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0]?.campaignHash);
-  // const [profile, setProfile] = React.useState<ProfileReturnType>(mockProfileReturn);
   
-  const profile = useProfile({inHash: requestedHash, wkId});
+  const { setHash: setCampaignHash, setWeekId, ...rest } = useProfile({wkId});
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(0, 3);
 
   const setHash = (arg: string) => {
     const found = campaignData.find(q => q.campaign === arg);
-    setRequestedHash(found?.campaignHash as Address);
+    setCampaignHash(found?.campaignHash as Address);
   };
 
   const backHome = () => {
@@ -175,9 +173,6 @@ export default function Dashbaord() {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // React.useEffect(() => {
-  //   setProfile(getCampaignObj(wkId, requestedHash));
-  // }, [wkId, requestedHash, getCampaignObj]);
 
   return(
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 font-mono">
@@ -233,7 +228,7 @@ export default function Dashbaord() {
           {isMenuOpen && (
               <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-lg rounded-b-lg z-20 space-y-6">
                 <div className='pl-4'>
-                  { isConnected && <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Welcome to Educaster" />}
+                  <ConnectButton accountStatus={"avatar"} showBalance={false} chainStatus={"icon"} label="Reconnect" />
                 </div>
                   <div className="px-4 py-4 space-y-4">
                     <button onClick={() => setpath('stats')} className="flex justify-center items-center gap-4 text-gray-600 hover:text-cyan-600 transition-colors font-medium">
@@ -258,21 +253,21 @@ export default function Dashbaord() {
 
       {/* Stats card */}
       <div className="my-8">
-        <div className="flex justify-between items-center px-4">
+        <div className="flex justify-between items-center gap-4">
           <div className="w-2/4 flex items-center space-x-3">
             <Star className="w-6 h-6 text-yellow-500" />
             <h2 className="text-2xl font-bold text-gray-800">Quiz Stats</h2>
           </div>
-          <div className="w-2/4">
+          <div className='w-2/4'>
             <SelectComponent 
-              // title='Campaigns'
               campaigns={campaignStrings}
               placeHolder='Select campaign'
               setHash={setHash}
+              width='w-full'
             />
           </div>
         </div>
-        <DashboardInfo profile={profile} />
+        <DashboardInfo profile={rest} />
       </div>
 
        {/* Featured Quizzes */}

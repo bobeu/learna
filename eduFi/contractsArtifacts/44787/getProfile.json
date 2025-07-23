@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B",
+  "contractAddress": "0xfd81946506b23C08D8e2126cBBbFdE12298D8ABf",
   "functionName": "getProfile",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -17,9 +17,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
+          "internalType": "bytes32",
+          "name": "campaignHash",
+          "type": "bytes32"
         }
       ],
       "name": "getProfile",
@@ -127,19 +127,14 @@
                       "type": "bool"
                     },
                     {
-                      "internalType": "bytes32",
-                      "name": "passKey",
-                      "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "haskey",
-                      "type": "bool"
-                    },
-                    {
                       "internalType": "uint8",
                       "name": "totalQuizPerWeek",
                       "type": "uint8"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "blacklisted",
+                      "type": "bool"
                     }
                   ],
                   "internalType": "struct ILearna.ProfileOther",
@@ -157,9 +152,9 @@
               "type": "bytes32"
             }
           ],
-          "internalType": "struct ILearna.ReadProfile[]",
+          "internalType": "struct ILearna.ReadProfile",
           "name": "result",
-          "type": "tuple[]"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",

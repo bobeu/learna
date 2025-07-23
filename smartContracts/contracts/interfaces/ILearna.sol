@@ -7,20 +7,22 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 interface ILearna {
     enum Mode { LOCAL, LIVE }
 
-    error NoPasskey();
+    error UserBlacklisted();
     error NotEligible();
     error ClaimEnded(uint64);
     error InvalidAddress(address);
     error CampaignClaimNotActivated();
     error InsufficientAllowance(uint256);
+    error ClaimAddressNotSet();
+    error NotInitialized();
 
-    event NewCampaign(bytes32 campaignHash, Campaign campaign);
+    event NewCampaign(Campaign campaign);
+    event CampaignUpdated(Campaign campaign);
+    event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
     event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
-    event RegisteredForWeeklyEarning(address indexed users, uint weekId, bytes32 campainHash);
-    event Banned(address[] indexed users, uint weekId, bytes32[] campainHashes);
-    event Sorted(uint _weekId, uint newWeekId, string[] campainHashes);
-    event PasskeyGenerated(address indexed sender, uint weekId, bytes32[] campainHashes);
+    event Sorted(uint _weekId, uint newWeekId, Initializer[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
+    event UserStatusChanged(address[] users, uint weekId, bytes32[] campaignHashes, bool status);
 
     struct Campaign {
         uint256 fundsNative;
@@ -28,13 +30,16 @@ interface ILearna {
         uint96 totalPoints;
         uint64 lastUpdated;
         uint activeLearners; 
-        uint64 transitionDate;
-        uint64 claimActiveUntil;
         address operator;
         address token;
         bytes32 hash_;
         bool canClaim;
         CampaignData data;
+    }
+
+    struct GetCampaign {
+        Campaign cp;
+        uint32 slot;
     }
 
     struct CampaignData {
@@ -44,6 +49,13 @@ interface ILearna {
 
     struct Initializer {
         bool initialized;
+        uint index;
+        bytes encoded;
+        bytes32 hash_;
+    }
+
+    struct WeekInitializer {
+        bool hasSlot;
         uint32 slot;
     }
 
@@ -101,9 +113,8 @@ interface ILearna {
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
         bool claimed;
-        bytes32 passKey;
-        bool haskey;
         uint8 totalQuizPerWeek;
+        bool blacklisted;
     }
 
     struct Profile {
@@ -113,18 +124,21 @@ interface ILearna {
 
     struct WeekData {
         Campaign[] campaigns;
+        uint96 claimDeadline;
     } 
 
     // Readonly data
     struct ReadData {
         State state;
         WeekData[] wd;
+        Initializer[] approved;
     }
 
     struct State {
         uint minimumToken;
-        uint64 transitionInterval; 
-        uint weekCounter;
+        uint64 transitionInterval;
+        uint64 transitionDate;
+        uint weekId;
     }
 
     struct Eligibility {

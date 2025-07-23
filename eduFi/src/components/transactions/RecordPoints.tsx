@@ -5,10 +5,12 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData, formatAddr } from '../utilities';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
+import useStorage from '../hooks/useStorage';
 
 export default function RecordPoints({openDrawer, useAdmin, toggleDrawer, campaignHash }: RecordPointsProps) {
     const { chainId, address } = useAccount();
     const account = formatAddr(address);
+    const { result } = useStorage();
 
     const { transactionData: td, contractAddresses: ca } = React.useMemo(() => {
         const filtered = filterTransactionData({
@@ -23,7 +25,7 @@ export default function RecordPoints({openDrawer, useAdmin, toggleDrawer, campai
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [account, [], ca.GrowToken, campaignHash],
+                args: [account, result, campaignHash],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: false,
@@ -33,7 +35,7 @@ export default function RecordPoints({openDrawer, useAdmin, toggleDrawer, campai
         })
         return transactions;
     
-   }, [td, ca, account, useAdmin, campaignHash]);
+   }, [td, account, result, useAdmin, campaignHash]);
 
     return(
         <Confirmation 

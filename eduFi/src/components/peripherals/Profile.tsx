@@ -5,7 +5,7 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
-import { ArrowLeft, ArrowRight, StopCircle, Verified, Store, Key, Coins, HandCoins, BaggageClaim } from "lucide-react";
+import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
 import useProfile, { ProfileReturnType } from "../hooks/useProfile";
@@ -23,7 +23,6 @@ interface ProfileComponentProps {
 function ProfileComponent(
     {
         fid,
-        weekId,
         profileData: {
             profile: {
                 other: {
@@ -32,6 +31,7 @@ function ProfileComponent(
                     totalQuizPerWeek,
                 }
             },
+            claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
             // claimable: { isVerified },
@@ -42,6 +42,7 @@ function ProfileComponent(
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
 
+    const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const back = () => {
         setShowQRCode(false);
@@ -52,7 +53,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = campaign;
+    const { totalPoints, activeLearners, canClaim, hash_, } = campaign;
 
     if(showQRCode) {
         return(
@@ -70,7 +71,7 @@ function ProfileComponent(
         <MotionDisplayWrapper className="space-y-2 font-mono">
             {/* <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3> */}
             <div className="space-y-2">
-                <div className="bg-brand-gradien rounded-2xl p-8 mb-8 bg-white border relative overflow-hidden">
+                <div className="bg-brand-gradient  rounded-2xl p-8 mb-8 text-white border relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                         <div className="relative z-10">
                             <div className="text-6xl font-bold mb-2">
@@ -96,11 +97,11 @@ function ProfileComponent(
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-">Claim ends: </h3>
-                                <h3>{getTimeFromEpoch(claimActiveUntil)}</h3>
+                                <h3>{getTimeFromEpoch(claimDeadline)}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Reward: </h3>
-                                <h3 className={`${showVerificationButton? 'text-green-600' : ''}`}>{showVerificationButton? 'Eligible' : 'NotEligible'}</h3>
+                                <h3 className={`${showVerificationButton? 'text-white' : ''}`}>{showVerificationButton? 'Eligible' : 'NotEligible'}</h3>
                             </div>
                         </div>
                     </div>
@@ -120,7 +121,7 @@ function ProfileComponent(
 
                     <div className="glass-card rounded-xl p-4">
                         <div className="flex items-center justify-center mb-3">
-                            <Key className={`w-8 h-8 text-blue-600`} />
+                            <IdCard className={`w-8 h-8 text-blue-600`} />
                         </div>
                         <div className="text-3xl font-bold text-gray-800 mb-1">
                             {
@@ -130,10 +131,10 @@ function ProfileComponent(
                                 (showVerificationButton && showWithdrawalButton) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                             }
                             {
-                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <StopCircle className="w-8 h-8 " /> </h3> 
+                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
                             }
                         </div>
-                        <div className="text-sm text-gray-600">{}</div>
+                        <div className="text-sm text-gray-600">Verification status</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -171,7 +172,6 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                weekId={BigInt(weekId)}
                 campainHash={hash_}
             />
         </MotionDisplayWrapper>
@@ -180,8 +180,6 @@ function ProfileComponent(
 
 export default function Profile() {
     const { setpath, campaignStrings, wkId, campaignData} = useStorage();
-    const [selectedWeek, setSelectedWeek] = React.useState<number>(0);
-    const [requestedHash, setRequestedHash] = React.useState<Hex>(campaignData?.[0].campaignHash);
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -194,10 +192,10 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const profile = useProfile({inHash: requestedHash, wkId: selectedWeek});
+    const { setWeekId, setHash: setCampaignHash, ...rest } = useProfile({});
 
     const setselectedWeek = (arg: string) => {
-        setSelectedWeek(Number(arg));
+        setWeekId(Number(arg));
     }
 
     const goToQuiz = () => {
@@ -208,18 +206,25 @@ export default function Profile() {
         setpath('stats');
     };
 
+    const createCampaign = () => {
+        setpath('setupcampaign');
+    };
+
     const setHash = (arg: string) => {
-        const found = campaignData.find(q => q.campaign === arg);
-        if(found?.campaignHash !== requestedHash) setRequestedHash(found?.campaignHash as Hex);
+        const found = campaignData.filter(q => q.campaign === arg);
+        if(found.length > 0) setCampaignHash(found[0].campaignHash as Hex);
     }
 
     return(
         <Wrapper2xl useMinHeight={true} >
             <div className="space-y-6 grid grid-cols-1 ">
                 <div className="w-full relative flex justify-between items-center bg-white p-4 gap-4 rounded-2xl">
-                    {
-                        isConnected?  <ConnectButton accountStatus={"avatar"} chainStatus={"icon"} showBalance={false} /> : <h3 className="text-center">{"Not Connected"}</h3>
-                    }
+                    <ConnectButton 
+                        accountStatus={"avatar"} 
+                        chainStatus={"icon"} 
+                        showBalance={false} 
+                        label="Reconnect"
+                    />
                     <CustomButton 
                         onClick={goToStats} 
                         exit={true} 
@@ -230,10 +235,16 @@ export default function Profile() {
                         <span>Stats</span>
                     </CustomButton>
                 </div>
-                <CustomButton onClick={goToQuiz} exit={false} disabled={false}>
-                    <ArrowRight className="w-5 h-5" />
-                    <span>Take A Quiz</span>
-                </CustomButton>
+                <div className="w-full space-y-2">
+                    <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-full">
+                        <ArrowRightCircle className="w-5 h-5" />
+                        <span>Take A Quiz</span>
+                    </CustomButton>
+                    <CustomButton onClick={createCampaign} exit={true} disabled={false} overrideClassName="w-full">
+                        <PlusCircle className="w-5 h-5" />
+                        <span>New Campaign</span>
+                    </CustomButton>
+                </div>
                 
                 <div className="flex justify-between gap-4 max-w-sm">
                     {/* User can view their profile in a selected campaign */}
@@ -263,7 +274,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={profile}
+                    profileData={rest}
                 />
                 
                 {/* Exit button */}

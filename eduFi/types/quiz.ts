@@ -7,9 +7,8 @@ export type FunctionName =
   'runall' | 
   "checkEligibility"|
   'recordPoints'|
-  'banUserFromCampaign'|
   'setAdmin'|
-  'getAdminStatus'|
+  'getAdmins'|
   'hasPassKey'|
   'setTransitionInterval'|
   'claimReward'|
@@ -28,6 +27,8 @@ export type FunctionName =
   'setConfigId' |
   'getClaimable' |
   'setScope' |
+  'setPermission' |
+  'banOrUnbanUser'|
   'getCampaingData' |
   'setMinimumToken';
 
@@ -149,19 +150,19 @@ export interface QuizDatum {
   identifier: string;
   taken: boolean;
   questions: Array<{
-      quest: string;
-      options: Array<{
-          label: string;
-          value: string;
-      }>;
-      correctAnswer: {
-          label: string;
-          value: string;
-      };
-      userAnswer?: {
-          label: string;
-          value: string;
-      };
+    quest: string;
+    options: Array<{
+      label: string;
+      value: string;
+    }>;
+    correctAnswer: {
+      label: string;
+      value: string;
+    };
+    userAnswer?: {
+      label: string;
+      value: string;
+    };
   }>;
 };
 
@@ -231,8 +232,6 @@ export interface Campaign {
   totalPoints: bigint;
   lastUpdated: number;
   activeLearners: bigint; 
-  transitionDate: number;
-  claimActiveUntil: number;
   operator: Address;
   token: Address;
   hash_: Hex
@@ -247,12 +246,14 @@ export interface CampaignDataFormatted {
 
 export interface State {
   minimumToken: bigint;
-  weekCounter: bigint;
+  weekId: bigint;
   transitionInterval: number; 
+  transitionDate: number;
 }
 
 export interface WeekData {
   campaigns: Readonly<Campaign[]>;
+  claimDeadline: bigint;
 } 
 
 export interface ReadData {
@@ -315,4 +316,9 @@ export interface Eligibility {
   campaignHash: Hex;
   isVerified: boolean;
   isClaimed: boolean;
+}
+
+export interface Admin {
+  id: Address;
+  active: boolean;
 }

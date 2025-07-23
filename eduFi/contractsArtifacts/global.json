@@ -4,15 +4,12 @@
     "recordPoints",
     "banUserFromCampaign",
     "setAdmin",
-    "getAdminStatus",
-    "hasPassKey",
+    "getAdmins",
     "setTransitionInterval",
-    "claimReward",
     "sortWeeklyReward",
     "adjustCampaignValues",
     "setUpCampaign",
     "getProfile",
-    "generateKey",
     "getData",
     "approve",
     "setMinimumToken",
@@ -24,7 +21,8 @@
     "setScope",
     "setConfigId",
     "getClaimable",
-    "configId"
+    "configId",
+    "banOrUnbanUser"
   ],
   "chainName": {
     "42220": "celo",
@@ -50,10 +48,10 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0x7688A9e17ca6275421d3BE2521f0013c7b30c06b",
+      "Claim": "0x714A76e842D1396F4b6893e7DC482Ae9E6496BFB",
       "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
-      "GrowToken": "0x68F896623FA0FA22b073fA29144B5E3A3D5e1190",
-      "Learna": "0x451CB1895693A758f0A84Af9A1A8c416834EB45B"
+      "GrowToken": "0x1a0121BA8e2589B27c08AbAE807F72F4BAc20c5a",
+      "Learna": "0xfd81946506b23C08D8e2126cBBbFdE12298D8ABf"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",

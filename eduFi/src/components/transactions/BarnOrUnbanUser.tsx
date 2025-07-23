@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
+export default function BanOrUnbanUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -14,7 +14,7 @@ export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }:
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['banUserFromCampaign'],
+            functionNames: ['banOrUnbanUser'],
             callback
         });
 
@@ -41,11 +41,11 @@ export default function BanUser({user, openDrawer, campaignHash, toggleDrawer }:
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='banUserFromCampaign'
+            lastStepInList='banOrUnbanUser'
         />
     )
 }
-
+// unbanUserFromCampaign
 type RegisterUsersForWeeklyEarningProps = {
     user: Address;
     campaignHash: Hex;

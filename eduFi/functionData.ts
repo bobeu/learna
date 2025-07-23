@@ -1,20 +1,18 @@
 import claimReward44787 from "./contractsArtifacts/44787/claimReward.json";
 import getProfile44787 from "./contractsArtifacts/44787/getProfile.json";
-import generateKey44787 from "./contractsArtifacts/44787/generateKey.json";
 import getData44787 from "./contractsArtifacts/44787/getData.json";
 import checkEligibility44787 from "./contractsArtifacts/44787/checkEligibility.json";
 import recordPoints44787 from "./contractsArtifacts/44787/recordPoints.json";
 import sortWeeklyReward44787 from "./contractsArtifacts/44787/sortWeeklyReward.json";
 import setUpCampaign44787 from "./contractsArtifacts/44787/setUpCampaign.json";
 import setAdmin44787 from "./contractsArtifacts/44787/setAdmin.json";
-import hasPassKey44787 from "./contractsArtifacts/44787/hasPassKey.json";
-import getAdminStatus44787 from "./contractsArtifacts/44787/getAdminStatus.json";
+import getAdmins44787 from "./contractsArtifacts/44787/getAdmins.json";
 import owner44787 from "./contractsArtifacts/44787/owner.json";
 import setMinimumToken44787 from "./contractsArtifacts/44787/setMinimumToken.json";
 import approve44787 from "./contractsArtifacts/44787/approve.json";
 import allowance44787 from "./contractsArtifacts/44787/allowance.json";
 import setTransitionInterval44787 from "./contractsArtifacts/44787/setTransitionInterval.json";
-import banUserFromCampaign44787 from "./contractsArtifacts/44787/banUserFromCampaign.json";
+import banOrUnbanUser44787 from "./contractsArtifacts/44787/banOrUnbanUser.json";
 import adjustCampaignValues44787 from "./contractsArtifacts/44787/adjustCampaignValues.json";
 import configId44787 from "./contractsArtifacts/44787/configId.json";
 import getClaimable44787 from "./contractsArtifacts/44787/getClaimable.json";
@@ -24,15 +22,12 @@ import setScope44787 from "./contractsArtifacts/44787/setScope.json";
 // Mainnet contract configs
 import claimReward42220 from "./contractsArtifacts/42220/claimReward.json";
 import getProfile42220 from "./contractsArtifacts/42220/getProfile.json";
-import generateKey42220 from "./contractsArtifacts/42220/generateKey.json";
 import getData42220 from "./contractsArtifacts/42220/getData.json";
 import checkEligibility42220 from "./contractsArtifacts/42220/checkEligibility.json";
 import recordPoints42220 from "./contractsArtifacts/42220/recordPoints.json";
 import sortWeeklyReward42220 from "./contractsArtifacts/42220/sortWeeklyReward.json";
 import setUpCampaign42220 from "./contractsArtifacts/42220/setUpCampaign.json";
 import setAdmin42220 from "./contractsArtifacts/42220/setAdmin.json";
-import hasPassKey42220 from "./contractsArtifacts/42220/hasPassKey.json";
-import getAdminStatus42220 from "./contractsArtifacts/42220/getAdminStatus.json";
 import owner42220 from "./contractsArtifacts/42220/owner.json";
 import setMinimumToken42220 from "./contractsArtifacts/42220/setMinimumToken.json";
 import approve42220 from "./contractsArtifacts/42220/approve.json";
@@ -42,9 +37,10 @@ import pause44787 from "./contractsArtifacts/44787/pause.json";
 import unpause44787 from "./contractsArtifacts/44787/unpause.json";
 import allowance42220 from "./contractsArtifacts/42220/allowance.json";
 import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransitionInterval.json";
-import banUserFromCampaign42220 from "./contractsArtifacts/42220/banUserFromCampaign.json";
 import adjustCampaignValues42220 from "./contractsArtifacts/42220/adjustCampaignValues.json";
 import globalData from "./contractsArtifacts/global.json";
+// import getAdmins42220 from "./contractsArtifacts/42220/getAdmins.json";
+// import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
 // import configId44787 from "./contractsArtifacts/44787/configId.json";
 // import getClaimable44787 from "./contractsArtifacts/44787/getClaimable.json";
 // import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
@@ -54,7 +50,7 @@ const { chainIds, approvedFunctions } = globalData;
 
 const functionData = [
     [
-        { key: 'banUserFromCampaign', value: { ...banUserFromCampaign44787} },
+        { key: 'banOrUnbanUser', value: { ...banOrUnbanUser44787} },
         { key: 'owner', value: { ...owner44787} },
         { key: 'pause', value: { ...pause44787} },
         { key: 'unpause', value: { ...unpause44787} },
@@ -64,14 +60,12 @@ const functionData = [
         { key: 'sortWeeklyReward', value: { ...sortWeeklyReward44787} },
         { key: 'recordPoints', value: { ...recordPoints44787} },
         { key: 'getProfile', value: { ...getProfile44787} },
-        { key: 'generateKey', value: { ...generateKey44787} },
         { key: 'getData', value: { ...getData44787} },
         { key: 'setMinimumToken', value: { ...setMinimumToken44787} },
         { key: 'checkEligibility', value: { ...checkEligibility44787} },
         { key: 'claimReward', value: { ...claimReward44787} },
         { key: 'setAdmin', value: { ...setAdmin44787} },
-        { key: 'getAdminStatus', value: { ...getAdminStatus44787} },
-        { key: 'hasPassKey', value: { ...hasPassKey44787} },
+        { key: 'getAdmins', value: { ...getAdmins44787} },
         { key: 'setTransitionInterval', value: { ...setTransitionInterval44787} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues44787} },
         { key: 'configId', value: { ...configId44787} },
@@ -80,7 +74,7 @@ const functionData = [
         { key: 'getClaimable', value: { ...getClaimable44787} },
     ],
     [
-        { key: 'banUserFromCampaign', value: { ...banUserFromCampaign42220} },
+        // { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
         { key: 'owner', value: { ...owner42220} },
         { key: 'pause', value: { ...pause42220} },
         { key: 'unpause', value: { ...unpause42220} },
@@ -90,16 +84,14 @@ const functionData = [
         { key: 'sortWeeklyReward', value: { ...sortWeeklyReward42220} },
         { key: 'recordPoints', value: { ...recordPoints42220} },
         { key: 'getProfile', value: { ...getProfile42220} },
-        { key: 'generateKey', value: { ...generateKey42220} },
         { key: 'getData', value: { ...getData42220} },
         { key: 'setMinimumToken', value: { ...setMinimumToken42220} },
         { key: 'checkEligibility', value: { ...checkEligibility42220} },
         { key: 'claimReward', value: { ...claimReward42220} },
         { key: 'setAdmin', value: { ...setAdmin42220} },
-        { key: 'getAdminStatus', value: { ...getAdminStatus42220} },
-        { key: 'hasPassKey', value: { ...hasPassKey42220} },
         { key: 'setTransitionInterval', value: { ...setTransitionInterval42220} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues42220} },
+        // { key: 'getAdmins', value: { ...getAdmins42220} },
         // { key: 'configId', value: { ...configId42220} },
         // { key: 'setConfigId', value: { ...setConfigId42220} },
         // { key: 'setScope', value: { ...setScope42220} },

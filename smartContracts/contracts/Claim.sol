@@ -9,18 +9,19 @@ import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/I
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
 
 // import { SelfCircuitLibrary } from "@selfxyz/contracts/contracts/libraries/SelfCircuitLibrary.sol";
-import { Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+// import { Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { ILearna } from "./ILearna.sol";
+import { ILearna } from "./interfaces/ILearna.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import { Approved } from "./Approved.sol";
 
 /**
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
+contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // Errors
@@ -50,14 +51,16 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     /// @notice Merkle root used to validate reward claims.
     bytes32 public merkleRoot;
 
-    /// @notice Maps nullifiers to user identifiers for registration tracking
-    // mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
+    ///@notice When this flag is turned off, user will need no verification to claim reward
+    bool public useSelf;
 
     // /// @notice Maps of campaigns to user identifiers to registration status
     mapping(bytes32 campaignHash => mapping(address user => ILearna.Eligibility)) internal claimables;
-    // _registeredUserIdentifiers[uint256(uint160(registeredAddress))];  ///////////////////////// converts user address to idenfitiers
 
-    // mapping(address user => ILearna.Eligibility) private claimables;
+    modifier whenNotUseSelf {
+        require(!useSelf, "In verify mode");
+        _;
+    }
 
     /**
      * @dev Constructor
@@ -67,8 +70,11 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
      */
     constructor(address identityVerificationHubAddress)
         SelfVerificationRoot(identityVerificationHubAddress, 0)
-        Ownable(_msgSender())
-    { }
+    {
+        useSelf = true; 
+    }
+
+    receive() external payable {}
 
     function getConfigId(
         bytes32 destinationChainId,
@@ -78,12 +84,6 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
         // Return your app's configuration ID
         return configId;
     }
-
-    // function setVerificationConfig(
-    //     ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
-    // ) external onlyOwner {
-    //     _setVerificationConfig(newVerificationConfig);
-    // }
 
     function getClaimable(bytes32 campaignHash, address user) external view returns(ILearna.Eligibility memory) {
         return claimables[campaignHash][user];
@@ -148,7 +148,9 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
      */
     function claimReward(bytes32 campaignHash) external nonReentrant returns(bool done) {
         ILearna.Eligibility memory clm = claimables[campaignHash][_msgSender()];
-        if(!clm.isVerified) revert NotVerified();
+        if(useSelf){
+            if(!clm.isVerified) revert NotVerified();
+        }
         if(clm.isClaimed) revert AlreadyClaimed();
         clm.isClaimed = true;
         claimables[campaignHash][_msgSender()] = clm;
@@ -181,32 +183,37 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     }
 
     /**
+     * @dev Registers user for the claim. 
+     * @param campaignHash : Campaign hash
+     * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
+     * user cannot make eligibity check twice in the same week.
+     * @notice Should be called by anyone provided they subscribed to the campaign already
+     */
+    function setClaim(bytes32 campaignHash) external whenNotUseSelf returns(bool) {
+        return _setClaim(campaignHash, _msgSender());
+    }
+
+    /**
+     * @dev Registers user for the claim. 
+     * @param campaignHash : Campaign hash
+     * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
+     * user cannot make eligibity check twice in the same week.
+     * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already
+     */
+    function setClaim(bytes32 campaignHash, address user) external whenNotUseSelf onlyApproved returns(bool) {
+        return _setClaim(campaignHash, user);
+    }
+
+    /**
      * @notice Hook called after successful verification - handles user registration
      * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
      * @param output The verification output containing user data
     */
-//    struct GenericDiscloseOutputV2 {
-//         bytes32 attestationId;
-//         uint256 userIdentifier;
-//         uint256 nullifier;
-//         uint256[4] forbiddenCountriesListPacked;
-//         string issuingState;
-//         string[] name;
-//         string idNumber;
-//         string nationality;
-//         string dateOfBirth;
-//         string gender;
-//         string expiryDate;
-//         uint256 olderThan;
-//         bool[3] ofac;
-//     }
-    
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData 
     ) internal override {
-
-        // uint8 action = uint8(userDefinedData[0]);
+        require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
         (uint8 action, bytes32 campaignHash) = abi.decode(userData, (uint8, bytes32));
         
@@ -241,6 +248,37 @@ contract Claim is SelfVerificationRoot, Ownable, ReentrancyGuard {
     function setLearna(address _learna) public onlyOwner {
         require(_learna != address(learna), "Address is the same");
         learna = ILearna(_learna);
+    }
+
+    /**
+     * @dev Update the useSelf flag
+     */
+    function toggleUseSelfFlag() public onlyApproved {
+       useSelf = !useSelf;
+    }
+
+    /**
+     * @dev Emergency withdrawal of funds
+     * @param to : Recipient
+     * @param amount : Native amount
+     * @param token : ERC20 token if needed
+     * @param tokenAmount : Amount of ERC20 token to withdraw
+     */
+    function withdraw(address to, uint amount, address token, uint tokenAmount) public onlyOwner returns(bool) {
+        if(address(this).balance > 0) {
+            (bool done,) = to.call{value: amount}('');
+            require(done, "Transfer failed");
+        }
+        if(tokenAmount > 0) {
+            if(token != address(0)) {
+                IERC20 tk = IERC20(token);
+                uint balance = tk.balanceOf(address(this));
+                if(balance >= tokenAmount){
+                    tk.transfer(to, tokenAmount);
+                }
+            }
+        }
+        return true;
     }
 }
 

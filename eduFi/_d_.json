@@ -1,0 +1,448 @@
+{
+  "categories": "solidity,wagmi,reactjs,ethersjs,javascript,typescript,hardhat,farcaster sdk,defi,celo,self-protocol sdk,cryptocurrency",
+  "difficulties": "easy, medium, hard",
+  "categoryData": [
+    {
+      "category": "solidity",
+      "id": "0",
+      "description": "Test your knowledge across various topics in Solidity. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty": "easy",
+          "id": "0",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is Solidity primarily used for?", "options": ["Writing mobile applications","Developing smart contracts on Ethereum","Building web servers","Creating front-end web apps"], "answer": "Developing smart contracts on Ethereum", "userAnswer": "", "hash": "ef13e7ba1ebeeef2d04ba7a84a21842a878614427a38fb33dcbe2ab7603071d6"},
+            { "id": "1", "explanation": "", "question": "Which keyword is used to define a function in Solidity?", "options": ["def","function","func","fn"], "answer": "function", "userAnswer": "", "hash": "eddd3337bbf5afd57373817936a48a6a1b8ce26382367336eb4f20921e791aea"},
+            { "id": "2", "explanation": "", "question": "Which data type is used to store Ether in a smart contract?", "options": ["ether","float","uint","decimal"], "answer": "uint", "userAnswer": "", "hash": "e503242e17ddc18adb9cefdea2b143a035d93ec50cbd515a43b50a0a0ced75c0"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "1",
+          "questions":  [
+            { "id": "0", "explanation": "", "question": "What is the visibility of a function that can be accessed only from within the same contract?","options": ["public","internal","private","external"],"answer": 2,"userAnswer": "","hash": "8eb1200a1a67c3227461932d16aa4bdc018dc65fd6ec4ebcd5c970e4a37ce38c"},
+            { "id": "1", "explanation": "", "question": "Which version pragma restricts the Solidity compiler to a specific version range?","options": ["pragma solidity ^0.8.0;","pragma version 0.8.0;","require solidity >=0.8.0;","version pragma 0.8.0;"],"answer": 0,"userAnswer": "","hash": "aa9d896591018bf2a370013add24cf1b8be3a66a44be6a81d1bc4d0d18647524"},
+            { "id": "2", "explanation": "", "question": "Which type is used to store Ether in a contract?","options": ["balanceOf","money","payable","address"],"answer": 2,"userAnswer": "","hash": "fe26c5dbee81885150ca74c72014b7ac0a6f558c942f3b0cb31c1956ab4ba791"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "2",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is the purpose of the `fallback()` function in Solidity?","options": ["To handle errors","To initialize the contract","To receive Ether when no other function matches","To destroy the contract"],"answer": 2,"userAnswer": "","hash": "08db5ed6eb988c354c753ce6752d719246d8c77aa872f15486aaad05cdbddcb1"},
+            { "id": "1", "explanation": "", "question": "Which of the following protects against re-entrancy attacks?","options": ["using assert instead of require","making external calls before state changes","the checks-effects-interactions pattern","using public instead of external functions"],"answer": 2,"userAnswer": "","hash": "0806ea32f75580bf3c21a1a004aedf747eaf50a12577658ec759ab77497e0efb"},
+            { "id": "2", "explanation": "", "question": "Which interface must a contract implement to receive ERC-721 tokens?","options": ["IERC721","IERC721Receiver","IERC20","IERC1155"],"answer": 1,"userAnswer": "","hash": "56f4d30519d5bd02e62b5de419a173bafd0a9ea697165926fcf7c97e4a199d51"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "web3js",
+      "id": "1",
+      "description": "Test your knowledge across various topics in Web3JS. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty": "easy",
+          "id": "3",
+          "questions": [
+             { "id": "0", "explanation": "", "question": "What is Web3.js?", "options": ["A JavaScript library for interacting with the Ethereum blockchain.","A new version of the World Wide Web.","A backend framework for Node.js.","A CSS preprocessor."], "answer": "A JavaScript library for interacting with the Ethereum blockchain.", "userAnswer": "", "hash": "a1b2c3d4e5f60708"},
+             { "id": "1", "explanation": "", "question": "Which object in Web3.js is used to interact with smart contracts?", "options": ["web3.eth.Contract","web3.eth.sendTransaction","web3.utils","web3.eth.accounts"], "answer": "web3.eth.Contract", "userAnswer": "", "hash": "b2c3d4e5f60708a1"},
+             { "id": "2", "explanation": "", "question": "How do you get the latest block number using Web3.js?", "options": ["web3.eth.getBlockNumber()","web3.eth.getLatestBlock()","web3.eth.latestBlock()","web3.eth.blockNumber()"], "answer": "web3.eth.getBlockNumber()", "userAnswer": "", "hash": "c3d4e5f60708a1b2"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "4",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is the visibility of a function that can be accessed only from within the same contract?","options": ["public","internal","private","external"],"answer": 2,"userAnswer": "","hash": "8eb1200a1a67c3227461932d16aa4bdc018dc65fd6ec4ebcd5c970e4a37ce38c"},{"question": "Which version pragma restricts the Solidity compiler to a specific version range?","options": ["pragma solidity ^0.8.0;","pragma version 0.8.0;","require solidity >=0.8.0;","version pragma 0.8.0;"],"answer": 0,"userAnswer": "","hash": "aa9d896591018bf2a370013add24cf1b8be3a66a44be6a81d1bc4d0d18647524"},{"question": "Which type is used to store Ether in a contract?","options": ["balanceOf","money","payable","address"],"answer": 2,"userAnswer": "","hash": "fe26c5dbee81885150ca74c72014b7ac0a6f558c942f3b0cb31c1956ab4ba791"},
+            { "id": "1", "explanation": "", "question": "Which function is automatically called when Ether is sent to a contract without any data?", "options": ["receive()","fallback()","constructor()","payable()"], "answer": "receive()", "userAnswer": "", "hash": "edf0e7c7bcbe9a79263a00e9a9fc56b6fa34e3b7382649c4c1671e7a823893dc"},
+            { "id": "2", "explanation": "", "question": "How does `require` differ from `assert` in Solidity?", "options": ["require is used for checking for internal errors","assert is used to validate user inputs","require provides custom error messages and refunds gas","assert returns an error code"], "answer": "require provides custom error messages and refunds gas", "userAnswer": "", "hash": "aa2be4e6d8e1679627adcf7fc7646b3e2cecf5a97d3022958ec8e144d23509f8"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "5",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is a potential vulnerability when using `tx.origin` for authentication in smart contracts?", "options": ["It allows anyone to bypass modifiers","It can be spoofed by front-end frameworks","It can be exploited by phishing contracts","It makes contracts non-upgradable"], "answer": "It can be exploited by phishing contracts", "userAnswer": "", "hash": "3fd7b2c985f6f3f4b41b77f9a018582a7e9cbcb5202556ae832fb2cf8bc452e8"},
+            { "id": "1", "explanation": "", "question": "What Solidity feature helps in implementing upgradeable smart contracts?", "options": ["Proxy pattern","Fallback constructor","Modifier overloading","Delegate call checks"], "answer": "Proxy pattern", "userAnswer": "", "hash": "00ed75989ae8f2c6b6461e374ff4626a86977f94b9d2ff3ffcf2e4377fdc7688"},
+            { "id": "2", "explanation": "", "question": "Why is `delegatecall` dangerous if misused?", "options": ["It consumes excessive gas","It permanently locks the contract","It runs code in the context of the caller, risking storage overwrite","It deletes the contract on failure"], "answer": "It runs code in the context of the caller, risking storage overwrite", "userAnswer": "", "hash": "db59cfb155b2f02b66db278f43a5b0bdb78fa5cd27ae9fd15d5bd0ab1f3304e3"}          ]
+        }
+      ]
+    },
+    {
+      "category": "wagmi",
+      "id": "2",
+      "description": "Test your knowledge across various topics in Wagmi. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty": "easy",
+          "id": "6",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What does WAGMI stand for in web3 culture?","options": ["We're All Gaining Market Insights","We're All Gonna Make It","Web3 Architecture Governance Model Initiative","Winning All Games Made Internally"],"answer": 1,"userAnswer": "","hash": "9677189e54b1fe01d123f552ae6c8443c5b3e19a66a403f190b295582882c8c3"},
+            { "id": "1", "explanation": "", "question": "What is the primary use of the WAGMI library?","options": ["Data visualization","Ethereum wallet connection and contract interaction","UI animations","Decentralized storage"],"answer": 1,"userAnswer": "","hash": "e1ca5b0f6bf1be7918f1f3e8e8c5561bd0833075fe23b7b49a7119075ff0ebfa"},
+            { "id": "2", "explanation": "", "question": "Which framework is most commonly used with WAGMI?","options": ["Angular","Vue","React","Svelte"],"answer": 2,"userAnswer": "","hash": "786ff57b04f578ee603667ea6618051afbf42bbf7718668effd6c3b2cbfef0b4"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "7",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What hook does WAGMI provide for reading contract state?","options": ["useContractState","useContractRead","useReadFunction","useSmartContract"],"answer": 1,"userAnswer": "","hash": "53a9eee477f1d0e8dd197582c99ae902fda4c7d34ce0b39c92a187066cb6b201"},
+            { "id": "1", "explanation": "", "question": "Which package is WAGMI typically used alongside to manage Ethereum chains and wallets?","options": ["redux","ethers.js","viem","web3.js"],"answer": 2,"userAnswer": "","hash": "1327470f9b381e72382faa47ca044684d6dc72e448fe80954637d0db08cab472"},
+            { "id": "2", "explanation": "", "question": "What is `configureChains` used for in WAGMI?","options": ["To store user tokens","To connect to the Ethereum mainnet only","To set up supported chains and providers","To manage smart contract deployments"],"answer": 2,"userAnswer": "","hash": "683a963ee436f6cd368f9e5e20c9188ab4f628357c48463a4b4a17f7758cd31f"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "8",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "Which hook would you use in WAGMI to write to a smart contract?", "options": ["useSendTransaction","useWriteContract","useContractWrite","useCallFunction"], "answer": 2, "userAnswer": "", "hash": "2e3210bf2a3e6ceff55d657da06f458e5ae6b3e9ac76c8cb36f4e6c2b97d67c6"},
+            { "id": "1", "explanation": "", "question": "How does WAGMI ensure type safety for contract interactions?",  "options": ["Using TypeChain","Built-in TypeScript support with ABI typings","With JSON-RPC typing","Via runtime validation"], "answer": 1, "userAnswer": "", "hash": "373828ab7744ef8a5da07067de8691335806020bde1b1be9c7557cfa2a92f81f"},
+            { "id": "2", "explanation": "", "question": "What is the benefit of using `useConnect` in WAGMI?", "options": ["Allows deploying contracts","Enables access to external APIs","Lets users connect wallets and access session state","Handles chain forking"], "answer": 2, "userAnswer": "", "hash": "ce02931833ba3bf1f6f2ffdfe2573ba4fdbe8dadd47fa37e02e1803a9e73107a"}
+          ]
+        }
+      ]
+    },
+
+    {
+      "category": "reactjs",
+      "id": "3",
+      "description": "Test your knowledge across various topics in ReactJS. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty": "easy",
+          "id": "9",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is React?", "options": ["A JavaScript library for building user interfaces.","A full-fledged framework for web development.","A database management system.","A programming language."], "answer": "A JavaScript library for building user interfaces.", "userAnswer": "", "hash": "e5f60708a1b2c3db"},
+            { "id": "1", "explanation": "", "question": "What is JSX?", "options": ["A syntax extension for JavaScript that looks like HTML.","A preprocessor for CSS.","A templating engine for Node.js.","A package manager for JavaScript."], "answer": "A syntax extension for JavaScript that looks like HTML.", "userAnswer": "", "hash": "f60708a1b2c3d4e2"},
+            { "id": "2", "explanation": "", "question": "How do you create a React component?", "options": ["By creating a JavaScript function or class that returns a React element.","By creating an HTML file with a special tag.","By defining a new element in a CSS file.","By using the `React.createComponent()` method."], "answer": "By creating a JavaScript function or class that returns a React element.", "userAnswer": "", "hash": "0708a1b2c3d4e5f3"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "10",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What hook is used to manage state in a functional component?","options": ["useEffect","useRef","useState","useContext"],"answer": 2,"userAnswer": "","hash": "b151a153d820f5c6ff4e7050e99a9c117806cb508a1d8baece7a727d93f45e32"},
+            { "id": "1", "explanation": "", "question": "Which method is called after a component is rendered in a class component?","options": ["componentWillUnmount","render","componentDidMount","componentDidUpdate"],"answer": 2,"userAnswer": "","hash": "d5bc0a271ba9a92924ab0dc6baadd5731c19fe1dd0b6a50372e3756fc44a93d0"},
+            { "id": "2", "explanation": "", "question": "What is the purpose of the 'key' prop in lists?","options": ["To identify uniquely each element","To encrypt list items","To sort items automatically","To add inline styles"],"answer": 0,"userAnswer": "","hash": "882c92eca4c3bdac02b209ef4a56138e995ecf7cb0c8949a0550198e83bd12de"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "11",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "Which hook allows you to optimize performance by memoizing functions?","options": ["useEffect","useState","useMemo","useCallback"],"answer": 3,"userAnswer": "","hash": "13276fed2ae00b2d94b2acad5ede35ac034659167c5b53144afcd82bf704b2cc"},
+            { "id": "1", "explanation": "", "question": "How can you share state between deeply nested components?","options": ["Props drilling","useContext hook","Redux only","useRef hook"],"answer": 1,"userAnswer": "","hash": "4f0b78e2ee9ff1371fd0164487b5ed92f03225294cb7f6caa4c155659418eef8"},
+            { "id": "2", "explanation": "", "question": "What is the purpose of React.lazy()?","options": ["To slow down rendering for animations","To add delays in state updates","To lazy-load components for code splitting","To reduce re-renders"],"answer": 2,"userAnswer": "","hash": "965aef0abc9648135f49379e70f62e1113aea8e5300434b9bf6e46dca93c586f"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "javascript",
+      "id": "4",
+      "description": "Test your knowledge across various topics in Javascript. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty": "easy",
+          "id": "12",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is the difference between `==` and `===` in JavaScript?", "options": ["`==` performs type coercion, while `===` does not.","`===` performs type coercion, while `==` does not.","They are identical.","`==` is for comparing values, and `===` is for comparing types."], "answer": "`==` performs type coercion, while `===` does not.", "userAnswer": "", "hash": "c3d4e5f60708a1bd"},
+            { "id": "1", "explanation": "", "question": "What are the primitive data types in JavaScript?", "options": ["string, number, boolean, null, undefined, symbol, bigint","string, number, boolean, array, object, function","string, integer, float, boolean, null, undefined","char, int, bool, double, object"], "answer": "string, number, boolean, null, undefined, symbol, bigint", "userAnswer": "", "hash": "d4e5f60708a1b2ce"},
+            { "id": "2", "explanation": "", "question": "What is a closure in JavaScript?", "options": ["A function that has access to its outer function's scope, even after the outer function has returned.","A function that is closed for modification.","A way to create private variables in an object.","A built-in method for closing a web page."], "answer": "A function that has access to its outer function's scope, even after the outer function has returned.", "userAnswer": "", "hash": "e5f60708a1b2c3df"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "13",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "Explain the concept of the 'this' keyword in different contexts (global, function, method, constructor, arrow function).", "options": ["Global: window/global object. Function: window/global (strict mode: undefined). Method: the object the method is called on. Constructor: the newly created instance. Arrow Function: the `this` of the enclosing lexical scope.","`this` always refers to the global object.","`this` is determined by where the function is defined, not where it is called.","In arrow functions, `this` is always undefined."], "answer": "Global: window/global object. Function: window/global (strict mode: undefined). Method: the object the method is called on. Constructor: the newly created instance. Arrow Function: the `this` of the enclosing lexical scope.", "userAnswer": "", "hash": "0708a1b2c3d4e5f9"},
+            { "id": "1", "explanation": "", "question": "What are Web Workers and how do they help with performance?", "options": ["They are a way to run scripts in background threads, allowing long-running tasks to be executed without blocking the main UI thread.","They are a way to make multiple API requests concurrently.","They are a feature for caching web assets.","They are a way to share memory between different browser tabs."], "answer": "They are a way to run scripts in background threads, allowing long-running tasks to be executed without blocking the main UI thread.", "userAnswer": "", "hash": "08a1b2c3d4e5f620"},
+            { "id": "2", "explanation": "", "question": "What is the Temporal Dead Zone (TDZ) in ES6?", "options": ["The period between entering scope and the declaration of a `let` or `const` variable, during which the variable cannot be accessed.","A zone in memory where dead objects are stored before garbage collection.","A specific time of day when JavaScript execution is paused.","A feature for time-travel debugging."], "answer": "The period between entering scope and the declaration of a `let` or `const` variable, during which the variable cannot be accessed.", "userAnswer": "", "hash": "a1b2c3d4e5f60722"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "14",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "Explain the JavaScript event loop, microtask queue, and macrotask queue.", "options": ["The event loop manages synchronous code execution only." ,"The event loop continuously checks the call stack and queues. When the call stack is empty, it processes tasks from the microtask queue (e.g., Promises, `queueMicrotask`) before checking the macrotask queue (e.g., `setTimeout`, `setInterval`, I/O)." ,"Microtasks run before macrotasks, but only if the call stack is full." ,"There is only one queue for all asynchronous tasks." ], "answer": "The event loop continuously checks the call stack and queues. When the call stack is empty, it processes tasks from the microtask queue (e.g., Promises, `queueMicrotask`) before checking the macrotask queue (e.g., `setTimeout`, `setInterval`, I/O).", "userAnswer": "", "hash": "c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7"},
+            { "id": "1", "explanation": "", "question": "Describe prototypal inheritance in JavaScript and how it differs from classical inheritance.", "options": ["JavaScript uses classical inheritance with classes." ,"In prototypal inheritance, objects inherit directly from other objects via a prototype chain, rather than from classes. Each object has a prototype object from which it inherits methods and properties. Classical inheritance is class-based with a hierarchy." ,"They are the same concept with different names." ,"Prototypal inheritance is only for functions." ], "answer": "In prototypal inheritance, objects inherit directly from other objects via a prototype chain, rather than from classes. Each object has a prototype object from which it inherits methods and properties. Classical inheritance is class-based with a hierarchy.", "userAnswer": "", "hash": "d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8"},
+            { "id": "2", "explanation": "", "question": "What is the concept of 'IIFE' (Immediately Invoked Function Expression) and its use cases?", "options": ["A function that runs on a timer." ,"An IIFE is a JavaScript function that runs as soon as it is defined. It creates a private scope for variables, preventing pollution of the global scope, useful for module patterns and avoiding naming conflicts." ,"It's a function that returns another function." ,"It's only for asynchronous operations." ], "answer": "An IIFE is a JavaScript function that runs as soon as it is defined. It creates a private scope for variables, preventing pollution of the global scope, useful for module patterns and avoiding naming conflicts.", "userAnswer": "", "hash": "e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "typescript",
+      "id": "5",
+      "description": "Test your knowledge across various topics in Typescript. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+           "difficulty": "easy",
+           "id": "15",
+           "questions": [
+              { "id": "0", "explanation": "", "question": "What is TypeScript?", "options": ["A typed superset of JavaScript that compiles to plain JavaScript.","A new version of JavaScript.","A linter for JavaScript.","A framework for building web applications."], "answer": "A typed superset of JavaScript that compiles to plain JavaScript.", "userAnswer": "", "hash": "a1b2c3d4e5f60723"},
+              { "id": "1", "explanation": "", "question": "How do you define a variable with a specific type in TypeScript?", "options": ["let myVar: string = 'hello';","let myVar = string('hello');","string myVar = 'hello';","let myVar = 'hello' as string;"], "answer": "let myVar: string = 'hello';", "userAnswer": "", "hash": "b2c3d4e5f60708b0"},
+              { "id": "2", "explanation": "", "question": "What are the basic types in TypeScript?", "options": ["string, number, boolean, array, object, any, null, undefined, void, never","string, int, float, bool, array, object","All JavaScript types are also TypeScript types.","char, short, long, double, string"], "answer": "string, number, boolean, array, object, any, null, undefined, void, never", "userAnswer": "", "hash": "c3d4e5f60708a1c1"}
+           ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "16",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is the difference between an `interface` and a `type` alias in TypeScript?", "options": ["Interfaces can be extended and implemented by classes, and can be merged. Type aliases are more flexible and can represent unions, intersections, and primitives.","Interfaces are for objects, and type aliases are for functions.","There is no significant difference; they can be used interchangeably.","Type aliases are the modern way to define types, and interfaces are legacy."], "answer": "Interfaces can be extended and implemented by classes, and can be merged. Type aliases are more flexible and can represent unions, intersections, and primitives.", "userAnswer": "", "hash": "c3d4e5f60708a1c2"},
+            { "id": "1", "explanation": "", "question": "What are generics in TypeScript?", "options": ["A way to create reusable components that can work with a variety of types rather than a single one.","A way to generate types automatically.","A type that can be any type.","A feature for creating generic classes that can be extended."], "answer": "A way to create reusable components that can work with a variety of types rather than a single one.", "userAnswer": "", "hash": "d4e5f60708a1b2d3"},
+            { "id": "2", "explanation": "", "question": "What is a union type in TypeScript?", "options": ["A type that can be one of several types, using the `|` operator.","A type that combines multiple types into one, using the `&` operator.","A type for an array where all elements are of the same type.","A way to unite multiple interfaces into one."], "answer": "A type that can be one of several types, using the `|` operator.", "userAnswer": "", "hash": "e5f60708a1b2c3e4"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "17",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What are conditional types in TypeScript?", "options": ["Types that select one of two possible types based on a condition expressed as a type relationship test, using the `extends` keyword.","Types that are only applied if a certain condition is met at runtime.","A way to create types that depend on the value of a variable.","A feature for conditional compilation."], "answer": "Types that select one of two possible types based on a condition expressed as a type relationship test, using the `extends` keyword.", "userAnswer": "", "hash": "e5f60708a1b2c3e5"},
+            { "id": "1", "explanation": "", "question": "What is the `infer` keyword in TypeScript?", "options": ["A keyword used in conditional types to infer a type from another type.","A way to automatically infer the type of a variable.","A keyword for inferring the return type of a function.","A way to infer the properties of an object."], "answer": "A keyword used in conditional types to infer a type from another type.", "userAnswer": "", "hash": "f60708a1b2c3d4ec"},
+            { "id": "2", "explanation": "", "question": "What are declaration files (`.d.ts`) in TypeScript?", "options": ["Files that provide type information for JavaScript libraries that were not written in TypeScript.","Files that declare all the variables used in a project.","Files that are automatically generated by the compiler to declare the types of the compiled code.","Files that contain the documentation for a TypeScript project."], "answer": "Files that provide type information for JavaScript libraries that were not written in TypeScript.", "userAnswer": "", "hash": "0708a1b2c3d4e5fd"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "hardhat",
+      "id": "6",
+      "description": "Test your knowledge across various topics in Hardhat. You will get questions that are tailored to test your understanding of the subject",
+      "levels":  [
+        {
+          "difficulty": "easy",
+          "id": "18",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is Hardhat?", "options": ["An Ethereum development environment for compiling, deploying, testing, and debugging smart contracts.","A type of helmet worn by construction workers.","A hardware wallet for storing cryptocurrencies.","A layer-2 scaling solution for Ethereum."], "answer": "An Ethereum development environment for compiling, deploying, testing, and debugging smart contracts.", "userAnswer": "", "hash": "0708a1b2c3d4e5fe"},
+            { "id": "1", "explanation": "", "question": "What is the purpose of the `hardhat.config.js` file?", "options": ["To configure the Hardhat environment, including networks, Solidity compiler versions, and plugins.","To store the private keys for your development accounts.","To write the tests for your smart contracts.","To define the smart contract code."], "answer": "To configure the Hardhat environment, including networks, Solidity compiler versions, and plugins.", "userAnswer": "", "hash": "08a1b2c3d4e5f625"},
+            { "id": "2", "explanation": "", "question": "What is the Hardhat Network?", "options": ["A local Ethereum network designed for development, which is built-in to Hardhat.","A testnet for deploying and testing smart contracts.","The Ethereum mainnet.","A network of Hardhat users."], "answer": "A local Ethereum network designed for development, which is built-in to Hardhat.", "userAnswer": "", "hash": "a1b2c3d4e5f60727"}
+          ]
+        },
+        {
+          "difficulty": "medium",
+          "id": "19",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is forking the mainnet in Hardhat?", "options": ["Running a local Hardhat Network that simulates the state of the Ethereum mainnet at a specific block number.","Creating a copy of the Ethereum mainnet blockchain on your local machine.","Deploying your contracts to a fork of the Ethereum mainnet.","A way to contribute to the development of the Ethereum protocol."], "answer": "Running a local Hardhat Network that simulates the state of the Ethereum mainnet at a specific block number.", "userAnswer": "", "hash": "a1b2c3d4e5f60728"},
+            { "id": "1", "explanation": "", "question": "How can you impersonate an account in a Hardhat test?", "options": ["Using the `hardhat_impersonateAccount` RPC method.","By getting the private key of the account.","This is not possible in Hardhat.","By using a special `impersonate` function in your test."], "answer": "Using the `hardhat_impersonateAccount` RPC method.", "userAnswer": "", "hash": "b2c3d4e5f60708b5"},
+            { "id": "2", "explanation": "", "question": "What is the purpose of the `hardhat-ethers` plugin?", "options": ["To integrate the Ethers.js library with Hardhat, providing helpers for deploying contracts and interacting with them.","To provide type safety for your smart contract interactions.","To scan your contracts for vulnerabilities.","To connect Hardhat to the Etherscan API."], "answer": "To integrate the Ethers.js library with Hardhat, providing helpers for deploying contracts and interacting with them.", "userAnswer": "", "hash": "c3d4e5f60708a1c6"}
+          ]
+        },
+        {
+          "difficulty": "hard",
+          "id": "20",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the purpose of the `hardhat-deploy` plugin?", "options": ["To manage deployments and contract dependencies, especially in complex projects. It adds a `deploy` folder and tracks deployments.","A simpler way to deploy contracts than writing scripts.","A plugin for deploying to IPFS.","A plugin for deploying to multiple networks at once."], "answer": "To manage deployments and contract dependencies, especially in complex projects. It adds a `deploy` folder and tracks deployments.", "userAnswer": "", "hash": "c3d4e5f60708a1c7"},
+            { "id": "1", "explanation": "", "question": "How can you debug a transaction in Hardhat?", "options": ["By using `console.log` in your Solidity code and running tests.","By using a debugger like the one provided by Remix or Tenderly.","By using the `hardhat_traceTransaction` RPC method.","All of the above are valid methods."], "answer": "All of the above are valid methods.", "userAnswer": "", "hash": "d4e5f60708a1b2d8"},
+            { "id": "2", "explanation": "", "question": "How do you handle contract upgrades (proxies) in a Hardhat project?", "options": ["By using the `hardhat-upgrades` plugin from OpenZeppelin.","By deploying a new contract and manually migrating the data.","This is not possible with Hardhat.","By using a special `upgrade` command in Hardhat."], "answer": "By using the `hardhat-upgrades` plugin from OpenZeppelin.", "userAnswer": "", "hash": "e5f60708a1b2c3e9"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "farcaster-sdk",
+      "id": "7",
+      "description": "Test your knowledge across various fields in Farcaster SDK. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "21",
+          "questions": [
+            { "id": "0", "explanation": "", "question": "What is Farcaster?", "options": ["A sufficiently decentralized social network protocol.","A new cryptocurrency.","A framework for building decentralized applications.","A layer-2 scaling solution for Ethereum."], "answer": "A sufficiently decentralized social network protocol.", "userAnswer": "", "hash": "e5f60708a1b2c3ea"},
+            { "id": "1", "explanation": "", "question": "What is a 'cast' in the context of Farcaster?", "options": ["A public message posted by a user.","A private message between two users.","A type of smart contract on the Farcaster network.","A user's profile."], "answer": "A public message posted by a user.", "userAnswer": "", "hash": "f60708a1b2c3d4f1"},
+            { "id": "2", "explanation": "", "question": "What is the primary purpose of the Farcaster SDK?", "options": ["To make it easier for developers to build applications on top of the Farcaster protocol.","To manage a Farcaster node.","To create a new Farcaster identity.","To explore the Farcaster network."], "answer": "To make it easier for developers to build applications on top of the Farcaster protocol.", "userAnswer": "", "hash": "0708a1b2c3d4e602"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "22",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Explain how Farcaster ensures message authenticity and integrity without a central server.", "options": ["By relying on a trusted third party for verification" ,"Through cryptographic signatures (signed by user keys) and a decentralized network of Hubs for propagation" ,"Each message is manually reviewed by moderators" ,"It uses a simple checksum for verification" ], "answer": "Through cryptographic signatures (signed by user keys) and a decentralized network of Hubs for propagation", "userAnswer": "", "hash": "f1m2e3d4i5u6m7h8"},
+            { "id": "1", "explanation": "", "question": "What is the purpose of 'Signers' in the Farcaster protocol, and how do they relate to user accounts?", "options": ["Signers are only used for creating new Farcaster accounts" ,"Signers are cryptographic keys that authorize actions on behalf of a Farcaster ID (FID), allowing for key rotation and delegated control" ,"Signers are external services that authenticate users" ,"Signers are responsible for mining new Farcaster tokens" ], "answer": "Signers are cryptographic keys that authorize actions on behalf of a Farcaster ID (FID), allowing for key rotation and delegated control", "userAnswer": "", "hash": "f2m3e4d5i6u7m8h9"},
+            { "id": "2", "explanation": "", "question": "Describe the data replication and eventual consistency model in Farcaster Hubs.", "options": ["All Hubs must be perfectly synchronized at all times" ,"Hubs gossip messages to each other to achieve eventual consistency, meaning data might temporarily differ but will eventually converge" ,"Data is only stored on a single Hub" ,"Consistency is managed by a centralized database" ], "answer": "Hubs gossip messages to each other to achieve eventual consistency, meaning data might temporarily differ but will eventually converge", "userAnswer": "", "hash": "f3m4e5d6i7u8m9h0"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "23",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Deep dive into the cryptographic primitives and signature schemes used by Farcaster to secure user messages and identities.", "options": ["Farcaster relies on simple symmetric encryption for all security" ,"It leverages secp256k1 elliptic curve cryptography for FID generation and message signing, ensuring message authenticity and non-repudiation" ,"Security is based on a proprietary, undisclosed algorithm" ,"Only hash functions are used for security" ], "answer": "It leverages secp256k1 elliptic curve cryptography for FID generation and message signing, ensuring message authenticity and non-repudiation", "userAnswer": "", "hash": "f1h2a3r4d5c6r7y8"},
+            { "id": "1", "explanation": "", "question": "Analyze the trade-offs of Farcaster's hybrid on-chain/off-chain architecture for scalability and decentralization.", "options": ["The hybrid model offers no trade-offs; it's perfect" ,"It balances scalability (off-chain messages via Hubs) with core decentralization (on-chain FIDs/key registration), but introduces complexity and reliance on Hub operators for data availability" ,"It primarily sacrifices decentralization for extreme scalability" ,"The architecture is purely on-chain for maximum decentralization" ], "answer": "It balances scalability (off-chain messages via Hubs) with core decentralization (on-chain FIDs/key registration), but introduces complexity and reliance on Hub operators for data availability", "userAnswer": "", "hash": "f2h3a4r5d6c7r8y9"},
+            { "id": "2", "explanation": "", "question": "Discuss the challenges and potential solutions for 'data pruning' and long-term data archival in a growing decentralized social network like Farcaster.", "options": ["Data pruning is unnecessary; all data is stored forever by default" ,"Challenges include managing ever-increasing data size on Hubs and ensuring historical data access; solutions involve explicit data expiry, archival to cheaper storage (e.g., Arweave), or community-run archival nodes" ,"Data is automatically deleted after a short period" ,"There are no challenges related to data management" ], "answer": "Challenges include managing ever-increasing data size on Hubs and ensuring historical data access; solutions involve explicit data expiry, archival to cheaper storage (e.g., Arweave), or community-run archival nodes", "userAnswer": "", "hash": "f3h4a5r6d7c8r9y0"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "defi",
+      "id": "8",
+      "description": "Test your knowledge across various topics in DeFi. You will get questions that are tailored to test your understanding of the space",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "24",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What does DeFi stand for?","options": ["Default Finance","Decentralized Finance","Defined Finance","Digital Federation"],"answer": 1,"userAnswer": "","hash": "2d6d25158db5fddc5b77babb2a191335faa52a97e5180558312f5c97222ba264"},
+            { "id": "1", "explanation": "", "question": "Which blockchain is most commonly associated with DeFi?","options": ["Bitcoin","Solana","Ethereum","Cardano"],"answer": 2,"userAnswer": "","hash": "85ea8ed8b1087bf615d9617c9e386bf05bebabb3cb22d7956785ff3773dabbbc"},
+            { "id": "2", "explanation": "", "question": "What is a DEX in the context of DeFi?","options": ["Digital Exchange","Distributed Executor","Decentralized Exchange","Data Extraction Tool"],"answer": 2,"userAnswer": "","hash": "1cccf42bba2cc0407d444582ebd3b7f2896c155cee7ba918d9757bd6c899a546"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "25",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the function of an automated market maker (AMM)?","options": ["To manage digital identity","To automate smart contracts","To facilitate token swaps without order books","To track gas fees"],"answer": 2,"userAnswer": "","hash": "b0cd59179a4de7a75cb948d3aae74ddff26fa70c7001fcee8976deddca47bad4"},
+            { "id": "1", "explanation": "", "question": "What are liquidity pools used for in DeFi?","options": ["Holding NFTs","Powering data analytics","Facilitating peer-to-peer lending","Providing liquidity for decentralized exchanges"],"answer": 3,"userAnswer": "","hash": "3694653572f7669da92bb9859d160459191661cfa51577a1992fa7f7586c7019"},
+            { "id": "2", "explanation": "", "question": "Which of the following is a lending protocol in DeFi?","options": ["OpenSea","Aave","Uniswap","MetaMask"],"answer": 1,"userAnswer": "","hash": "6fb0f5d1b7d4ef0ccfae8042d3e383e5a680f23016876c7578f5d8fcd3ccc4a6"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "26",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is impermanent loss in DeFi?","options": ["temporary drop in token price","penalty fee for early withdrawal","Loss incurred by providing liquidity due to price divergence","A drop in wallet balances due to hacks"],"answer": 2,"userAnswer": "","hash": "3d75e7b259317d0a9bf64264fe2fdbf0aba30288ebf4d914a9f500ad37d04a19"},
+            { "id": "1", "explanation": "", "question": "What role does Chainlink play in the DeFi ecosystem?","options": ["Token exchange","Blockchain scalability","Providing decentralized oracles","Gas fee tracking"],"answer": 2,"userAnswer": "","hash": "56b12b6150080901776573e8634062093ba95ed8493b07222315e73c20fb7942"},
+            { "id": "2", "explanation": "", "question": "Which protocol implements yield farming strategies using vaults?","options": ["Uniswap","Yearn Finance","SushiSwap","Compound"],"answer": 1,"userAnswer": "","hash": "b475082b70449bc8e890bd7039e969a6e10e898f193123054a53dbdb1c7ba9fb"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "celo",
+      "id": "9",
+      "description": "Test your knowledge across Celo ecosystem. You will get questions that are tailored to test your understanding of the platform",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "27",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the primary goal of the Celo blockchain?", "options": ["To be the fastest blockchain for gaming" ,"To build a mobile-first financial system that anyone can access" ,"To create a new type of NFT marketplace" ,"To compete directly with Bitcoin as a store of value" ], "answer": "To build a mobile-first financial system that anyone can access", "userAnswer": "", "hash": "c1c2c3c4c5c6c7c8"},
+            { "id": "1", "explanation": "", "question": "What is the native cryptocurrency of the Celo blockchain?", "options": ["CELO" ,"CUSD" ,"CEUR" ,"CBTC" ], "answer": "CELO", "userAnswer": "", "hash": "c2c3c4c5c6c7c8c9"},
+            { "id": "2", "explanation": "", "question": "Which stablecoin is native to the Celo network and pegged to the US Dollar?", "options": ["USDT" ,"DAI" ,"cUSD" ,"BUSD" ], "answer": "cUSD", "userAnswer": "", "hash": "c3c4c5c6c7c8c9c1"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "28",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Explain how Celo's stability mechanism works for its stablecoins.", "options": ["It relies on a centralized bank to maintain the peg" ,"It uses a dual-asset system with the CELO token acting as a reserve asset and a decentralized reserve of other cryptocurrencies" ,"It is backed solely by fiat currency in a bank account" ,"There is no stability mechanism, it's a free-floating currency" ], "answer": "It uses a dual-asset system with the CELO token acting as a reserve asset and a decentralized reserve of other cryptocurrencies", "userAnswer": "", "hash": "c1c2c3c4c5c6c7c8e"},
+            { "id": "1", "explanation": "", "question": "What is the significance of Celo's EVM compatibility?", "options": ["It means Celo can only run Bitcoin applications" ,"It allows developers to easily migrate or build dApps from Ethereum to Celo" ,"It makes Celo incompatible with other blockchains" ,"It's a security feature that prevents hacks" ], "answer": "It allows developers to easily migrate or build dApps from Ethereum to Celo", "userAnswer": "", "hash": "c2c3c4c5c6c7c8e1"},
+            { "id": "2", "explanation": "", "question": "How does Celo's mobile-first approach impact its design and features?", "options": ["It prioritizes complex desktop interfaces" ,"It emphasizes light clients, phone number mapping, and low transaction fees" ,"It only allows mobile devices to act as validators" ,"Mobile access is an afterthought" ], "answer": "It emphasizes light clients, phone number mapping, and low transaction fees", "userAnswer": "", "hash": "c3c4c5c6c7c8e1c2"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "29",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Analyze the potential challenges and opportunities for Celo's interoperability with other blockchain ecosystems.", "options": ["Celo is designed to be completely isolated" ,"Challenges include bridging complexities; opportunities include expanding reach and liquidity through cross-chain solutions" ,"Interoperability is not a focus for Celo" ,"All blockchains are inherently interoperable" ], "answer": "Challenges include bridging complexities; opportunities include expanding reach and liquidity through cross-chain solutions", "userAnswer": "", "hash": "c1c2c3c4c5c6c7c8f"},
+            { "id": "1", "explanation": "", "question": "Discuss the economic model of CELO and its role in securing the network and stabilizing cStable assets.", "options": ["CELO has no economic model" ,"CELO is a governance and utility token used for staking, transaction fees, and as a collateral asset for cStables" ,"CELO is only used for speculative trading" ,"The economic model is controlled by a single central entity" ], "answer": "CELO is a governance and utility token used for staking, transaction fees, and as a collateral asset for cStables", "userAnswer": "", "hash": "c2c3c4c5c6c7c8f1"},
+            { "id": "2", "explanation": "", "question": "Evaluate the effectiveness of Celo's mobile-first strategy in fostering financial inclusion in developing regions.", "options": ["The mobile-first strategy is irrelevant to financial inclusion" ,"Its focus on low-cost transactions, phone number mapping, and stablecoins directly addresses barriers to traditional financial systems" ,"Mobile-first only benefits developed regions" ,"Financial inclusion is not a goal for Celo" ], "answer": "Its focus on low-cost transactions, phone number mapping, and stablecoins directly addresses barriers to traditional financial systems", "userAnswer": "", "hash": "c3c4c5c6c7c8f1c2"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "self-protocol",
+      "id": "10",
+      "description": "Test your knowledge of the Self protocol. You will get questions that are tailored to test your understanding of the protocol",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "30",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the primary function of the Self-Protocol SDK?", "options": ["To develop mobile games" ,"To help developers integrate decentralized identity into their applications" ,"To build traditional web applications" ,"To manage cryptocurrency portfolios" ], "answer": "To help developers integrate decentralized identity into their applications", "userAnswer": "", "hash": "s1s2s3s4s5s6s7s8"},
+            { "id": "1", "explanation": "", "question": "Which core concept does Self-Protocol focus on for users?", "options": ["Centralized data storage" ,"Self-sovereign identity (SSI)" ,"Anonymous Browse" ,"Social media networking" ], "answer": "Self-sovereign identity (SSI)", "userAnswer": "", "hash": "s2s3s4s5s6s7s8s9"},
+            { "id": "2", "explanation": "", "question": "What does SSI stand for in the context of Self-Protocol?", "options": ["Smart System Integration" ,"Self-Sustaining Infrastructure" ,"Self-Sovereign Identity" ,"Secure Server Interface" ], "answer": "Self-Sovereign Identity", "userAnswer": "", "hash": "s3s4s5s6s7s8s9s1"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "31",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Explain the interaction between a 'Holder', 'Issuer', and 'Verifier' in the Self-Protocol identity model.", "options": ["Holder is the issuer, Issuer is the verifier, Verifier is the holder" ,"Holder possesses the credential, Issuer issues it, Verifier verifies it" ,"They are all interchangeable roles" ,"Holder provides the service, Issuer manages the service, Verifier pays for the service" ], "answer": "Holder possesses the credential, Issuer issues it, Verifier verifies it", "userAnswer": "", "hash": "s1s2s3s4s5s6s7s8f"},
+            { "id": "1", "explanation": "", "question": "How does the Self-Protocol SDK facilitate privacy-preserving data sharing?", "options": ["By sharing all data publicly" ,"Through selective disclosure and cryptographic proofs (e.g., zero-knowledge proofs)" ,"By encrypting data on a central server" ,"It does not focus on privacy" ], "answer": "Through selective disclosure and cryptographic proofs (e.g., zero-knowledge proofs)", "userAnswer": "", "hash": "s2s3s4s5s6s7s8f1"},
+            { "id": "2", "explanation": "", "question": "What are the advantages of using Decentralized Identifiers (DIDs) over traditional identifiers?", "options": ["DIDs are less secure" ,"DIDs are more censorship-resistant, globally resolvable, and user-controlled" ,"DIDs are only for offline use" ,"There are no significant advantages" ], "answer": "DIDs are more censorship-resistant, globally resolvable, and user-controlled", "userAnswer": "", "hash": "s3s4s5s6s7s8f1s2"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "32",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Discuss the cryptographic primitives used by Self-Protocol to ensure the security and privacy of identity data.", "options": ["Only simple encryption algorithms" ,"Public-key cryptography, digital signatures, and potentially zero-knowledge proofs for selective disclosure" ,"Proprietary, undisclosed algorithms" ,"No cryptographic primitives are used" ], "answer": "Public-key cryptography, digital signatures, and potentially zero-knowledge proofs for selective disclosure", "userAnswer": "", "hash": "s1s2s3s4s5s6s7s8h"},
+            { "id": "1", "explanation": "", "question": "Analyze the scalability challenges and solutions for decentralized identity systems like Self-Protocol.", "options": ["Scalability is not an issue for decentralized identity" ,"Challenges include on-chain storage and transaction costs; solutions involve off-chain data storage and layer-2 solutions" ,"Only centralized solutions can scale" ,"Scalability is irrelevant to user experience" ], "answer": "Challenges include on-chain storage and transaction costs; solutions involve off-chain data storage and layer-2 solutions", "userAnswer": "", "hash": "s2s3s4s5s6s7s8h1"},
+            { "id": "2", "explanation": "", "question": "How does Self-Protocol address the 'recoverability' of DIDs and associated credentials in case of key loss?", "options": ["There is no recovery mechanism" ,"Through various key recovery mechanisms, such as social recovery or multi-signature schemes" ,"By relying on a central authority for key backup" ,"By requiring users to memorize long passwords" ], "answer": "Through various key recovery mechanisms, such as social recovery or multi-signature schemes", "userAnswer": "", "hash": "s3s4s5s6s7s8h1s2"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "cryptocurrency",
+      "id": "11",
+      "description": "Test your knowledge across various topics in Cryptocurrency. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "33",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the most well-known cryptocurrency?", "options": ["Ethereum" ,"Litecoin" ,"Bitcoin" ,"Ripple" ], "answer": "Bitcoin", "userAnswer": "", "hash": "cc1c2c3c4c5c6c7c"},
+            { "id": "1", "explanation": "", "question": "What technology underlies most cryptocurrencies?", "options": ["Centralized Servers" ,"Relational Databases" ,"Blockchain" ,"Cloud Computing" ], "answer": "Blockchain", "userAnswer": "", "hash": "cc2c3c4c5c6c7c8c"},
+            { "id": "2", "explanation": "", "question": "What is a 'wallet' in the context of cryptocurrency?", "options": ["A physical billfold" ,"A software or hardware device to store private keys for accessing cryptocurrency" ,"A bank account for crypto" ,"A place to buy cryptocurrency" ], "answer": "A software or hardware device to store private keys for accessing cryptocurrency", "userAnswer": "", "hash": "cc3c4c5c6c7c8c9c"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "34",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Explain the concept of 'Proof of Work' (PoW) in cryptocurrency.", "options": ["A method to prove identity" ,"A consensus mechanism where miners solve complex mathematical problems to validate transactions" ,"A way to earn interest on crypto" ,"A system for tracking working hours" ], "answer": "A consensus mechanism where miners solve complex mathematical problems to validate transactions", "userAnswer": "", "hash": "cc1c2c3c4c5c6c7cf"},
+            { "id": "1", "explanation": "", "question": "What is the primary difference between a 'hot wallet' and a 'cold wallet'?", "options": ["Temperature of the wallet" ,"Hot wallets are online and cold wallets are offline" ,"Hot wallets store more crypto than cold wallets" ,"Cold wallets are only for Bitcoin" ], "answer": "Hot wallets are online and cold wallets are offline", "userAnswer": "", "hash": "cc2c3c4c5c6c7cf1"},
+            { "id": "2", "explanation": "", "question": "How does 'halving' affect the supply and price of cryptocurrencies like Bitcoin?", "options": ["It doubles the mining reward, increasing supply" ,"It cuts the mining reward in half, reducing the rate of new supply and potentially increasing price due to scarcity" ,"It has no effect on supply or price" ,"It only affects transaction fees" ], "answer": "It cuts the mining reward in half, reducing the rate of new supply and potentially increasing price due to scarcity", "userAnswer": "", "hash": "cc3c4c5c6c7cf1c2"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "35",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "Analyze the 'blockchain trilemma' (decentralization, security, scalability) and how different cryptocurrencies attempt to solve it.", "options": ["The trilemma states that a blockchain can achieve all three simultaneously without compromise" ,"It suggests blockchains can only optimize two of the three properties; different projects prioritize different aspects (e.g., Bitcoin for security/decentralization, others for scalability)" ,"The trilemma is a myth in blockchain technology" ,"Only centralized systems face this trilemma" ], "answer": "It suggests blockchains can only optimize two of the three properties; different projects prioritize different aspects (e.g., Bitcoin for security/decentralization, others for scalability)", "userAnswer": "", "hash": "cc1c2c3c4c5c6c7ch"},
+            { "id": "1", "explanation": "", "question": "Discuss the various mechanisms used by stablecoins to maintain their peg, including algorithmic, fiat-backed, and crypto-backed.", "options": ["All stablecoins use the same mechanism" ,"Mechanisms include reserves of fiat currency, over-collateralization with crypto, or complex algorithms that adjust supply based on market demand" ,"Stablecoins don't need mechanisms to maintain their peg" ,"Only fiat-backed stablecoins are truly stable" ], "answer": "Mechanisms include reserves of fiat currency, over-collateralization with crypto, or complex algorithms that adjust supply based on market demand", "userAnswer": "", "hash": "cc2c3c4c5c6c7ch1"},
+            { "id": "2", "explanation": "", "question": "Evaluate the economic and environmental implications of Proof of Work vs. Proof of Stake consensus mechanisms.", "options": ["Both mechanisms have identical implications" ,"PoW is energy-intensive but offers robust security; PoS is more energy-efficient and scalable but raises concerns about centralization of power based on wealth" ,"Environmental impact is not a concern for cryptocurrencies" ,"Only economic implications are relevant" ], "answer": "PoW is energy-intensive but offers robust security; PoS is more energy-efficient and scalable but raises concerns about centralization of power based on wealth", "userAnswer": "", "hash": "cc3c4c5c6c7ch1c2"}
+          ]
+        }
+      ]
+    },
+    {
+      "category": "ethersjs",
+      "id": "12",
+      "description": "Test your knowledge across various topics in EthersJS library. You will get questions that are tailored to test your understanding of the subject",
+      "levels": [
+        {
+          "difficulty":"easy",
+          "id": "36",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is Ethers.js primarily used for?", "options": ["Building front-end UIs","Writing smart contracts","Interacting with the Ethereum blockchain","Running backend databases"], "answer": "Interacting with the Ethereum blockchain", "userAnswer": "", "hash": "708dbdcb5895312d9339b4c47fc32b76c02704f68cf4b17ff2761f9c71f00cc5"},
+            { "id": "1", "explanation": "", "question": "Which Ethers.js class is commonly used to connect to Ethereum networks?", "options": ["Connection","Signer","Provider","Wallet"], "answer": "Provider", "userAnswer": "", "hash": "588a735173191798b2c3e77b163d95cfd369e6f3894fa6741f5fcb4a42108846"},
+            { "id": "2", "explanation": "", "question": "Which method is used in Ethers.js to get the balance of an address?", "options": ["getAccountBalance()","getBalance()","balanceOf()","getEther()"], "answer": "getBalance()", "userAnswer": "", "hash": "23635c8504f2ff74c1a610d176fa518ec45820c396fe20255d56c59a1b157c30"}
+          ]
+        },
+        {
+          "difficulty":"medium",
+          "id": "37",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "What is the purpose of `ethers.utils.parseEther('1.0')`?", "options": ["Converts 1 Ether to Wei","Converts 1 Wei to Ether","Formats 1 Ether as a string","Parses 1 transaction object"], "answer": "Converts 1 Ether to Wei", "userAnswer": "", "hash": "1d1494d42006794b7597785e78e63c1009503110a49f083c0645ff56f8e1b73f"},
+            { "id": "1", "explanation": "", "question": "Which method is used to send a transaction in Ethers.js?", "options": ["sendTransaction()","transferTransaction()","broadcast()","submitTx()"], "answer": "sendTransaction()", "userAnswer": "", "hash": "f4467cce019a661114d76ea233d29e5f5412e674b9f3c8c014b7ac87e8a9143c"},
+            { "id": "2", "explanation": "", "question": "What is required to sign a transaction using Ethers.js?", "options": ["A Contract instance","An ABI object","A Signer with a private key","A WalletConnect QR code"], "answer": "A Signer with a private key", "userAnswer": "", "hash": "fc9e11504aaf6860710dbd0f79d9e9ab2500f29e8a0a339f4a3d4ae20d4167c6"}
+          ]
+        },
+        {
+          "difficulty":"hard",
+          "id": "38",
+          "questions":[
+            { "id": "0", "explanation": "", "question": "How can you override the gas price in a transaction using Ethers.js?", "options": ["Set 'gasLimit' in the contract call","Include 'gasPrice' in the transaction object","Use setGas() on the provider","Add gas value to the signer"], "answer": "Include 'gasPrice' in the transaction object", "userAnswer": "", "hash": "2d48540e1575df45b2fe73e5092b7b7c67a794ac542376c411473c0b9f6172e1"},
+            { "id": "1", "explanation": "", "question": "What happens if a contract method called with `.call()` reverts?", "options": ["The function returns a fallback value","An exception is thrown","The contract is paused","The revert is ignored"], "answer": "An exception is thrown", "userAnswer": "", "hash": "252a0399be9717240bd2e39e562a6cf2b2e9cfb92fae7b55624abcbbac3a30b0"},
+            { "id": "2", "explanation": "", "question": "Which Ethers.js method lets you encode a function call for manual transaction crafting?", "options": ["encodeCall()","formatFunction()","interface.encodeFunctionData()","packFunction()"], "answer": "interface.encodeFunctionData()", "userAnswer": "", "hash": "5b903ae9cb4f138801aeabad86d199086af61897a053ef62d3ebd0b09dc78ed1"}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 import { Hex } from 'viem';
 
-export default function AdjustCampaignValues({erc20Values, nativeValues, openDrawer, campaignHashes, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
+export default function AdjustCampaignValues({erc20Values, nativeValues, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -25,7 +25,7 @@ export default function AdjustCampaignValues({erc20Values, nativeValues, openDra
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [campaignHashes, erc20Values, nativeValues],
+                args: [campaignHash, erc20Values, nativeValues],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -34,7 +34,7 @@ export default function AdjustCampaignValues({erc20Values, nativeValues, openDra
         })
         return transactions;
     
-   }, [td, campaignHashes, erc20Values, nativeValues]);
+   }, [td, campaignHash, erc20Values, nativeValues]);
 
     return(
         <Confirmation 
@@ -47,7 +47,7 @@ export default function AdjustCampaignValues({erc20Values, nativeValues, openDra
 }
 
 type RegisterUsersForWeeklyEarningProps = {
-    campaignHashes: Hex[];
+    campaignHash: Hex;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
     erc20Values: bigint[];
