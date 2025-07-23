@@ -282,14 +282,14 @@ contract Learna is Campaigns, ReentrancyGuard {
         address growTokenContract,
         uint amountInGrowToken, 
         uint32 claimDeadlineInMin,
-        uint32 newInterval
+        uint32 newIntervalInMin
     ) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint pastWeekId, uint newWeekId, Initializer[] memory _campaigns) = _initializeAllCampaigns(newInterval, claimDeadlineInMin, _callback);
+        (uint pastWeekId, uint newWeekId, Initializer[] memory _campaigns) = _initializeAllCampaigns(newIntervalInMin, claimDeadlineInMin, _callback);
         if(address(this).balance > 0) {
             require(claim != address(0), "Claim not set");
             (bool done,) = claim.call{value: address(this).balance}('');

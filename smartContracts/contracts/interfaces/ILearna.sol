@@ -136,7 +136,7 @@ interface ILearna {
 
     struct State {
         uint minimumToken;
-        uint32 transitionInterval;
+        uint64 transitionInterval;
         uint64 transitionDate;
         uint weekId;
     }

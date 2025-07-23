@@ -194,7 +194,7 @@ abstract contract Campaigns is Week {
     }
 
     /**Return all approved campaigns */
-    function _getApprovedCampaigns() internal view returns(Initializer[] memory _inits) {
+    function _getApprovedCampaigns() internal returns(Initializer[] memory _inits) {
         uint counter = allCampaigns;
         if(counter == 0) return _inits;
         _inits = new Initializer[](counter);
@@ -206,16 +206,16 @@ abstract contract Campaigns is Week {
 
     /**
      * @dev Transition the week into a new week, aggregate all the campaigns and initialize them for the new week.
-     * @param newInterval : New interval to update
+     * @param newIntervalInMin : New interval to update
      * @param callback : Callback function to run for each campaign
      */
-    function _initializeAllCampaigns(uint32 newInterval, uint32 newClaimDeadlineInHrs, function(Campaign memory) internal returns(Campaign memory) callback) internal returns(uint pastWeekId, uint newWeekId, Initializer[] memory _inits) {
+    function _initializeAllCampaigns(uint32 newIntervalInMin, uint32 newClaimDeadlineInHrs, function(Campaign memory) internal returns(Campaign memory) callback) internal returns(uint pastWeekId, uint newWeekId, Initializer[] memory _inits) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition date in future");
         pastWeekId = st.weekId;
         _inits = _getApprovedCampaigns();
         newWeekId = _transitionToNewWeek();
-        _setTransitionInterval(newInterval, newClaimDeadlineInHrs, pastWeekId);
+        _setTransitionInterval(newIntervalInMin, newClaimDeadlineInHrs, pastWeekId);
         for(uint i = 0; i < _inits.length; i++) { 
             Initializer memory init = _inits[i];
             GetCampaign memory res = _getCampaign(st.weekId, init.hash_);
