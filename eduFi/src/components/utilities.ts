@@ -8,18 +8,16 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import { Address, Admin, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
 export const mockCampaign : Campaign = {
   fundsNative: 0n,
   fundsERC20: 0n,
-  totalPoints: 0n,
+  totalPoints: 0n, 
   lastUpdated: 0,
   activeLearners: 0n,
-  transitionDate: 0,
-  claimActiveUntil: 0,
   operator: zeroAddress,
   token: zeroAddress,
   hash_: zeroAddress,
@@ -33,10 +31,11 @@ export const mockCampaign : Campaign = {
 export const mockReadData : ReadData = {
   state: {
     minimumToken: 0n,
-    weekCounter: 0n,
-    transitionInterval: 0
+    weekId: 0n,
+    transitionInterval: 0,
+    transitionDate: 0
   },
-  wd: [{campaigns: [mockCampaign,]}],
+  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n}],
 }
 
 export const mockCData : CData = [
@@ -45,6 +44,11 @@ export const mockCData : CData = [
     encoded: `0x${''}`
   }
 ];
+
+export const mockAdmins : Admin = {
+  id: zeroAddress,
+  active: false
+}
 
 export const mockEligibility : Eligibility = {
   canClaim: false,

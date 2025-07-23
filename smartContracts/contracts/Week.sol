@@ -7,8 +7,24 @@ import { Admins } from "./Admins.sol";
 
 abstract contract Week is ILearna, Admins {
 
-    // Other state variables
+    /// @dev  Other state variables
     State private state;
+
+    /// @dev Claim deadlines
+    mapping (uint => uint96) private claimDeadlines;
+
+    function _getDeadline(uint weekId) internal view returns(uint96 deadline) {
+        deadline = claimDeadlines[weekId];
+    }
+    
+    /**
+     * @dev Set claim deadline
+     * @param weekId : Week Id
+     * @param deadline : New deadline
+     */
+    function _setDeadline(uint weekId, uint96 deadline) internal {
+        claimDeadlines[weekId] = deadline;
+    }
 
     /** 
      * @dev Update minimum token
@@ -30,9 +46,14 @@ abstract contract Week is ILearna, Admins {
      * @dev Update transition interval
      * @param interval : New interval
      */
-    function _setTransitionInterval(uint32 interval) internal {
+    function _setTransitionInterval(uint32 interval, uint32 claimDeadlineInMin, uint weekId) internal {
         if(state.transitionInterval != interval) state.transitionInterval = interval;
-        state.transitionDate = _now() + state.transitionInterval;
+        unchecked {
+            state.transitionDate = _now() + state.transitionInterval;
+            if(claimDeadlineInMin > 0) {
+                _setDeadline(weekId, _now() + (claimDeadlineInMin * 1 minutes));
+            }
+        }
     }
 
     /**
@@ -40,8 +61,8 @@ abstract contract Week is ILearna, Admins {
      * @param interval : New interval
      * @notice Transition interval will always reset the transition date 
     */
-    function setTransitionInterval(uint32 interval) public onlyOwner {
-        _setTransitionInterval(interval);
+    function setTransitionInterval(uint32 interval, uint32 claimDeadlineInMin, uint weekId) public onlyOwner {
+        _setTransitionInterval(interval, claimDeadlineInMin, weekId);
     }
 
     /**

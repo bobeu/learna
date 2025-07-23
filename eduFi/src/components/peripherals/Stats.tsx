@@ -19,11 +19,10 @@ import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
 
-function Stat({campaign} : {campaign: Campaign}) {
+function Stat({campaign, transitionDate} : {campaign: Campaign, transitionDate: number}) {
     const { 
         activeLearners, 
         claimActiveUntil,
-        transitionDate,
         totalPoints, 
         canClaim,
         fundsERC20,
@@ -149,7 +148,7 @@ export default function Stats() {
         campaignStrings,
         userAdminStatus,
         campaignData,
-        state: { transitionInterval, weekCounter }
+        state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
     const { setHash, setWeekId, ...rest } = useProfile({});
@@ -225,7 +224,7 @@ export default function Stats() {
                         <Calendar className="w-8 h-8 text-green-600" />
                     </div>
                     <div className="text-2xl font-bold text-gray-800 mb-1">
-                        {weekCounter.toString() || 0}
+                        {weekId.toString() || 0}
                     </div>
                     <div className="text-sm text-gray-600">Current week</div>
                 </div>
@@ -274,7 +273,7 @@ export default function Stats() {
                         />
                     </div>
                 </div>
-                <Stat campaign={rest.campaign}/>
+                <Stat campaign={rest.campaign} transitionDate={transitionDate}/>
             </div>
 
             {/* Admin and Owner only settings */}

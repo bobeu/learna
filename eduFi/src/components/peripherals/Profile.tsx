@@ -41,6 +41,7 @@ function ProfileComponent(
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
 
+    const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const back = () => {
         setShowQRCode(false);
@@ -51,7 +52,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { totalPoints, activeLearners, canClaim, hash_, claimActiveUntil, transitionDate } = campaign;
+    const { totalPoints, activeLearners, canClaim, hash_, } = campaign;
 
     if(showQRCode) {
         return(

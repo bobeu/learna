@@ -10,6 +10,7 @@ export default function SortWeeklyPayout() {
     const [ growTokenAmount, setGrowTokenAmount ] = React.useState<string>('0');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
     const [ newClaimDeadline, setNewDeadline ] = React.useState<number>(0);
+    const [ newInterval, setNewInterval ] = React.useState<number>(0);
 
     const { weekId, campaignStrings } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
@@ -20,8 +21,12 @@ export default function SortWeeklyPayout() {
             case 'growtokenamount':
                 setGrowTokenAmount(value);
                 break;
-            default:
+            case 'celoamount':
                 setNewDeadline(toBN(value).toNumber());
+                break;
+            default:
+                // 360 = 1hr i.e 60 * 60
+                setNewInterval(toBN(value).toNumber() * 360);
                 break;
         }
     } 
@@ -42,7 +47,15 @@ export default function SortWeeklyPayout() {
             {
                 tag: 'celoamount',
                 id: 'GrowTokenAmount',
-                label: 'New claim deadline',
+                label: 'New claim deadline (In hrs)',
+                placeHolder: 'Deadline',
+                type: 'number',
+                required: false
+            },
+            {
+                tag: 'erc20amount',
+                id: 'GrowTokenAmount',
+                label: 'New transition interval (In hrs)',
                 placeHolder: 'Deadline',
                 type: 'number',
                 required: false
@@ -91,8 +104,8 @@ export default function SortWeeklyPayout() {
                 growTokenAmount={amount}
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campaignString={campaignStrings}
                 newClaimUntil={newClaimDeadline}
+                newInterval={newInterval}
             />
         </div>
     );

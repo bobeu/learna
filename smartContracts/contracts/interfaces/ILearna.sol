@@ -30,7 +30,6 @@ interface ILearna {
         uint96 totalPoints;
         uint64 lastUpdated;
         uint activeLearners; 
-        uint64 claimActiveUntil;
         address operator;
         address token;
         bytes32 hash_;
@@ -125,6 +124,7 @@ interface ILearna {
 
     struct WeekData {
         Campaign[] campaigns;
+        uint96 claimDeadline;
     } 
 
     // Readonly data

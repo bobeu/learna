@@ -91,8 +91,8 @@ export const QuizInterface = () => {
   const handleQuizComplete = (finalAnswers = answers) => {
     const score = quiz.questions.reduce((total, question) => {
       const userAnswer = finalAnswers[question.id]; 
-      const attempted = screenQuiz(userAnswer.questionHash);
-      console.log("attempted", attempted);
+      const attempted = screenQuiz(userAnswer?.questionHash);
+      // console.log("attempted", attempted);
       return total + (userAnswer.selected === question.correctAnswer && !attempted? question.points : 0);
     }, 0);
 
@@ -149,7 +149,7 @@ export const QuizInterface = () => {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
-              <h1 className="text-2xl font-bold text-gradient">
+              <h1 className="text-2xl font-bold text-gradient capitalize">
                 {quiz.title}
               </h1>
             </div>
@@ -191,7 +191,7 @@ export const QuizInterface = () => {
               </span>
               <div className="flex items-center space-x-2 text-purple-600">
                 <Award className="w-5 h-5" />
-                <span className="font-semibold text-lg">{currentQuestion?.points} pts</span>
+                <span className="font-semibold text-lg">{Math.round(currentQuestion?.points)} pts</span>
               </div>
             </div>
             
@@ -244,11 +244,11 @@ export const QuizInterface = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center">
+          <div className="w-full flex justify-between items-center gap-4">
             <Button
               onClick={handlePreviousQuestion}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center space-x-2 btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-2/4 flex items-center gap-2 btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Previous</span>
@@ -258,7 +258,7 @@ export const QuizInterface = () => {
               <Button
                 onClick={showAnswerResult}
                 disabled={selectedAnswer === null}
-                className="flex items-center space-x-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-2/4 flex items-center gap-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{isLastQuestion ? 'Complete Quiz' : 'Next Question'}</span>
                 <ArrowRight className="w-4 h-4" />

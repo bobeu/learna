@@ -99,7 +99,7 @@ abstract contract Campaigns is Week {
         if(!wi.hasSlot){
             wi.hasSlot = true;
             wi.slot = uint32(campaigns[weekId].length);
-            campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, 0, operator, token, hash_, false, CampaignData(hash_, encoded)));
+            campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, operator, token, hash_, false, CampaignData(hash_, encoded)));
             wInit[weekId][hash_] = wi;
             emit NewCampaign(_getCampaign(weekId, hash_).cp);
         } else {
@@ -209,21 +209,21 @@ abstract contract Campaigns is Week {
      * @param newInterval : New interval to update
      * @param callback : Callback function to run for each campaign
      */
-    function _initializeAllCampaigns(uint32 newInterval, uint32 newClaimDeadlineInHrs, function(uint32, Campaign memory) internal returns(Campaign memory) callback) internal returns(uint pastWeekId, uint newWeekId, Initializer[] memory _inits) {
+    function _initializeAllCampaigns(uint32 newInterval, uint32 newClaimDeadlineInHrs, function(Campaign memory) internal returns(Campaign memory) callback) internal returns(uint pastWeekId, uint newWeekId, Initializer[] memory _inits) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition date in future");
         pastWeekId = st.weekId;
         _inits = _getApprovedCampaigns();
         newWeekId = _transitionToNewWeek();
-        _setTransitionInterval(newInterval);
-        for(uint i = 0; i < _inits.length; i++) {
+        _setTransitionInterval(newInterval, newClaimDeadlineInHrs, pastWeekId);
+        for(uint i = 0; i < _inits.length; i++) { 
             Initializer memory init = _inits[i];
             GetCampaign memory res = _getCampaign(st.weekId, init.hash_);
             _tryInitializeCampaign(init.hash_, init.encoded, res.cp.operator, 0, 0, res.cp.token);
             _setCampaign(
                 res.slot,
                 st.weekId,
-                callback(newClaimDeadlineInHrs, res.cp)
+                callback(res.cp)
             ); 
         }
     }

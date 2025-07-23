@@ -29,7 +29,6 @@ describe("Learna", function () {
 
       expect(cp.campaigns.length === 1).to.be.true;
       expect(cp.campaigns[0].activeLearners).to.be.eq(0n);
-      expect(cp.campaigns[0].claimActiveUntil).to.be.eq(0n);
       expect(cp.campaigns[0].fundsERC20).to.be.eq(fundERC20);
       expect(cp.campaigns[0].fundsNative).to.be.eq(value);
       expect(cp.campaigns[0].totalPoints).to.be.eq(0n);

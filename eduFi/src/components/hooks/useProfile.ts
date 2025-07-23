@@ -18,6 +18,7 @@ export interface ProfileReturnType {
     claimed: boolean;
     campaign: Campaign;
     campaignHash: Hex;
+    claimDeadline: number;
     campaignDatum: CampaignDatum;
     totalPointsForACampaign: number;
     showVerificationButton: boolean;
@@ -28,6 +29,7 @@ export const mockProfileReturn : ProfileReturnType = {
     showVerificationButton: false,
     showWithdrawalButton: false,
     profile: mockProfile,
+    claimDeadline: 0,
     campaignHash: toHash('solidity'),
     claimable: {
         campaignHash: toHash('solidity'),
@@ -74,6 +76,7 @@ export const mockProfileReturn : ProfileReturnType = {
     
     return {
         claimable,
+        claimDeadline: toBN(weekData?.[0]?.claimDeadline.toString()).toNumber(),
         campaignHash: readProfile.campaignHash,
         profile: readProfile.profile,
         campaign: foundCampaign,

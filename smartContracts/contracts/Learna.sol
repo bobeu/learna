@@ -62,7 +62,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         require(_feeManager != address(0), "Fee manager is zero");
         feeManager = _feeManager;
         if(mode == Mode.LIVE){
-            _setTransitionInterval(transitionInterval);
+            _setTransitionInterval(transitionInterval, 30, _getState().weekId);
         } 
         for(uint i = 0; i < _admins.length; i++) {
             if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
@@ -281,7 +281,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     function sortWeeklyReward(
         address growTokenContract,
         uint amountInGrowToken, 
-        uint32 newClaimDeadlineInHrs,
+        uint32 claimDeadlineInMin,
         uint32 newInterval
     ) 
         public 
@@ -289,7 +289,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         onlyAdmin
         returns(bool) 
     {
-        (uint pastWeekId, uint newWeekId, Initializer[] memory _campaigns) = _initializeAllCampaigns(newInterval, newClaimDeadlineInHrs, _callback);
+        (uint pastWeekId, uint newWeekId, Initializer[] memory _campaigns) = _initializeAllCampaigns(newInterval, claimDeadlineInMin, _callback);
         if(address(this).balance > 0) {
             require(claim != address(0), "Claim not set");
             (bool done,) = claim.call{value: address(this).balance}('');
@@ -323,7 +323,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     //        INTERNAL FUNCTIONS     //
     ///////////////////////////////////
 
-    function _callback(uint32 newClaimDeadlineInHrs, Campaign memory _cp) internal returns(Campaign memory cp) {
+    function _callback(Campaign memory _cp) internal returns(Campaign memory cp) {
         cp = _cp;
         (uint256 nativeBalance, uint256 erc20Balance) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
         if(cp.token != address(0)){
@@ -332,13 +332,9 @@ contract Learna is Campaigns, ReentrancyGuard {
                 IERC20(cp.token).transfer(claim, balLeft);   
             }
         }
-        unchecked { 
-            cp.claimActiveUntil = newClaimDeadlineInHrs > 0? uint64(newClaimDeadlineInHrs * 1 hours) : _now() + _getState().transitionInterval;
-        }
         cp.canClaim = true;
         cp.fundsNative = nativeBalance;
         cp.fundsERC20 = erc20Balance;
-        return cp;
     }
     
     /**
@@ -378,7 +374,8 @@ contract Learna is Campaigns, ReentrancyGuard {
             uint weekId
         ) 
     {
-        weekId = _getState().weekId;
+        State memory st = _getState();
+        weekId = st.weekId;
         if(weekId > 0) {
             weekId --;
             _validateCampaign(campaignHash, weekId);
@@ -393,7 +390,7 @@ contract Learna is Campaigns, ReentrancyGuard {
             (uint erc20, uint native) = _calculateShare(totalScore, cp);
             erc20Amount = erc20;
             nativeAmount = native;
-            isEligible = mode == Mode.LIVE? _now() <= cp.claimActiveUntil && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
+            isEligible = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true; 
         }
     }
 
@@ -495,6 +492,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         weekId += 1;
         for(uint i = 0; i < weekId; i++) {
             data.wd[i].campaigns = _getCampaings(i);
+            data.wd[i].claimDeadline = _getDeadline(i);
         }
 
         return data;
