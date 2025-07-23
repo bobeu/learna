@@ -195,21 +195,19 @@ export default function SetupCampaign() {
 
                     <MotionDisplayWrapper>
                         <div className='space-y-4 border rounded-2xl p-4'> 
+                            <div className="flex justify-between items-center gap-3">
+                                {/* Selected campaign */}
+                                <CampaignMap 
+                                    campaignData={campaignData}
+                                    selectedCampaign={selectedCampaign}
+                                    setCampaign={(campaign) => setCampaign(campaign.campaign)}
+                                />
+                                
+                                {/* Select asset */}
+                                { renderAssets }
+                            </div>
 
-                            {/* Selected campaign */}
-                            <CampaignMap 
-                                campaignData={campaignData}
-                                selectedCampaign={selectedCampaign}
-                                setCampaign={(campaign) => setCampaign(campaign.campaign)}
-                            />
-                            
-                            {/* Select asset */}
-                            { renderAssets }
 
-                            {/* <div className="flex justify-between items-center gap-4 text-lg bg-gradient-to-r px-3 py-6 rounded-xl">
-                                <h3 className='w-2/4'>{`Campaign`}</h3>
-                                <h3 className='w-2/4 capitalize font-medium'>{selectedCampaign}</h3>
-                            </div> */}
                             <div className="space-y-4">
                                 {
                                     sortContent.map(({id, type, required, label, placeHolder, tag}) => (

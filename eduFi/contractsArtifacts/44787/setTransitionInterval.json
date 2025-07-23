@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xfd81946506b23C08D8e2126cBBbFdE12298D8ABf",
+  "contractAddress": "0xc9a84B59d2eE373037669859340831Cd7508F4b3",
   "functionName": "setTransitionInterval",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -1010,9 +1010,9 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "uint32",
+                  "internalType": "uint64",
                   "name": "transitionInterval",
-                  "type": "uint32"
+                  "type": "uint64"
                 },
                 {
                   "internalType": "uint64",
@@ -1031,6 +1031,11 @@
             },
             {
               "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                },
                 {
                   "components": [
                     {
@@ -1152,16 +1157,6 @@
           "internalType": "address",
           "name": "user",
           "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
         }
       ],
       "name": "getProfile",
@@ -1169,134 +1164,146 @@
         {
           "components": [
             {
+              "internalType": "uint256",
+              "name": "weekId",
+              "type": "uint256"
+            },
+            {
               "components": [
                 {
                   "components": [
                     {
                       "components": [
                         {
-                          "internalType": "bytes",
-                          "name": "questionHash",
-                          "type": "bytes"
+                          "components": [
+                            {
+                              "internalType": "bytes",
+                              "name": "questionHash",
+                              "type": "bytes"
+                            },
+                            {
+                              "internalType": "uint64",
+                              "name": "selected",
+                              "type": "uint64"
+                            },
+                            {
+                              "internalType": "bool",
+                              "name": "isUserSelected",
+                              "type": "bool"
+                            }
+                          ],
+                          "internalType": "struct ILearna.Answer[]",
+                          "name": "answers",
+                          "type": "tuple[]"
                         },
                         {
-                          "internalType": "uint64",
-                          "name": "selected",
-                          "type": "uint64"
-                        },
-                        {
-                          "internalType": "bool",
-                          "name": "isUserSelected",
-                          "type": "bool"
+                          "components": [
+                            {
+                              "internalType": "bytes",
+                              "name": "id",
+                              "type": "bytes"
+                            },
+                            {
+                              "internalType": "bytes",
+                              "name": "quizId",
+                              "type": "bytes"
+                            },
+                            {
+                              "internalType": "uint32",
+                              "name": "score",
+                              "type": "uint32"
+                            },
+                            {
+                              "internalType": "bytes",
+                              "name": "title",
+                              "type": "bytes"
+                            },
+                            {
+                              "internalType": "uint64",
+                              "name": "totalPoints",
+                              "type": "uint64"
+                            },
+                            {
+                              "internalType": "uint16",
+                              "name": "percentage",
+                              "type": "uint16"
+                            },
+                            {
+                              "internalType": "uint64",
+                              "name": "timeSpent",
+                              "type": "uint64"
+                            },
+                            {
+                              "internalType": "bytes",
+                              "name": "completedAt",
+                              "type": "bytes"
+                            }
+                          ],
+                          "internalType": "struct ILearna.QuizResultOther",
+                          "name": "other",
+                          "type": "tuple"
                         }
                       ],
-                      "internalType": "struct ILearna.Answer[]",
-                      "name": "answers",
+                      "internalType": "struct ILearna.QuizResult[]",
+                      "name": "quizResults",
                       "type": "tuple[]"
                     },
                     {
                       "components": [
                         {
-                          "internalType": "bytes",
-                          "name": "id",
-                          "type": "bytes"
+                          "internalType": "uint256",
+                          "name": "amountMinted",
+                          "type": "uint256"
                         },
                         {
-                          "internalType": "bytes",
-                          "name": "quizId",
-                          "type": "bytes"
+                          "internalType": "uint256",
+                          "name": "amountClaimedInNative",
+                          "type": "uint256"
                         },
                         {
-                          "internalType": "uint32",
-                          "name": "score",
-                          "type": "uint32"
+                          "internalType": "uint256",
+                          "name": "amountClaimedInERC20",
+                          "type": "uint256"
                         },
                         {
-                          "internalType": "bytes",
-                          "name": "title",
-                          "type": "bytes"
+                          "internalType": "bool",
+                          "name": "claimed",
+                          "type": "bool"
                         },
                         {
-                          "internalType": "uint64",
-                          "name": "totalPoints",
-                          "type": "uint64"
+                          "internalType": "uint8",
+                          "name": "totalQuizPerWeek",
+                          "type": "uint8"
                         },
                         {
-                          "internalType": "uint16",
-                          "name": "percentage",
-                          "type": "uint16"
-                        },
-                        {
-                          "internalType": "uint64",
-                          "name": "timeSpent",
-                          "type": "uint64"
-                        },
-                        {
-                          "internalType": "bytes",
-                          "name": "completedAt",
-                          "type": "bytes"
+                          "internalType": "bool",
+                          "name": "blacklisted",
+                          "type": "bool"
                         }
                       ],
-                      "internalType": "struct ILearna.QuizResultOther",
+                      "internalType": "struct ILearna.ProfileOther",
                       "name": "other",
                       "type": "tuple"
                     }
                   ],
-                  "internalType": "struct ILearna.QuizResult[]",
-                  "name": "quizResults",
-                  "type": "tuple[]"
+                  "internalType": "struct ILearna.Profile",
+                  "name": "profile",
+                  "type": "tuple"
                 },
                 {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "amountMinted",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "amountClaimedInNative",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "amountClaimedInERC20",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "claimed",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "uint8",
-                      "name": "totalQuizPerWeek",
-                      "type": "uint8"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "blacklisted",
-                      "type": "bool"
-                    }
-                  ],
-                  "internalType": "struct ILearna.ProfileOther",
-                  "name": "other",
-                  "type": "tuple"
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
                 }
               ],
-              "internalType": "struct ILearna.Profile",
-              "name": "profile",
-              "type": "tuple"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
+              "internalType": "struct ILearna.ReadProfile[]",
+              "name": "campaigns",
+              "type": "tuple[]"
             }
           ],
-          "internalType": "struct ILearna.ReadProfile",
+          "internalType": "struct ILearna.WeekProfileData[]",
           "name": "result",
-          "type": "tuple"
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -1656,7 +1663,7 @@
         },
         {
           "internalType": "uint32",
-          "name": "newInterval",
+          "name": "newIntervalInMin",
           "type": "uint32"
         }
       ],

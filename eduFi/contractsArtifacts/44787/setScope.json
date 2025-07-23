@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x714A76e842D1396F4b6893e7DC482Ae9E6496BFB",
+  "contractAddress": "0x2863dfe32783A276d5eFAA1C46fFF2cd7b401C20",
   "functionName": "setScope",
   "inputCount": 1,
   "requireArgUpdate": true,

@@ -44,10 +44,12 @@ abstract contract Week is ILearna, Admins {
 
     /**
      * @dev Update transition interval
-     * @param interval : New interval
+     * @param intervalInMin : New interval
+     * @param claimDeadlineInMin : New deadline before claim ends
+     * @param weekId : Week Id
      */
     function _setTransitionInterval(uint32 intervalInMin, uint32 claimDeadlineInMin, uint weekId) internal {
-        if(state.transitionInterval != interval) state.transitionInterval = (interval * 1 minutes);
+        if(intervalInMin > 0) state.transitionInterval = (intervalInMin * 1 minutes); 
         unchecked {
             state.transitionDate = _now() + state.transitionInterval;
             if(claimDeadlineInMin > 0) {

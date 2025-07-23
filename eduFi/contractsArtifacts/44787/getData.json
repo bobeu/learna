@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xfd81946506b23C08D8e2126cBBbFdE12298D8ABf",
+  "contractAddress": "0xc9a84B59d2eE373037669859340831Cd7508F4b3",
   "functionName": "getData",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -18,9 +18,9 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "uint32",
+                  "internalType": "uint64",
                   "name": "transitionInterval",
-                  "type": "uint32"
+                  "type": "uint64"
                 },
                 {
                   "internalType": "uint64",
@@ -39,6 +39,11 @@
             },
             {
               "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                },
                 {
                   "components": [
                     {

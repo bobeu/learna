@@ -14,7 +14,6 @@ interface SortEarnings {
 
 interface ClaimReward {
   learna: Learna; 
-  weekId: bigint;
   signer: Signer;
   growToken: GrowToken;
   campaignHash: Hex;
@@ -38,7 +37,6 @@ interface RecordPoints {
 
 interface Ban {
   user: Address;
-  weekId: bigint;
   learna: Learna;
   deployer: Signer;
   campaignHashes: Hex[];
@@ -120,7 +118,7 @@ export async function sortWeeklyEarning(x: SortEarnings) {
  * }
 */
 export async function claimReward(x: ClaimReward) {
-  const { learna, signer, weekId, growToken, campaignHash } = x;
+  const { learna, signer, growToken, campaignHash } = x;
   const signerAddr = await signer.getAddress();
   const learnaAddr = await learna.getAddress();
   const erc20balanceOfSignerB4Claim = await growToken.balanceOf(signerAddr);
@@ -131,7 +129,8 @@ export async function claimReward(x: ClaimReward) {
   const erc20balanceOfSignerAfterClaim = await growToken.balanceOf(signerAddr);
   const nativeBalOfSignerAfterClaim = await signer.provider?.getBalance(signerAddr) as bigint;
   const erc20balanceInLearnaAfterClaim = await growToken.balanceOf(learnaAddr);
-  const profile = await learna.getProfile(signerAddr, weekId, campaignHash);
+  const profile = await learna.getProfile(signerAddr);
+  console.log("Profile", profile)
 
   return {
     erc20balanceOfSignerB4Claim,
@@ -153,8 +152,8 @@ export async function claimReward(x: ClaimReward) {
 export async function recordPoints(x: RecordPoints) {
   const { user, learna, deployer, quizResult, token, campaignHash } = x;
   await learna.connect(deployer).recordPoints(user, quizResult, campaignHash, {value: parseEther('1')});
-  const data = await learna.getData();
-  return await learna.getProfile(user, data.state.weekId, campaignHash);
+  // const data = await learna.getData();
+  return await learna.getProfile(user);
 }
 
 /**
@@ -163,10 +162,11 @@ export async function recordPoints(x: RecordPoints) {
  * @returns : User's profile data
 */
 export async function banUserFromCampaig(x: Ban) {
-  const { user, learna, deployer, weekId, campaignHashes } = x;
+  const { user, learna, deployer, campaignHashes } = x;
   // First call will blacklist user
   await learna.connect(deployer).banOrUnbanUser([user], campaignHashes);
-  return await learna.getProfile(user, weekId, campaignHashes[0]);
+  const profile = await learna.getProfile(user);
+  return profile;
 }
 
 /**
@@ -175,9 +175,9 @@ export async function banUserFromCampaig(x: Ban) {
  * @returns : User's profile data
 */
 export async function unbanUserFromCampaig(x: Ban) {
-  const { user, learna, deployer, weekId, campaignHashes } = x;
+  const { user, learna, deployer, campaignHashes } = x;
   await learna.connect(deployer).banOrUnbanUser([user], campaignHashes);
-  return await learna.getProfile(user, weekId, campaignHashes[0]);
+  return await learna.getProfile(user);
 }
 
 /**

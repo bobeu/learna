@@ -217,8 +217,14 @@ export interface Profile {
 }
 
 export interface ReadProfile {
+  eligibility: Eligibility;
   profile: Profile;
   campaignHash: `0x${string}`;
+}
+
+export interface WeekProfileData {
+  weekId: bigint;
+  campaigns: Readonly<ReadProfile[]>;
 }
 
 export interface CampaignData {
@@ -252,6 +258,7 @@ export interface State {
 }
 
 export interface WeekData {
+  weekId: bigint;
   campaigns: Readonly<Campaign[]>;
   claimDeadline: bigint;
 } 

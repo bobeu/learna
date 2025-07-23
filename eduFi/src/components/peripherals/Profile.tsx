@@ -8,7 +8,7 @@ import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
-import useProfile, { ProfileReturnType } from "../hooks/useProfile";
+import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
@@ -34,7 +34,6 @@ function ProfileComponent(
             claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
-            // claimable: { isVerified },
             totalPointsForACampaign,
             campaign
         }
@@ -180,8 +179,20 @@ function ProfileComponent(
 
 export default function Profile() {
     const { setpath, campaignStrings, wkId, campaignData} = useStorage();
+    const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${''}`);
+    const [ requestedWkId, setRequestedWeekId ] = React.useState<number>(0);
+    const [ returnObj, setReturnObj ] = React.useState<ProfileReturnType>(mockProfileReturn);
+
+    const { getReturnObj } = useProfile();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
+
+    React.useEffect(() => {
+        setReturnObj(
+            getReturnObj({requestedHash, requestedWkId})
+        );
+
+    }, [requestedHash, requestedWkId]);
     
     const backToHome = () => {
         if(isConnected){
@@ -192,10 +203,9 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const { setWeekId, setHash: setCampaignHash, ...rest } = useProfile({});
 
     const setselectedWeek = (arg: string) => {
-        setWeekId(Number(arg));
+        setRequestedWeekId(Number(arg));
     }
 
     const goToQuiz = () => {
@@ -212,7 +222,7 @@ export default function Profile() {
 
     const setHash = (arg: string) => {
         const found = campaignData.filter(q => q.campaign === arg);
-        if(found.length > 0) setCampaignHash(found[0].campaignHash as Hex);
+        if(found.length > 0) setRequestedHash(found[0].campaignHash as Hex);
     }
 
     return(
@@ -274,7 +284,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={rest}
+                    profileData={returnObj}
                 />
                 
                 {/* Exit button */}

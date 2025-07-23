@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 60 * 15 : (24 * 60 * 60); //1 day 
-	const scopeValue = BigInt(1536475986654929405976671078198070494428113187740467658697561596404228251395n);
+	const scopeValue = BigInt(9531479282733774890901672646378789282480642420787185657902675847709015020605n);
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const merkleRoot = keccak256(stringToHex('merkleRoot'));

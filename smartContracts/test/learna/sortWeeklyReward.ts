@@ -19,7 +19,7 @@ describe("Learna", function () {
         balanceInGrowReserveB4Allocation,
         balanceOfLearnaAfterAllocation,
         balanceOfLearnaB4Allocation,
-        data
+        // data
       } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna});
 
       expect(balanceInGrowReserveAfterAllocation < balanceInGrowReserveB4Allocation).to.be.true;

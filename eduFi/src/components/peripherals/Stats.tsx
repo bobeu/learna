@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
-import { zeroAddress } from "viem";
+import { Hex, zeroAddress } from "viem";
 import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -12,7 +12,7 @@ import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
-import useProfile from "../hooks/useProfile";
+import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
 import MinimumToken from "./inputs/MinimumToken";
 import TransitionInterval from "./inputs/TransitionInterval";
 import Admins from "./inputs/Admins";
@@ -139,6 +139,11 @@ export default function Stats() {
     const [ openPausePopUp, setPausePopUp ] = React.useState<number>(0);
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
+    const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${''}`);
+    const [ requestedWkId, setRequestedWeekId ] = React.useState<number>(0);
+    const [ { claimDeadline, campaign }, setReturnObj ] = React.useState<ProfileReturnType>(mockProfileReturn);
+
+    const { getReturnObj } = useProfile();
     
     const { 
         setpath, 
@@ -150,10 +155,16 @@ export default function Stats() {
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
-    const { setHash, setWeekId, ...rest } = useProfile({});
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
+
+    React.useEffect(() => {
+        setReturnObj(
+            getReturnObj({requestedHash, requestedWkId})
+        );
+
+    }, [requestedHash, requestedWkId]);
 
     const backToHome = () => {
         if(isConnected) {
@@ -173,11 +184,11 @@ export default function Stats() {
 
     const setCampaignStr = (arg: string) => {
         const fd = campaignData.filter(q => q.campaign === arg);
-        if(fd) setHash(fd?.[0]?.campaignHash);
+        if(fd) setRequestedHash(fd?.[0]?.campaignHash);
     }
 
     const setselectedWeek = (arg: string) => {
-        setWeekId(toBN(arg).toNumber());
+        setRequestedWeekId(toBN(arg).toNumber());
     }
 
     const setaction = (arg: string) => {
@@ -273,9 +284,9 @@ export default function Stats() {
                     </div>
                 </div>
                 <Stat 
-                    campaign={rest.campaign} 
+                    campaign={campaign} 
                     transitionDate={transitionDate}
-                    claimDeadline={rest.claimDeadline}
+                    claimDeadline={claimDeadline}
                 />
             </div>
 
