@@ -42,7 +42,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
         const userDefinedData = encodeUserData(campaignHash);
-        console.log("Scope", scope)
+        // console.log("Scope", scope)
         try {
             const app = new SelfAppBuilder({
                     version: 2,
