@@ -40,7 +40,9 @@ export default function SelfQRCodeVerifier({ back, campaignSlot } : {toggleDrawe
 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
+        console.log("campaignSlot", campaignSlot)
         const userDefinedData = encodeUserData(campaignSlot);
+        console.log("userDefinedData", userDefinedData)
         try {
             const app = new SelfAppBuilder({
                     version: 2,
