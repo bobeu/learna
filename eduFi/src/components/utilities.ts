@@ -375,16 +375,22 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 }
 
 // Encode multiple values in binary format
-export function encodeUserData(campaignHash: Hex): string {
+export function encodeUserData(campaignSlot: number): string {
   // Frontend: Creating user defined data
   const actionData = {
     action: 1,
-    campaignHash: campaignHash,
+    campaignSlot: campaignSlot
   };
 
-  const userDefinedData = "0x" + Buffer.from(
-    JSON.stringify(actionData)
-  ).toString('hex').padEnd(128, '0'); 
+  // const userDefinedData = "0x" + Buffer.from(JSON.stringify({
+  //   action: "create_account",
+  //   referralCode: "SUMMER2024",
+  //   tier: "premium"
+  // })).toString('hex').slice(0, 128);
+  const buffer = Buffer.alloc(64);
   
-  return userDefinedData;
+  buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
+  console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
+  return "0x" + buffer.toString('hex');
+  
 }
