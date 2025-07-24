@@ -48,10 +48,10 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0xaF75EE2ba38FD796C1d7fb65a3711cC9EcC1b5F4",
+      "Claim": "0x3Eb6f62689ff194485232ffE3a6237C726f7b94E",
       "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
-      "GrowToken": "0xf3e7CBe9bE291c20f2dE3c1B016f33cf01e1436c",
-      "Learna": "0x5aE817d7a7FA47358D398B3Cd826F5AcF2a8aD85"
+      "GrowToken": "0x22c7b8300e044d92F02Ca9a32f961aAaCBD812CF",
+      "Learna": "0x55c3502CddD8749bA1a69ca5E150fe9486A6B916"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",

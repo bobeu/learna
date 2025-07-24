@@ -8,9 +8,9 @@ import { Address } from "../../../types/quiz";
 import {  VerificationConfig, getUniversalLink } from "@selfxyz/core";
 import CustomButton from "../peripherals/CustomButton";
 import AddressWrapper from "../peripherals/AddressFormatter/AddressWrapper";
-import { Hex } from "viem";
+// import { Hex } from "viem";
 
-export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } : {toggleDrawer: (arg: number) => void, back: () => void, campaignHash: Hex}) {
+export default function SelfQRCodeVerifier({ back, campaignSlot } : {toggleDrawer: (arg: number) => void, back: () => void, campaignSlot: number}) {
     const [selfApp, setSelfApp] = React.useState<SelfApp | null>(null);
     const [universalLink, setUniversalLink] = React.useState<string>("");
     const [linkCopied, setLinkCopied] = React.useState<boolean>(false);
@@ -41,7 +41,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
-        const userDefinedData = encodeUserData(campaignHash);
+        const userDefinedData = encodeUserData(campaignSlot);
         try {
             const app = new SelfAppBuilder({
                     version: 2,
@@ -64,7 +64,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
         } catch (error) {
             console.error("Failed to initialize Self app:", error);
         }
-    }, [campaignHash, account, claim, verificationConfig]);
+    }, [campaignSlot, account, claim, verificationConfig]);
 
     const displayToast = (message: string) => {
         setToastMessage(message);
@@ -97,7 +97,8 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
     const handleSuccessfulVerification = () => {
         displayToast("Verification successful! Now claiming...");
         setTimeout(() => {
-            toggleDrawer(1);
+            // toggleDrawer(1);
+            back();
         }, 1500);
     };
 

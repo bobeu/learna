@@ -37,6 +37,7 @@ function ProfileComponent(
             showWithdrawalButton,
             totalPointsForACampaign,
             totalPointsInRequestedCampaign,
+            campaignSlot,
             campaign
         }
     } : ProfileComponentProps) {
@@ -62,7 +63,7 @@ function ProfileComponent(
                 <SelfQRCodeVerifier 
                     toggleDrawer={toggleDrawer} 
                     back={back}
-                    campaignHash={campaignHash}
+                    campaignSlot={campaignSlot}
                 />
             </MotionDisplayWrapper>
         );

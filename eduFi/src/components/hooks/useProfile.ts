@@ -19,6 +19,7 @@ export interface ProfileReturnType {
     claimable: Eligibility;
     claimed: boolean;
     campaignHash: Hex;
+    campaignSlot: number;
     claimDeadline: number;
     totalPointsForACampaign: number;
     showVerificationButton: boolean;
@@ -30,6 +31,7 @@ export const mockProfileReturn : ProfileReturnType = {
     showVerificationButton: false,
     showWithdrawalButton: false,
     profile: mockProfile,
+    campaignSlot: 0,
     claimDeadline: 0,
     campaign: mockCampaign,
     campaignHash: toHash('solidity'),
@@ -53,8 +55,14 @@ export const mockProfileReturn : ProfileReturnType = {
     const claimables = stateData.claimables;
     const readProfile = stateData.readProfile;
     const wkFound = readProfile.filter((_, i) => i === requestedWkId);
-    const filteredUser = wkFound?.[0]?.campaigns.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase());
-    const userCampaign = filteredUser?.[0] || mockReadProfile;
+    const filteredUser = wkFound?.[0]?.campaigns.map((q, campaignSlot) => {
+        return {
+            campaignSlot,
+            found: q 
+        }
+    }).filter(({found}) => found.campaignHash.toLowerCase() == requestedHash.toLowerCase())
+    const userCampaign = filteredUser?.[0].found || mockReadProfile;
+    const campaignSlot = filteredUser?.[0].campaignSlot || 0;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
@@ -81,6 +89,7 @@ export const mockProfileReturn : ProfileReturnType = {
     return {    
         campaign: generalCampaign,
         claimable,
+        campaignSlot,
         totalPointsInRequestedCampaign: generalCampaign.totalPoints,
         claimDeadline: toBN(weekData?.[requestedWkId]?.claimDeadline?.toString() || '0').toNumber(),
         campaignHash: userCampaign.campaignHash,

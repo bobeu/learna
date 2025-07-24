@@ -94,10 +94,10 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         return configId;
     }
 
-    ///@dev Fetches claimable data
+    ///@dev Fetches claimable data for a particular wweek, specifically the concluded week if any.
     function getClaimable(address user) public view returns(ILearna.Eligibility[] memory result) {
         bytes32[] memory hashes = learna.getUserCampaigns(user);
-        uint totalCampaign = hashes.length;
+        uint totalCampaign = hashes.length; 
         result = new ILearna.Eligibility[](totalCampaign);
         for(uint i = 0; i < totalCampaign; i++){
             result[i] = claimables[hashes[i]][user]; 
@@ -179,48 +179,47 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
 
     /**
      * @dev Registers user for the claim. 
-     * @param campaignHash : Campaign hash
+     * @param campaignSlot : Campaign hash
      * @param user : User account
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      */
-    function _setClaim(bytes32 campaignHash, address user) internal returns(bool) {
-        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignHash);
-        require(!isVerifiedCliam[elg.weekId][campaignHash][user], "Claim already registered");
+    function _setClaim(uint campaignSlot, address user) internal returns(bytes32 hash_) {
+        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignSlot);
+        require(!isVerifiedCliam[elg.weekId][elg.campaignHash][user], "Claim already registered");
         require(elg.canClaim, "Not sorted or eligible");
-        isVerifiedCliam[elg.weekId][campaignHash][user] = true;
+        isVerifiedCliam[elg.weekId][elg.campaignHash][user] = true;
         unchecked {
             require((elg.nativeAmount + elg.erc20Amount) > 0, "Not sorted or nothing to claim");
         }
         require(elg.token != address(0), "Token address is empty");
-        claimables[campaignHash][user] = elg;
-
-        return true;
+        claimables[elg.campaignHash][user] = elg;
+        hash_ = elg.campaignHash;
     }
 
     /**
      * @dev Registers user for the claim. 
-     * @param campaignHash : Campaign hash
+     * @param campaignSlot : User Campaign slot
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
-    function setClaim(bytes32 campaignHash) external whenNotUseSelf returns(bool) {
-        return _setClaim(campaignHash, _msgSender());
+    function setClaim(uint campaignSlot) external whenNotUseSelf returns(bytes32) {
+        return _setClaim(campaignSlot, _msgSender());
     }
-
+ 
     /**
      * @dev Manually registers user for the claim. 
-     * @param campaignHash : Campaign hash
+     * @param campaignSlot : Campaign hash
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
      * Must not be using Self verification.
      */
-    function setClaim(bytes32 campaignHash, address user) external whenNotUseSelf onlyApproved returns(bool) {
-        return _setClaim(campaignHash, user);
+    function setClaim(uint campaignSlot, address user) external whenNotUseSelf onlyApproved returns(bytes32) {
+        return _setClaim(campaignSlot, user);
     }
-
+ 
     /**
      * @notice Hook called after successful verification - handles user registration
      * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
@@ -232,14 +231,14 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     ) internal override {
         require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
-        bytes32 campaignHash = abi.decode(userData, (bytes32));
-        
+        // Decode and use the data
+        uint8 campaignSlot = uint8(userData[0]); 
         require(output.userIdentifier > 0, "InvalidUserIdentifier");
-        // bytes32 campaignHash = bytes32(userDefinedData[1:33]);
+
         // if(bytes(output.nationality).length == 0) revert NationalityRequired();
         // Check that user age is min 16
-
-        _setClaim(campaignHash, user);
+ 
+        bytes32 campaignHash = _setClaim(campaignSlot, user);
         claimables[campaignHash][user].isVerified = true;
 
         // Emit registration event

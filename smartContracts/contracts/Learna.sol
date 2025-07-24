@@ -24,8 +24,8 @@ contract Learna is Campaigns, ReentrancyGuard {
     // Profiles for each campaign in week id
     mapping(uint weekId => mapping(bytes32 campaignHash => mapping(address => Profile))) private learners;
 
-    /// @dev All campaigns user registered for a week
-    mapping(address => bytes32[]) private userCampaigns;
+    /// @dev All campaigns user subscribed to for all the weeks.
+    mapping(uint => mapping(address => bytes32[])) private userCampaigns;
 
     /// @dev Mapping showing whether users have registred for a campaign for given week or not
     mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
@@ -333,7 +333,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     function _checkRegistration(uint weekId, bytes32 hash_, address user) internal {
         if(!registered[user][hash_][weekId]){
             registered[user][hash_][weekId] = true;
-            userCampaigns[user].push(hash_);
+            userCampaigns[weekId][user].push(hash_);
         }
     }
 
@@ -443,18 +443,29 @@ contract Learna is Campaigns, ReentrancyGuard {
     /**
      * Check Eligibility
      * @param user : User
-     * @param campaignHash: 
-     * @notice Claim will always be for the concluded week. 
+     * @param userCampaignSlot: The position of the very campaign to check on list of user's subscrribed slot
+     * @notice Claim will always be for the concluded week. The position must match and can be extracted directly from 
+     * the frontend when reading the user's campaigns
      */
     function checkEligibility(
         address user, 
-        bytes32 campaignHash
+        uint userCampaignSlot
     ) 
         external 
-        view 
+        view
         returns(Eligibility memory result) 
     {
-        return result = _getEligibility(user, campaignHash);
+        uint weekId = _getState().weekId;
+        
+        if(weekId > 0) {
+            weekId -= 1;
+            UserCampaigns[] memory campaigns_ = _getUserCampaignHashes(user);
+            UserCampaigns memory usc = campaigns_[weekId];
+            require(userCampaignSlot < usc.campaigns.length, "Invalid user campaign slot");
+            return _getEligibility(user, usc.campaigns[userCampaignSlot]);
+        } else {
+            return result; 
+        }
     } 
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -509,29 +520,52 @@ contract Learna is Campaigns, ReentrancyGuard {
         return data;
     } 
 
-    ///@dev Return 
+    /// @dev Fetches all user campaigns for the weeks up to current week
+    /// @param user : target account
+    function _getUserCampaignHashes(address user) internal view returns(UserCampaigns[] memory hashes) {
+        uint weekIds = _getState().weekId + 1;
+        hashes = new UserCampaigns[](weekIds);
+        for(uint i = 0; i < weekIds; i++){
+            hashes[i] = UserCampaigns(i, userCampaigns[i][user]);
+        }
+    } 
+
+    /**
+     * @dev Return all campaigns the user has participated in for the previous week.
+     * If the week has transitioned, otherwise it returns empty array
+     * @param user : Target user
+     */
     function getUserCampaigns(address user) external view returns(bytes32[] memory result) {
-        return result = userCampaigns[user];
+        uint weekId = _getState().weekId;
+        if(weekId > 0){
+            weekId -= 1;
+            UserCampaigns[] memory usc = _getUserCampaignHashes(user);
+            result = usc[weekId].campaigns;
+        }
+        return result;
     }
 
     // Get user's data for the concluded weeks including current week
     function getProfile(address user) public view returns(WeekProfileData[] memory result) {
-        bytes32[] memory hashes = userCampaigns[user];
+        // UserCampaigns[] memory hashes = _getUserCampaignHashes(user);
         uint weekIds = _getState().weekId;
-        uint hashSize = hashes.length;
         weekIds += 1;
         result = new WeekProfileData[](weekIds); 
         
         for(uint wkId = 0; wkId < weekIds; wkId++) {
             result[wkId].weekId = wkId;
+            bytes32[] memory hashes = userCampaigns[wkId][user];
+            uint hashSize = hashes.length; 
             ReadProfile[] memory campaigns = new ReadProfile[](hashSize);
-            for(uint hashId = 0; hashId < hashSize; hashId++) {
+            for(uint hashId = 0; hashId < hashSize; hashId++) { 
                 bytes32 hash_ = hashes[hashId];
-                campaigns[hashId] = ReadProfile(
+                campaigns[hashId] = ReadProfile( 
                     _getEligibility(user, hash_),
                     _getProfile(wkId, hash_, user), 
                     hash_
                 );
+                // if(hashSize > 0) {
+                // }
             }
             result[wkId].campaigns = campaigns;
             
