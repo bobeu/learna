@@ -32,6 +32,7 @@ function ProfileComponent(
                 }
             },
             claimDeadline,
+            campaignHash,
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
@@ -53,7 +54,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { activeLearners, canClaim, hash_, } = campaign;
+    const { activeLearners, canClaim } = campaign;
 
     if(showQRCode) {
         return(
@@ -61,7 +62,7 @@ function ProfileComponent(
                 <SelfQRCodeVerifier 
                     toggleDrawer={toggleDrawer} 
                     back={back}
-                    campaignHash={campaign.hash_}
+                    campaignHash={campaignHash}
                 />
             </MotionDisplayWrapper>
         );
@@ -171,7 +172,7 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campainHash={hash_}
+                campainHash={campaignHash}
             />
         </MotionDisplayWrapper>
     );
