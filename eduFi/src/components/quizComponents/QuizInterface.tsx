@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucide-react';
-import { Address, AnswerInput, QuizResultInput, QuizResultOuput } from '../../../types/quiz';
+import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import useProfile from '../hooks/useProfile';
@@ -12,11 +12,10 @@ export const QuizInterface = () => {
   const [answers, setAnswers] = useState<AnswerInput[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerInput | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [ quizResults, setQuizResult ] = React.useState<QuizResultOuput[]>([]);
 
-  const { getReturnObj } = useProfile();
+  const { returnObj: { profile: { quizResults }}, setHash } = useProfile();
 
-  const { quiz, onComplete, onBack, wkId } = useStorage();
+  const { quiz, onComplete, onBack } = useStorage();
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
   const [startTime] = useState(Date.now());
 
@@ -25,8 +24,7 @@ export const QuizInterface = () => {
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   React.useEffect(() => { 
-    const { profile: { quizResults: qrs } } = getReturnObj({requestedHash: quiz.id as Hex, requestedWkId: wkId})
-    setQuizResult(qrs);
+    setHash(quiz.id as Hex);
   }, [quiz]);
 
   const formatTime = (seconds: number) => {
@@ -115,7 +113,6 @@ export const QuizInterface = () => {
   };
 
   const showAnswerResult = () => {
-    // setShowResult(true);
     setTimeout(() => {
       handleNextQuestion();
     }, 300);

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x2863dfe32783A276d5eFAA1C46fFF2cd7b401C20",
+  "contractAddress": "0xc6058D6202F87c0188124EA0ff5161Af414F9dC6",
   "functionName": "claimReward",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -305,11 +305,6 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
-        },
-        {
           "internalType": "address",
           "name": "user",
           "type": "address"
@@ -360,9 +355,9 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ILearna.Eligibility",
-          "name": "",
-          "type": "tuple"
+          "internalType": "struct ILearna.Eligibility[]",
+          "name": "result",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",

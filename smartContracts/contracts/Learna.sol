@@ -68,7 +68,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         require(_feeManager != address(0), "Fee manager is zero");
         feeManager = _feeManager;
         if(mode == Mode.LIVE){
-            _setTransitionInterval(transitionInterval, 30, _getState().weekId);
+            _setTransitionInterval(transitionInterval, 0, _getState().weekId);
         } 
         for(uint i = 0; i < _admins.length; i++) {
             if(_admins[i] != address(0)) _addAdmin(_admins[i]); 

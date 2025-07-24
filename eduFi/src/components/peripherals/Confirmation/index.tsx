@@ -2,7 +2,7 @@
 
 import React from "react";
 import Drawer from './Drawer';
-import { useAccount, useConfig, useWriteContract, useSendTransaction, useConnect, useChainId, useBalance, } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId, useBalance, } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
 import { filterTransactionData, getCastText, getDivviReferralUtilities, toBN } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
@@ -19,17 +19,14 @@ export const Confirmation :
     React.FC<ConfirmationProps> = 
         ({ getTransactions, lastStepInList, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const { weekId: wkId, result, loading, recordPoints, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
+    const [ disableAction, setDisableAction ] = React.useState<boolean>(false);
+    const { weekId: wkId, result, loading, recordPoints, setError, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
     const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
-
-    React.useEffect(() => {
-        callback({message: '', errorMessage: ''});
-    }, [callback]);
 
     const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
         let text = altText;
@@ -54,6 +51,7 @@ export const Confirmation :
         if(functionName === lastStepInList || functionName === '') {
             setTimeout(() => {
                toggleLoading(false);
+               setmessage('');
                toggleDrawer(0);
                switch (functionName) {
                    case 'setUpCampaign':
@@ -74,10 +72,8 @@ export const Confirmation :
                    default:
                        break;
                } 
-               
-               // console.log("Here5")
-           }, 5000);
-           clearTimeout(5000);
+           }, 6000);
+           clearTimeout(6000);
         }
     }
 
@@ -117,7 +113,13 @@ export const Confirmation :
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
         callback({errorMessage: error.message});
-        setTimeout(() => toggleLoading(false), 3000);
+        setTimeout(
+            () => {
+                setError('');
+                toggleLoading(false);
+            }, 
+            3000
+        );
         clearTimeout(3000);
     }
 
@@ -214,6 +216,7 @@ export const Confirmation :
                 hash = await waitForConfirmation(hash, '');
                 await setCompletion(functionName, useDivvi, hash);
             } else {
+                callback({message: "Please wait..."})
                 hash = await writeContractAsync({
                     abi,
                     functionName,
@@ -266,13 +269,14 @@ export const Confirmation :
     // Record points silently
     React.useEffect(() => {
         if(recordPoints && result.other.score > 0) {
-            const { transactionData, contractAddresses: { GrowToken} } = filterTransactionData({chainId, filter: true, functionNames: ['recordPoints']});
+            const { transactionData } = filterTransactionData({chainId, filter: true, functionNames: ['recordPoints']});
             const td = transactionData[0];
             const sendScore = async() => {
                 try {
                     callback({message: "We're saving your score"});
                     toggleDrawer(1);
                     toggleLoading(true);
+                    setDisableAction(true);
                     const args : any[] = [account, result, result.other.quizId];
                     await runTransaction({abi: td.abi, contractAddress: td.contractAddress as Address, args, functionName: td.functionName as FunctionName, value: 0n, requireArgUpdate: false, useAdmin: 1});
                     callback({message: "Your scores was successfully updated"})
@@ -288,6 +292,8 @@ export const Confirmation :
             toggleRecordPoints(false);
             toggleDrawer(0);
             toggleLoading(false);
+            callback({message: '', errorMessage: ''});
+            setDisableAction(false);
         }
     }, [recordPoints]);
 
@@ -295,6 +301,7 @@ export const Confirmation :
         <Drawer 
             title={ !loading? (displayMessage || 'Transaction request') : 'Transaction sent' }
             openDrawer={openDrawer} 
+            disableAction={disableAction}
             setDrawerState={toggleDrawer}
             onClickAction={() => toggleDrawer(0)}
             styles={{padding:'22px', borderLeft: '1px solid #2e3231', height: "100%", background: '#F9F4F4'}}

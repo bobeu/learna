@@ -8,7 +8,7 @@ import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
-import useProfile, { mockProfileReturn, ProfileReturnType } from "../hooks/useProfile";
+import useProfile, { ProfileReturnType } from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
@@ -35,6 +35,7 @@ function ProfileComponent(
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
+            totalPointsInRequestedCampaign,
             campaign
         }
     } : ProfileComponentProps) {
@@ -52,7 +53,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { totalPoints, activeLearners, canClaim, hash_, } = campaign;
+    const { activeLearners, canClaim, hash_, } = campaign;
 
     if(showQRCode) {
         return(
@@ -68,7 +69,6 @@ function ProfileComponent(
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
-            {/* <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3> */}
             <div className="space-y-2">
                 <div className="bg-brand-gradient  rounded-2xl p-8 mb-8 text-white border relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
@@ -77,7 +77,7 @@ function ProfileComponent(
                                 {totalPointsForACampaign || 0}
                             </div>
                         <div className="text-xl opacity-90 mb-2">
-                            You earned {totalPointsForACampaign} out of {totalPoints.toString()} total points for the week
+                            You earned {totalPointsForACampaign} out of {totalPointsInRequestedCampaign.toString()} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             Your FID: {fid || 'NA'}
@@ -178,21 +178,10 @@ function ProfileComponent(
 }
 
 export default function Profile() {
-    const { setpath, campaignStrings, wkId, campaignData} = useStorage();
-    const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${''}`);
-    const [ requestedWkId, setRequestedWeekId ] = React.useState<number>(0);
-    const [ returnObj, setReturnObj ] = React.useState<ProfileReturnType>(mockProfileReturn);
-
-    const { getReturnObj } = useProfile();
+    const { setpath, campaignStrings, wkId, campaignData } = useStorage();
+    const { returnObj, setHash: setRequestedHash, setWeekId } = useProfile();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
-
-    React.useEffect(() => {
-        setReturnObj(
-            getReturnObj({requestedHash, requestedWkId})
-        );
-
-    }, [requestedHash, requestedWkId]);
     
     const backToHome = () => {
         if(isConnected){
@@ -203,9 +192,8 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-
     const setselectedWeek = (arg: string) => {
-        setRequestedWeekId(Number(arg));
+        setWeekId(Number(arg));
     }
 
     const goToQuiz = () => {

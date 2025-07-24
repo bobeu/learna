@@ -9,7 +9,7 @@ const Educaster = dynamic(() => import("~/components/Educaster"), {
   loading: () => (
       <div className="h-screen relative w-full flex items-center justify-center text-sm font-mono">
         <h3 className="py-12 p-5 text-center rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white animate-bounce-gentle">
-          <h3 className="animate-ping">Loading...</h3>
+          <p className="animate-ping">Loading...</p>
         </h3>
       </div>
     ),

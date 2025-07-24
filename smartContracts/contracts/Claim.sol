@@ -91,12 +91,13 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         return configId;
     }
 
-    function getClaimable(address user) external view returns(ILearna.Eligibility[] memory result) {
-        bytes32[] memory campaignHashes = learna.getUserCampaigns(user);
-        uint totalCampaign = campaignHashes.length + 1;
+    ///@dev Fetches claimable data
+    function getClaimable(address user) public view returns(ILearna.Eligibility[] memory result) {
+        bytes32[] memory hashes = learna.getUserCampaigns(user);
+        uint totalCampaign = hashes.length;
         result = new ILearna.Eligibility[](totalCampaign);
         for(uint i = 0; i < totalCampaign; i++){
-            result[i] = claimables[campaignHashes[i]][user]; 
+            result[i] = claimables[hashes[i]][user]; 
         } 
         return result;
     }

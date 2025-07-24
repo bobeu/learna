@@ -6,7 +6,7 @@ import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-import useProfile, { mockProfileReturn, type ProfileReturnType } from '../hooks/useProfile';
+import useProfile, { type ProfileReturnType } from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -152,22 +152,13 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 };
 
 export default function Dashbaord() {
-  const { onQuizSelect, setpath, campaignStrings, campaignData, wkId, appData } = useStorage();
+  const { onQuizSelect, setpath, campaignStrings, campaignData, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [ requestedHash, setRequestedHash ] = React.useState<Hex>(`0x${''}`);
-  const [ returnObj, setReturnObj ] = React.useState<ProfileReturnType>(mockProfileReturn);
 
-  const { getReturnObj } = useProfile();
+  const { returnObj , setHash: setRequestedHash } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(0, 3);
-
-  React.useEffect(() => {
-    setReturnObj(
-      getReturnObj({requestedHash, requestedWkId: wkId})
-    );
-
-  }, [requestedHash]);
 
   const setHash = (arg: string) => {
     const found = campaignData.find(q => q.campaign === arg);

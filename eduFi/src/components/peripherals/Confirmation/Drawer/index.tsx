@@ -18,7 +18,7 @@ const toggleDrawer : ToggleDrawer =
     setState(value );
 };
 
-export default function Drawer({ openDrawer, styles, setDrawerState, title, onClickAction, children } : DrawerProps) {
+export default function Drawer({ openDrawer, styles, disableAction, setDrawerState, title, onClickAction, children } : DrawerProps) {
     const isLargeScreen = useMediaQuery('(min-width:768px)');
     const entry = openDrawer === 0? false : true;
     return (
@@ -34,7 +34,11 @@ export default function Drawer({ openDrawer, styles, setDrawerState, title, onCl
                 onKeyDown={() => toggleDrawer(0, setDrawerState)}
                 className='border bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 overflow-auto p-4 space-y-4'
             >
-                <DrawerHeader title={title} onClickAction={onClickAction} />
+                <DrawerHeader 
+                    title={title} 
+                    disableAction={disableAction}
+                    onClickAction={onClickAction} 
+                />
                 <div className="w-full glass-card rounded-2xl p-4 text-center mb-6">
                     { children }
                 </div>
@@ -45,6 +49,7 @@ export default function Drawer({ openDrawer, styles, setDrawerState, title, onCl
 
 export interface DrawerProps { 
     openDrawer: number;
+    disableAction: boolean;
     styles?: React.CSSProperties;
     setDrawerState: (arg: number) => void;
     children: React.ReactNode;

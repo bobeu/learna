@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xc9a84B59d2eE373037669859340831Cd7508F4b3",
+  "contractAddress": "0xd4C8421cA78a835106dD18530F717641C6217CAb",
   "functionName": "adjustCampaignValues",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -1173,6 +1173,53 @@
                 {
                   "components": [
                     {
+                      "internalType": "bool",
+                      "name": "canClaim",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "erc20Amount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "nativeAmount",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "weekId",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "token",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes32",
+                      "name": "campaignHash",
+                      "type": "bytes32"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isVerified",
+                      "type": "bool"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isClaimed",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct ILearna.Eligibility",
+                  "name": "eligibility",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
                       "components": [
                         {
                           "components": [
@@ -1304,6 +1351,25 @@
           "internalType": "struct ILearna.WeekProfileData[]",
           "name": "result",
           "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserCampaigns",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "result",
+          "type": "bytes32[]"
         }
       ],
       "stateMutability": "view",
