@@ -24,7 +24,7 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
         () => {
             const { contractAddresses } = filterTransactionData({chainId, filter: false});
             const claim = contractAddresses.Claim as Address
-            const scope = process.env.NEXT_PPUBLIC_SCOPE_VALUE as string;
+            const scope = process.env.NEXT_PUBLIC_SCOPE as string;
             const verificationConfig : VerificationConfig = {
                 minimumAge: 16,
                 ofac: true,
@@ -42,7 +42,6 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
         const userDefinedData = encodeUserData(campaignHash);
-        // console.log("Scope", scope)
         try {
             const app = new SelfAppBuilder({
                     version: 2,

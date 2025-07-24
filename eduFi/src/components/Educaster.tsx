@@ -199,7 +199,6 @@ export default function Educaster() {
             refetchInterval: 5000,
         }
     });
-    console.log("Dataaaa", result?.[1]?.result);
 
     const { weekId, app, state, wkId, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
         const weekId = stateData.state.weekId; // Current week Id
@@ -214,10 +213,10 @@ export default function Educaster() {
         const campaignStrings = campaignData.map(({campaign}) => {
             return campaign;
         });
-        const owner = result?.[0]?.result as Address || zeroAddress;
+        // const owner = result?.[0]?.result as Address || zeroAddress;
         const weekData = [...stateData.wd];
         const admins = result?.[2]?.result as Admin[] || [mockAdmins];
-        console.log("Admins: ", admins);
+        // console.log("Admins: ", admins);
         let userAdminStatus = false;
         const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
         if(found && found.length > 0) userAdminStatus = found[0].active;
