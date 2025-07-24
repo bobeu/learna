@@ -8,7 +8,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData } from "../../types/quiz";
+import { Address, Admin, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -35,7 +35,7 @@ export const mockReadData : ReadData = {
     transitionInterval: 0,
     transitionDate: 0
   },
-  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n}],
+  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}],
 }
 
 export const mockCData : CData = [
@@ -95,8 +95,14 @@ export const mockProfile : Profile = {
 }
 
 export const mockReadProfile : ReadProfile = {
+  eligibility: mockEligibility,
   campaignHash: `0x${''}`,
   profile: mockProfile
+}
+
+export const mockWeekProfileData : WeekProfileData = {
+  campaigns: [mockReadProfile],
+  weekId: 0n
 }
 
 export const mockScoresParam : ScoresParam =  {
@@ -106,14 +112,22 @@ export const mockScoresParam : ScoresParam =  {
   questionSize: 0,
   weightPerQuestion: 0,
   noAnswer: 0,
-  totalAnsweredCorrectly: [],
+  totalAnsweredCorrectly: [
+    {
+      answer: '0',
+      hash: mockReadProfile.campaignHash,
+      options: [{label: '', value: ''}],
+      question: '',
+      userAnswer: '',
+    }
+  ],
   totalAnsweredIncorrectly: 0
 }
 
 export const mockSelectedData : SelectedData = {
   category: '',
   selectedLevel: '',
-  data: [],
+  data: [mockScoresParam.totalAnsweredCorrectly[0]],
   scoreParam: mockScoresParam,
   id: 0
 };
@@ -121,14 +135,26 @@ export const mockSelectedData : SelectedData = {
 export const emptyQuizData : SelectedQuizData = {
   category: "",
   level: "",
-  questions: []
+  questions: [mockScoresParam.totalAnsweredCorrectly[0]]
 }
 
 export const mockQuiz : Quiz = {
   id: "",
   title: "",
   description: "",
-  questions: [],
+  questions: [
+    {
+      category: '',
+      correctAnswer: 0,
+      difficulty: '',
+      hash: mockReadProfile.campaignHash,
+      id: 0,
+      options: [''],
+      points: 0,
+      question: '',
+      explanation: ''
+    }
+  ],
   totalPoints: 0,
   timeLimit: 0,
   difficulty: 'easy',
@@ -138,7 +164,13 @@ export const mockQuiz : Quiz = {
 }
 
 export const mockQuizResult : QuizResultInput = {
-  answers: [],
+  answers: [
+    {
+      isUserSelected: false,
+      questionHash: mockReadProfile.campaignHash,
+      selected: 0
+    }
+  ],
   other: {
     quizId: "",
     score: 0,

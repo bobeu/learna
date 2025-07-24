@@ -59,7 +59,13 @@ interface ILearna {
         uint32 slot;
     }
 
+    struct WeekProfileData {
+        uint weekId;
+        ReadProfile[] campaigns;
+    }
+
     struct ReadProfile {
+        Eligibility eligibility;
         Profile profile;
         bytes32 campaignHash;
     }
@@ -117,12 +123,18 @@ interface ILearna {
         bool blacklisted;
     }
 
+    // struct UserCampaign {
+    //     bytes32 hash_;
+    //     bool registered;
+    // }
+
     struct Profile {
         QuizResult[] quizResults;
         ProfileOther other;
     }
 
     struct WeekData {
+        uint weekId;
         Campaign[] campaigns;
         uint96 claimDeadline;
     } 
@@ -154,4 +166,5 @@ interface ILearna {
 
     function checkEligibility(address user,  bytes32 campaignHash) external view returns (Eligibility memory);
     function onClaimed(Eligibility memory elg, address user) external returns(bool);
+    function getUserCampaigns(address user) external view returns(bytes32[] memory);
 }

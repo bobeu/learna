@@ -194,7 +194,7 @@ abstract contract Campaigns is Week {
     }
 
     /**Return all approved campaigns */
-    function _getApprovedCampaigns() internal returns(Initializer[] memory _inits) {
+    function _getApprovedCampaigns() internal view returns(Initializer[] memory _inits) {
         uint counter = allCampaigns;
         if(counter == 0) return _inits;
         _inits = new Initializer[](counter);

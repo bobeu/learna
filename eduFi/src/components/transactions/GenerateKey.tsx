@@ -15,8 +15,8 @@ export default function GenerateKey({campaignHash, buttonClassName} : {campaignH
     const toggleDrawer = (arg:number) => setDrawer(arg); 
     const { chainId, address } = useAccount();
     const account = formatAddr(address);
-    const { weekId, wkId } = useStorage();
-    const { profile: { other: { haskey}} } = useProfile({wkId, inHash: campaignHash});
+    const { weekId } = useStorage();
+    const { returnObj:{ profile: { other: { haskey}}} } = useProfile();
 
     // Build the transactions to run
     const { mutate, funcArgs } = React.useMemo(() => {

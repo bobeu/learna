@@ -34,8 +34,8 @@ function ProfileComponent(
             claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
-            // claimable: { isVerified },
             totalPointsForACampaign,
+            totalPointsInRequestedCampaign,
             campaign
         }
     } : ProfileComponentProps) {
@@ -53,7 +53,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { totalPoints, activeLearners, canClaim, hash_, } = campaign;
+    const { activeLearners, canClaim, hash_, } = campaign;
 
     if(showQRCode) {
         return(
@@ -69,7 +69,6 @@ function ProfileComponent(
 
     return(
         <MotionDisplayWrapper className="space-y-2 font-mono">
-            {/* <h3 className="w-full text-left mt-4 text-xl text-cyan-900">{`Week ${weekId.toString()} data`}</h3> */}
             <div className="space-y-2">
                 <div className="bg-brand-gradient  rounded-2xl p-8 mb-8 text-white border relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
@@ -78,7 +77,7 @@ function ProfileComponent(
                                 {totalPointsForACampaign || 0}
                             </div>
                         <div className="text-xl opacity-90 mb-2">
-                            You earned {totalPointsForACampaign} out of {totalPoints.toString()} total points for the week
+                            You earned {totalPointsForACampaign} out of {totalPointsInRequestedCampaign.toString()} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             Your FID: {fid || 'NA'}
@@ -179,7 +178,8 @@ function ProfileComponent(
 }
 
 export default function Profile() {
-    const { setpath, campaignStrings, wkId, campaignData} = useStorage();
+    const { setpath, campaignStrings, wkId, campaignData } = useStorage();
+    const { returnObj, setHash: setRequestedHash, setWeekId } = useProfile();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -192,8 +192,6 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const { setWeekId, setHash: setCampaignHash, ...rest } = useProfile({});
-
     const setselectedWeek = (arg: string) => {
         setWeekId(Number(arg));
     }
@@ -212,7 +210,7 @@ export default function Profile() {
 
     const setHash = (arg: string) => {
         const found = campaignData.filter(q => q.campaign === arg);
-        if(found.length > 0) setCampaignHash(found[0].campaignHash as Hex);
+        if(found.length > 0) setRequestedHash(found[0].campaignHash as Hex);
     }
 
     return(
@@ -274,7 +272,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={rest}
+                    profileData={returnObj}
                 />
                 
                 {/* Exit button */}

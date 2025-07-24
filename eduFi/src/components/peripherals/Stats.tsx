@@ -139,7 +139,8 @@ export default function Stats() {
     const [ openPausePopUp, setPausePopUp ] = React.useState<number>(0);
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
-    
+
+    const { returnObj: { claimDeadline, campaign }, setHash, setWeekId } = useProfile();
     const { 
         setpath, 
         owner,
@@ -150,7 +151,6 @@ export default function Stats() {
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
-    const { setHash, setWeekId, ...rest } = useProfile({});
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -193,12 +193,6 @@ export default function Stats() {
     }
 
     const interval = toBN(transitionInterval.toString()).toNumber();
-
-    // React.useEffect(() => {
-    //     const prof = getCampaignObj(selectedWeek, requestedHash);
-    //     if(prof.campaignDatum.campaignHash.toLowerCase() !== profile.campaignDatum.campaignHash.toLowerCase()) setProfile(prof);
-    // }, [selectedWeek, requestedHash, profile.campaignDatum.campaignHash]);
-   
     React.useEffect(() => {
         if(action === 'pause') setPausePopUp(1);
         if(action === 'unpause') setUnPausePopUp(1);
@@ -273,9 +267,9 @@ export default function Stats() {
                     </div>
                 </div>
                 <Stat 
-                    campaign={rest.campaign} 
+                    campaign={campaign} 
                     transitionDate={transitionDate}
-                    claimDeadline={rest.claimDeadline}
+                    claimDeadline={claimDeadline}
                 />
             </div>
 

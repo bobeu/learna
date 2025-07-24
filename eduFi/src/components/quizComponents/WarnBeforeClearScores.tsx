@@ -22,6 +22,7 @@ export function WarnBeforeClearScoresAndData({openDrawer, exit, toggleDrawer, sa
 
     return(
         <Drawer
+            disableAction={false}
             openDrawer={openDrawer}
             setDrawerState={() => toggleDrawer(0)}
             title={"Are you sure want to exit?"}

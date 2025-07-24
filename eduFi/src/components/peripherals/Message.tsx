@@ -23,12 +23,9 @@ export default function Message() {
     const formattedMessage = isEnded? messages.replace('ended', '').replace('tip', '') : messages;
 
     React.useEffect(() => {
-        if(!loading) {
-            setTimeout(() => {
-                if(messages !== '') setmessage('');
-                if(errorMessage !== '') setError('');
-            }, 2000);
-            return() => clearTimeout(2000);
+        if(!loading && ( messages !== '' || errorMessage !== '')) {
+            if(messages !== '') setmessage('');
+            if(errorMessage !== '') setError('');
         }
     }, [messages, loading, errorMessage, setError, setmessage]);
 

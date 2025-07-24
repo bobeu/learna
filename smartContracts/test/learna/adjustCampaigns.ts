@@ -3,7 +3,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { campaigns, getCampaigns, setUpCampaign } from "../utils";
-import { keccak256, parseEther, stringToBytes } from "viem";
+import { parseEther,} from "viem";
 import { Address } from "../types";
 
 describe("Learna", function () {
@@ -34,7 +34,6 @@ describe("Learna", function () {
 
       // console.log("CP", cp.campaigns);
       expect(cp.campaigns[0].activeLearners).to.be.eq(newCampaigns[0].activeLearners);
-      expect(cp.campaigns[0].claimActiveUntil).to.be.eq(newCampaigns[0].claimActiveUntil);
       expect(cp.campaigns[0].fundsERC20 > newCampaigns[0].fundsERC20).to.be.true;
       expect(cp.campaigns[0].fundsNative > newCampaigns[0].fundsNative).to.be.true;
       expect(cp.campaigns[0].totalPoints).to.be.eq(newCampaigns[0].totalPoints);

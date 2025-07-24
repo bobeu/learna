@@ -54,6 +54,12 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     ///@notice When this flag is turned off, user will need no verification to claim reward
     bool public useSelf;
 
+    // /// @dev All campaigns user registered for a week
+    // mapping(address => bytes32[]) private userCampaigns;
+
+    // /// @dev Mapping showing whether users have registred for a campaign for given week or not
+    // mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
+
     // /// @notice Maps of campaigns to user identifiers to registration status
     mapping(bytes32 campaignHash => mapping(address user => ILearna.Eligibility)) internal claimables;
 
@@ -85,8 +91,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         return configId;
     }
 
-    function getClaimable(bytes32 campaignHash, address user) external view returns(ILearna.Eligibility memory) {
-        return claimables[campaignHash][user];
+    ///@dev Fetches claimable data
+    function getClaimable(address user) public view returns(ILearna.Eligibility[] memory result) {
+        bytes32[] memory hashes = learna.getUserCampaigns(user);
+        uint totalCampaign = hashes.length;
+        result = new ILearna.Eligibility[](totalCampaign);
+        for(uint i = 0; i < totalCampaign; i++){
+            result[i] = claimables[hashes[i]][user]; 
+        } 
+        return result;
     }
 
     // Set verification config ID
@@ -233,10 +246,6 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
             claimables[campaignHash][user].isVerified = true;
 
         }
-
-    
-        // address user = address(uint160(output.userIdentifier));
-        // // bytes memory userDefinedData = userData[64:];
 
         // Emit registration event
         emit UserIdentifierVerified(user, campaignHash);

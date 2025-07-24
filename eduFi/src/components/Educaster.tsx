@@ -55,7 +55,9 @@ export default function Educaster() {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
-
+    const [stateData, setStateData] = React.useState<ReadData>(mockReadData);
+    const [owner, setOwner] = React.useState<Address>(zeroAddress);
+    const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -93,13 +95,6 @@ export default function Educaster() {
             }
         }
     }, []);
-
-    // // Save user results to localStorage whenever userResults changes
-    // useEffect(() => {
-    //     if (userResults.length > 0) {
-    //         localStorage.setItem('quizResults', JSON.stringify(userResults));
-    //     }
-    // }, [userResults]);
 
     const handleQuizSelect = (quiz: Quiz) => {
         setSelectedQuiz(quiz);
@@ -204,24 +199,23 @@ export default function Educaster() {
             refetchInterval: 5000,
         }
     });
-    const data = result?.[1]?.result as ReadData || mockReadData;
+    console.log("Dataaaa", result?.[1]?.result);
 
-    const { weekId, app, state, wkId, owner, weekData, userAdminStatus, admins, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
-        const weekId = data.state.weekId; // Current week Id
-        const state = data.state;
+    const { weekId, app, state, wkId, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
+        const weekId = stateData.state.weekId; // Current week Id
+        const state = stateData.state;
         const wkId = toBN(weekId.toString()).toNumber();
-        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
+        const campaignData : CampaignDatum[] = stateData.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
             const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
-        console.log("Dataaaa", data);
-
+        
         const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
         const campaignStrings = campaignData.map(({campaign}) => {
             return campaign;
         });
         const owner = result?.[0]?.result as Address || zeroAddress;
-        const weekData = [...data.wd];
+        const weekData = [...stateData.wd];
         const admins = result?.[2]?.result as Admin[] || [mockAdmins];
         console.log("Admins: ", admins);
         let userAdminStatus = false;
@@ -266,17 +260,30 @@ export default function Educaster() {
         return {
             app,
             wkId,
-            admins,
             weekId,
             state,
-            owner,
             weekData,
             campaignData,
             campaignStrings,
             campaignHashes,
             userAdminStatus
         }
-    }, [data, currentPath]);
+    }, [currentPath, stateData]);
+
+     // Update quiz data
+    React.useEffect(() => {
+        let stateData_ : ReadData = mockReadData;
+        let owner_ : Address = zeroAddress;
+        let admins_ : Admin[] = [mockAdmins];
+        if(result && result.length > 0) {
+            stateData_ = result[1].result as ReadData;
+            admins_ = result[2].result as Admin[];
+            owner_ = result[0].result as Address;
+            setStateData(stateData_);
+            setAdmins(admins_);
+            setOwner(owner_);
+        }
+    }, [result]);
 
     return (  
         <StorageContextProvider

@@ -44,13 +44,20 @@ abstract contract Week is ILearna, Admins {
 
     /**
      * @dev Update transition interval
-     * @param interval : New interval
+     * @param intervalInMin : New interval
+     * @param claimDeadlineInMin : New deadline before claim ends
+     * @param weekId : Week Id
      */
     function _setTransitionInterval(uint32 intervalInMin, uint32 claimDeadlineInMin, uint weekId) internal {
-        if(state.transitionInterval != interval) state.transitionInterval = (interval * 1 minutes);
-        unchecked {
-            state.transitionDate = _now() + state.transitionInterval;
-            if(claimDeadlineInMin > 0) {
+        if(intervalInMin > 0) {
+            uint64 newInterval = intervalInMin * 1 minutes;
+            state.transitionInterval = newInterval;
+            unchecked {
+                state.transitionDate = _now() + newInterval;
+            }
+        } 
+        if(claimDeadlineInMin > 0) {
+            unchecked {
                 _setDeadline(weekId, _now() + (claimDeadlineInMin * 1 minutes));
             }
         }
@@ -79,7 +86,7 @@ abstract contract Week is ILearna, Admins {
     }
 
     // Return the current unix time stamp on the network
-    function _now() internal view returns(uint64 result) {
-        result = uint64(block.timestamp);
+    function _now() internal view returns(uint64 time) {
+        time = uint64(block.timestamp);
     } 
 }
