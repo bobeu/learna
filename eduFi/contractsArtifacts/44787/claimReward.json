@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x09BF4348DEB1D5e929ffa7cd4E07AFc613a13aaC",
+  "contractAddress": "0xaF75EE2ba38FD796C1d7fb65a3711cC9EcC1b5F4",
   "functionName": "claimReward",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -409,19 +409,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "merkleRoot",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -550,19 +537,6 @@
         }
       ],
       "name": "setLearna",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "newMerkleRoot",
-          "type": "bytes32"
-        }
-      ],
-      "name": "setMerkleRoot",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
