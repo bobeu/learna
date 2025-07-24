@@ -117,7 +117,6 @@ export default function useProfile(){
             filter: true, 
             functionNames: ['getProfile', 'getClaimable'],
         });
-        console.log("td", td)
         const readArgs = [[account], [account]];
         const readTxObject = td.map((item, i) => {
             return{
