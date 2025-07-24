@@ -8,7 +8,6 @@ import { Address } from "../../../types/quiz";
 import {  VerificationConfig, getUniversalLink } from "@selfxyz/core";
 import CustomButton from "../peripherals/CustomButton";
 import AddressWrapper from "../peripherals/AddressFormatter/AddressWrapper";
-// import { Hex } from "viem";
 
 export default function SelfQRCodeVerifier({ back, campaignSlot } : {toggleDrawer: (arg: number) => void, back: () => void, campaignSlot: number}) {
     const [selfApp, setSelfApp] = React.useState<SelfApp | null>(null);
