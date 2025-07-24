@@ -82,7 +82,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const admins = await read("Learna", "getAdmins");
 	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
 	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
-	// await execute('Claim', {from: deployer}, 'setLearna', learna.address);
+	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
 

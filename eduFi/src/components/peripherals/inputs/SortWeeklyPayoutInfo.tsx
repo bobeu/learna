@@ -25,8 +25,7 @@ export default function SortWeeklyPayout() {
                 setNewDeadline(toBN(value).toNumber());
                 break;
             default:
-                // 360 = 1hr i.e 60 * 60
-                setNewInterval(toBN(value).toNumber() * 360);
+                setNewInterval(toBN(value).toNumber());
                 break;
         }
     } 
