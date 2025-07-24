@@ -63,6 +63,9 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     // /// @notice Maps of campaigns to user identifiers to registration status
     mapping(bytes32 campaignHash => mapping(address user => ILearna.Eligibility)) internal claimables;
 
+    /// @dev User's registered claim. We use this to prevent users from trying to claim twice
+    mapping(uint weekId => mapping(bytes32 campaignHash => mapping(address user => bool))) internal isVerifiedCliam;
+
     modifier whenNotUseSelf {
         require(!useSelf, "In verify mode");
         _;
@@ -182,15 +185,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
      * user cannot make eligibity check twice in the same week.
      */
     function _setClaim(bytes32 campaignHash, address user) internal returns(bool) {
-        ILearna.Eligibility memory oldElg = claimables[campaignHash][user];
-        ILearna.Eligibility memory newElg = learna.checkEligibility(user, campaignHash);
-        if(oldElg.weekId == newElg.weekId) revert EligibilityCheckDenied();
-        if(!newElg.canClaim) revert ILearna.NotEligible();
+        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignHash);
+        require(!isVerifiedCliam[elg.weekId][campaignHash][user], "Claim already registered");
+        require(elg.canClaim, "Not sorted or eligible");
+        isVerifiedCliam[elg.weekId][campaignHash][user] = true;
         unchecked {
-            if((newElg.nativeAmount + newElg.erc20Amount) == 0) revert NoClaimable();
+            require((elg.nativeAmount + elg.erc20Amount) > 0, "Not sorted or nothing to claim");
         }
-        if(newElg.token == address(0)) revert ILearna.InvalidAddress(newElg.token);
-        claimables[campaignHash][user] = newElg;
+        require(elg.token != address(0), "Token address is empty");
+        claimables[campaignHash][user] = elg;
 
         return true;
     }
@@ -207,11 +210,12 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     }
 
     /**
-     * @dev Registers user for the claim. 
+     * @dev Manually registers user for the claim. 
      * @param campaignHash : Campaign hash
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
-     * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already
+     * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
+     * Must not be using Self verification.
      */
     function setClaim(bytes32 campaignHash, address user) external whenNotUseSelf onlyApproved returns(bool) {
         return _setClaim(campaignHash, user);
@@ -228,24 +232,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     ) internal override {
         require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
-        (uint8 action, bytes32 campaignHash) = abi.decode(userData, (uint8, bytes32));
+        bytes32 campaignHash = abi.decode(userData, (bytes32));
         
-        if(action == 1) {
-            if(output.userIdentifier == 0) {
-                revert InvalidUserIdentifier();
-            }
-            // bytes32 campaignHash = bytes32(userDefinedData[1:33]);
-            if(claimables[campaignHash][user].isVerified) {
-                revert UserIdentifierAlreadyVerified();
-            }
+        require(output.userIdentifier > 0, "InvalidUserIdentifier");
+        // bytes32 campaignHash = bytes32(userDefinedData[1:33]);
+        // if(bytes(output.nationality).length == 0) revert NationalityRequired();
+        // Check that user age is min 16
 
-            if(bytes(output.nationality).length == 0) revert NationalityRequired();
-            // Check that user age is min 16
-
-            _setClaim(campaignHash, user);
-            claimables[campaignHash][user].isVerified = true;
-
-        }
+        _setClaim(campaignHash, user);
+        claimables[campaignHash][user].isVerified = true;
 
         // Emit registration event
         emit UserIdentifierVerified(user, campaignHash);
