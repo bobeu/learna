@@ -2,7 +2,7 @@
 
 import { filterTransactionData, formatAddr, mockCampaign, mockEligibility, mockProfile, mockReadProfile, mockWeekProfileData, toBN } from '../utilities';
 import { useAccount, useChainId, useConfig, useReadContracts, useReconnect } from 'wagmi';
-import { Address, Campaign, Eligibility, Profile, WeekData, WeekProfileData } from '../../../types/quiz';
+import { Address, Campaign, Eligibility, Profile, ReadProfile, WeekData, WeekProfileData } from '../../../types/quiz';
 import { Hex, keccak256, stringToHex, zeroAddress } from "viem";
 import React from "react";
 import useStorage from './useStorage';
@@ -18,8 +18,8 @@ export interface ProfileReturnType {
     profile: Profile;
     claimable: Eligibility;
     claimed: boolean;
-    campaignHash: Hex;
     campaignSlot: number;
+    campaignHash: Hex;
     claimDeadline: number;
     totalPointsForACampaign: number;
     showVerificationButton: boolean;
@@ -31,8 +31,8 @@ export const mockProfileReturn : ProfileReturnType = {
     showVerificationButton: false,
     showWithdrawalButton: false,
     profile: mockProfile,
-    campaignSlot: 0,
     claimDeadline: 0,
+    campaignSlot: 0,
     campaign: mockCampaign,
     campaignHash: toHash('solidity'),
     claimable: {
@@ -55,22 +55,22 @@ export const mockProfileReturn : ProfileReturnType = {
     const claimables = stateData.claimables;
     const readProfile = stateData.readProfile;
     const wkFound = readProfile.filter((_, i) => i === requestedWkId);
-    const filteredUser = wkFound?.[0]?.campaigns.map((q, campaignSlot) => {
-        return {
-            campaignSlot,
-            found: q 
+    const filteredUserCampaigns = wkFound?.[0]?.campaigns || [mockReadProfile];
+    // const filteredUser = filteredUserCampaigns.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase());
+    let campaignSlot = 0;
+    let userCampaign: ReadProfile = mockReadProfile;
+    filteredUserCampaigns.forEach((found, index) => {
+        if(found?.campaignHash.toLowerCase() == requestedHash.toLowerCase()) {
+            campaignSlot = index;
+            userCampaign = found;
         }
     });
-    
-    const filteredCampaign = filteredUser?.filter(({found}) => found.campaignHash.toLowerCase() == requestedHash.toLowerCase()) || [{campaignSlot: 0, found: mockReadProfile}];
-    const foundSlot = filteredCampaign[0];
-    const userCampaign = foundSlot.found;
-    let campaignSlot = foundSlot.campaignSlot;
-    console.log("filteredUser",filteredUser);
-    console.log("Initial CampaingSlot",campaignSlot);
-    if(campaignSlot >= filteredUser.length && filteredUser.length > 0) campaignSlot -= 1;
-    console.log("Final CampaingSlot",campaignSlot);
 
+    console.log("filteredUserCampaigns", filteredUserCampaigns);
+    console.log("campaignSlot", campaignSlot);
+    if(campaignSlot === filteredUserCampaigns.length) campaignSlot -= 1;
+    console.log("campaignSlotAfter", campaignSlot);
+    // const userCampaign = filteredUser?.[0] || mockReadProfile;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
