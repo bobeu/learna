@@ -101,10 +101,13 @@ abstract contract Campaigns is Week {
             wi.slot = uint32(campaigns[weekId].length);
             campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, operator, token, hash_, false, CampaignData(hash_, encoded)));
             wInit[weekId][hash_] = wi;
-            emit NewCampaign(_getCampaign(weekId, hash_).cp);
+            cmp = _getCampaign(weekId, hash_).cp;
+            emit NewCampaign(cmp);
         } else {
             cmp = _getCampaign(weekId, hash_).cp;
-            cmp.fundsNative += fundsNative;
+            unchecked {
+                cmp.fundsNative += fundsNative;
+            }
             if(operator != cmp.operator) cmp.operator = operator;
             if(token != address(0)){
                 bool execute = false;
@@ -119,7 +122,9 @@ abstract contract Campaigns is Week {
                 if(execute) {
                     if(IERC20(token).allowance(_msgSender(), address(this)) >= fundsERC20) {
                         if(IERC20(token).transferFrom(_msgSender(), address(this), fundsERC20)){
-                            cmp.fundsERC20 += fundsERC20;
+                            unchecked {
+                                cmp.fundsERC20 += fundsERC20;
+                            }
                         }
                     }
                 }
