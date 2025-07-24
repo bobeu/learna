@@ -140,7 +140,7 @@ export default function Stats() {
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
 
-    const { returnObj: { claimDeadline, campaign }, setHash, setWeekId } = useProfile();
+    const { returnObj: { claimDeadline, campaign, }, setHash, setWeekId } = useProfile();
     const { 
         setpath, 
         owner,
@@ -165,14 +165,22 @@ export default function Stats() {
 
     const goToQuiz = () => {
         if(isConnected) {
-            setpath('quiz');
+            setpath('dashboard');
+        } else {
+            setpath('home')
+        }
+    }
+
+    const goToCampaign = () => {
+        if(isConnected) {
+            setpath('setupcampaign');
         } else {
             setpath('home')
         }
     }
 
     const setCampaignStr = (arg: string) => {
-        const fd = campaignData.filter(q => q.campaign === arg);
+        const fd = campaignData.filter(q => q.campaign.toLowerCase() === arg.toLowerCase());
         if(fd) setHash(fd?.[0]?.campaignHash);
     }
 
@@ -202,10 +210,16 @@ export default function Stats() {
         <Wrapper2xl useMinHeight={true} >
             <div className="text-3xl text-left font-bold text-gray-800 mb-4">Analytics</div>
             <div className="w-full space-y-2 mb-2">
-                <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-full">
-                    <ArrowRightCircle className="w-5 h-5" />
-                    <span>Take A Quiz</span>
-                </CustomButton>
+                <div className="w-full flex justify-between items-center gap-3">
+                    <CustomButton onClick={goToQuiz} exit={false} disabled={false} overrideClassName="w-2/4">
+                        <ArrowRightCircle className="w-5 h-5" />
+                        <span>Take A Quiz</span>
+                    </CustomButton>
+                    <CustomButton onClick={goToCampaign} exit={false} disabled={false} overrideClassName="w-2/4">
+                        <ArrowRightCircle className="w-5 h-5" />
+                        <span>Campaign</span>
+                    </CustomButton>
+                </div>
                 <CustomButton onClick={backToHome} exit={true} disabled={false} overrideClassName="w-full">
                     <ArrowLeftCircle className="w-5 h-5" />
                     <span>Exit</span>

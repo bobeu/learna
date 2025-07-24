@@ -185,12 +185,40 @@ export const Confirmation :
         const useDivvi = chainId === celo.id;
         const dataSuffix = useDivvi? getDataSuffix() : undefined;
         let hash : Address = '0x';
+        let message : string = '';
+        switch (functionName) {
+            case 'approve':
+                message = 'Please approve spending cap';
+                break;
+            case 'unpause':
+                message = 'Returning contract state to active';
+                break;
+            case 'pause':
+                message = 'Deactivating contract state';
+                break;
+            case 'banOrUnbanUser':
+                message = 'Setting user status';
+                break;
+            case 'sortWeeklyReward':
+                message = 'Sorting weekly reward';
+                break;
+            case 'recordPoints':
+                message = 'Saving your points onchain...';
+                break;
+            case 'setUpCampaign':
+                message = 'Setting up your campaign...';
+                break;
+        
+            default:
+                message = "Please wait..."
+                break;
+        }
+        callback({message});
         try {
             if(functionName === 'recordPoints') {
                 if(!useAdmin || useAdmin === 0)  {
                     await delegateTransactionTask();
                 }
-                callback({message: "Now saving your points..."});
                 hash = await writeContractAsync({
                     abi,
                     functionName,
@@ -216,7 +244,7 @@ export const Confirmation :
                 hash = await waitForConfirmation(hash, '');
                 await setCompletion(functionName, useDivvi, hash);
             } else {
-                callback({message: "Please wait..."})
+                callback({message})
                 hash = await writeContractAsync({
                     abi,
                     functionName,

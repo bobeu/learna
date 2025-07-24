@@ -19,20 +19,20 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
     const chainId = useChainId();
     const account = formatAddr(useAccount().address);
 
-    const { verificationConfig, claim } = React.useMemo(
+    const { verificationConfig, claim, scope } = React.useMemo(
         () => {
             const { contractAddresses } = filterTransactionData({chainId, filter: false});
             const claim = contractAddresses.Claim as Address
-            const excludedCountries = [countries.NORTH_KOREA];
+            const scope = process.env.NEXT_PPUBLIC_SCOPE_VALUE as string;
             const verificationConfig : VerificationConfig = {
                 minimumAge: 16,
                 ofac: true,
-                excludedCountries
             }
 
             return {
                 verificationConfig,
                 claim,
+                scope
             }
         },  
         [chainId]
@@ -41,11 +41,12 @@ export default function SelfQRCodeVerifier({ toggleDrawer, back, campaignHash } 
     // Use useEffect to ensure code only executes on the client side
     React.useEffect(() => {
         const userDefinedData = encodeUserData(campaignHash);
+        console.log("Scope", scope)
         try {
             const app = new SelfAppBuilder({
                     version: 2,
                     appName: APP_NAME,
-                    scope: process.env.NEXT_PUBLIC_SCOPE as string,
+                    scope,
                     endpoint: claim,
                     logoBase64: APP_ICON_URL,
                     userId: account,

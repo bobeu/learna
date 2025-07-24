@@ -49,15 +49,16 @@ export const mockProfileReturn : ProfileReturnType = {
 }
 
  const formatData = (stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex) : ProfileReturnType => {
-    const reqWeek = BigInt(requestedWkId);
+    // const reqWeek = BigInt(requestedWkId);
     const claimables = stateData.claimables;
     const readProfile = stateData.readProfile;
-    const wkFound = readProfile.find(q => q.weekId === BigInt(requestedWkId)) || mockWeekProfileData;
-    const cmpFound = wkFound.campaigns.find(h => h.campaignHash.toLowerCase() == requestedHash.toLowerCase()) || mockReadProfile;
+    const wkFound = readProfile.filter((_, i) => i === requestedWkId);
+    const filteredUser = wkFound?.[0]?.campaigns.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase());
+    const userCampaign = filteredUser?.[0] || mockReadProfile;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
-    const sorted = cmpFound.eligibility.canClaim;
+    const sorted = userCampaign.eligibility.canClaim;
     
     // Search for the corresponding claimable data using the requested  hash 
     const claimable_ = claimables.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
@@ -67,23 +68,23 @@ export const mockProfileReturn : ProfileReturnType = {
     const showWithdrawalButton = claimable.isVerified && !claimable.isClaimed;
 
     // Eligibility criteria. To show verification button user must have earned points, week sorted, and have not claim for this campaign
-    const { other: { claimed }, quizResults,} = cmpFound.profile;
-    const showVerificationButton = !claimed && (cmpFound.eligibility.erc20Amount > 0n || cmpFound.eligibility.nativeAmount > 0n) && sorted;
+    const { other: { claimed }, quizResults,} = userCampaign.profile;
+    const showVerificationButton = !claimed && (userCampaign.eligibility.erc20Amount > 0n || userCampaign.eligibility.nativeAmount > 0n) && sorted;
 
     // Total points earned in a campaign
     const totalUserPointsForACampaign = quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
     
     // Search for the campaign using the requested parameters
-    const campaigns = weekData.find(q => q.weekId === reqWeek)?.campaigns?? [mockCampaign];
-    const filteredCampaign = campaigns.find(q => q.hash_.toLowerCase() === requestedHash.toLowerCase())?? mockCampaign;
-
-    return {
-        campaign: filteredCampaign,
+    const weekCampaigns = weekData.filter((_, i) => i === requestedWkId);
+    const filtered = weekCampaigns?.[0]?.campaigns.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+    const generalCampaign = filtered?.[0] || mockCampaign;
+    return {    
+        campaign: generalCampaign,
         claimable,
-        totalPointsInRequestedCampaign: filteredCampaign.totalPoints,
+        totalPointsInRequestedCampaign: generalCampaign.totalPoints,
         claimDeadline: toBN(weekData?.[requestedWkId]?.claimDeadline?.toString() || '0').toNumber(),
-        campaignHash: cmpFound.campaignHash,
-        profile: cmpFound.profile,
+        campaignHash: userCampaign.campaignHash,
+        profile: userCampaign.profile,
         showWithdrawalButton,
         showVerificationButton,
         totalPointsForACampaign: totalUserPointsForACampaign,
@@ -98,7 +99,7 @@ export default function useProfile(){
     
     const chainId = useChainId();
     const config = useConfig();
-    const { address, isConnected, connector } = useAccount();
+    const { address, isConnected } = useAccount();
     const { reconnectAsync, connectors, isPending } = useReconnect();
     const { weekData } = useStorage();
     const account = formatAddr(address);
@@ -137,7 +138,7 @@ export default function useProfile(){
         query: {
             enabled: !!isConnected,
             refetchOnReconnect: 'always', 
-            refetchInterval: 3000,
+            refetchInterval: 4000,
             refetchOnMount: 'always',
         }
     });
@@ -145,7 +146,6 @@ export default function useProfile(){
     // Can be used to request for latest data using the arg paramter based on requested Hash and the supplied requested week
     const setHash = (reqHash: Hex) => {
         if(reqHash !== requestedHash) setRequestedHash(reqHash);
-        // if(requestedWkId !== reqWeek) setRequestedWeek(reqWeek);
     };
     
     // Can be used to request for latest data using the arg paramter based on weekId
