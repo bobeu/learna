@@ -60,9 +60,17 @@ export const mockProfileReturn : ProfileReturnType = {
             campaignSlot,
             found: q 
         }
-    })?.filter(({found}) => found.campaignHash.toLowerCase() == requestedHash.toLowerCase())
-    const userCampaign = filteredUser?.[0]?.found || mockReadProfile;
-    const campaignSlot = filteredUser?.[0]?.campaignSlot || 0;
+    });
+    
+    const filteredCampaign = filteredUser?.filter(({found}) => found.campaignHash.toLowerCase() == requestedHash.toLowerCase()) || [{campaignSlot: 0, found: mockReadProfile}];
+    const foundSlot = filteredCampaign[0];
+    const userCampaign = foundSlot.found;
+    let campaignSlot = foundSlot.campaignSlot;
+    console.log("filteredUser",filteredUser);
+    console.log("Initial CampaingSlot",campaignSlot);
+    if(campaignSlot >= filteredUser.length && filteredUser.length > 0) campaignSlot -= 1;
+    console.log("Final CampaingSlot",campaignSlot);
+
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
