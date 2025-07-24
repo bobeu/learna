@@ -197,7 +197,7 @@ export default function Profile() {
     }
 
     const goToQuiz = () => {
-        setpath('quiz');
+        setpath('dashboard');
     };
 
     const goToStats = () => {
