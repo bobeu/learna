@@ -10,6 +10,7 @@ abstract contract Admins is Approved {
         bool active;
     }
 
+    /// @dev Total number of admins
     uint private adminCount;
 
     /// Admins slots
