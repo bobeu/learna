@@ -49,7 +49,7 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     bytes32 public configId;
 
     /// @notice Merkle root used to validate reward claims.
-    bytes32 public merkleRoot;
+    // bytes32 public merkleRoot;
 
     ///@notice When this flag is turned off, user will need no verification to claim reward
     bool public useSelf;
@@ -110,15 +110,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         configId = _configId;
     }
 
-    /**
-     * @notice Sets the Merkle root for claim validation.
-     * @dev Only callable by the contract owner.
-     * @param newMerkleRoot The new Merkle root.
-     */
-    function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
-        merkleRoot = newMerkleRoot;
-        emit MerkleRootUpdated(newMerkleRoot);
-    }
+    // /**
+    //  * @notice Sets the Merkle root for claim validation.
+    //  * @dev Only callable by the contract owner.
+    //  * @param newMerkleRoot The new Merkle root.
+    //  */
+    // function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+    //     merkleRoot = newMerkleRoot;
+    //     emit MerkleRootUpdated(newMerkleRoot);
+    // }
 
     /**
      * @notice Updates the scope used for verification.

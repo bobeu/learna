@@ -48,7 +48,7 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0x09BF4348DEB1D5e929ffa7cd4E07AFc613a13aaC",
+      "Claim": "0xaF75EE2ba38FD796C1d7fb65a3711cC9EcC1b5F4",
       "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
       "GrowToken": "0x4023653853b7D15550067230056b6292cA66B57b",
       "Learna": "0xaB77b8b033a4C5894E6aA39AD5b7185322b31A44"
