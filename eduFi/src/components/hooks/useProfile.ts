@@ -1,8 +1,8 @@
 /* eslint-disable */
 
-import { filterTransactionData, formatAddr, mockCampaign, mockClaimResult, mockEligibility, mockProfile, mockReadProfile, mockWeekProfileData, toBN } from '../utilities';
+import { filterTransactionData, formatAddr, mockCampaign, mockClaimResult, mockProfile, mockReadProfile, mockWeekProfileData, toBN } from '../utilities';
 import { useAccount, useChainId, useConfig, useReadContracts, useReconnect } from 'wagmi';
-import { Address, Campaign, ClaimResult, Eligibility, Profile, WeekData, WeekProfileData } from '../../../types/quiz';
+import { Address, Campaign, ClaimResult, Profile, WeekData, WeekProfileData } from '../../../types/quiz';
 import { Hex, keccak256, stringToHex } from "viem";
 import React from "react";
 import useStorage from './useStorage';
