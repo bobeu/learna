@@ -9,7 +9,7 @@ import {  VerificationConfig, getUniversalLink } from "@selfxyz/core";
 import CustomButton from "../peripherals/CustomButton";
 import AddressWrapper from "../peripherals/AddressFormatter/AddressWrapper";
 
-export default function SelfQRCodeVerifier({ back } : {toggleDrawer: (arg: number) => void, back: () => void}) {
+export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawer: (arg: number) => void, back: () => void}) {
     const [selfApp, setSelfApp] = React.useState<SelfApp | null>(null);
     const [universalLink, setUniversalLink] = React.useState<string>("");
     const [linkCopied, setLinkCopied] = React.useState<boolean>(false);
@@ -96,8 +96,8 @@ export default function SelfQRCodeVerifier({ back } : {toggleDrawer: (arg: numbe
     const handleSuccessfulVerification = () => {
         displayToast("Verification successful! Now claiming...");
         setTimeout(() => {
-            // toggleDrawer(1);
             back();
+            toggleDrawer(1);
         }, 1500);
     };
 

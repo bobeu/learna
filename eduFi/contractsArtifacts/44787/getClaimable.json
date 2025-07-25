@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xF59C5d577283446206FCe1F48Cb6D455b8349631",
+  "contractAddress": "0xC1EbF073260b3F044d1Ea931dCD34DD3D5dc4C3B",
   "functionName": "getClaimable",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -17,34 +17,46 @@
         {
           "components": [
             {
-              "internalType": "bool",
-              "name": "canClaim",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "erc20Amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nativeAmount",
-              "type": "uint256"
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "protocolVerified",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "erc20Amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "nativeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "token",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct ILearna.Eligibility[]",
+              "name": "elgs",
+              "type": "tuple[]"
             },
             {
               "internalType": "uint256",
               "name": "weekId",
               "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
             },
             {
               "internalType": "bool",
@@ -53,11 +65,16 @@
             },
             {
               "internalType": "bool",
-              "name": "isClaimed",
+              "name": "barred",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "claimed",
               "type": "bool"
             }
           ],
-          "internalType": "struct ILearna.Eligibility[]",
+          "internalType": "struct Claim.ClaimResult[]",
           "name": "result",
           "type": "tuple[]"
         }

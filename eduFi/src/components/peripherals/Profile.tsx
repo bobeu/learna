@@ -32,10 +32,10 @@ function ProfileComponent(
                 }
             },
             claimDeadline,
-            campaignHash,
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
+            requestedWeekId,
             totalPointsInRequestedCampaign,
             campaign
         }
@@ -171,7 +171,7 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campainHash={campaignHash}
+                weekId={requestedWeekId}
             />
         </MotionDisplayWrapper>
     );

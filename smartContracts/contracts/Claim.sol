@@ -8,13 +8,13 @@ import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/Saf
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ILearna } from "./interfaces/ILearna.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import { Approved } from "./Approved.sol";
+import { Admins } from "./Admins.sol";
 
 /**
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
+contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // Errors
@@ -35,6 +35,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     event UserIdentifierVerified(address indexed registeredUserIdentifier);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
+    /// @notice Structured data for reading Claimable results 
+    struct ClaimResult {
+        ILearna.Eligibility[] elgs;
+        uint weekId;
+        bool isVerified;
+        bool barred;
+        bool claimed;
+    }
+
     // Learna contract
     ILearna public learna;
 
@@ -47,17 +56,17 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     ///@notice When this flag is turned off, user will need no verification to claim reward
     bool public useSelf;
 
-    // /// @dev All campaigns user registered for a week
-    // mapping(address => bytes32[]) private userCampaigns;
-
-    // /// @dev Mapping showing whether users have registred for a campaign for given week or not
-    // mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
-
     // /// @notice Maps of campaigns to user identifiers to registration status
-    mapping(uint week => mapping(address user => ILearna.Eligibility[])) internal claimables;
+    mapping(uint weekId => mapping(address user => ILearna.Eligibility[])) internal claimables;
 
-    /// @dev User's registered claim. We use this to prevent users from trying to claim twice
-    mapping(uint weekId => mapping(address user => bool)) internal isVerifiedCliam;
+    /// @dev User's registered claim. We use this to prevent users from trying to verify twice
+    mapping(uint weekId => mapping(address user => bool)) internal isVerifiedClaim;
+
+    /// @dev User's claim status. We use this to prevent users from trying to claim twice
+    mapping(uint weekId => mapping(address user => bool)) internal isClaimed;
+
+    // Blacklist
+    mapping(address => bool) internal blacklisted;
 
     modifier whenNotUseSelf {
         require(!useSelf, "In verify mode");
@@ -87,13 +96,19 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         return configId;
     }
 
-    ///@dev Fetches claimable data for a particular wweek, specifically the concluded week if any.
-    function getClaimable(address user) public view returns(ILearna.Eligibility[] memory result) {
+    ///@dev Fetches claimable data for all the wweeks except the current week, specifically the concluded week if any.
+    function getClaimable(address user) public view returns(ClaimResult[] memory result) {
         uint weekIds = learna.getWeek();
         if(weekIds > 0) {
-            weekIds -= 1;
+            result = new ClaimResult[](weekIds);
             for(uint i = 0; i < weekIds; i++){
-                result = claimables[i][user]; 
+                result[i] = ClaimResult(
+                    claimables[i][user], 
+                    i, 
+                    isVerifiedClaim[i][user],
+                    blacklisted[user],
+                    isClaimed[i][user]
+                );
             }
         }
         return result;
@@ -143,19 +158,24 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
 
     /**
      * @dev claim reward
-     * @param campaignHash  : Hash of the selected campaign
+     * @param weekId  : The very weekId user want to claim from
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimReward(bytes32 campaignHash, uint weekId) external nonReentrant returns(bool done) {
+    function claimReward(uint weekId) external nonReentrant returns(bool done) {
         address user = _msgSender();
         ILearna.Eligibility[] memory claims = claimables[weekId][user];
-        require(claims.length > 0, "Nothing to claim");
+        require(isVerifiedClaim[weekId][user] && !blacklisted[user], "Not verified or blacklisted");
+        require(claims.length > 0, "Nothing to claim"); 
+        require(!isClaimed[weekId][user], "Nothing to claim"); 
+        isClaimed[weekId][user] = true;
         for(uint i = 0; i < claims.length; i++) {
             ILearna.Eligibility memory claim = claims[i];
-            claimables[weekId][user][i].erc20Amount = 0;
-            claimables[weekId][user][i].nativeAmount = 0;
-            if(claim.erc20Amount > 0) _claimErc20(user, claim.erc20Amount, IERC20(claim.token)); 
-            if(claim.nativeAmount > 0) _claimNativeToken(user, claim.nativeAmount);
+            if(claim.protocolVerified){
+                claimables[weekId][user][i].erc20Amount = 0;
+                claimables[weekId][user][i].nativeAmount = 0;
+                if(claim.erc20Amount > 0) _claimErc20(user, claim.erc20Amount, IERC20(claim.token)); 
+                if(claim.nativeAmount > 0) _claimNativeToken(user, claim.nativeAmount);
+            }
         }
 
         return done; 
@@ -165,15 +185,17 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
      * @dev Registers user for the claim. 
      * @param user : User account
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
-     * user cannot make eligibity check twice in the same week.
+     * user cannot make eligibity check twice in the same week. 
+     * Note: User cannot verify eligibility for a week twice.
      */
-    function _setClaim(address user) internal returns(bool) {
+    function _setClaim(address user) internal returns(bool _return) {
         (ILearna.Eligibility[] memory eligibilities, uint weekId) = learna.checkEligibility(user);
-        require(!isVerifiedCliam[weekId][user], "Claim already registered");
-        isVerifiedCliam[weekId][user] = true;
+        require(!isVerifiedClaim[weekId][user], "Claim already registered");
+        isVerifiedClaim[weekId][user] = true;
         for(uint i = 0; i < eligibilities.length; i++) {
             claimables[weekId][user].push(eligibilities[i]); 
         }
+        _return = true;
     }
 
     /**
@@ -215,7 +237,6 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
  
         _setClaim(user);
 
-        // Emit registration event
         emit UserIdentifierVerified(user);
     }
 
@@ -223,7 +244,7 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
      * @dev Update learna contract instance address
      */
     function setLearna(address _learna) public onlyOwner {
-        require(_learna != address(learna), "Address is the same");
+        require(_learna != address(learna) && _learna != address(0), "Address is the same or empty");
         learna = ILearna(_learna);
     }
 
@@ -257,4 +278,23 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         }
         return true;
     }
+
+    /**
+     * @dev Remove or add users from the list of campaigns in the current week
+     * @param users : List of users 
+     * @notice Only owner function
+    */
+    function banOrUnbanUser(address[] memory users) public onlyAdmin whenNotPaused  returns(bool) {
+        uint size = users.length;
+        bool[] memory statuses = new bool[](size);
+        for(uint i = 0; i < size; i++) {
+            address user = users[i]; 
+            bool status = blacklisted[user];
+            statuses[i] = !status;
+            blacklisted[user] = !status;
+        }
+        emit ILearna.UserStatusChanged(users, statuses);
+        return true;
+    } 
+
 }

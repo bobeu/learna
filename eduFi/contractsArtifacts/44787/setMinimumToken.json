@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xd99540Ad5407Fa73a09afF2B997A500197193F9b",
+  "contractAddress": "0xEc0DEd828C99763FdBabF1cd4b4B57617C491509",
   "functionName": "setMinimumToken",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -425,19 +425,9 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "bool",
-                  "name": "claimed",
-                  "type": "bool"
-                },
-                {
                   "internalType": "uint8",
                   "name": "totalQuizPerWeek",
                   "type": "uint8"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "blacklisted",
-                  "type": "bool"
                 }
               ],
               "internalType": "struct ILearna.ProfileOther",
@@ -819,21 +809,9 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "status",
-          "type": "bool"
+          "internalType": "bool[]",
+          "name": "newStatus",
+          "type": "bool[]"
         }
       ],
       "name": "UserStatusChanged",
@@ -871,30 +849,6 @@
     {
       "inputs": [
         {
-          "internalType": "address[]",
-          "name": "_users",
-          "type": "address[]"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "banOrUnbanUser",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "user",
           "type": "address"
@@ -906,7 +860,7 @@
           "components": [
             {
               "internalType": "bool",
-              "name": "canClaim",
+              "name": "protocolVerified",
               "type": "bool"
             },
             {
@@ -933,16 +887,6 @@
               "internalType": "bytes32",
               "name": "campaignHash",
               "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "isVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "isClaimed",
-              "type": "bool"
             }
           ],
           "internalType": "struct ILearna.Eligibility[]",
@@ -1174,7 +1118,7 @@
                   "components": [
                     {
                       "internalType": "bool",
-                      "name": "canClaim",
+                      "name": "protocolVerified",
                       "type": "bool"
                     },
                     {
@@ -1201,16 +1145,6 @@
                       "internalType": "bytes32",
                       "name": "campaignHash",
                       "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isVerified",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isClaimed",
-                      "type": "bool"
                     }
                   ],
                   "internalType": "struct ILearna.Eligibility",
@@ -1313,19 +1247,9 @@
                           "type": "uint256"
                         },
                         {
-                          "internalType": "bool",
-                          "name": "claimed",
-                          "type": "bool"
-                        },
-                        {
                           "internalType": "uint8",
                           "name": "totalQuizPerWeek",
                           "type": "uint8"
-                        },
-                        {
-                          "internalType": "bool",
-                          "name": "blacklisted",
-                          "type": "bool"
                         }
                       ],
                       "internalType": "struct ILearna.ProfileOther",

@@ -4,9 +4,8 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
-import { Hex } from 'viem';
 
-export default function ClaimReward({ campainHash, openDrawer, toggleDrawer }: claimProps) {
+export default function ClaimReward({ weekId, openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -25,7 +24,7 @@ export default function ClaimReward({ campainHash, openDrawer, toggleDrawer }: c
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [campainHash],
+                args: [weekId],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -34,7 +33,7 @@ export default function ClaimReward({ campainHash, openDrawer, toggleDrawer }: c
         })
         return transactions;
     
-   }, [td, campainHash]);
+   }, [td, weekId]);
 
     return(
         <Confirmation 
@@ -49,5 +48,5 @@ export default function ClaimReward({ campainHash, openDrawer, toggleDrawer }: c
 type claimProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campainHash: Hex;
+    weekId: bigint;
 };

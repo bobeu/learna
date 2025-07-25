@@ -30,16 +30,6 @@ contract Learna is Campaigns, ReentrancyGuard {
     /// @dev Mapping showing whether users have registred for a campaign for given week or not
     mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
 
-    /**
-     * @dev Mapping of weekId to campaign to user profile
-     * @notice An user can have previous claims
-    */
-
-   modifier validateUser(address target, uint weekId, bytes32 hash_) {
-        require(!learners[weekId][hash_][target].other.blacklisted, "Blacklisted");
-        _;
-   }    
-
     modifier validateAddress(address target) {
         require(target != address(0), "Token is zero");
         _;
@@ -200,17 +190,15 @@ contract Learna is Campaigns, ReentrancyGuard {
         payable
         onlyAdmin
         whenNotPaused 
-        validateUser(user, _getState().weekId, campaignHash)
         returns(bool) 
     { 
         uint weekId = _getState().weekId;
         _forwardFee(msg.value);
-        require(user != address(0), "Invalid user");
+        require(user != address(0), "Invalid user"); 
         _validateCampaign(campaignHash, weekId);
         _checkRegistration(weekId, campaignHash, user);
         GetCampaign memory res = _getCampaign(weekId, campaignHash);
         Profile memory pf = _getProfile(weekId, campaignHash, user);
-        if(pf.other.blacklisted) revert UserBlacklisted();
         require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
     
         unchecked {
@@ -244,39 +232,6 @@ contract Learna is Campaigns, ReentrancyGuard {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                       PUBLIC FUNCTIONS                                    //
     ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * @dev Remove users from the list of campaigns in the current week
-     * @param _users : List of users 
-     * @notice Only owner function
-    */
-    function banOrUnbanUser(
-        address[] memory _users, 
-        bytes32[] memory campaignHashes
-    ) 
-        public 
-        onlyAdmin
-        whenNotPaused 
-        returns(bool) 
-    {
-        uint weekId = _getState().weekId;
-        bool status;
-        for(uint i = 0; i < _users.length; i++) {
-            address user = _users[i];
-            if(user != address(0)) {
-                for(uint j=0; j<campaignHashes.length; j++){
-                    bytes32 campaignHash = campaignHashes[j];
-                    _validateCampaign(campaignHash, weekId);
-                    Profile memory pf = _getProfile(weekId, campaignHash, user);
-                    pf.other.blacklisted = !pf.other.blacklisted;
-                    if(i == 0) status = pf.other.blacklisted;
-                    _setProfile(weekId, campaignHash, user, pf.other);
-                }
-            }
-        }
-        emit UserStatusChanged(_users, weekId, campaignHashes, status);
-        return true;
-    } 
 
      /**
      * @dev Allocate weekly earnings
@@ -392,19 +347,15 @@ contract Learna is Campaigns, ReentrancyGuard {
             }
         }
         (uint erc20, uint native) = _calculateShare(totalScore, cp);
-        bool canClaim = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true;
-        if(canClaim){
-            elg = Eligibility(
-                canClaim,
-                erc20,  
-                native, 
-                weekId, 
-                cp.token, 
-                campaignHash, 
-                false, 
-                false
-            );
-        }
+        bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0) : true;
+        elg = Eligibility(
+            protocolVerified,
+            erc20,  
+            native, 
+            weekId, 
+            cp.token, 
+            campaignHash
+        );
     }
 
     /**
@@ -436,7 +387,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     }
     
     /////////////////////////////////////////////////////////////////////////////////
-    //                          EXTERNAL VIEW FUNCTIONS                            //
+    //                          READ-ONLY FUNCTIONS                                //
     /////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -465,43 +416,6 @@ contract Learna is Campaigns, ReentrancyGuard {
         } 
         return (result, weekId);
     } 
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    //                          EXTERNAL FUNCTIONS                                 //
-    /////////////////////////////////////////////////////////////////////////////////
- 
-    // /**
-    //  * @dev claim reward
-    //  * @param elg : Eligibility object
-    //  * @param sender : User account not msg.sender
-    //  * @notice Users cannot claim for the current week. They can only claim for the week that has ended
-    // */
-    // function onClaimed(Eligibility memory elg, address sender) 
-    //     external
-    //     whenNotPaused 
-    //     onlyApproved
-    //     validateUser(sender, elg.weekId, elg.campaignHash)
-    //     returns(bool) 
-    // {
-    //    GetCampaign memory res = _getCampaign(elg.weekId, elg.campaignHash);
-    //     Profile memory pf = _getProfile(elg.weekId, elg.campaignHash, sender);
-    //     pf.other.claimed = true;
-    //     unchecked {
-    //         if(res.cp.fundsNative > elg.nativeAmount) res.cp.fundsNative -= elg.nativeAmount;
-    //         if(res.cp.fundsERC20 > elg.nativeAmount) res.cp.fundsERC20 -= elg.erc20Amount;
-    //         pf.other.amountClaimedInNative += elg.nativeAmount;
-    //         pf.other.amountClaimedInERC20 += elg.erc20Amount;
-    //     }
-    //     _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
-    //     _setCampaign(res.slot, elg.weekId, res.cp);
- 
-    //     emit ClaimedWeeklyReward(sender, pf, res.cp);
-    //     return true;
-    // }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    //                          READ-ONLY FUNCTIONS                                //
-    /////////////////////////////////////////////////////////////////////////////////
 
     // Fetch past claims
     function getData() public view returns(ReadData memory data) {
@@ -523,21 +437,6 @@ contract Learna is Campaigns, ReentrancyGuard {
     function _getUserCampaignHashes(address user, uint weekId) internal view returns(UserCampaigns memory result) {
         result = UserCampaigns(weekId, userCampaigns[weekId][user]);
     } 
-
-    // /**
-    //  * @dev Return all campaigns the user has participated in for the previous week.
-    //  * If the week has transitioned, otherwise it returns empty array
-    //  * @param user : Target user
-    //  */
-    // function getUserCampaigns(address user) external view returns(bytes32[] memory result) {
-    //     uint weekId = _getState().weekId;
-    //     if(weekId > 0){
-    //         weekId -= 1;
-    //         UserCampaigns[] memory usc = _getUserCampaignHashes(user);
-    //         result = usc[weekId].campaigns;
-    //     }
-    //     return result;
-    // }
 
     // Get user's data for the concluded weeks including current week
     function getProfile(address user) public view returns(WeekProfileData[] memory result) {
