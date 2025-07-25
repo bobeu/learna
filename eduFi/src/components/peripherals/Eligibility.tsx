@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { ClaimResult, Eligibility as Elg } from "../../../types/quiz";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";

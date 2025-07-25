@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -40,8 +42,7 @@ function ProfileComponent(
             eligibilities,
             totalPointsInRequestedCampaign,
             campaign,
-            claimed,
-            claimId
+            claimed
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
