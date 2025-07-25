@@ -90,7 +90,7 @@ try {
                         fs.mkdirSync(dir, { recursive: true });
                     }
                     const stdItemOutPath = path.join(dir, `${item.name}.json`);
-                    console.log("stdItemOutPath", stdItemOutPath);
+                    // console.log("stdItemOutPath", stdItemOutPath);
                     itemOutput.abi = isReadFunction? [item] : artifact.abi;
                     itemOutput.inputCount = inputs.length;
                     itemOutput.functionName = item.name;

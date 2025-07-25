@@ -372,42 +372,38 @@ contract Learna is Campaigns, ReentrancyGuard {
     }
 
     /**
-     * Check reward eligibility for the concluded week
+     * Check reward eligibility for the requested week
      * @param user : Target user
+     * @param weekId : Requested week Id
      * @param campaignHash : Hash of the campaign name
      */
-    function _getEligibility(address user, bytes32 campaignHash) 
+    function _getEligibility(address user, bytes32 campaignHash, uint weekId) 
         internal 
         view 
         returns(Eligibility memory elg) 
     {
-        State memory st = _getState();
-        uint weekId = st.weekId;
-        if(weekId > 0) {
-            weekId --;
-            _validateCampaign(campaignHash, weekId);
-            Campaign memory cp = _getCampaign(weekId, campaignHash).cp;
-            Profile memory pf = _getProfile(weekId, campaignHash, user);
-            uint64 totalScore;
-            for(uint i = 0; i < pf.quizResults.length; i++) { 
-                unchecked {
-                    totalScore += pf.quizResults[i].other.score;
-                }
+        _validateCampaign(campaignHash, weekId);
+        Campaign memory cp = _getCampaign(weekId, campaignHash).cp;
+        Profile memory pf = _getProfile(weekId, campaignHash, user);
+        uint64 totalScore;
+        for(uint i = 0; i < pf.quizResults.length; i++) { 
+            unchecked {
+                totalScore += pf.quizResults[i].other.score;
             }
-            (uint erc20, uint native) = _calculateShare(totalScore, cp);
-            bool canClaim = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true;
-            if(canClaim){
-                elg = Eligibility(
-                    canClaim,
-                    erc20,  
-                    native, 
-                    weekId, 
-                    cp.token, 
-                    campaignHash, 
-                    false, 
-                    false
-                );
-            }
+        }
+        (uint erc20, uint native) = _calculateShare(totalScore, cp);
+        bool canClaim = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && !pf.other.claimed && !pf.other.blacklisted && (cp.fundsNative > 0 || cp.fundsERC20 > 0) && (erc20 > 0 && native > 0) : true;
+        if(canClaim){
+            elg = Eligibility(
+                canClaim,
+                erc20,  
+                native, 
+                weekId, 
+                cp.token, 
+                campaignHash, 
+                false, 
+                false
+            );
         }
     }
 
@@ -447,7 +443,8 @@ contract Learna is Campaigns, ReentrancyGuard {
      * Check Eligibility for all campaigns in the concluded week
      * @param user : User
      * @notice Claim will always be for the concluded week. The position must match and can be extracted directly from 
-     * the frontend when reading the user's campaigns
+     * the frontend when reading the user's campaigns. If current weekId is greater than 0, is an indication that a week was concluded.
+     * Since users can only claim for a concluded week
      */
     function checkEligibility(address user) 
         external 
@@ -458,14 +455,12 @@ contract Learna is Campaigns, ReentrancyGuard {
         
         if(weekId > 0) {
             weekId -= 1;
-            UserCampaigns[] memory campaigns_ = _getUserCampaignHashes(user);
-            UserCampaigns memory usc = campaigns_[weekId];
+            UserCampaigns memory usc = _getUserCampaignHashes(user, weekId);
             uint sSize = usc.campaigns.length;
-            if(sSize > 0) {
-                result = new Eligibility[](sSize);
-                for(uint i = 0; i < sSize; i++){
-                    result[i] = _getEligibility(user, usc.campaigns[i]);
-                }
+            require(sSize > 0, "No participation found for the past week");
+            result = new Eligibility[](sSize);
+            for(uint i = 0; i < sSize; i++){
+                result[i] = _getEligibility(user, usc.campaigns[i], weekId);
             }
         } 
         return (result, weekId);
@@ -523,14 +518,10 @@ contract Learna is Campaigns, ReentrancyGuard {
         return data;
     } 
 
-    /// @dev Fetches all user campaigns for the weeks up to current week
+    /// @dev Fetches all user campaigns for the current week
     /// @param user : target account
-    function _getUserCampaignHashes(address user) internal view returns(UserCampaigns[] memory hashes) {
-        uint weekIds = _getState().weekId + 1;
-        hashes = new UserCampaigns[](weekIds);
-        for(uint i = 0; i < weekIds; i++){
-            hashes[i] = UserCampaigns(i, userCampaigns[i][user]);
-        }
+    function _getUserCampaignHashes(address user, uint weekId) internal view returns(UserCampaigns memory result) {
+        result = UserCampaigns(weekId, userCampaigns[weekId][user]);
     } 
 
     // /**
@@ -563,12 +554,10 @@ contract Learna is Campaigns, ReentrancyGuard {
             for(uint hashId = 0; hashId < hashSize; hashId++) { 
                 bytes32 hash_ = hashes[hashId];
                 campaigns[hashId] = ReadProfile( 
-                    _getEligibility(user, hash_),
+                    _getEligibility(user, hash_, wkId),
                     _getProfile(wkId, hash_, user), 
                     hash_
                 );
-                // if(hashSize > 0) {
-                // }
             }
             result[wkId].campaigns = campaigns;
             
