@@ -19,7 +19,7 @@ interface ILearna {
     event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
-    event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
+    event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
     event Sorted(uint _weekId, uint newWeekId, Initializer[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);

@@ -200,11 +200,27 @@ export default function Educaster() {
         }
     });
 
-    const { weekId, app, state, wkId, weekData, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
-        const weekId = stateData.state.weekId; // Current week Id
-        const state = stateData.state;
+         // Update quiz data
+    React.useEffect(() => {
+        let stateData_ : ReadData = mockReadData;
+        let owner_ : Address = zeroAddress;
+        let admins_ : Admin[] = [mockAdmins];
+        if(result && result.length > 0) {
+            stateData_ = result[1].result as ReadData;
+            admins_ = result[2].result as Admin[];
+            owner_ = result[0].result as Address;
+        }
+        setStateData(stateData_);
+        setAdmins(admins_);
+        setOwner(owner_);
+    }, [result]);
+
+    const { weekId, state, wkId, weekData, app, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
+        const data = stateData?? mockReadData;
+        const weekId = data.state.weekId; // Current week Id
+        const state = data.state;
         const wkId = toBN(weekId.toString()).toNumber();
-        const campaignData : CampaignDatum[] = stateData.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
+        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
             const campaign = hexToString(encoded);
             return {campaignHash, campaign}
         });
@@ -214,7 +230,7 @@ export default function Educaster() {
             return campaign;
         });
         // const owner = result?.[0]?.result as Address || zeroAddress;
-        const weekData = [...stateData.wd];
+        const weekData = [...data.wd];
         const admins = result?.[2]?.result as Admin[] || [mockAdmins];
         // console.log("Admins: ", admins);
         let userAdminStatus = false;
@@ -268,21 +284,6 @@ export default function Educaster() {
             userAdminStatus
         }
     }, [currentPath, stateData]);
-
-     // Update quiz data
-    React.useEffect(() => {
-        let stateData_ : ReadData = mockReadData;
-        let owner_ : Address = zeroAddress;
-        let admins_ : Admin[] = [mockAdmins];
-        if(result && result.length > 0) {
-            stateData_ = result[1].result as ReadData;
-            admins_ = result[2].result as Admin[];
-            owner_ = result[0].result as Address;
-            setStateData(stateData_);
-            setAdmins(admins_);
-            setOwner(owner_);
-        }
-    }, [result]);
 
     return (  
         <StorageContextProvider

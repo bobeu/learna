@@ -391,31 +391,34 @@ contract Learna is Campaigns, ReentrancyGuard {
     /////////////////////////////////////////////////////////////////////////////////
     
     /**
-     * @dev claim reward
-     * @param elg : Eligibility object
+     * @dev Event run after claim is made in claim contract. it updates the user profile and the campaign
+     * @param elgs : All Eligibilities for the requested week
      * @param weekId : Week Id
      * @param sender : User account not msg.sender
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
     */
-    function onClaimed(Eligibility[] memory elg, uint weekId, address sender) 
+    function onClaimed(Eligibility[] memory elgs, uint weekId, address sender) 
         external
         whenNotPaused 
         onlyApproved
         returns(bool) 
     {
-        for(uint i = 0; i < elg.length; i++)
-        GetCampaign memory res = _getCampaign(weekId, elg.campaignHash);
-        Profile memory pf = _getProfile(weekId, elg.campaignHash, sender);
-        unchecked {
-            if(res.cp.fundsNative > elg.nativeAmount) res.cp.fundsNative -= elg.nativeAmount;
-            if(res.cp.fundsERC20 > elg.nativeAmount) res.cp.fundsERC20 -= elg.erc20Amount;
-            pf.other.amountClaimedInNative += elg.nativeAmount;
-            pf.other.amountClaimedInERC20 += elg.erc20Amount;
+        for(uint i = 0; i < elgs.length; i++){
+            Eligibility memory elg = elgs[i];
+            GetCampaign memory res = _getCampaign(weekId, elg.campaignHash);
+            Profile memory pf = _getProfile(weekId, elg.campaignHash, sender);
+            unchecked {
+                if(res.cp.fundsNative > elg.nativeAmount) res.cp.fundsNative -= elg.nativeAmount;
+                if(res.cp.fundsERC20 > elg.nativeAmount) res.cp.fundsERC20 -= elg.erc20Amount;
+                pf.other.amountClaimedInNative += elg.nativeAmount;
+                pf.other.amountClaimedInERC20 += elg.erc20Amount;
+            }
+            _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
+            _setCampaign(res.slot, elg.weekId, res.cp);
+
         }
-        _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
-        _setCampaign(res.slot, elg.weekId, res.cp);
- 
-        emit ClaimedWeeklyReward(sender, pf, res.cp);
+        emit ClaimedWeeklyReward(sender, weekId, elgs);
+
         return true;
     }
     

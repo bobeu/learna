@@ -9,7 +9,7 @@ import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
-import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle} from "lucide-react";
+import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle, Box} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
 import useProfile from "../hooks/useProfile";
@@ -216,7 +216,7 @@ export default function Stats() {
                         <span>Take A Quiz</span>
                     </CustomButton>
                     <CustomButton onClick={goToCampaign} exit={false} disabled={false} overrideClassName="w-2/4">
-                        <ArrowRightCircle className="w-5 h-5" />
+                        <Box className="w-5 h-5" />
                         <span>Campaign</span>
                     </CustomButton>
                 </div>
@@ -261,7 +261,7 @@ export default function Stats() {
             <div className="space-y-4 mb-2">
                 <div className="text-2xl text-left font-bold text-gray-800 mb-2">Weeks Data</div>
                 <div className="w-full flex justify-between items-center gap-2">
-                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                    <div className="w-2/4  md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
                         <SelectComponent 
                             setHash={setCampaignStr}
@@ -270,7 +270,7 @@ export default function Stats() {
                             width="w-"
                         />
                     </div>
-                    <div className="w-2/4 space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                    <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Week</h3>
                          <SelectComponent 
                             setHash={setselectedWeek}
@@ -289,8 +289,8 @@ export default function Stats() {
 
             {/* Admin and Owner only settings */}
             {
-                (userAdminStatus || owner.toLowerCase() === account.toLowerCase()) && 
-                    <div className="" >
+                (userAdminStatus || owner?.toLowerCase() === account.toLowerCase()) && 
+                    <div className="space-y-4 mt-4" >
                         <SortWeeklyPayout /> 
                         <MinimumToken />
                         <TransitionInterval />
@@ -299,7 +299,7 @@ export default function Stats() {
 
             {/* Owner only settings */}
             {
-                owner.toLowerCase() === account.toLowerCase() && <div className="mb-4 w-full">
+                owner?.toLowerCase() === account.toLowerCase() && <div className="mb-4 w-full">
                     <Admins />
                     <SelectComponent 
                         campaigns={['none', 'pause', 'unpause']}
