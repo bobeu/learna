@@ -16,7 +16,6 @@ export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface ProfileReturnType {
     campaign: Campaign;
     profile: Profile;
-    // claimable: Eligibility;
     claimed: boolean;
     claimId: bigint;
     campaignHash: Hex;
@@ -37,14 +36,6 @@ export const mockProfileReturn : ProfileReturnType = {
     requestedWeekId: 0n,
     campaign: mockCampaign,
     campaignHash: toHash('solidity'),
-    // claimable: {
-    //     campaignHash: toHash('solidity'),
-    //     protocolVerified: false,
-    //     erc20Amount: 0n,
-    //     nativeAmount: 0n,
-    //     token: zeroAddress,
-    //     weekId: 0n
-    // },
     claimed: false,
     totalPointsForACampaign: 0,
     totalPointsInRequestedCampaign: 0n
@@ -70,24 +61,12 @@ export const mockProfileReturn : ProfileReturnType = {
     const filteredUserCampaigns = wkFound?.[0]?.campaigns || [mockReadProfile];
     const filteredUser = filteredUserCampaigns.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase());
 
-    console.log("filteredUserCampaigns", filteredUserCampaigns);
     const { eligibility: { protocolVerified, erc20Amount, nativeAmount }, profile, campaignHash } = filteredUser?.[0] || mockReadProfile;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
     const showVerificationButton = protocolVerified && erc20Amount > 0 && nativeAmount > 0n;
     
-    // Search for the corresponding claimable data using the requested  hash 
-    // const claimable_ = claimables.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
-    // const claimable = claimable_?.[0] || mockEligibility;
-
-    // Reward claim criteria. To show withdrawal button, user must have been verified
-    // const showWithdrawalButton = claimable.isVerified && !claimable.isClaimed;
-
-    // Eligibility criteria. To show verification button user must have earned points, week sorted, and have not claim for this campaign
-    // const { other: { claimed }, quizResults,} = userCampaign.profile;
-    // const showVerificationButton = !claimed && (userCampaign.eligibility.erc20Amount > 0n || userCampaign.eligibility.nativeAmount > 0n) && sorted;
-
     // Total points earned in a campaign
     const totalUserPointsForACampaign = profile.quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
     
