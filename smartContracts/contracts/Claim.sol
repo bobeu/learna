@@ -172,7 +172,7 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         require(!isVerifiedCliam[weekId][user], "Claim already registered");
         isVerifiedCliam[weekId][user] = true;
         for(uint i = 0; i < eligibilities.length; i++) {
-            claimables[weekId][user][i] = eligibilities[i]; 
+            claimables[weekId][user].push(eligibilities[i]); 
         }
     }
 
