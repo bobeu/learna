@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x22c7b8300e044d92F02Ca9a32f961aAaCBD812CF",
+  "contractAddress": "0x77F1b718f38fef8E65874A48B84E4304C733B522",
   "functionName": "allowance",
   "inputCount": 2,
   "requireArgUpdate": true,
