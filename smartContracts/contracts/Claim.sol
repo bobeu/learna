@@ -177,7 +177,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
                 if(claim.nativeAmount > 0) _claimNativeToken(user, claim.nativeAmount);
             }
         }
-
+        learna.onClaimed(claims, weekId, user);
         return done; 
     }
 

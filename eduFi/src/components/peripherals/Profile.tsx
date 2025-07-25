@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -13,6 +15,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
+import Eligibiliies from "./Eligibility";
 
 interface ProfileComponentProps {
     fid: number | undefined;
@@ -36,8 +39,10 @@ function ProfileComponent(
             showWithdrawalButton,
             totalPointsForACampaign,
             requestedWeekId,
+            eligibilities,
             totalPointsInRequestedCampaign,
-            campaign
+            campaign,
+            claimed
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
@@ -106,55 +111,64 @@ function ProfileComponent(
                     </div>
                 </div>
 
-                {/* Stats Grid  & QRCode*/}
-                <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Store className="w-8 h-8 text-blue-600" />
+                {/* Eligibiliies */}
+                <Eligibiliies  
+                    eligibilities={eligibilities}
+                />
+
+                {/* Stats Grid*/}
+                <div className="space-y-3">
+                    <div className="text-2xl text-left font-bold text-gray-800 mb-4">Profile Stats</div>
+                    <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8">
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Store className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {totalQuizPerWeek || 0}
+                            </div>
+                            <div className="text-sm text-gray-600">Total Onchain Streak</div>
                         </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {totalQuizPerWeek || 0}
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <IdCard className={`w-8 h-8 text-blue-600`} />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {
+                                    (showVerificationButton && !showWithdrawalButton) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                }
+                                {
+                                    (showWithdrawalButton || claimed ) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                }
+                                {
+                                    (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
+                                }
+                            </div>
+                            <div className="text-sm text-gray-600">Verification status</div>
                         </div>
-                        <div className="text-sm text-gray-600">Total Onchain Streak</div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <HandCoins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Amount of $GROW earned</div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <Coins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Amount of $CELO earned</div>
+                        </div>
                     </div>
 
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <IdCard className={`w-8 h-8 text-blue-600`} />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {
-                                (showVerificationButton && !showWithdrawalButton) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
-                            }
-                            {
-                                showWithdrawalButton && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
-                            }
-                            {
-                                (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
-                            }
-                        </div>
-                        <div className="text-sm text-gray-600">Verification status</div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <HandCoins className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
-                        </div>
-                        <div className="text-sm text-gray-600">Amount of $GROW earned</div>
-                    </div>
-
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Coins className="w-8 h-8 text-purple-600" />
-                        </div>
-                        <div className="text-3xl font-bold text-gray-800 mb-1">
-                            {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
-                        </div>
-                        <div className="text-sm text-gray-600">Amount of $CELO earned</div>
-                    </div>
                 </div>
             </div>
             <CustomButton
@@ -265,7 +279,6 @@ export default function Profile() {
                             width="w-"
                         />
                     </div>
-                    
                 </div>
                 
                 {/* Main profile component */}

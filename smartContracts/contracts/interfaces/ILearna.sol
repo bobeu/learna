@@ -19,7 +19,7 @@ interface ILearna {
     event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
-    event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
+    event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
     event Sorted(uint _weekId, uint newWeekId, Initializer[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);
@@ -161,7 +161,7 @@ interface ILearna {
     }
 
     function checkEligibility(address user) external view returns (Eligibility[] memory, uint weekId);
-    // function onClaimed(Eligibility memory elg, address user) external returns(bool);
+    function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
     // function getUserCampaigns(address user) external view returns(bytes32[] memory);
     function getWeek() external view returns(uint);
 }

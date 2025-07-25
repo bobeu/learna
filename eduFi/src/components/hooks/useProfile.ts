@@ -16,10 +16,10 @@ export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface ProfileReturnType {
     campaign: Campaign;
     profile: Profile;
-    // claimable: Eligibility;
     claimed: boolean;
     claimId: bigint;
     campaignHash: Hex;
+    eligibilities: ClaimResult[];
     requestedWeekId: bigint;
     claimDeadline: number;
     totalPointsForACampaign: number;
@@ -33,18 +33,11 @@ export const mockProfileReturn : ProfileReturnType = {
     showWithdrawalButton: false,
     profile: mockProfile,
     claimDeadline: 0,
+    eligibilities: [mockClaimResult],
     claimId: 0n,
     requestedWeekId: 0n,
     campaign: mockCampaign,
     campaignHash: toHash('solidity'),
-    // claimable: {
-    //     campaignHash: toHash('solidity'),
-    //     protocolVerified: false,
-    //     erc20Amount: 0n,
-    //     nativeAmount: 0n,
-    //     token: zeroAddress,
-    //     weekId: 0n
-    // },
     claimed: false,
     totalPointsForACampaign: 0,
     totalPointsInRequestedCampaign: 0n
@@ -56,38 +49,27 @@ export const mockProfileReturn : ProfileReturnType = {
     const readProfile = stateData.readProfile;
 
     // Filter all the claimables you have for the requested week
-    const filtered_c = claimables.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
+    const eligibilities = claimables?.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId) || [mockClaimResult];
 
     // Find the eligible campaign data for the requested week
-    const { elgs, barred, isVerified, weekId: claimId, claimed } = filtered_c?.[0] || mockClaimResult;
+    const eligibility = eligibilities?.[0] || mockClaimResult;
+    const { elgs, barred, isVerified, weekId: claimId, claimed } = eligibility;
     let showWithdrawalButton = false;
     elgs.forEach(({erc20Amount, nativeAmount, protocolVerified}) => {
         if((erc20Amount > 0n || nativeAmount > 0n) && protocolVerified  && !barred && isVerified && !claimed) showWithdrawalButton = true;
     });
 
     // Filter user profiles using the requestedWkId - Returns all the campaign profiles for that week
-    const wkFound = readProfile.filter((_, i) => i === requestedWkId);
-    const filteredUserCampaigns = wkFound?.[0]?.campaigns || [mockReadProfile];
-    const filteredUser = filteredUserCampaigns.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase());
+    const wkFound = readProfile?.filter((_, i) => i === requestedWkId)?.[0] || [mockWeekProfileData];
+    // const filteredUserCampaigns = wkFound.campaigns;
+    const filteredUser = wkFound.campaigns?.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase())?.[0] ?? mockReadProfile;
 
-    console.log("filteredUserCampaigns", filteredUserCampaigns);
-    const { eligibility: { protocolVerified, erc20Amount, nativeAmount }, profile, campaignHash } = filteredUser?.[0] || mockReadProfile;
+    const { eligibility: { protocolVerified, erc20Amount, nativeAmount }, profile, campaignHash } = filteredUser;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
     const showVerificationButton = protocolVerified && erc20Amount > 0 && nativeAmount > 0n;
     
-    // Search for the corresponding claimable data using the requested  hash 
-    // const claimable_ = claimables.filter(({campaignHash}) => campaignHash.toLowerCase() === requestedHash.toLowerCase());
-    // const claimable = claimable_?.[0] || mockEligibility;
-
-    // Reward claim criteria. To show withdrawal button, user must have been verified
-    // const showWithdrawalButton = claimable.isVerified && !claimable.isClaimed;
-
-    // Eligibility criteria. To show verification button user must have earned points, week sorted, and have not claim for this campaign
-    // const { other: { claimed }, quizResults,} = userCampaign.profile;
-    // const showVerificationButton = !claimed && (userCampaign.eligibility.erc20Amount > 0n || userCampaign.eligibility.nativeAmount > 0n) && sorted;
-
     // Total points earned in a campaign
     const totalUserPointsForACampaign = profile.quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
     
@@ -98,6 +80,7 @@ export const mockProfileReturn : ProfileReturnType = {
     
     return {    
         campaign: generalCampaign,
+        eligibilities,
         claimId,
         requestedWeekId: BigInt(requestedWkId),
         totalPointsInRequestedCampaign: generalCampaign.totalPoints,
@@ -179,13 +162,13 @@ export default function useProfile(){
         // A list of all campaigns that user subscribed to for all concluded weeks excluding the current week
         let claimables : ClaimResult[] = [mockClaimResult];
 
-        if(data) {
+        if(data !== undefined && data.length > 0) {
             // User profile data in all campaigns for all the weeks
-            readProfile = data?.[0].result as WeekProfileData[];
+            readProfile = data[0].result as WeekProfileData[];
 
             // User's claim status for all campaigns that the user subscribed to.
             // Note: User's campaigns is always synced with the claim contract
-            claimables = data?.[1].result as ClaimResult[];
+            claimables = data[1].result as ClaimResult[];
         } else {
             if(!isFetching){
                 const refresh = async() => {
