@@ -3,15 +3,8 @@ pragma solidity 0.8.28;
 
 import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
-
-// import { IIdentityVerificationHubV2 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol";
-// import { SelfStructs } from "@selfxyz/contracts/contracts/libraries/SelfStructs.sol";
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
-
-// import { SelfCircuitLibrary } from "@selfxyz/contracts/contracts/libraries/SelfCircuitLibrary.sol";
-// import { Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ILearna } from "./interfaces/ILearna.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -39,7 +32,7 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     error UserIdentifierAlreadyVerified();
 
     // Events
-    event UserIdentifierVerified(address indexed registeredUserIdentifier, bytes32 indexed campaignHash);
+    event UserIdentifierVerified(address indexed registeredUserIdentifier);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
     // Learna contract
@@ -61,10 +54,10 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     // mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
 
     // /// @notice Maps of campaigns to user identifiers to registration status
-    mapping(bytes32 campaignHash => mapping(address user => ILearna.Eligibility)) internal claimables;
+    mapping(uint week => mapping(address user => ILearna.Eligibility[])) internal claimables;
 
     /// @dev User's registered claim. We use this to prevent users from trying to claim twice
-    mapping(uint weekId => mapping(bytes32 campaignHash => mapping(address user => bool))) internal isVerifiedCliam;
+    mapping(uint weekId => mapping(address user => bool)) internal isVerifiedCliam;
 
     modifier whenNotUseSelf {
         require(!useSelf, "In verify mode");
@@ -96,12 +89,13 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
 
     ///@dev Fetches claimable data for a particular wweek, specifically the concluded week if any.
     function getClaimable(address user) public view returns(ILearna.Eligibility[] memory result) {
-        bytes32[] memory hashes = learna.getUserCampaigns(user);
-        uint totalCampaign = hashes.length; 
-        result = new ILearna.Eligibility[](totalCampaign);
-        for(uint i = 0; i < totalCampaign; i++){
-            result[i] = claimables[hashes[i]][user]; 
-        } 
+        uint weekIds = learna.getWeek();
+        if(weekIds > 0) {
+            weekIds -= 1;
+            for(uint i = 0; i < weekIds; i++){
+                result = claimables[i][user]; 
+            }
+        }
         return result;
     }
 
@@ -109,16 +103,6 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     function setConfigId(bytes32 _configId) external onlyOwner {
         configId = _configId;
     }
-
-    // /**
-    //  * @notice Sets the Merkle root for claim validation.
-    //  * @dev Only callable by the contract owner.
-    //  * @param newMerkleRoot The new Merkle root.
-    //  */
-    // function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
-    //     merkleRoot = newMerkleRoot;
-    //     emit MerkleRootUpdated(newMerkleRoot);
-    // }
 
     /**
      * @notice Updates the scope used for verification.
@@ -162,62 +146,55 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
      * @param campaignHash  : Hash of the selected campaign
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimReward(bytes32 campaignHash) external nonReentrant returns(bool done) {
-        ILearna.Eligibility memory clm = claimables[campaignHash][_msgSender()];
-        if(useSelf){
-            if(!clm.isVerified) revert NotVerified();
+    function claimReward(bytes32 campaignHash, uint weekId) external nonReentrant returns(bool done) {
+        address user = _msgSender();
+        ILearna.Eligibility[] memory claims = claimables[weekId][user];
+        require(claims.length > 0, "Nothing to claim");
+        for(uint i = 0; i < claims.length; i++) {
+            ILearna.Eligibility memory claim = claims[i];
+            claimables[weekId][user][i].erc20Amount = 0;
+            claimables[weekId][user][i].nativeAmount = 0;
+            if(claim.erc20Amount > 0) _claimErc20(user, claim.erc20Amount, IERC20(claim.token)); 
+            if(claim.nativeAmount > 0) _claimNativeToken(user, claim.nativeAmount);
         }
-        if(clm.isClaimed) revert AlreadyClaimed();
-        clm.isClaimed = true;
-        claimables[campaignHash][_msgSender()] = clm;
-        require(clm.erc20Amount > 0 || clm.nativeAmount > 0, "No claim found");
-        done = learna.onClaimed(clm, _msgSender());
-        if(clm.erc20Amount > 0) _claimErc20(_msgSender(), clm.erc20Amount, IERC20(clm.token)); 
-        if(clm.nativeAmount > 0) _claimNativeToken(_msgSender(), clm.nativeAmount);
+
         return done; 
     }
 
     /**
      * @dev Registers user for the claim. 
-     * @param campaignSlot : Campaign hash
      * @param user : User account
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      */
-    function _setClaim(uint campaignSlot, address user) internal returns(bytes32 hash_) {
-        ILearna.Eligibility memory elg = learna.checkEligibility(user, campaignSlot);
-        require(!isVerifiedCliam[elg.weekId][elg.campaignHash][user], "Claim already registered");
-        require(elg.canClaim, "Not sorted or eligible");
-        isVerifiedCliam[elg.weekId][elg.campaignHash][user] = true;
-        unchecked {
-            require((elg.nativeAmount + elg.erc20Amount) > 0, "Not sorted or nothing to claim");
+    function _setClaim(address user) internal returns(bool) {
+        (ILearna.Eligibility[] memory eligibilities, uint weekId) = learna.checkEligibility(user);
+        require(!isVerifiedCliam[weekId][user], "Claim already registered");
+        isVerifiedCliam[weekId][user] = true;
+        for(uint i = 0; i < eligibilities.length; i++) {
+            claimables[weekId][user][i] = eligibilities[i]; 
         }
-        require(elg.token != address(0), "Token address is empty");
-        claimables[elg.campaignHash][user] = elg;
-        hash_ = elg.campaignHash;
     }
 
     /**
      * @dev Registers user for the claim. 
-     * @param campaignSlot : User Campaign slot
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
-    function setClaim(uint campaignSlot) external whenNotUseSelf returns(bytes32) {
-        return _setClaim(campaignSlot, _msgSender());
+    function setClaim() external whenNotUseSelf returns(bool) {
+        return _setClaim(_msgSender());
     }
  
     /**
      * @dev Manually registers user for the claim. 
-     * @param campaignSlot : Campaign hash
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
      * Must not be using Self verification.
      */
-    function setClaim(uint campaignSlot, address user) external whenNotUseSelf onlyApproved returns(bytes32) {
-        return _setClaim(campaignSlot, user);
+    function setClaim(address user) external whenNotUseSelf onlyApproved returns(bool) {
+        return _setClaim(user);
     }
  
     /**
@@ -231,18 +208,15 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
     ) internal override {
         require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
-        // Decode and use the data
-        uint8 campaignSlot = uint8(userData[0]); 
         require(output.userIdentifier > 0, "InvalidUserIdentifier");
 
         // if(bytes(output.nationality).length == 0) revert NationalityRequired();
         // Check that user age is min 16
  
-        bytes32 campaignHash = _setClaim(campaignSlot, user);
-        claimables[campaignHash][user].isVerified = true;
+        _setClaim(user);
 
         // Emit registration event
-        emit UserIdentifierVerified(user, campaignHash);
+        emit UserIdentifierVerified(user);
     }
 
     /**
@@ -284,12 +258,3 @@ contract Claim is SelfVerificationRoot, Approved, ReentrancyGuard {
         return true;
     }
 }
-
-// https://docs.self.xyz/concepts/user-context-data
-//  unchecked {
-//             if (!MerkleProof.verify(
-//                 merkleProof, 
-//                 merkleRoot, 
-//                 keccak256(abi.encodePacked(claimIndex, _msgSender(), clm.erc20Amount + clm.nativeAmount))
-//             )) revert InvalidProof();
-//         }

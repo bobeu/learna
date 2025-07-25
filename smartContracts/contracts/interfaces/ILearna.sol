@@ -169,7 +169,8 @@ interface ILearna {
         bytes32[] campaigns;
     }
 
-    function checkEligibility(address user,  uint userCampaignSlot) external view returns (Eligibility memory);
-    function onClaimed(Eligibility memory elg, address user) external returns(bool);
-    function getUserCampaigns(address user) external view returns(bytes32[] memory);
+    function checkEligibility(address user) external view returns (Eligibility[] memory, uint weekId);
+    // function onClaimed(Eligibility memory elg, address user) external returns(bool);
+    // function getUserCampaigns(address user) external view returns(bytes32[] memory);
+    function getWeek() external view returns(uint);
 }

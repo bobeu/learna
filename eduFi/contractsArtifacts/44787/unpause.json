@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x55c3502CddD8749bA1a69ca5E150fe9486A6B916",
+  "contractAddress": "0xE8AA362e43dAA4A38557483B6842C80f60Ff127E",
   "functionName": "unpause",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -898,11 +898,6 @@
           "internalType": "address",
           "name": "user",
           "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "userCampaignSlot",
-          "type": "uint256"
         }
       ],
       "name": "checkEligibility",
@@ -950,9 +945,14 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct ILearna.Eligibility",
+          "internalType": "struct ILearna.Eligibility[]",
           "name": "result",
-          "type": "tuple"
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1357,19 +1357,13 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "getUserCampaigns",
+      "inputs": [],
+      "name": "getWeek",
       "outputs": [
         {
-          "internalType": "bytes32[]",
-          "name": "result",
-          "type": "bytes32[]"
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1392,72 +1386,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "bool",
-              "name": "canClaim",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "erc20Amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nativeAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "isVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "isClaimed",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct ILearna.Eligibility",
-          "name": "elg",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "onClaimed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

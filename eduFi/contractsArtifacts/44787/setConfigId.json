@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x3Eb6f62689ff194485232ffE3a6237C726f7b94E",
+  "contractAddress": "0x751c03a95076B1f8CAb2bA1100577fD388Ff0B6B",
   "functionName": "setConfigId",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -243,12 +243,6 @@
           "internalType": "address",
           "name": "registeredUserIdentifier",
           "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
         }
       ],
       "name": "UserIdentifierVerified",
@@ -260,6 +254,11 @@
           "internalType": "bytes32",
           "name": "campaignHash",
           "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
         }
       ],
       "name": "claimReward",
@@ -475,11 +474,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "campaignSlot",
-          "type": "uint256"
-        },
-        {
           "internalType": "address",
           "name": "user",
           "type": "address"
@@ -488,28 +482,22 @@
       "name": "setClaim",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "bool",
           "name": "",
-          "type": "bytes32"
+          "type": "bool"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "campaignSlot",
-          "type": "uint256"
-        }
-      ],
+      "inputs": [],
       "name": "setClaim",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "bool",
           "name": "",
-          "type": "bytes32"
+          "type": "bool"
         }
       ],
       "stateMutability": "nonpayable",
