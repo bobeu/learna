@@ -8,7 +8,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, Category, CData, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, Category, CData, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -51,14 +51,12 @@ export const mockAdmins : Admin = {
 }
 
 export const mockEligibility : Eligibility = {
-  canClaim: false,
+  protocolVerified: false,
   erc20Amount: 0n,
   nativeAmount: 0n,
   weekId: 0n,
   token: `0x`,
-  campaignHash: `0x`,
-  isVerified: false,
-  isClaimed: false
+  campaignHash: `0x`
 }
 
 export const mockProfile : Profile = {
@@ -180,6 +178,14 @@ export const mockQuizResult : QuizResultInput = {
     timeSpent: 0,
     completedAt: new Date().toString(),
   }
+}
+
+export const mockClaimResult : ClaimResult = {
+  elgs: [0, 1].map(() => mockEligibility),
+  weekId: 0n,
+  isVerified: false,
+  barred: false,
+  claimed: false
 }
 
 /**

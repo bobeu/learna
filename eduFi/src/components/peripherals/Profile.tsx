@@ -32,10 +32,10 @@ function ProfileComponent(
                 }
             },
             claimDeadline,
-            campaignHash,
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
+            requestedWeekId,
             totalPointsInRequestedCampaign,
             campaign
         }
@@ -127,7 +127,7 @@ function ProfileComponent(
                                 (showVerificationButton && !showWithdrawalButton) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                             }
                             {
-                                (showVerificationButton && showWithdrawalButton) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                showWithdrawalButton && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                             }
                             {
                                 (!showVerificationButton && !showWithdrawalButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
@@ -171,7 +171,7 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campainHash={campaignHash}
+                weekId={requestedWeekId}
             />
         </MotionDisplayWrapper>
     );

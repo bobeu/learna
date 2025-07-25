@@ -22,7 +22,7 @@ interface ILearna {
     event ClaimedWeeklyReward(address indexed user, Profile profile, Campaign cp);
     event Sorted(uint _weekId, uint newWeekId, Initializer[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
-    event UserStatusChanged(address[] users, uint weekId, bytes32[] campaignHashes, bool status);
+    event UserStatusChanged(address[] users, bool[] newStatus);
 
     struct Campaign {
         uint256 fundsNative;
@@ -118,15 +118,8 @@ interface ILearna {
         uint amountMinted;
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
-        bool claimed;
         uint8 totalQuizPerWeek;
-        bool blacklisted;
     }
-
-    // struct UserCampaign {
-    //     bytes32 hash_;
-    //     bool registered;
-    // }
 
     struct Profile {
         QuizResult[] quizResults;
@@ -154,14 +147,12 @@ interface ILearna {
     }
 
     struct Eligibility {
-        bool canClaim;
+        bool protocolVerified;
         uint erc20Amount;
         uint nativeAmount;
         uint weekId;
         address token;
         bytes32 campaignHash;
-        bool isVerified;
-        bool isClaimed;
     }
 
     struct UserCampaigns {

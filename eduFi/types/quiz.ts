@@ -227,6 +227,14 @@ export interface WeekProfileData {
   campaigns: Readonly<ReadProfile[]>;
 }
 
+export interface ClaimResult {
+  elgs: Readonly<Eligibility[]>;
+  weekId: bigint;
+  isVerified: boolean;
+  barred: boolean;
+  claimed: boolean;
+}
+
 export interface CampaignData {
   campaignHash: Hex;
   encoded: Hex;
@@ -315,14 +323,12 @@ export interface CampaignDatum {
 }
 
 export interface Eligibility {
-  canClaim: boolean;
+  protocolVerified: boolean;
   erc20Amount: bigint;
   nativeAmount: bigint;
   weekId: bigint;
   token: Address;
   campaignHash: Hex;
-  isVerified: boolean;
-  isClaimed: boolean;
 }
 
 export interface Admin {

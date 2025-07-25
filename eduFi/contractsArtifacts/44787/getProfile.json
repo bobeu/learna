@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xd99540Ad5407Fa73a09afF2B997A500197193F9b",
+  "contractAddress": "0xEc0DEd828C99763FdBabF1cd4b4B57617C491509",
   "functionName": "getProfile",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -27,7 +27,7 @@
                   "components": [
                     {
                       "internalType": "bool",
-                      "name": "canClaim",
+                      "name": "protocolVerified",
                       "type": "bool"
                     },
                     {
@@ -54,16 +54,6 @@
                       "internalType": "bytes32",
                       "name": "campaignHash",
                       "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isVerified",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isClaimed",
-                      "type": "bool"
                     }
                   ],
                   "internalType": "struct ILearna.Eligibility",
@@ -166,19 +156,9 @@
                           "type": "uint256"
                         },
                         {
-                          "internalType": "bool",
-                          "name": "claimed",
-                          "type": "bool"
-                        },
-                        {
                           "internalType": "uint8",
                           "name": "totalQuizPerWeek",
                           "type": "uint8"
-                        },
-                        {
-                          "internalType": "bool",
-                          "name": "blacklisted",
-                          "type": "bool"
                         }
                       ],
                       "internalType": "struct ILearna.ProfileOther",
