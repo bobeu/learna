@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from "react";
-import { ClaimResult, Eligibility as Elg } from "../../../types/quiz";
+import { ClaimResult, Eligibility as Elg} from "../../../types/quiz";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import { LucideBox, Verified, Brackets, Coins, IdCard } from "lucide-react";
@@ -9,10 +9,12 @@ import { formatValue, mockClaimResult, mockEligibility } from "../utilities";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
 
-function Eligibility({eligibility}: {eligibility: Elg}) {
+function Eligibility({eligibility : elg}: {eligibility: Elg}) {
+    let eligibility : Elg = mockEligibility;
+    if(!elg && elg !== undefined) eligibility = elg;
     const { campaignHash, erc20Amount, nativeAmount, protocolVerified, token, weekId } = eligibility || mockEligibility;
     const { campaignData } = useStorage();
-    const myCampaign = campaignData.filter(q => q.campaignHash.toLowerCase() === campaignHash.toLowerCase());
+    const myCampaign = campaignData?.filter(q => q.campaignHash.toLowerCase() === campaignHash?.toLowerCase());
 
     return(
         <MotionDisplayWrapper>
@@ -28,19 +30,19 @@ function Eligibility({eligibility}: {eligibility: Elg}) {
                 </div>
                 <div className="glass-card rounded-xl p-4">
                     <div className="flex items-center justify-center mb-3">
-                        <Verified className={`w-8 h-8${protocolVerified? 'text-green-600' : 'text-orange-600'}`} />
+                        <Verified className={`w-8 h-8 ${protocolVerified? 'text-green-600' : 'text-orange-600'}`} />
                     </div>
                     <div className="text-xl text-gray-800 mb-1">
                         {protocolVerified? 'Verified' : 'No claim'}
                     </div>
-                    <div className="text-sm text-gray-600">Protocol verified</div>
+                    <div className="text-sm text-gray-600">Protocol eligibility</div>
                 </div>
                 <div className="glass-card rounded-xl p-4">
                     <div className="flex items-center justify-center mb-3">
                         <Brackets className={`w-8 h-8 text-blue-600`} /> 
                     </div>
                     <div className="text-xl text-gray-800 mb-1">
-                        {weekId.toString()}
+                        {weekId?.toString()}
                     </div>
                     <div className="text-sm text-gray-600">Week Id</div>
                 </div>
@@ -62,7 +64,7 @@ function Eligibility({eligibility}: {eligibility: Elg}) {
                         <Coins className={`w-8 h-8 text-blue-600`} /> 
                     </div>
                     <div className="text-xl text-gray-800 mb-1">
-                       { formatValue(erc20Amount.toString()).toStr }
+                       { formatValue(erc20Amount?.toString()).toStr }
                     </div>
                     <div className="text-sm text-gray-600">Reward In Token</div>
                 </div>
@@ -71,7 +73,7 @@ function Eligibility({eligibility}: {eligibility: Elg}) {
                         <Coins className={`w-8 h-8 text-yellow-600`} /> 
                     </div>
                     <div className="text-xl text-gray-800 mb-1">
-                       { formatValue(nativeAmount.toString()).toStr }
+                       { formatValue(nativeAmount?.toString()).toStr }
                     </div>
                     <div className="text-sm text-gray-600">Reward In $CELO</div>
                 </div>
@@ -97,12 +99,11 @@ export default function Eligibiliies({eligibilities}: {eligibilities: ClaimResul
 
     const { eligibility, weekIds } = React.useMemo(() => {
         const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-        const filteredByWk = eligibilities.filter(q => q.weekId.toString() === requestedWkId && q) || [mockClaimResult];
-        const filtered = filteredByWk[0].elgs?.filter(q => q.campaignHash.toLowerCase() === requestedHash.toLowerCase()) || [mockEligibility]; 
-        const eligibility = filtered[0];
+        const filteredByWk = eligibilities.filter(q => q.weekId.toString() === requestedWkId && q)?.[0]?? mockClaimResult;
+        const eligibility = filteredByWk?.elgs?.filter(q => q.campaignHash.toLowerCase() === requestedHash.toLowerCase())?.[0]?? [mockEligibility]; 
 
         return { eligibility, weekIds };
-    }, [eligibilities, requestedHash, requestedWkId]);
+    }, [eligibilities, requestedHash, wkId, requestedWkId]);
     
     return(
         <div className="font-mono grid grid-cols-1 gap-3">

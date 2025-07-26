@@ -48,7 +48,7 @@ export const QuizInterface = () => {
       quizResults.forEach(({answers: answs}) => {
         for(let i = 0; i < answs.length; i++) {
           const questionHash = hexToString(answs[i].questionHash as Hex);
-          if(questionHash.toLowerCase() === hash.toLowerCase()){
+          if(questionHash?.toLowerCase() === hash?.toLowerCase()){
             taken = true;
             break;
           }
