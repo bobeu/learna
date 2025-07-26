@@ -45,6 +45,7 @@ export const mockProfileReturn : ProfileReturnType = {
 
  const formatData = (stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex) : ProfileReturnType => {
     // const reqWeek = BigInt(requestedWkId);
+    // if(stateData && stateData.claimables && stateData.claimables.length > 0 && )
     const claimables = stateData.claimables;
     const readProfile = stateData.readProfile;
 
@@ -169,6 +170,7 @@ export default function useProfile(){
             // User's claim status for all campaigns that the user subscribed to.
             // Note: User's campaigns is always synced with the claim contract
             claimables = data[1].result as ClaimResult[];
+            if(claimables && claimables.length === 0) claimables = [mockClaimResult];
         } else {
             if(!isFetching){
                 const refresh = async() => {
