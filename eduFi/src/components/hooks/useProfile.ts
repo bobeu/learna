@@ -19,7 +19,7 @@ export interface ProfileReturnType {
     claimed: boolean;
     claimId: bigint;
     campaignHash: Hex;
-    eligibilities: ClaimResult[];
+    eligibility: ClaimResult;
     requestedWeekId: bigint;
     claimDeadline: number;
     totalPointsForACampaign: number;
@@ -33,7 +33,7 @@ export const mockProfileReturn : ProfileReturnType = {
     showWithdrawalButton: false,
     profile: mockProfile,
     claimDeadline: 0,
-    eligibilities: [mockClaimResult],
+    eligibility: mockClaimResult,
     claimId: 0n,
     requestedWeekId: 0n,
     campaign: mockCampaign,
@@ -50,10 +50,9 @@ export const mockProfileReturn : ProfileReturnType = {
     const readProfile = stateData.readProfile;
 
     // Filter all the claimables you have for the requested week
-    const eligibilities = claimables?.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId) || [mockClaimResult];
+    const eligibility = claimables?.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId)?.[0] || mockClaimResult;
 
     // Find the eligible campaign data for the requested week
-    const eligibility = eligibilities?.[0] || mockClaimResult;
     const { elgs, barred, isVerified, weekId: claimId, claimed } = eligibility;
     let showWithdrawalButton = false;
     elgs.forEach(({erc20Amount, nativeAmount, protocolVerified}) => {
@@ -81,7 +80,7 @@ export const mockProfileReturn : ProfileReturnType = {
     
     return {    
         campaign: generalCampaign,
-        eligibilities,
+        eligibility,
         claimId,
         requestedWeekId: BigInt(requestedWkId),
         totalPointsInRequestedCampaign: generalCampaign.totalPoints,

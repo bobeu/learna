@@ -15,7 +15,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
-import Eligibiliies from "./Eligibility";
+import Eligibiliies from "./Eligibilities";
 
 interface ProfileComponentProps {
     fid: number | undefined;
@@ -39,7 +39,7 @@ function ProfileComponent(
             showWithdrawalButton,
             totalPointsForACampaign,
             requestedWeekId,
-            eligibilities,
+            eligibility,
             totalPointsInRequestedCampaign,
             campaign,
             claimed
@@ -113,7 +113,7 @@ function ProfileComponent(
 
                 {/* Eligibiliies */}
                 <Eligibiliies  
-                    eligibilities={eligibilities}
+                    eligibility={eligibility}
                 />
 
                 {/* Stats Grid*/}
