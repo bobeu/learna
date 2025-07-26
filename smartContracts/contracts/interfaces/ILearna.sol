@@ -162,6 +162,5 @@ interface ILearna {
 
     function checkEligibility(address user) external view returns (Eligibility[] memory, uint weekId);
     function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
-    // function getUserCampaigns(address user) external view returns(bytes32[] memory);
     function getWeek() external view returns(uint);
 }

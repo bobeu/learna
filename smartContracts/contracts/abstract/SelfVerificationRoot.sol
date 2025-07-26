@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
-import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+import {IIdentityVerificationHubV2} from "../interfaces/self/IIdentityVerificationHubV2.sol";
+import {ISelfVerificationRoot} from "../interfaces/self/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 

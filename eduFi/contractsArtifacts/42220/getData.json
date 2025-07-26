@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x78D92f85045cE169877f31A7424899B4Da83F2B4",
+  "contractAddress": "0xd89B1C85a2BFc115AC6e849a05C20866B466fcE5",
   "functionName": "getData",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -23,17 +23,27 @@
                   "type": "uint64"
                 },
                 {
+                  "internalType": "uint64",
+                  "name": "transitionDate",
+                  "type": "uint64"
+                },
+                {
                   "internalType": "uint256",
-                  "name": "weekCounter",
+                  "name": "weekId",
                   "type": "uint256"
                 }
               ],
-              "internalType": "struct Learna.State",
+              "internalType": "struct ILearna.State",
               "name": "state",
               "type": "tuple"
             },
             {
               "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                },
                 {
                   "components": [
                     {
@@ -60,16 +70,6 @@
                       "internalType": "uint256",
                       "name": "activeLearners",
                       "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "transitionDate",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "claimActiveUntil",
-                      "type": "uint64"
                     },
                     {
                       "internalType": "address",
@@ -104,22 +104,54 @@
                           "type": "bytes"
                         }
                       ],
-                      "internalType": "struct Campaigns.CampaignData",
+                      "internalType": "struct ILearna.CampaignData",
                       "name": "data",
                       "type": "tuple"
                     }
                   ],
-                  "internalType": "struct Campaigns.Campaign[]",
+                  "internalType": "struct ILearna.Campaign[]",
                   "name": "campaigns",
                   "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "claimDeadline",
+                  "type": "uint96"
                 }
               ],
-              "internalType": "struct Learna.WeekData[]",
+              "internalType": "struct ILearna.WeekData[]",
               "name": "wd",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "initialized",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "index",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "hash_",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct ILearna.Initializer[]",
+              "name": "approved",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct Learna.ReadData",
+          "internalType": "struct ILearna.ReadData",
           "name": "data",
           "type": "tuple"
         }

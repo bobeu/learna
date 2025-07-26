@@ -39,12 +39,12 @@ import allowance42220 from "./contractsArtifacts/42220/allowance.json";
 import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransitionInterval.json";
 import adjustCampaignValues42220 from "./contractsArtifacts/42220/adjustCampaignValues.json";
 import globalData from "./contractsArtifacts/global.json";
-// import getAdmins42220 from "./contractsArtifacts/42220/getAdmins.json";
-// import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
-// import configId44787 from "./contractsArtifacts/44787/configId.json";
-// import getClaimable44787 from "./contractsArtifacts/44787/getClaimable.json";
-// import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
-// import setScope44787 from "./contractsArtifacts/44787/setScope.json";
+import getAdmins42220 from "./contractsArtifacts/42220/getAdmins.json";
+import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
+import configId42220 from "./contractsArtifacts/44787/configId.json";
+import getClaimable42220 from "./contractsArtifacts/44787/getClaimable.json";
+import setConfigId42220 from "./contractsArtifacts/44787/setConfigId.json";
+import setScope42220 from "./contractsArtifacts/44787/setScope.json";
 
 const { chainIds, approvedFunctions } = globalData;
 
@@ -74,7 +74,7 @@ const functionData = [
         { key: 'getClaimable', value: { ...getClaimable44787} },
     ],
     [
-        // { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
+        { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
         { key: 'owner', value: { ...owner42220} },
         { key: 'pause', value: { ...pause42220} },
         { key: 'unpause', value: { ...unpause42220} },
@@ -91,11 +91,11 @@ const functionData = [
         { key: 'setAdmin', value: { ...setAdmin42220} },
         { key: 'setTransitionInterval', value: { ...setTransitionInterval42220} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues42220} },
-        // { key: 'getAdmins', value: { ...getAdmins42220} },
-        // { key: 'configId', value: { ...configId42220} },
-        // { key: 'setConfigId', value: { ...setConfigId42220} },
-        // { key: 'setScope', value: { ...setScope42220} },
-        // { key: 'getClaimable', value: { ...getClaimable42220} },
+        { key: 'getAdmins', value: { ...getAdmins42220} },
+        { key: 'configId', value: { ...configId42220} },
+        { key: 'setConfigId', value: { ...setConfigId42220} },
+        { key: 'setScope', value: { ...setScope42220} },
+        { key: 'getClaimable', value: { ...getClaimable42220} },
     ]
 ];
 

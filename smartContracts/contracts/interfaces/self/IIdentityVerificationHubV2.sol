@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
-import {SelfStructs} from "../libraries/SelfStructs.sol";
+import {SelfStructs} from "../../libraries/SelfStructs.sol";
 
 /**
  * @title IIdentityVerificationHubV2

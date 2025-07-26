@@ -98,7 +98,7 @@ function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, t
 
             {/* Allocations */}
             <div className="space-y-4">
-                <div className="text-lg text-left font-semibold text-gray-800 mb-2">Funds</div>
+                <div className="text-lg text-left font-semibold text-gray-800 mb-2">Funds left</div>
                 <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
                     <div className="glass-card rounded-xl p-4">
                         <div className="flex items-center justify-center mb-3">

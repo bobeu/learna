@@ -16,6 +16,10 @@ export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface ProfileReturnType {
     campaign: Campaign;
     profile: Profile;
+    protocolReward: {
+        erc20Amount: bigint;
+        nativeAmount: bigint;
+    };
     claimed: boolean;
     claimId: bigint;
     campaignHash: Hex;
@@ -32,6 +36,10 @@ export const mockProfileReturn : ProfileReturnType = {
     showVerificationButton: false,
     showWithdrawalButton: false,
     profile: mockProfile,
+    protocolReward: {
+        erc20Amount: 0n,
+        nativeAmount: 0n
+    }, 
     claimDeadline: 0,
     eligibility: mockClaimResult,
     claimId: 0n,
@@ -61,14 +69,15 @@ export const mockProfileReturn : ProfileReturnType = {
 
     // Filter user profiles using the requestedWkId - Returns all the campaign profiles for that week
     const wkFound = readProfile?.filter((_, i) => i === requestedWkId)?.[0] || [mockWeekProfileData];
-    // const filteredUserCampaigns = wkFound.campaigns;
-    const filteredUser = wkFound.campaigns?.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase())?.[0] ?? mockReadProfile;
 
-    const { eligibility: { protocolVerified, erc20Amount, nativeAmount }, profile, campaignHash } = filteredUser;
+    // const filteredUserCampaigns = wkFound.campaigns;
+    const filteredUser = wkFound.campaigns?.filter(({campaignHash}) => campaignHash.toLowerCase() == requestedHash.toLowerCase())?.[0] || mockReadProfile;
+
+    const { eligibility: { protocolVerified, ...rest }, profile, campaignHash } = filteredUser;
 
     // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
     // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
-    const showVerificationButton = protocolVerified && erc20Amount > 0 && nativeAmount > 0n;
+    const showVerificationButton = protocolVerified && rest?.erc20Amount > 0 && rest?.nativeAmount > 0n;
     
     // Total points earned in a campaign
     const totalUserPointsForACampaign = profile.quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
@@ -79,6 +88,7 @@ export const mockProfileReturn : ProfileReturnType = {
     const generalCampaign = filtered?.[0] || mockCampaign;
     
     return {    
+        protocolReward: { ...rest },
         campaign: generalCampaign,
         eligibility,
         claimId,
