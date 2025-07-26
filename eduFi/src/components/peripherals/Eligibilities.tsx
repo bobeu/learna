@@ -101,7 +101,7 @@ export default function Eligibiliies({eligibility: elg}: {eligibility: ClaimResu
         <div className="font-mono grid grid-cols-1 gap-3">
             <div className="text-2xl text-left font-bold text-gray-800 mb-4">Reward Eligibility</div>
             <div className="flex justify-end max-w-sm md:max-w-md">
-                <div className="w-2/4 text-start text-sm p-4 bg-white rounded-xl">
+                <div className="w-full md:w-2/4 text-start text-sm p-4 bg-white rounded-xl">
                     <h3 className="pl-2">Pick a Campaign</h3>
                     <SelectComponent 
                         setHash={setHash}

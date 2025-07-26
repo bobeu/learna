@@ -413,8 +413,8 @@ contract Learna is Campaigns, ReentrancyGuard {
                 pf.other.amountClaimedInNative += elg.nativeAmount;
                 pf.other.amountClaimedInERC20 += elg.erc20Amount;
             }
-            _setProfile(elg.weekId, elg.campaignHash, sender, pf.other);
-            _setCampaign(res.slot, elg.weekId, res.cp);
+            _setProfile(weekId, elg.campaignHash, sender, pf.other);
+            _setCampaign(res.slot, weekId, res.cp);
 
         }
         emit ClaimedWeeklyReward(sender, weekId, elgs);

@@ -170,6 +170,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         isClaimed[weekId][user] = true;
         for(uint i = 0; i < claims.length; i++) {
             ILearna.Eligibility memory claim = claims[i];
+            require(claim.weekId == weekId, "WeekId mismatched");
             if(claim.protocolVerified){
                 claimables[weekId][user][i].erc20Amount = 0;
                 claimables[weekId][user][i].nativeAmount = 0;

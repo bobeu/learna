@@ -1,17 +1,17 @@
 {
-  "contractAddress": "0xDC34Ba11f7A4DC988b8359465787338E5a5EDA04",
-  "functionName": "owner",
+  "contractAddress": "0x2082625E83E04776Ea33C10d97AeE1A356a5aE47",
+  "functionName": "configId",
   "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {
       "inputs": [],
-      "name": "owner",
+      "name": "configId",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "bytes32",
           "name": "",
-          "type": "address"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",

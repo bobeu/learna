@@ -52,6 +52,7 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
                     endpointType: "staging_celo",
                     userIdType: "hex",
                     userDefinedData,
+                    devMode: chainId === 44787? true : false,
                     disclosures: {
                        ...verificationConfig,
                     }
@@ -98,7 +99,8 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
         setTimeout(() => {
             back();
             toggleDrawer(1);
-        }, 1500);
+        }, 500);
+        clearTimeout(500);
     };
 
     return (

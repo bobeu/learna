@@ -1,39 +1,39 @@
 {
-  "contractAddress": "0x78D92f85045cE169877f31A7424899B4Da83F2B4",
+  "contractAddress": "0x2082625E83E04776Ea33C10d97AeE1A356a5aE47",
   "functionName": "claimReward",
-  "inputCount": 2,
+  "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
     {
       "inputs": [
         {
-          "internalType": "address[]",
-          "name": "_admins",
-          "type": "address[]"
-        },
-        {
-          "internalType": "uint64",
-          "name": "transitionInterval",
-          "type": "uint64"
-        },
-        {
-          "internalType": "enum Learna.Mode",
-          "name": "_mode",
-          "type": "uint8"
-        },
-        {
           "internalType": "address",
-          "name": "_feeManager",
+          "name": "identityVerificationHubAddress",
           "type": "address"
-        },
-        {
-          "internalType": "string[]",
-          "name": "_campaigns",
-          "type": "string[]"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AddressIsZero",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyClaimed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ClaimUnsuccessful",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EligibilityCheckDenied",
+      "type": "error"
     },
     {
       "inputs": [],
@@ -46,35 +46,38 @@
       "type": "error"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "InsufficientAllowance",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "InvalidAddress",
+      "inputs": [],
+      "name": "InvalidDataFormat",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "NoPasskey",
+      "name": "InvalidProof",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "NotEligible",
+      "name": "InvalidUserIdentifier",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NationalityRequired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NativeClaimUnsuccessful",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NoClaimable",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotVerified",
       "type": "error"
     },
     {
@@ -105,134 +108,35 @@
       "type": "error"
     },
     {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address[]",
-          "name": "users",
-          "type": "address[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32[]",
-          "name": "campainHashes",
-          "type": "bytes32[]"
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
         }
       ],
-      "name": "Banned",
-      "type": "event"
+      "name": "SafeERC20FailedOperation",
+      "type": "error"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "tipper",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "fundsNative",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fundsERC20",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint96",
-              "name": "totalPoints",
-              "type": "uint96"
-            },
-            {
-              "internalType": "uint64",
-              "name": "lastUpdated",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "activeLearners",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "transitionDate",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint64",
-              "name": "claimActiveUntil",
-              "type": "uint64"
-            },
-            {
-              "internalType": "address",
-              "name": "operator",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "canClaim",
-              "type": "bool"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "campaignHash",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes",
-                  "name": "encoded",
-                  "type": "bytes"
-                }
-              ],
-              "internalType": "struct Campaigns.CampaignData",
-              "name": "data",
-              "type": "tuple"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct Campaigns.Campaign",
-          "name": "data",
-          "type": "tuple"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32[]",
-          "name": "campainHashes",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "CampaignCreated",
-      "type": "event"
+      "inputs": [],
+      "name": "TokenIsZeroAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnauthorizedCaller",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UserIdentifierAlreadyVerified",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WeekNotReady",
+      "type": "error"
     },
     {
       "anonymous": false,
@@ -240,217 +144,11 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "user",
+          "name": "",
           "type": "address"
-        },
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "components": [
-                    {
-                      "internalType": "bytes",
-                      "name": "questionHash",
-                      "type": "bytes"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "selected",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "isUserSelected",
-                      "type": "bool"
-                    }
-                  ],
-                  "internalType": "struct Learna.Answer[]",
-                  "name": "answers",
-                  "type": "tuple[]"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "bytes",
-                      "name": "id",
-                      "type": "bytes"
-                    },
-                    {
-                      "internalType": "bytes",
-                      "name": "quizId",
-                      "type": "bytes"
-                    },
-                    {
-                      "internalType": "uint32",
-                      "name": "score",
-                      "type": "uint32"
-                    },
-                    {
-                      "internalType": "bytes",
-                      "name": "title",
-                      "type": "bytes"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "totalPoints",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint16",
-                      "name": "percentage",
-                      "type": "uint16"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "timeSpent",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "bytes",
-                      "name": "completedAt",
-                      "type": "bytes"
-                    }
-                  ],
-                  "internalType": "struct Learna.QuizResultOther",
-                  "name": "other",
-                  "type": "tuple"
-                }
-              ],
-              "internalType": "struct Learna.QuizResult[]",
-              "name": "quizResults",
-              "type": "tuple[]"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "amountMinted",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amountClaimedInNative",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "amountClaimedInERC20",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "claimed",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "passKey",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "haskey",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "totalQuizPerWeek",
-                  "type": "uint8"
-                }
-              ],
-              "internalType": "struct Learna.ProfileOther",
-              "name": "other",
-              "type": "tuple"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct Learna.Profile",
-          "name": "profile",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "fundsNative",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fundsERC20",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint96",
-              "name": "totalPoints",
-              "type": "uint96"
-            },
-            {
-              "internalType": "uint64",
-              "name": "lastUpdated",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "activeLearners",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "transitionDate",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint64",
-              "name": "claimActiveUntil",
-              "type": "uint64"
-            },
-            {
-              "internalType": "address",
-              "name": "operator",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "canClaim",
-              "type": "bool"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "campaignHash",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes",
-                  "name": "encoded",
-                  "type": "bytes"
-                }
-              ],
-              "internalType": "struct Campaigns.CampaignData",
-              "name": "data",
-              "type": "tuple"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct Campaigns.Campaign",
-          "name": "cp",
-          "type": "tuple"
         }
       ],
-      "name": "ClaimedWeeklyReward",
+      "name": "Approval",
       "type": "event"
     },
     {
@@ -459,91 +157,11 @@
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "campaignHash",
+          "name": "newMerkleRoot",
           "type": "bytes32"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "fundsNative",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fundsERC20",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint96",
-              "name": "totalPoints",
-              "type": "uint96"
-            },
-            {
-              "internalType": "uint64",
-              "name": "lastUpdated",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "activeLearners",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "transitionDate",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint64",
-              "name": "claimActiveUntil",
-              "type": "uint64"
-            },
-            {
-              "internalType": "address",
-              "name": "operator",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "canClaim",
-              "type": "bool"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "campaignHash",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes",
-                  "name": "encoded",
-                  "type": "bytes"
-                }
-              ],
-              "internalType": "struct Campaigns.CampaignData",
-              "name": "data",
-              "type": "tuple"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct Campaigns.Campaign",
-          "name": "campaign",
-          "type": "tuple"
         }
       ],
-      "name": "NewCampaign",
+      "name": "MerkleRootUpdated",
       "type": "event"
     },
     {
@@ -569,31 +187,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32[]",
-          "name": "campainHashes",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "PasskeyGenerated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "address",
           "name": "account",
@@ -608,49 +201,25 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "users",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint256",
-          "name": "weekId",
+          "name": "newScope",
           "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "campainHash",
-          "type": "bytes32"
         }
       ],
-      "name": "RegisteredForWeeklyEarning",
+      "name": "ScopeUpdated",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "_weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "newWeekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string[]",
-          "name": "campainHashes",
-          "type": "string[]"
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
-      "name": "Sorted",
+      "name": "UnApproval",
       "type": "event"
     },
     {
@@ -667,48 +236,46 @@
       "type": "event"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "erc20Values",
-          "type": "uint256[]"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "nativeValues",
-          "type": "uint256[]"
+          "indexed": true,
+          "internalType": "address",
+          "name": "registeredUserIdentifier",
+          "type": "address"
         }
       ],
-      "name": "adjustCampaignValues",
-      "outputs": [
+      "name": "UserIdentifierVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
+          "indexed": false,
+          "internalType": "address[]",
+          "name": "users",
+          "type": "address[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool[]",
+          "name": "newStatus",
+          "type": "bool[]"
         }
       ],
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "UserStatusChanged",
+      "type": "event"
     },
     {
       "inputs": [
         {
           "internalType": "address[]",
-          "name": "_users",
+          "name": "users",
           "type": "address[]"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
         }
       ],
-      "name": "banUserFromCampaign",
+      "name": "banOrUnbanUser",
       "outputs": [
         {
           "internalType": "bool",
@@ -725,34 +292,128 @@
           "internalType": "uint256",
           "name": "weekId",
           "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
         }
       ],
-      "name": "checkEligibility",
+      "name": "claimReward",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "done",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "configId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAdmins",
       "outputs": [
         {
           "components": [
             {
+              "internalType": "address",
+              "name": "id",
+              "type": "address"
+            },
+            {
               "internalType": "bool",
-              "name": "value",
+              "name": "active",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Admins.Admin[]",
+          "name": "_admins",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getClaimable",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "protocolVerified",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "erc20Amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "nativeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "token",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "campaignHash",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct ILearna.Eligibility[]",
+              "name": "elgs",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "weekId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isVerified",
               "type": "bool"
             },
             {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
+              "internalType": "bool",
+              "name": "barred",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "claimed",
+              "type": "bool"
             }
           ],
-          "internalType": "struct Learna.Eligibility[]",
+          "internalType": "struct Claim.ClaimResult[]",
           "name": "result",
           "type": "tuple[]"
         }
@@ -763,49 +424,30 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
+          "internalType": "bytes32",
+          "name": "destinationChainId",
+          "type": "bytes32"
         },
         {
           "internalType": "bytes32",
-          "name": "campaignHash",
+          "name": "userIdentifier",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "userDefinedData",
+          "type": "bytes"
+        }
+      ],
+      "name": "getConfigId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
           "type": "bytes32"
         }
       ],
-      "name": "claimReward",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "generateKey",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "payable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -816,7 +458,7 @@
           "type": "address"
         }
       ],
-      "name": "getAdminStatus",
+      "name": "isPermitted",
       "outputs": [
         {
           "internalType": "bool",
@@ -829,310 +471,33 @@
     },
     {
       "inputs": [],
-      "name": "getData",
+      "name": "learna",
       "outputs": [
         {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "minimumToken",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "transitionInterval",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "weekCounter",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Learna.State",
-              "name": "state",
-              "type": "tuple"
-            },
-            {
-              "components": [
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "fundsNative",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "fundsERC20",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint96",
-                      "name": "totalPoints",
-                      "type": "uint96"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "lastUpdated",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "activeLearners",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "transitionDate",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "claimActiveUntil",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "address",
-                      "name": "operator",
-                      "type": "address"
-                    },
-                    {
-                      "internalType": "address",
-                      "name": "token",
-                      "type": "address"
-                    },
-                    {
-                      "internalType": "bytes32",
-                      "name": "hash_",
-                      "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "canClaim",
-                      "type": "bool"
-                    },
-                    {
-                      "components": [
-                        {
-                          "internalType": "bytes32",
-                          "name": "campaignHash",
-                          "type": "bytes32"
-                        },
-                        {
-                          "internalType": "bytes",
-                          "name": "encoded",
-                          "type": "bytes"
-                        }
-                      ],
-                      "internalType": "struct Campaigns.CampaignData",
-                      "name": "data",
-                      "type": "tuple"
-                    }
-                  ],
-                  "internalType": "struct Campaigns.Campaign[]",
-                  "name": "campaigns",
-                  "type": "tuple[]"
-                }
-              ],
-              "internalType": "struct Learna.WeekData[]",
-              "name": "wd",
-              "type": "tuple[]"
-            }
-          ],
-          "internalType": "struct Learna.ReadData",
-          "name": "data",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "campaignHashes",
-          "type": "bytes32[]"
-        }
-      ],
-      "name": "getProfile",
-      "outputs": [
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "components": [
-                    {
-                      "components": [
-                        {
-                          "internalType": "bytes",
-                          "name": "questionHash",
-                          "type": "bytes"
-                        },
-                        {
-                          "internalType": "uint64",
-                          "name": "selected",
-                          "type": "uint64"
-                        },
-                        {
-                          "internalType": "bool",
-                          "name": "isUserSelected",
-                          "type": "bool"
-                        }
-                      ],
-                      "internalType": "struct Learna.Answer[]",
-                      "name": "answers",
-                      "type": "tuple[]"
-                    },
-                    {
-                      "components": [
-                        {
-                          "internalType": "bytes",
-                          "name": "id",
-                          "type": "bytes"
-                        },
-                        {
-                          "internalType": "bytes",
-                          "name": "quizId",
-                          "type": "bytes"
-                        },
-                        {
-                          "internalType": "uint32",
-                          "name": "score",
-                          "type": "uint32"
-                        },
-                        {
-                          "internalType": "bytes",
-                          "name": "title",
-                          "type": "bytes"
-                        },
-                        {
-                          "internalType": "uint64",
-                          "name": "totalPoints",
-                          "type": "uint64"
-                        },
-                        {
-                          "internalType": "uint16",
-                          "name": "percentage",
-                          "type": "uint16"
-                        },
-                        {
-                          "internalType": "uint64",
-                          "name": "timeSpent",
-                          "type": "uint64"
-                        },
-                        {
-                          "internalType": "bytes",
-                          "name": "completedAt",
-                          "type": "bytes"
-                        }
-                      ],
-                      "internalType": "struct Learna.QuizResultOther",
-                      "name": "other",
-                      "type": "tuple"
-                    }
-                  ],
-                  "internalType": "struct Learna.QuizResult[]",
-                  "name": "quizResults",
-                  "type": "tuple[]"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "amountMinted",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "amountClaimedInNative",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "amountClaimedInERC20",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "claimed",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "bytes32",
-                      "name": "passKey",
-                      "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bool",
-                      "name": "haskey",
-                      "type": "bool"
-                    },
-                    {
-                      "internalType": "uint8",
-                      "name": "totalQuizPerWeek",
-                      "type": "uint8"
-                    }
-                  ],
-                  "internalType": "struct Learna.ProfileOther",
-                  "name": "other",
-                  "type": "tuple"
-                }
-              ],
-              "internalType": "struct Learna.Profile",
-              "name": "profile",
-              "type": "tuple"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "campaignHash",
-              "type": "bytes32"
-            }
-          ],
-          "internalType": "struct Learna.ReadProfile[]",
-          "name": "result",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "hasPassKey",
-      "outputs": [
-        {
-          "internalType": "bool",
+          "internalType": "contract ILearna",
           "name": "",
-          "type": "bool"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "output",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "userData",
+          "type": "bytes"
+        }
+      ],
+      "name": "onVerificationSuccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1150,13 +515,6 @@
     },
     {
       "inputs": [],
-      "name": "pause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "paused",
       "outputs": [
         {
@@ -1169,100 +527,47 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "scope",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "setAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
           "name": "user",
           "type": "address"
-        },
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "string",
-                  "name": "questionHash",
-                  "type": "string"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "selected",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "bool",
-                  "name": "isUserSelected",
-                  "type": "bool"
-                }
-              ],
-              "internalType": "struct Learna.AnswerInput[]",
-              "name": "answers",
-              "type": "tuple[]"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "string",
-                  "name": "id",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "quizId",
-                  "type": "string"
-                },
-                {
-                  "internalType": "uint32",
-                  "name": "score",
-                  "type": "uint32"
-                },
-                {
-                  "internalType": "string",
-                  "name": "title",
-                  "type": "string"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "totalPoints",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "uint16",
-                  "name": "percentage",
-                  "type": "uint16"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "timeSpent",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "string",
-                  "name": "completedAt",
-                  "type": "string"
-                }
-              ],
-              "internalType": "struct Learna.QuizResultOtherInput",
-              "name": "other",
-              "type": "tuple"
-            }
-          ],
-          "internalType": "struct Learna.QuizResultInput",
-          "name": "quizResult",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "campaignHash",
-          "type": "bytes32"
         }
       ],
-      "name": "recordPoints",
+      "name": "setClaim",
       "outputs": [
         {
           "internalType": "bool",
@@ -1270,12 +575,44 @@
           "type": "bool"
         }
       ],
-      "stateMutability": "payable",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "renounceOwnership",
+      "name": "setClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_configId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setConfigId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_learna",
+          "type": "address"
+        }
+      ],
+      "name": "setLearna",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1286,21 +623,10 @@
           "internalType": "address",
           "name": "target",
           "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "flag",
-          "type": "bool"
         }
       ],
-      "name": "setAdmin",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
+      "name": "setPermission",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -1308,95 +634,32 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "newToken",
+          "name": "newScope",
           "type": "uint256"
         }
       ],
-      "name": "setMinimumToken",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
+      "name": "setScope",
+      "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint64",
-          "name": "newInternal",
-          "type": "uint64"
-        }
-      ],
-      "name": "setTransitionInterval",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "campaign",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fundsErc20",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "setUpCampaign",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "payable",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "growTokenContract",
+          "name": "target",
           "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountInGrowToken",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string[]",
-          "name": "_campaigns",
-          "type": "string[]"
         }
       ],
-      "name": "sortWeeklyReward",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
+      "name": "toggleAdminStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "toggleUseSelfFlag",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -1414,9 +677,80 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "unpause",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "unApprove",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "useSelf",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "proofPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "userContextData",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifySelfProof",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

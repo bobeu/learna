@@ -28,12 +28,9 @@ function ProfileComponent(
         fid,
         profileData: {
             profile: {
-                other: {
-                    amountClaimedInERC20,
-                    amountClaimedInNative,
-                    totalQuizPerWeek,
-                }
+                other: { totalQuizPerWeek }
             },
+            protocolReward: { erc20Amount, nativeAmount },
             claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
@@ -136,7 +133,7 @@ function ProfileComponent(
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {
-                                    (showVerificationButton && !showWithdrawalButton) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                    (showVerificationButton && !showWithdrawalButton && !claimed) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
                                     (showWithdrawalButton || claimed ) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
@@ -153,7 +150,7 @@ function ProfileComponent(
                                 <HandCoins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(amountClaimedInERC20?.toString()).toStr || '0'}
+                                {formatValue(erc20Amount?.toString()).toStr || '0'}
                             </div>
                             <div className="text-sm text-gray-600">Amount of $GROW earned</div>
                         </div>
@@ -163,7 +160,7 @@ function ProfileComponent(
                                 <Coins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(amountClaimedInNative?.toString()).toStr || '0'}
+                                {formatValue(nativeAmount?.toString()).toStr || '0'}
                             </div>
                             <div className="text-sm text-gray-600">Amount of $CELO earned</div>
                         </div>
@@ -178,9 +175,10 @@ function ProfileComponent(
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />
-                <span>{(showVerificationButton && !showWithdrawalButton) && 'Verify To Claim'}</span>
-                <span>{showWithdrawalButton && 'Withdraw'}</span>
-                <span>{(!showVerificationButton && !showWithdrawalButton) && 'Not Eligible'}</span>
+                <span>{(showVerificationButton && !showWithdrawalButton && !claimed) && 'Verify To Claim'}</span>
+                <span>{(showWithdrawalButton && !claimed) && 'Withdraw'}</span>
+                <span>{(!showVerificationButton && !showWithdrawalButton && !claimed) && 'Not Eligible'}</span>
+                <span>{claimed && 'Claimed'}</span>
             </CustomButton>
             <ClaimReward 
                 openDrawer={openDrawer}
