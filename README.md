@@ -1,8 +1,7 @@
-## Descriptio n
-Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education.
-
 <img width="1341" height="633" alt="image" src="https://github.com/user-attachments/assets/afe36899-6136-4ecb-b46a-ddfc028276a8" />
 
+## Description
+Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education.
 
 ## Problems
 Consistent learning has become a paramount and essential key to success in any field, most especially in the technology space. The system and method of learning play a crucial role in the journey of many. Due to rapidly changing technologies, it's challenging to stay informed, and reading lengthy, extensive materials is becoming increasingly difficult for everyone seeking to consistently update their knowledge base.
