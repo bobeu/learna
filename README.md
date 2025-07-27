@@ -1,6 +1,5 @@
-## Learna
-
-An open-source educational learn-and-earn initiative built on the Farcaster mini-apps.
+## Descriptio n
+Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education.
 
 <img width="1341" height="633" alt="image" src="https://github.com/user-attachments/assets/afe36899-6136-4ecb-b46a-ddfc028276a8" />
 
@@ -11,8 +10,39 @@ Consistent learning has become a paramount and essential key to success in any f
 ## Solution
 With the advent of artificial intelligence, learning has become easier. Our solution leverages AI to provide intuitive, simple, fun, and rewarding methods of learning for developers looking to update their knowledge base, such as Quizzes. Our idea was born from the Farcaster quiz hackathon to build a Farcaster-based mini-app on the Celo Blockchain that uses AI to generate engaging quizzes with different difficulty levels, including other personalized learning methods we will introduce in the future.
 
-## Mission
-Our mission is to create a fun, engaging, and rewarding learning path for our users.
+## Goal
+The core goals of Learna are:
+- To make learning enjoyable, interactive, and community-driven.
+- To empower users by rewarding their educational progress using blockchain incentives.
+- To ensure fairness and authenticity in learning achievements through decentralized verification.
+- To create a scalable and modular platform that encourages continuous learning in the Web3 space
+ 
+# Architecture Overview
+## Frontend (Client Interface)
+- `NextJS` + `ReactJS` provide a modern, server-rendered application with a fast and interactive UI.
+- TailwindCSS is used for utility-first, responsive styling.
+- Users interact with quizzes, videos, and other learning modules through smooth, intuitive interfaces.
+
+## Smart Contracts (Backend on Blockchain)
+- Solidity is used to write secure and efficient smart contracts for handling rewards, scoring, and financial operations.
+- Hardhat manages the development, testing, and deployment of smart contracts.
+- Contracts are deployed on Celo Mainnet, offering low fees and high scalability.
+
+## Verification & Anti-Cheating
+- Self-Protocol SDK is integrated to verify user identities, prevent manipulation, and restrict access based on regional constraints.
+
+## Reward System
+- Smart contracts automatically distribute rewards based on learner activity and performance.
+- Scoring logic is handled on-chain to ensure transparency and trust.
+
+| __Layer__                    | __Technology__                   |
+| ---------------------------- | -------------------------------- |
+| **Frontend**                 | NextJS, ReactJS, TailwindCSS     |
+| **Smart Contracts**          | Solidity, Hardhat                |
+| **Programming Language**     | TypeScript                       |
+| **Blockchain**               | Celo Mainnet, ALfajores          |
+| **Verification SDK**         | Self-Protocol SDK                |
+
 
 ## How it works
 
@@ -51,47 +81,10 @@ Educaster is a mobile-first, React-based application built for the web3 and web2
 ## Site
 - [Interact with Educaster here](https://learna.vercel.app)
 
-__[Here is a demo on how to use the app]()__
+## [Watch the dem0]()
 
-## How to run
-To run the project, please follow these steps:
-
-```
-    git clone https://github.com/bobeu/learna.git
-```
-
-### smart contracts
-
-```
-    cd learna/smartcontracts
-```
-
-```
-    npm install
-```
-
-For smart contract commands, follow the commands inside the `scripts` block inside the `package.json` file.
-
-### Frontend
-Be sure to update the env file with yours. Better still, ignore it, it will automatically be updated using the .env.local when you run the build command. 
-
-```
-    cd learna/eduFi
-```
-
-```
-    npm install
-```
-
-```
-    npm run dev
-```
-
-To build for production, run
-
-```
-    npm run build
-```
+## Summary
+Learna addresses the lack of motivation and engagement in traditional learning systems by offering a decentralized solution that rewards users for their learning efforts. By utilizing blockchain and smart contracts, the platform ensures transparency, fairness, and automation in its reward distribution. Whether you're watching a tutorial, solving a quiz, or exploring a subject path, every action contributes to your growth—and your wallet.
 
 ## About us
 
