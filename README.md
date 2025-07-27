@@ -1,8 +1,9 @@
-## Educaster
+## Learna
 
 An open-source educational learn-and-earn initiative built on the Farcaster mini-apps.
 
-![image](https://github.com/user-attachments/assets/1d8cccbf-4707-4624-8f35-76002977708a)
+<img width="1341" height="633" alt="image" src="https://github.com/user-attachments/assets/afe36899-6136-4ecb-b46a-ddfc028276a8" />
+
 
 ## Problems
 Consistent learning has become a paramount and essential key to success in any field, most especially in the technology space. The system and method of learning play a crucial role in the journey of many. Due to rapidly changing technologies, it's challenging to stay informed, and reading lengthy, extensive materials is becoming increasingly difficult for everyone seeking to consistently update their knowledge base.
@@ -18,14 +19,14 @@ Our mission is to create a fun, engaging, and rewarding learning path for our us
 As a user, when you visit the landing page,
 - You can immediately start a quiz, but we recommend that you connect your wallet first. If you're a Farcaster user, you will be connected to your wallet inside the Farcaster app.
 - Optionally, you can generate your key for the week. Each week uses a unique key to identify the user's slot and save their spot, including their scores for the week. Every week has a unique identifier that is visible on your profile as a user. To access your profile, click on the human-like icon at the top of the application. We recommend you create your key at the beginning of every new week. For each week, you will be able to claim your reward provided you participated and earned points. Remember, your key gives you full access to this feature.
-- Start taking quizzes. You can only attempt a maximum of 120 quizzes in a week. Remember you need some rest.
+- Start taking quizzes. You can only attempt a maximum of 120 quizzes in a week. Remember, you need some rest.
 - After completing a quiz, you can view your scores. Submit your scores on-chain immediately. If you leave the page or cancel it, that quiz is lost. It is worth noting that questions cannot be rolled back. When you select an answer, it automatically moves to another. So be very sure of the answer you're picking. The whole quiz has a deadline. The timer starts counting as soon as you click `start`.
-- Every weekend, check your reward eligibility on your profile. If you are, you will see a green light to proceed to claim. `Happy QUIZZING` .
+- Every weekend, check your reward eligibility on your profile. If you are, you will see a green light to proceed to claim. `Happy QUIZZING`.
 
 
 ## Architecture (How we build it)
 
-Educaster is a mobile-first, react-based application built for the web3 and web2 audiences with a higher preference for the former. By design, it is in three sections:
+Educaster is a mobile-first, React-based application built for the web3 and web2 audiences with a higher preference for the former. By design, it is in three sections:
 
 - A smart contract, deployed on the Celo main network, that manages sensitive and financial logic.
 - A user interface for interacting with the application.
@@ -37,7 +38,7 @@ Educaster is a mobile-first, react-based application built for the web3 and web2
 - NextJs: Frontend, authentication, and API requests
 - ReactJS: User interface
 - Farcaster SDK: Base SDK for mini-app
-- Neyna: A wrapper around Fthe arcaster SDK for publishing casts
+- Neyna: A wrapper around the Farcaster SDK for publishing casts
 - Wagmi: For connecting the user to the app, read and write information to the blockchain
 - Framer motion: For subtle UI animation
 - Divvi SDK: For integrating the Divvi referral reward system
@@ -94,9 +95,8 @@ To build for production, run
 
 ## About us
 
-Educaster team, curious mind with a teacher’s touch and a developer’s discipline, we craft interactive quizzes like a sculptor carves marble — precisely, creatively, and always with purpose. Sometimes, we achieve this manually, and often with the help of Aritificial intelligence using a carefully and skillfully prepared prompt. We navigate subjects such as Solidity, ReactJS, DeFi, Wagmi, etc, with ease, blending logic and learning into bite-sized brilliance. When not hashing questions into unique hex codes (literally), We are building tools that teach, challenge, and empower others.
-
-Our team clearly got a strong grasp of dev skills and an interest in ed-tech-style systems. 
+Our team is comprised of curious minds with a teacher’s touch and a developer’s discipline. We craft interactive quizzes like a sculptor carves marble — precisely, creatively, and always with purpose. Sometimes, we achieve this manually, and often with the help of Artificial intelligence using a carefully and skillfully prepared prompt. We navigate subjects such as Solidity, ReactJS, DeFi, Wagmi, etc, with ease, blending logic and learning into bite-sized brilliance. When not hashing questions into unique hex codes (literally), we are building tools that teach, challenge, and empower others.
+Our team got a strong grasp of dev skills and an interest in ed-tech-style systems. 
 
 
 <!-- 0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204 GROWTOKEN -->
