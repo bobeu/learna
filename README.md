@@ -3,11 +3,11 @@
 ## Description
 Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education.
 
-## Problems
-Consistent learning has become a paramount and essential key to success in any field, most especially in the technology space. The system and method of learning play a crucial role in the journey of many. Due to rapidly changing technologies, it's challenging to stay informed, and reading lengthy, extensive materials is becoming increasingly difficult for everyone seeking to consistently update their knowledge base.
+## Problem Statement
+In today’s rapidly evolving tech landscape, consistent learning is not just beneficial—it’s essential for success. However, the traditional methods of consuming information, such as lengthy articles and overwhelming documentation, make it difficult for developers to keep up. With new technologies emerging at a relentless pace, staying current feels more like a burden than a journey. The challenge lies in making learning both accessible and engaging, especially for developers who must constantly upgrade their skills to stay relevant.
 
-## Solution
-With the advent of artificial intelligence, learning has become easier. Our solution leverages AI to provide intuitive, simple, fun, and rewarding methods of learning for developers looking to update their knowledge base, such as Quizzes. Our idea was born from the Farcaster quiz hackathon to build a Farcaster-based mini-app on the Celo Blockchain that uses AI to generate engaging quizzes with different difficulty levels, including other personalized learning methods we will introduce in the future.
+## Solution Statement
+Leveraging the power of artificial intelligence, we’re transforming how developers learn—making it intuitive, engaging, and rewarding. Our platform uses AI to generate dynamic quizzes tailored to different difficulty levels, offering a fun and efficient way to stay updated in the fast-paced tech world. Born out of the Farcaster Quiz Hackathon, Learna is built as a Farcaster-based mini-app on the Celo blockchain. It combines decentralized tech with personalized learning experiences, with more interactive and adaptive methods on the way.
 
 ## Goal
 The core goals of Learna are:
