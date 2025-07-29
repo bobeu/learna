@@ -60,19 +60,7 @@ Educaster is a mobile-first, React-based application built for the web3 and web2
 - A smart contract, deployed on the Celo main network, that manages sensitive and financial logic.
 - A user interface for interacting with the application.
 - Backend service that manages interactions with the Farcaster client, such as publishing casts, notifying the users, etc.
-
-### Stacks
-- Solidity: For smart contracts
-- Hardhat: Smart contract environment
-- NextJs: Frontend, authentication, and API requests
-- ReactJS: User interface
-- Farcaster SDK: Base SDK for mini-app
-- Neyna: A wrapper around the Farcaster SDK for publishing casts
-- Wagmi: For connecting the user to the app, read and write information to the blockchain
-- Framer motion: For subtle UI animation
-- Divvi SDK: For integrating the Divvi referral reward system
-- Shadcn: Simple UI components
-
+- 
 ## Smart contracts information (Celo mainnet)
 - Grow token smart contract deployed at __[0x800B1666d554e249FCCf5f0855455F43a140d2e5]()__ 
 - Factory contract (main app logic) deployed at __[0x9761496D5a1968B0320bb0059e4D0fDA29861805]()__ 
