@@ -11,8 +11,15 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @notice Non-deployable parent contract that perform CRUD operation on campaigns
 */ 
 abstract contract Campaigns is Week {
+    ///@dev 
+    bytes32[] private campaignList;   
+
+    ///@dev All registered campaign
+    mapping(bytes32 => bool) private isRegistered;
+
     // Campaigns
     mapping(bytes32 campaignHash => Initializer) private initializer;
+
 
     //week data for all campaigns
     mapping(uint weekId => Campaign[]) private campaigns;
@@ -25,6 +32,62 @@ abstract contract Campaigns is Week {
 
     // Mapping of campaigns to identifiers
     mapping(uint campaignIndex => bytes32 campaingHashValue) private indexer;
+
+    ///@dev Registers a new campaign
+    function _checkAndInitialize(bytes32 hash_) internal {
+        if(!isRegistered[hash_]){
+            isRegistered[hash_] = true;
+            campaignList.push(hash_);
+        }
+    }
+
+    function _addCampaignToNewWeek(
+        uint weekId,
+        bytes32 hash_, 
+        bytes memory encoded,
+        address operator,
+        uint256 fundsNative,
+        uint256 fundsERC20,
+        address token
+    ) internal {
+        WeekInitializer memory wi = wInit[weekId][hash_];
+        if(!wi.hasSlot){
+            wi.hasSlot = true;
+            wi.slot = uint32(campaigns[weekId].length);
+            campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, operator, token, hash_, false, CampaignData(hash_, encoded)));
+            wInit[weekId][hash_] = wi;
+            cmp = _getCampaign(weekId, hash_).cp;
+            emit NewCampaign(cmp);
+        } else {
+            cmp = _getCampaign(weekId, hash_).cp;
+            unchecked {
+                cmp.fundsNative += fundsNative;
+            }
+            if(operator != cmp.operator) cmp.operator = operator;
+            if(token != address(0)){
+                bool execute = false;
+                if(token == cmp.token){
+                    if(fundsERC20 > 0) execute = true;
+                } else {
+                    if(cmp.fundsERC20 == 0) {
+                        cmp.token = token;
+                        execute = true;
+                    }
+                }
+                if(execute) {
+                    if(IERC20(token).allowance(_msgSender(), address(this)) >= fundsERC20) {
+                        if(IERC20(token).transferFrom(_msgSender(), address(this), fundsERC20)){
+                            unchecked {
+                                cmp.fundsERC20 += fundsERC20;
+                            }
+                        }
+                    }
+                }
+            }
+            cmp.lastUpdated = _now();
+            _setCampaign(wi.slot, weekId, cmp);
+        }
+    }
 
     /**
      * @dev Only approved campaign can pass
