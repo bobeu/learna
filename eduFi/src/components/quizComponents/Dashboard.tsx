@@ -158,7 +158,7 @@ export default function Dashbaord() {
   const { returnObj , setHash: setRequestedHash } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
-  const featuredQuizzes = appData.quizData?.slice(0, 3);
+  const featuredQuizzes = appData.quizData?.slice(1, 7);
 
   const setHash = (arg: string) => {
     const found = campaignData.find(q => q.campaign === arg);

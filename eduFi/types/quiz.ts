@@ -1,5 +1,5 @@
 import { Hex } from "viem";
-export type Category  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
+export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | '';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
 export type FunctionName = 
@@ -107,86 +107,78 @@ export interface UserStats {
 
 ////////////////////////////////////////////////
 
-export interface QuestionObj {
-  question: string;
-  options: {label: string, value: string}[];
-  answer: string;
-  userAnswer: string;
-  hash: string;
-};
+// export interface SelectedData {
+//     id: number;
+//     category: Category;
+//     selectedLevel: DifficultyLevel;
+//     data: QuestionObj[];
+//     scoreParam: ScoresParam;
+// }
 
-export interface SelectedData {
-    id: number;
-    category: Category;
-    selectedLevel: DifficultyLevel;
-    data: QuestionObj[];
-    scoreParam: ScoresParam;
-}
+// export interface QuizCategory {
+//   easy: {
+//     questions: QuestionObj[];
+//   };
+//   medium: {
+//     questions: QuestionObj[];
+//   };
+//   hard: {
+//     questions: QuestionObj[];
+//   };
+// };
 
-export interface QuizCategory {
-  easy: {
-    questions: QuestionObj[];
-  };
-  medium: {
-    questions: QuestionObj[];
-  };
-  hard: {
-    questions: QuestionObj[];
-  };
-};
-
-export interface SelectedQuizData {
-  category: Category, 
-  level: DifficultyLevel, 
-  questions: QuestionObj[];
+// export interface SelectedQuizData {
+//   category: Category, 
+//   level: DifficultyLevel, 
+//   questions: QuestionObj[];
  
-};
-export type QuizReturnData = QuizCategory[]; 
+// };
+// export type QuizReturnData = QuizCategory[]; 
 
-export interface QuizDatum {
-  category: string;
-  id: number,
-  difficultyLevel: string;
-  identifier: string;
-  taken: boolean;
-  questions: Array<{
-    quest: string;
-    options: Array<{
-      label: string;
-      value: string;
-    }>;
-    correctAnswer: {
-      label: string;
-      value: string;
-    };
-    userAnswer?: {
-      label: string;
-      value: string;
-    };
-  }>;
-};
+// export interface QuizDatum {
+//   category: string;
+//   id: number,
+//   difficultyLevel: string;
+//   identifier: string;
+//   taken: boolean;
+//   questions: Array<{
+//     quest: string;
+//     options: Array<{
+//       label: string;
+//       value: string;
+//     }>;
+//     correctAnswer: {
+//       label: string;
+//       value: string;
+//     };
+//     userAnswer?: {
+//       label: string;
+//       value: string;
+//     };
+//   }>;
+// };
 
 export interface Answer {
   label: string;
   value: string;
 }
 
-export interface Data {
-  question: string;
-  userAnswer: Answer;
-  correctAnswer: Answer;
-  quizHash?: string;
-  userSelect: boolean;
-  isCorrect: boolean;
-  options: Array<Answer>;
-};
+// export interface Data {
+//   question: string;
+//   userAnswer: Answer;
+//   correctAnswer: Answer;
+//   quizHash?: string;
+//   userSelect: boolean;
+//   isCorrect: boolean;
+//   options: Array<Answer>;
+// };
 
-export type DisplayQuizProps = {
-  indexedAnswer: number;
-  selectedQuizData: {category: string, data: QuizDatum};
-  setpath: (arg: Path) => void;
-  handleSelectAnswer: (arg: {label: string, value: string}) => void;
-}
+// export type DisplayQuizProps = {
+//   indexedAnswer: number;
+//   selectedQuizData: {category: string, data: QuizDatum};
+//   setpath: (arg: Path) => void;
+//   handleSelectAnswer: (arg: {label: string, value: string}) => void;
+// }
 
 interface Values {
   totalAllocated: bigint;
@@ -297,26 +289,26 @@ export type FilterTransactionDataProps = {
   filter: boolean;
 }
 
-export interface HandleSelectAnswerProps {
-  userAnswer?: Answer; 
-  correctAnswer: Answer; 
-  question: string;
-  userSelect: boolean;
-  options: Array<Answer>;
-}
+// export interface HandleSelectAnswerProps {
+//   userAnswer?: Answer; 
+//   correctAnswer: Answer; 
+//   question: string;
+//   userSelect: boolean;
+//   options: Array<Answer>;
+// }
 
-export interface ScoresParam {
-  category: string;
-  difficultyLevel: string;
-  totalScores: number;
-  questionSize: number;
-  weightPerQuestion: number;
-  totalAnsweredCorrectly: QuestionObj[];
-  noAnswer: number;
-  totalAnsweredIncorrectly: number;
-}
+// export interface ScoresParam {
+//   category: string;
+//   difficultyLevel: string;
+//   totalScores: number;
+//   questionSize: number;
+//   weightPerQuestion: number;
+//   totalAnsweredCorrectly: QuestionObj[];
+//   noAnswer: number;
+//   totalAnsweredIncorrectly: number;
+// }
 
-export type ScoresReturn = () => ScoresParam;
+// export type ScoresReturn = () => ScoresParam;
 export interface CampaignDatum {
   campaignHash: Address;
   campaign: string;
@@ -334,4 +326,40 @@ export interface Eligibility {
 export interface Admin {
   id: Address;
   active: boolean;
+}
+
+
+export interface QuestionObj {
+  id: string | number;
+  explanation?: string;
+  question: string;
+  options: string[];
+  answer: number | string;
+  userAnswer: string;
+  hash: string;
+};
+
+export interface Level {
+  difficulty: string;
+  id: string;
+  questions: QuestionObj[];
+}
+
+export interface Blob {
+  title: string;
+  content: string;
+}
+
+export interface CategoryData {
+  category: string;
+  id: string;
+  description: string;
+  levels: Level[];
+  blobs?: Blob[];
+}
+
+export interface QuizData {
+  categories: string;
+  difficulties: string;
+  categoryData: CategoryData[];
 }

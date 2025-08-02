@@ -22,7 +22,7 @@ abstract contract Week is ILearna, Admins {
      * @param weekId : Week Id
      * @param deadline : New deadline
      */
-    function _setDeadline(uint weekId, uint96 deadline) internal {
+    function _setClaimDeadline(uint weekId, uint96 deadline) internal {
         claimDeadlines[weekId] = deadline;
     }
 
@@ -45,22 +45,18 @@ abstract contract Week is ILearna, Admins {
     /**
      * @dev Update transition interval
      * @param intervalInMin : New interval
-     * @param claimDeadlineInMin : New deadline before claim ends
      * @param weekId : Week Id
      */
-    function _setTransitionInterval(uint32 intervalInMin, uint32 claimDeadlineInMin, uint weekId) internal {
+    function _setTransitionInterval(uint32 intervalInMin, uint pastWeek) internal {
         if(intervalInMin > 0) {
             uint64 newInterval = intervalInMin * 1 minutes;
+            uint64 transitionDate = _now() + newInterval;
             state.transitionInterval = newInterval;
             unchecked {
-                state.transitionDate = _now() + newInterval;
+                state.transitionDate = transitionDate;
             }
+            _setClaimDeadline(pastWeek, transitionDate);
         } 
-        if(claimDeadlineInMin > 0) {
-            unchecked {
-                _setDeadline(weekId, _now() + (claimDeadlineInMin * 1 minutes));
-            }
-        }
     }
 
     /**
@@ -68,8 +64,8 @@ abstract contract Week is ILearna, Admins {
      * @param interval : New interval
      * @notice Transition interval will always reset the transition date 
     */
-    function setTransitionInterval(uint32 interval, uint32 claimDeadlineInMin, uint weekId) public onlyOwner {
-        _setTransitionInterval(interval, claimDeadlineInMin, weekId);
+    function setTransitionInterval(uint32 interval, uint weekId) public onlyOwner {
+        if(interval > 0) state.transitionInterval = interval * 1 minutes;
     }
 
     /**

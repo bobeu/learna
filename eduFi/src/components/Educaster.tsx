@@ -5,7 +5,7 @@ import type {
     Admin, 
     Campaign, 
     CampaignDatum, 
-    Category, 
+    CategoryType, 
     Path, 
     Quiz, 
     QuizResultInput, 
@@ -44,7 +44,7 @@ const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
 
 export default function Educaster() {
-    const [appData, setAppData] = React.useState<{categories: Category[], quizData: Quiz[] | null}>({categories: [], quizData: null});
+    const [appData, setAppData] = React.useState<{categories: CategoryType[], quizData: Quiz[] | null}>({categories: [], quizData: null});
     const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
     const [quizResult, setQuizResult] = useState<QuizResultInput | null>(null);
     const [userResults, setUserResults] = useState<QuizResultInput[]>([]);
@@ -97,7 +97,15 @@ export default function Educaster() {
     }, []);
 
     const handleQuizSelect = (quiz: Quiz) => {
-        setSelectedQuiz(quiz);
+        const admin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_IDENTIFIER).toLowerCase();
+        const divviAdmin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_ADMIN).toLowerCase();
+        if(quiz.title === 'divvi'){
+            if(account.toLowerCase() === divviAdmin || account.toLowerCase() === admin){
+                setSelectedQuiz(quiz);
+            }
+        } else {
+            setSelectedQuiz(quiz);
+        }
         setPath('quiz');
     };
 

@@ -20,11 +20,12 @@ interface ILearna {
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
     event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
-    event Sorted(uint _weekId, uint newWeekId, Initializer[] campaigns);
+    event Sorted(uint _weekId, uint newWeekId, bytes32[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);
 
     struct Campaign {
+        uint platformToken
         uint256 fundsNative;
         uint256 fundsERC20;
         uint96 totalPoints;
@@ -33,7 +34,6 @@ interface ILearna {
         address operator;
         address token;
         bytes32 hash_;
-        bool canClaim;
         CampaignData data;
     }
 
@@ -43,16 +43,16 @@ interface ILearna {
     }
 
     struct CampaignData {
-        bytes32 campaignHash;
+        bytes32 hash_;
         bytes encoded;
     }
 
-    struct Initializer {
-        bool initialized;
-        uint index;
-        bytes encoded;
-        bytes32 hash_;
-    }
+    // struct Initializer {
+    //     bool initialized;
+    //     uint index;
+    //     bytes encoded;
+    //     bytes32 hash_;
+    // }
 
     struct WeekInitializer {
         bool hasSlot;
@@ -67,7 +67,7 @@ interface ILearna {
     struct ReadProfile {
         Eligibility eligibility;
         Profile profile;
-        bytes32 campaignHash;
+        bytes32 hash_;
     }
 
     struct Answer {
@@ -152,7 +152,7 @@ interface ILearna {
         uint nativeAmount;
         uint weekId;
         address token;
-        bytes32 campaignHash;
+        bytes32 hash_;
     }
 
     struct UserCampaigns {

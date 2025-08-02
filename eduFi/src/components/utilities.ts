@@ -8,7 +8,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, Category, CData, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizResultInput, ReadData, ReadProfile, ScoresParam, SelectedData, SelectedQuizData, TransactionData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, CategoryType, CData, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, TransactionData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -103,38 +103,38 @@ export const mockWeekProfileData : WeekProfileData = {
   weekId: 0n
 }
 
-export const mockScoresParam : ScoresParam =  {
-  category: '',
-  difficultyLevel: '',
-  totalScores: 0,
-  questionSize: 0,
-  weightPerQuestion: 0,
-  noAnswer: 0,
-  totalAnsweredCorrectly: [
-    {
-      answer: '0',
-      hash: mockReadProfile.campaignHash,
-      options: [{label: '', value: ''}],
-      question: '',
-      userAnswer: '',
-    }
-  ],
-  totalAnsweredIncorrectly: 0
-}
+// export const mockScoresParam : ScoresParam =  {
+//   category: '',
+//   difficultyLevel: '',
+//   totalScores: 0,
+//   questionSize: 0,
+//   weightPerQuestion: 0,
+//   noAnswer: 0,
+//   totalAnsweredCorrectly: [
+//     {
+//       answer: '0',
+//       hash: mockReadProfile.campaignHash,
+//       options: [{label: '', value: ''}],
+//       question: '',
+//       userAnswer: '',
+//     }
+//   ],
+//   totalAnsweredIncorrectly: 0
+// }
 
-export const mockSelectedData : SelectedData = {
-  category: '',
-  selectedLevel: '',
-  data: [mockScoresParam.totalAnsweredCorrectly[0]],
-  scoreParam: mockScoresParam,
-  id: 0
-};
+// export const mockSelectedData : SelectedData = {
+//   category: '',
+//   selectedLevel: '',
+//   data: [mockScoresParam.totalAnsweredCorrectly[0]],
+//   scoreParam: mockScoresParam,
+//   id: 0
+// };
 
-export const emptyQuizData : SelectedQuizData = {
-  category: "",
-  level: "",
-  questions: [mockScoresParam.totalAnsweredCorrectly[0]]
-}
+// export const emptyQuizData : SelectedQuizData = {
+//   category: "",
+//   level: "",
+//   questions: [mockScoresParam.totalAnsweredCorrectly[0]]
+// }
 
 export const mockQuiz : Quiz = {
   id: "",
@@ -323,10 +323,10 @@ export function getCastText(task: FunctionName, weekId: number) {
  * @dev Load and prepare data from the JSON API
  * @returns : Formatted data and categories
  */
-export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: Category[], quizData: Quiz[] | null} {
-  const d = _d_;
+export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: CategoryType[], quizData: Quiz[] | null} {
+  const d : QuizData = { categories: _d_.categories, difficulties: _d_.difficulties, categoryData: _d_.categoryData } ;
   // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
-  const categories : Category[] = d.categories.split(',') as Category[];
+  const categories : CategoryType[] = d.categories.split(',') as CategoryType[];
   // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
   const quizData : Quiz[] = [];
 
