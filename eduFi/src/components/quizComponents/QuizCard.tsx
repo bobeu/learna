@@ -3,6 +3,7 @@
 import React from 'react';
 import { Clock, Award, ChevronRight, BookOpen } from 'lucide-react';
 import { Quiz } from '../../../types/quiz';
+import Image from 'next/image';
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -26,10 +27,12 @@ export const QuizCard: React.FC<QuizCardProps> = ({ quiz, onSelect }) => {
     >
       {/* Quiz Image */}
       {quiz.imageUrl && (
-        <div className="w-full h-32 mb-4 rounded-xl overflow-hidden">
-          <img 
+        <div className="w-full h-44 mb-4 rounded-xl overflow-hidden">
+          <Image 
             src={quiz.imageUrl} 
             alt={quiz.title}
+            width={400}
+            height={200}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         </div>
