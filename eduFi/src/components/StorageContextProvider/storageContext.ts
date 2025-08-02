@@ -1,4 +1,4 @@
-import type { Address, State, TransactionCallback, WeekData, Path, Category, VoidFunc, Quiz, Campaign, QuizResultInput, CampaignDatum, Admin} from "../../../types/quiz";
+import type { Address, State, TransactionCallback, WeekData, Path, VoidFunc, Quiz, Campaign, QuizResultInput, CampaignDatum, Admin, CategoryType} from "../../../types/quiz";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Hex } from "viem";
 import { ReadContractsErrorType } from "wagmi/actions";
@@ -43,7 +43,7 @@ export interface DataContextProps {
     wkId: number;
     recordPoints: boolean;
     toggleRecordPoints: (arg:boolean) => void;
-    appData: {categories: Category[], quizData: Quiz[] | null};
+    appData: {categories: CategoryType[], quizData: Quiz[] | null};
     onPlayAgain: () => void;
     onBackToHome: (path: Path) => void;
     onQuizSelect: (quiz: Quiz) => void;

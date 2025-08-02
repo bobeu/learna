@@ -1,4 +1,4 @@
-import Blockies from "react-blockies";
+import BlockieSVG from "blockies-react-svg";
 import { zeroAddress } from "viem";
 
 interface BlockieProp {
@@ -8,12 +8,15 @@ interface BlockieProp {
 
 export const Blockie = (props: BlockieProp) => {
   const { account, size } = props;
-
   return (
-    <Blockies
-      seed={account?.toLowerCase() || zeroAddress}
-      size={size || 4}
-      scale={3}
-    />
+    <span title={account}>
+      <BlockieSVG
+        address={account?.toLowerCase() || zeroAddress}
+        size={size || 4}
+        scale={3}
+        className='classname'
+        style={{ borderRadius: '50%' }}
+      />
+    </span>
   );
 }

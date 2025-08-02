@@ -768,7 +768,7 @@
     ox "^0.4.4"
     zod "^3.24.1"
 
-"@farcaster/miniapp-sdk@0.1.8":
+"@farcaster/miniapp-sdk@0.1.8", "@farcaster/miniapp-sdk@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@farcaster/miniapp-sdk/-/miniapp-sdk-0.1.8.tgz#3536dda2cb5915dc734a09e067477d7b33809797"
   integrity sha512-izvv3k8FdDZM0pl2lGDzr9WWuiakmjhO5h9Jz+gJ7nXsHs5JmQXBnyE9XnCpNMCifk/bVxwsN3G/XpxWMyyJzA==
@@ -4009,6 +4009,11 @@ blake2b-wasm@^2.4.0:
   dependencies:
     b4a "^1.0.1"
     nanoassert "^2.0.0"
+
+blockies-react-svg@^0.0.13:
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/blockies-react-svg/-/blockies-react-svg-0.0.13.tgz#785500bebdbe5e4aea8e094b3241f73669470b00"
+  integrity sha512-w3Upvq5xnO2m0KEf4QhExLDpPMlJZes0Oi5e1EaILTpU+TtDGipoqxJuGGMhFHl2Qg7cuw4P1pAgEMy+Y3nZrg==
 
 bluebird@^3.7.2:
   version "3.7.2"
