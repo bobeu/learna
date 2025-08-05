@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('17584060933293127637204697724362073811053114998064440472947877920627118982998') : BigInt('16491795379214993993845921571295052164701259396155955472160620420208858192484');
+	const scopeValue = networkName === 'alfajores'? BigInt('17749014662646832516411178564998433505113010850880578087896616728528899155154') : BigInt('16491795379214993993845921571295052164701259396155955472160620420208858192484');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		args: [routeTo],
 		log: true,
 	});
-	console.log(`Learna contract deployed to: ${feeManager.address}`);
+	console.log(`Fee Manager contract deployed to: ${feeManager.address}`);
 	// console.log("CAMPAIGNS", CAMPAIGNS.length)
 
 	/**

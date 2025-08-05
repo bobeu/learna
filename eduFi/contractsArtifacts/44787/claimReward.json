@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xec3A5EDAFF8B3e9c74b64b2c54ad1cf2dc5aa637",
+  "contractAddress": "0x447935B1e9EB4e91F4487F5d228Be8a528e66FC0",
   "functionName": "claimReward",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -374,6 +374,11 @@
                 },
                 {
                   "internalType": "uint256",
+                  "name": "platform",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
                   "name": "weekId",
                   "type": "uint256"
                 },
@@ -384,7 +389,7 @@
                 },
                 {
                   "internalType": "bytes32",
-                  "name": "campaignHash",
+                  "name": "hash_",
                   "type": "bytes32"
                 }
               ],

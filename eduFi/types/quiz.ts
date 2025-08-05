@@ -35,7 +35,7 @@ export type FunctionName =
 export type VoidFunc = () => void;
 export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 export type Path = 'dashboard' | 'results' | 'review' | 'admin' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile' | 'setupcampaign';
-export type CData = CampaignData[];
+// export type CData = CampaignHash[];
 
 export interface Question {
   id: number;
@@ -211,7 +211,7 @@ export interface Profile {
 export interface ReadProfile {
   eligibility: Eligibility;
   profile: Profile;
-  campaignHash: `0x${string}`;
+  hash_: `0x${string}`;
 }
 
 export interface WeekProfileData {
@@ -227,12 +227,18 @@ export interface ClaimResult {
   claimed: boolean;
 }
 
-export interface CampaignData {
-  campaignHash: Hex;
+export interface CampaignHash {
+  hash_: Hex;
   encoded: Hex;
 }
 
 export interface Campaign {
+  data: CampaignData;
+  users: Address[];
+}
+
+export interface CampaignData {
+  platformToken: bigint;
   fundsNative: bigint;
   fundsERC20: bigint;
   totalPoints: bigint;
@@ -240,13 +246,11 @@ export interface Campaign {
   activeLearners: bigint; 
   operator: Address;
   token: Address;
-  hash_: Hex
-  canClaim: boolean;
-  data: CampaignData;
+  data: CampaignHash;
 }
 
-export interface CampaignDataFormatted {
-  campaignHash: `0x${string}`;
+export interface CampaignHashFormatted {
+  hash_: Hex;
   campaign: string;
 };
 
@@ -266,6 +270,8 @@ export interface WeekData {
 export interface ReadData {
   state: State;
   wd: Readonly<WeekData[]>;
+  approved: CampaignHash[];
+  profileData: WeekProfileData[];
 }
 
 export type TransactionCallback = (arg: TrxState) => void;
@@ -309,8 +315,28 @@ export type FilterTransactionDataProps = {
 // }
 
 // export type ScoresReturn = () => ScoresParam;
+
+export interface FormattedValue {
+    toStr: string;
+    toNum: number;
+}
+
+export interface GetFormattedCampaign {
+    hash_: Hex,
+    campaignName: string,
+    totalLearners: number,
+    fundsNative: FormattedValue,
+    fundsERC20: FormattedValue,
+    platform: FormattedValue,
+    lastUpdated: string,
+    totalPoints: string,
+    operator: React.JSX.Element,
+    token: React.JSX.Element,
+    users: React.JSX.Element
+}
+
 export interface CampaignDatum {
-  campaignHash: Address;
+  hash_: Address;
   campaign: string;
 }
 
@@ -318,16 +344,16 @@ export interface Eligibility {
   protocolVerified: boolean;
   erc20Amount: bigint;
   nativeAmount: bigint;
+  platform: bigint;
   weekId: bigint;
   token: Address;
-  campaignHash: Hex;
+  hash_: Hex;
 }
 
 export interface Admin {
   id: Address;
   active: boolean;
 }
-
 
 export interface QuestionObj {
   id: string | number;

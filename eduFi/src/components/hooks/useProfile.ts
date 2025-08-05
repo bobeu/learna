@@ -84,7 +84,7 @@ export const mockProfileReturn : ProfileReturnType = {
     
     // Search for the dashboard and Stat requested campaign using the requested parameters
     const weekCampaigns = weekData.filter((_, i) => i === requestedWkId);
-    const filtered = weekCampaigns?.[0]?.campaigns.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+    const filtered = weekCampaigns?.[0]?.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
     const generalCampaign = filtered?.[0] || mockCampaign;
     
     return {    
@@ -93,7 +93,7 @@ export const mockProfileReturn : ProfileReturnType = {
         eligibility,
         claimId,
         requestedWeekId: BigInt(requestedWkId),
-        totalPointsInRequestedCampaign: generalCampaign.totalPoints,
+        totalPointsInRequestedCampaign: generalCampaign.data.totalPoints,
         claimDeadline: toBN(weekData?.[requestedWkId]?.claimDeadline?.toString() || '0').toNumber(),
         campaignHash,
         profile,

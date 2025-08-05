@@ -33,12 +33,7 @@
     42220
   ],
   "paths": {
-    "42220": [
-      "deployments\\celo\\Claim.json",
-      "deployments\\celo\\FeeManager.json",
-      "deployments\\celo\\GrowToken.json",
-      "deployments\\celo\\Learna.json"
-    ],
+    "42220": [],
     "44787": [
       "deployments\\alfajores\\Claim.json",
       "deployments\\alfajores\\FeeManager.json",
@@ -49,17 +44,13 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0xec3A5EDAFF8B3e9c74b64b2c54ad1cf2dc5aa637",
-      "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
-      "GrowToken": "0x8573Ca487C45F08076E7e8ad8FA8edb1117b9Cd5",
-      "Learna": "0xDC34Ba11f7A4DC988b8359465787338E5a5EDA04"
+      "Claim": "0x447935B1e9EB4e91F4487F5d228Be8a528e66FC0",
+      "FeeManager": "0x0f596Ab93E922a1f8D56725e00acC74dd75d3926",
+      "GrowToken": "0x253A885B85641241Ff4031eC4122Ae1dcb0a722f",
+      "Learna": "0x7cC0adcd77571dD50F21B5f507b49509587d4897"
     },
     {
-      "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "Claim": "0x2082625E83E04776Ea33C10d97AeE1A356a5aE47",
-      "FeeManager": "0x25d6936aa067F42B4B8f0ab4c9FEE09194965C93",
-      "GrowToken": "0x6d64E61500FFc5Eef0B0CC5d8cf15bCdd58ed668",
-      "Learna": "0xd89B1C85a2BFc115AC6e849a05C20866B466fcE5"
+      "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a"
     }
   ]
 }

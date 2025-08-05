@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0xDC34Ba11f7A4DC988b8359465787338E5a5EDA04",
+  "contractAddress": "0x99E1516bE90be0E902331a3e964f23a6884559E9",
   "functionName": "getProfile",
-  "inputCount": 1,
+  "inputCount": 2,
   "requireArgUpdate": true,
   "abi": [
     {
@@ -10,6 +10,11 @@
           "internalType": "address",
           "name": "user",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
         }
       ],
       "name": "getProfile",
@@ -42,6 +47,11 @@
                     },
                     {
                       "internalType": "uint256",
+                      "name": "platform",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
                       "name": "weekId",
                       "type": "uint256"
                     },
@@ -52,7 +62,7 @@
                     },
                     {
                       "internalType": "bytes32",
-                      "name": "campaignHash",
+                      "name": "hash_",
                       "type": "bytes32"
                     }
                   ],
@@ -172,7 +182,7 @@
                 },
                 {
                   "internalType": "bytes32",
-                  "name": "campaignHash",
+                  "name": "hash_",
                   "type": "bytes32"
                 }
               ],
@@ -181,9 +191,9 @@
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct ILearna.WeekProfileData[]",
+          "internalType": "struct ILearna.WeekProfileData",
           "name": "result",
-          "type": "tuple[]"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",

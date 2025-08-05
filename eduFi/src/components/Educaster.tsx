@@ -19,7 +19,7 @@ import Dashboard from '~/components/quizComponents/Dashboard';
 import { QuizInterface } from '~/components/quizComponents/QuizInterface';
 import { QuizResults } from '~/components/quizComponents/QuizResults';
 import { useAccount, useChainId, useConfig, useConnect, useReadContracts } from 'wagmi';
-import { hexToString, zeroAddress } from 'viem';
+import { Hex, hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
 
@@ -32,13 +32,20 @@ import {
     formatAddr, 
     mockCampaign, 
     toBN,
-    mockAdmins
+    mockAdmins,
+    formatValue,
+    getTimeFromEpoch,
+    mockHash
 } from './utilities';
 
 import LandingPage from './landingPage';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import SetupCampaign from './peripherals/SetupCampaign';
+import AddressWrapper from './peripherals/AddressFormatter/AddressWrapper';
+import { SelectComponent } from './peripherals/SelectComponent';
+import assert from 'assert';
+import { mockFormattedCampaign } from './StorageContextProvider/AppContext';
 
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
@@ -58,6 +65,7 @@ export default function Educaster() {
     const [stateData, setStateData] = React.useState<ReadData>(mockReadData);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
     const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
+    const [requestedHash, setHash] = React.useState<Hex>(mockHash);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -111,6 +119,10 @@ export default function Educaster() {
 
     const toggleOpen = (arg: boolean) => {
         setMenu(arg);
+    }
+
+    const sethash = (arg: string) => {
+        setHash(arg as Hex);
     }
 
     const handleQuizComplete = (result: QuizResultInput) => {
@@ -185,7 +197,7 @@ export default function Educaster() {
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-    const readArgs = [[], [], []];
+    const readArgs = [[], [account], []];
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
@@ -227,13 +239,21 @@ export default function Educaster() {
         const data = stateData?? mockReadData;
         const weekId = data.state.weekId; // Current week Id
         const state = data.state;
-        const wkId = toBN(weekId.toString()).toNumber();
-        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { campaignHash, encoded }}) => {
+        const weekProfileData = data.profileData;
+        const allCampaign = data.approved.map(({hash_, encoded}) => {
             const campaign = hexToString(encoded);
-            return {campaignHash, campaign}
+            return{
+                campaign,
+                hash_
+            }
+        }) 
+        const wkId = toBN(weekId.toString()).toNumber();
+        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { data: { hash_, encoded }}}) => {
+            const campaign = hexToString(encoded);
+            return {hash_, campaign}
         });
         
-        const campaignHashes = campaignData.map(({campaignHash}) => campaignHash);
+        const campaignHashes = campaignData.map(({hash_}) => hash_);
         const campaignStrings = campaignData.map(({campaign}) => {
             return campaign;
         });
@@ -293,6 +313,40 @@ export default function Educaster() {
         }
     }, [currentPath, stateData]);
 
+    /**
+     * @dev Fetches all the campaigns from a particular week and return the formatted version
+     * @param weekId: The week Id to pull from
+     * @param setHash A function that is used to update the state somewhere when a child from a mapped string is selected   
+     */
+    const getFormattedCampaign  = React.useCallback((weekId: number) => {
+        assert(weekId < weekData.length, "Week Id exceeds the weekData length");
+        const formattedCampaigns = weekData[weekId].campaigns.map(({data: { data: { hash_, encoded }, ...rest}, users}) => {
+            return {
+                hash_,
+                campaignName: hexToString(encoded),
+                totalLearners: users.length,
+                fundsNative: formatValue(rest.fundsNative),
+                fundsERC20: formatValue(rest.fundsERC20),
+                platform: formatValue(rest.platformToken),
+                lastUpdated: getTimeFromEpoch(rest.lastUpdated),
+                totalPoints: rest.totalPoints.toString(),
+                operator: <AddressWrapper display={true} account={rest.operator} size={3} />,
+                token: <AddressWrapper display={true} account={rest.token} size={3} />,
+                users: <SelectComponent 
+                    setHash={sethash}
+                    campaigns={users}
+                    placeHolder="Learners"
+                    width="w-"
+                />
+            }
+        });
+        const formattedCampaign = formattedCampaigns.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+        return {
+            formattedCampaign: formattedCampaign[0]?? mockFormattedCampaign,
+            formattedCampaigns
+        }
+    }, [weekData, requestedHash]);
+
     return (  
         <StorageContextProvider
             value={{
@@ -318,6 +372,7 @@ export default function Educaster() {
                 setselectedCampaign,
                 setError,
                 toggleOpen,
+                getFormattedCampaign,
                 result: quizResult? quizResult : mockQuizResult,
                 quiz: selectedQuiz? selectedQuiz : mockQuiz,
                 onPlayAgain: handlePlayAgain,

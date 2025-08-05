@@ -60,7 +60,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     mapping(uint weekId => mapping(address user => ILearna.Eligibility[])) internal claimables;
 
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
-    mapping(uint weekId => mapping(address user => bool)) internal isVerifiedClaim;
+    mapping(address user => bool) internal isVerifiedClaim;
 
     /// @dev User's claim status. We use this to prevent users from trying to claim twice
     mapping(uint weekId => mapping(address user => bool)) internal isClaimed;
@@ -96,20 +96,17 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         return configId;
     }
 
-    ///@dev Fetches claimable data for all the wweeks except the current week, specifically the concluded week if any.
+    ///@dev Fetche user's claimables for all the campaign in the previous week.
     function getClaimable(address user) public view returns(ClaimResult[] memory result) {
-        uint weekIds = learna.getWeek();
-        if(weekIds > 0) {
-            result = new ClaimResult[](weekIds);
-            for(uint i = 0; i < weekIds; i++){
-                result[i] = ClaimResult(
-                    claimables[i][user], 
-                    i, 
-                    isVerifiedClaim[i][user],
-                    blacklisted[user],
-                    isClaimed[i][user]
-                );
-            }
+        ILearna.Campaign[] memory cps = learna.getCampaignsForThePastWeek();
+        for(uint i = 0; i < cps.length; i++){
+            result[i] = ClaimResult(
+                claimables[i][user], 
+                i, 
+                isVerifiedClaim[user],
+                blacklisted[user],
+                isClaimed[i][user]
+            );
         }
         return result;
     }
@@ -164,13 +161,12 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     function claimReward(uint weekId) external nonReentrant returns(bool done) {
         address user = _msgSender();
         ILearna.Eligibility[] memory claims = claimables[weekId][user];
-        require(isVerifiedClaim[weekId][user] && !blacklisted[user], "Not verified or blacklisted");
+        require(isVerifiedClaim[user] && !blacklisted[user], "Not verified or blacklisted");
         require(claims.length > 0, "Nothing to claim"); 
-        require(!isClaimed[weekId][user], "Nothing to claim"); 
+        require(!isClaimed[weekId][user], "Already claimed"); 
         isClaimed[weekId][user] = true;
         for(uint i = 0; i < claims.length; i++) {
             ILearna.Eligibility memory claim = claims[i];
-            require(claim.weekId == weekId, "WeekId mismatched");
             if(claim.protocolVerified){
                 claimables[weekId][user][i].erc20Amount = 0;
                 claimables[weekId][user][i].nativeAmount = 0;
@@ -183,7 +179,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     }
 
     /**
-     * @dev Registers user for the claim. 
+     * @dev Registers user to claim reward. 
      * @param user : User account
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week. 
@@ -191,10 +187,13 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      */
     function _setClaim(address user) internal returns(bool _return) {
         (ILearna.Eligibility[] memory eligibilities, uint weekId) = learna.checkEligibility(user);
-        require(!isVerifiedClaim[weekId][user], "Claim already registered");
-        isVerifiedClaim[weekId][user] = true;
+        require(!isVerifiedClaim[user], "Claim already registered");
+        isVerifiedClaim[user] = true;
         for(uint i = 0; i < eligibilities.length; i++) {
-            claimables[weekId][user].push(eligibilities[i]); 
+            ILearna.Eligibility memory elg = eligibilities[i];
+            if(elg.erc20Amount > 0 || elg.nativeAmount > 0 || elg.platform > 0){
+                claimables[weekId][user].push(eligibilities[i]); 
+            }
         }
         _return = true;
     }
@@ -232,9 +231,11 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
         require(output.userIdentifier > 0, "InvalidUserIdentifier");
-
-        // if(bytes(output.nationality).length == 0) revert NationalityRequired();
-        // Check that user age is min 16
+        require(output.olderThan >= 16, "You should be at least 16 yrs");
+        bool[3] memory ofacs = output.ofac;
+        for(uint8 i = 0; i < ofacs.length; i++) {
+            require(!ofacs[i], "Sanction individual");
+        }
  
         _setClaim(user);
 

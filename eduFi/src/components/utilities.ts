@@ -8,56 +8,35 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CategoryType, CData, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, TransactionData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, CampaignHash, CategoryType, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, GetFormattedCampaign, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, TransactionData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
+export const mockHash = keccak256(stringToBytes('mockHash'), 'hex')
 export const mockCampaign : Campaign = {
-  fundsNative: 0n,
-  fundsERC20: 0n,
-  totalPoints: 0n, 
-  lastUpdated: 0,
-  activeLearners: 0n,
-  operator: zeroAddress,
-  token: zeroAddress,
-  hash_: zeroAddress,
-  canClaim: false,
+  users: [zeroAddress],
   data: {
-    campaignHash: keccak256(stringToBytes('solidity'), 'hex'),
-    encoded: stringToHex("solidity")
+    platformToken: 0n,
+    fundsNative: 0n,
+    fundsERC20: 0n,
+    totalPoints: 0n, 
+    lastUpdated: 0,
+    activeLearners: 0n,
+    operator: zeroAddress,
+    token: zeroAddress,
+    data: {
+      hash_: mockHash,
+      encoded: stringToHex("solidity")
+    }
   }
 }
 
-export const mockReadData : ReadData = {
-  state: {
-    minimumToken: 0n,
-    weekId: 0n,
-    transitionInterval: 0,
-    transitionDate: 0
-  },
-  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}],
-}
-
-export const mockCData : CData = [
+export const mockCData : CampaignHash[] = [
   {
-    campaignHash: `0x${''}`,
-    encoded: `0x${''}`
+    encoded: `0x${''}`,
+    hash_: mockHash,
   }
 ];
-
-export const mockAdmins : Admin = {
-  id: zeroAddress,
-  active: false
-}
-
-export const mockEligibility : Eligibility = {
-  protocolVerified: false,
-  erc20Amount: 0n,
-  nativeAmount: 0n,
-  weekId: 0n,
-  token: `0x`,
-  campaignHash: `0x`
-}
 
 export const mockProfile : Profile = {
   other: {
@@ -92,9 +71,19 @@ export const mockProfile : Profile = {
   ]
 }
 
+export const mockEligibility : Eligibility = {
+  protocolVerified: false,
+  erc20Amount: 0n,
+  nativeAmount: 0n,
+  weekId: 0n,
+  token: `0x`,
+  hash_: mockHash,
+  platform: 0n
+}
+
 export const mockReadProfile : ReadProfile = {
   eligibility: mockEligibility,
-  campaignHash: `0x${''}`,
+  hash_: mockHash,
   profile: mockProfile
 }
 
@@ -102,6 +91,24 @@ export const mockWeekProfileData : WeekProfileData = {
   campaigns: [mockReadProfile],
   weekId: 0n
 }
+
+export const mockReadData : ReadData = {
+  state: {
+    minimumToken: 0n,
+    weekId: 0n,
+    transitionInterval: 0,
+    transitionDate: 0
+  },
+  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}],
+  approved: mockCData,
+  profileData: [mockWeekProfileData]
+}
+
+export const mockAdmins : Admin = {
+  id: zeroAddress,
+  active: false
+}
+
 
 // export const mockScoresParam : ScoresParam =  {
 //   category: '',

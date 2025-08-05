@@ -23,24 +23,24 @@ describe("Learna", function () {
       await growToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const campaign = campaigns[0];
       // const campaignHash = keccak256(stringToBytes(campaign));
-      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign, fundERC20, token: growTokenAddr, value});
+      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign, fundERC20, token: growToken, value});
       // const { campaignData } = await getCampaigns(learna);
       const newErc20Values = fundERC20 / 2n;
 
       const newNativeValues = value / 2n;
 
-      await learna.connect(admin2).adjustCampaignValues(cp.campaigns[0].hash_, newErc20Values, newNativeValues);
+      await learna.connect(admin2).adjustCampaignValues(cp.campaigns[0].data.data.hash_, newErc20Values, newNativeValues);
       const newCampaigns = (await getCampaigns(learna)).campaigns;
 
       // console.log("CP", cp.campaigns);
-      expect(cp.campaigns[0].activeLearners).to.be.eq(newCampaigns[0].activeLearners);
-      expect(cp.campaigns[0].fundsERC20 > newCampaigns[0].fundsERC20).to.be.true;
-      expect(cp.campaigns[0].fundsNative > newCampaigns[0].fundsNative).to.be.true;
-      expect(cp.campaigns[0].totalPoints).to.be.eq(newCampaigns[0].totalPoints);
-      expect(cp.campaigns[0].token).to.be.eq(newCampaigns[0].token);
-      expect(cp.campaigns[0].operator).to.be.eq(newCampaigns[0].operator);
-      expect(cp.campaigns[0].hash_).to.be.eq(campaignHash);
-      expect(cp.campaigns[0].lastUpdated <= newCampaigns[0].lastUpdated).to.be.true;
+      expect(cp.campaigns[0].data.activeLearners).to.be.eq(newCampaigns[0].data.activeLearners);
+      expect(cp.campaigns[0].data.fundsERC20 > newCampaigns[0].data.fundsERC20).to.be.true;
+      expect(cp.campaigns[0].data.fundsNative > newCampaigns[0].data.fundsNative).to.be.true;
+      expect(cp.campaigns[0].data.totalPoints).to.be.eq(newCampaigns[0].data.totalPoints);
+      expect(cp.campaigns[0].data.token).to.be.eq(newCampaigns[0].data.token);
+      expect(cp.campaigns[0].data.operator).to.be.eq(newCampaigns[0].data.operator);
+      expect(cp.campaigns[0].data.data.hash_).to.be.eq(campaignHash);
+      expect(cp.campaigns[0].data.lastUpdated <= newCampaigns[0].data.lastUpdated).to.be.true;
     });
   })
 })

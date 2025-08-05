@@ -16,9 +16,10 @@ describe("Learna", function () {
         const { allCampaign } = await getCampaigns(learna);
         const campaignHash = allCampaign[0].hash_ as Address;
         const quizResult = getQuizResult(campaignHash, 60);
-        const pf = (await recordPoints({deployer, learna, quizResult, campaignHash, user: signer1Addr, token: growTokenAddr}))?.[0].campaigns.filter(({campaignHash})=> campaignHash.toLowerCase() === campaignHash.toLowerCase())?.[0];
+        const pf = await recordPoints({deployer, learna, quizResult, campaignHash, user: signer1Addr, token: growTokenAddr});
+        const filtered = pf.campaigns.filter(({hash_})=> hash_.toLowerCase() === campaignHash.toLowerCase())?.[0];
 
-        const { other: {amountClaimedInERC20, amountClaimedInNative }, quizResults } = pf.profile;
+        const { other: {amountClaimedInERC20, amountClaimedInNative }, quizResults } = filtered.profile;
         expect(quizResults[0].other.score === BigInt(quizResult.other.score)).to.be.true;
         expect(amountClaimedInERC20).to.be.eq(0n);
         expect(amountClaimedInNative).to.be.eq(0n);
