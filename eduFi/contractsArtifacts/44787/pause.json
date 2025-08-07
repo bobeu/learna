@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x7cC0adcd77571dD50F21B5f507b49509587d4897",
+  "contractAddress": "0x848D28880c6155Df2d8C6520F936A7C5B2e398eb",
   "functionName": "pause",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -1207,6 +1207,16 @@
                               "internalType": "uint8",
                               "name": "totalQuizPerWeek",
                               "type": "uint8"
+                            },
+                            {
+                              "internalType": "bytes32",
+                              "name": "passkey",
+                              "type": "bytes32"
+                            },
+                            {
+                              "internalType": "bool",
+                              "name": "haskey",
+                              "type": "bool"
                             }
                           ],
                           "internalType": "struct ILearna.ProfileOther",
@@ -1550,11 +1560,6 @@
           "internalType": "uint32",
           "name": "interval",
           "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
         }
       ],
       "name": "setTransitionInterval",
@@ -1648,6 +1653,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "toggleUseKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1678,6 +1696,19 @@
       "name": "unpause",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "useKey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

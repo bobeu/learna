@@ -78,10 +78,9 @@ abstract contract Week is ILearna, Admins {
     /**
      * @dev Update transition interval
      * @param interval : New interval
-     * @param weekId : Week Id
      * @notice Transition interval will always reset the transition date 
     */
-    function setTransitionInterval(uint32 interval, uint weekId) public onlyOwner {
+    function setTransitionInterval(uint32 interval) public onlyOwner {
         if(interval > 0) state.transitionInterval = interval * 1 minutes;
     }
 

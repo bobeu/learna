@@ -96,10 +96,12 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         return configId;
     }
 
-    ///@dev Fetche user's claimables for all the campaign in the previous week.
+    ///@dev Fetch user's claimables for all the campaign in the previous week.
     function getClaimable(address user) public view returns(ClaimResult[] memory result) {
-        ILearna.Campaign[] memory cps = learna.getCampaignsForThePastWeek();
-        for(uint i = 0; i < cps.length; i++){
+        uint weeksId = learna.getWeek();
+        result.isVerified = isVerifiedClaim[user];
+        // ILearna.Campaign[] memory cps = learna.getCampaignsForThePastWeek();
+        for(uint i = 0; i < weeksId; i++){
             result[i] = ClaimResult(
                 claimables[i][user], 
                 i, 

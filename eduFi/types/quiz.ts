@@ -197,8 +197,7 @@ export interface ProfileOther {
   amountMinted: bigint;
   amountClaimedInNative: bigint;
   amountClaimedInERC20: bigint;
-  claimed: boolean;
-  passKey: string;
+  passkey: string;
   haskey: boolean;
   totalQuizPerWeek: number;
 }
@@ -322,17 +321,42 @@ export interface FormattedValue {
 }
 
 export interface GetFormattedCampaign {
-    hash_: Hex,
-    campaignName: string,
-    totalLearners: number,
-    fundsNative: FormattedValue,
-    fundsERC20: FormattedValue,
-    platform: FormattedValue,
-    lastUpdated: string,
-    totalPoints: string,
-    operator: React.JSX.Element,
-    token: React.JSX.Element,
-    users: React.JSX.Element
+    hash_: Hex;
+    campaignName: string;
+    totalLearners: number;
+    fundsNative: FormattedValue;
+    fundsERC20: FormattedValue;
+    platform: FormattedValue;
+    lastUpdated: string;
+    totalPoints: {
+      toStr: string;
+      toNum: number;
+    };
+    operator: React.JSX.Element;
+    token: React.JSX.Element;
+    campaignSelector: React.JSX.Element;
+    users: Address[];
+}
+
+export interface ProfilePerReqWk {
+  hash: Hex;
+  eligibility: {
+    erc20: FormattedValue;
+    native: FormattedValue;
+    platform: FormattedValue;
+    protocolVerified: boolean;
+    token: JSX.Element;
+  },
+  profile: {
+    quizResults:  QuizResultOuput[];
+    erc20Claimed: FormattedValue;
+    nativeClaimed: FormattedValue;
+    amountMinted: FormattedValue;
+    haskey: boolean;
+    passkey: Hex;
+    totalQuizTaken: number;
+  },
+  selector: JSX.Element;
 }
 
 export interface CampaignDatum {
@@ -388,4 +412,26 @@ export interface QuizData {
   categories: string;
   difficulties: string;
   categoryData: CategoryData[];
+}
+
+export type StateData = { weekProfileData: WeekProfileData[], claimables: ClaimResult[] }
+export interface UseProfileType { inHash?: Hex, wkId?: number }
+export interface ProfileReturnType {
+  campaign: Campaign;
+  profile: Profile;
+  protocolReward: {
+      erc20Amount: bigint;
+      nativeAmount: bigint;
+  };
+  claimed: boolean;
+  claimId: bigint;
+  hash_: Hex;
+  protocolVerified: boolean;
+  eligibility: ClaimResult;
+  requestedWeekId: bigint;
+  claimDeadline: number;
+  totalPointsForACampaign: number;
+  showVerificationButton: boolean;
+  showWithdrawalButton: boolean;
+  totalPointsInRequestedCampaign: bigint;
 }

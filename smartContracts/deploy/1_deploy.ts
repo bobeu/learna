@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('17749014662646832516411178564998433505113010850880578087896616728528899155154') : BigInt('16491795379214993993845921571295052164701259396155955472160620420208858192484');
+	const scopeValue = networkName === 'alfajores'? BigInt('9690368082999839464343357351032592794519336443393065888665767103515103302551') : BigInt('16491795379214993993845921571295052164701259396155955472160620420208858192484');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -82,6 +82,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const admins = await read("Learna", "getAdmins");
 	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
 	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
+	await execute('Learna', {from: deployer}, 'setToken', growToken.address);
 	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);

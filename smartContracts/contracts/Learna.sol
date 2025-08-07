@@ -13,6 +13,9 @@ contract Learna is Campaigns, ReentrancyGuard {
 
     Mode private mode;
 
+    ///@notice Flag that controls whether to use key mechanism for learners or not
+    bool public useKey;
+
     // Dev Address
     address private dev;
 
@@ -60,7 +63,10 @@ contract Learna is Campaigns, ReentrancyGuard {
         feeTo = _feeTo;
         if(mode == Mode.LIVE){
             _setTransitionInterval(transitionInterval, _getState().weekId);
-        } 
+            useKey = false;
+        } else {
+            useKey = true;
+        }
         for(uint i = 0; i < _admins.length; i++) {
             if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
         } 
@@ -81,6 +87,16 @@ contract Learna is Campaigns, ReentrancyGuard {
     */
     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
         profile = learners[weekId][hash_][user];
+    }
+
+    /**
+     * Toggle useKey status. 
+     @notice Toggling the function will continously alter the state of the useKey variable by negating the current status 
+    */
+    function toggleUseKey() public onlyOwner returns(bool) {
+        bool status = useKey;
+        useKey = !status;
+        return true;
     }
 
     /**
@@ -195,7 +211,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         _validateCampaign(hash_, weekId, 2);
         GetCampaign memory res = _getCampaign(weekId, hash_);
         if(!_checkRegistration(weekId, hash_, user)) _updateCampaignUsersList(res.slot, weekId, user);
-        Profile memory pf = _getProfile(weekId, hash_, user);
+        Profile memory pf = _generatekey(user, msg.value, weekId, hash_);
         require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
     
         unchecked {
@@ -271,6 +287,20 @@ contract Learna is Campaigns, ReentrancyGuard {
     ///////////////////////////////////
     //        INTERNAL FUNCTIONS     //
     ///////////////////////////////////
+
+    /**@dev If activated, generate new key for the user, and allocate some amount of GROW token to them based on the 
+        amount of value they have sent along with the call. 
+    */
+    function _generatekey(address user, uint value, uint weekId, bytes32 hash_) internal returns(Profile memory pf) {
+        pf = _getProfile(weekId, hash_, user);
+        if(useKey && value > 0) {
+            if(!pf.other.haskey) {
+                pf.other.haskey = true;
+                pf.other.passkey = keccak256(abi.encodePacked(user, weekId, value));
+                token.allocate(value, user);
+            }
+        }
+    }
 
     function _checkRegistration(uint weekId, bytes32 hash_, address user) internal returns(bool isReg) {
         if(!registered[user][hash_][weekId]){
@@ -432,6 +462,11 @@ contract Learna is Campaigns, ReentrancyGuard {
         Campaign[] memory cps = _getCampaings(weekId);
         uint sSize = cps.length;
         result = new Eligibility[](sSize);
+        if(useKey){
+            if(sSize > 0){
+                require(_getProfile(weekId, cps[0].data.data.hash_, user).other.haskey, "At least one passkey is required");
+            }
+        }
         for(uint i = 0; i < sSize; i++){
             result[i] = _getEligibility(user, cps[i].data.data.hash_, weekId);
         }
@@ -452,17 +487,17 @@ contract Learna is Campaigns, ReentrancyGuard {
         for(uint i = 0; i < weekIds; i++) {
             data.wd[i].campaigns = _getCampaings(i);
             data.wd[i].claimDeadline = _getDeadline(i);
-            ReadProfile[] memory userCampaigns = new ReadProfile[](hashSize);
+            ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
                     bytes32 hash_ = data.approved[hashId].hash_;
-                    userCampaigns[hashId] = ReadProfile( 
+                    _userCampaigns[hashId] = ReadProfile( 
                         _getEligibility(user, hash_, i),
                         _getProfile(i, hash_, user), 
                         hash_
                     );
                 }
-                data.profileData[i].campaigns = userCampaigns;
+                data.profileData[i].campaigns = _userCampaigns;
             }
         }
 
@@ -519,8 +554,8 @@ contract Learna is Campaigns, ReentrancyGuard {
         // return result;
     // }
 
-    // function getWeek() external view returns(uint) {
-    //     return _getState().weekId;
-    // }
+    function getWeek() external view returns(uint) {
+        return _getState().weekId;
+    }
 
 }

@@ -10,12 +10,13 @@ import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
-import useProfile, { ProfileReturnType } from "../hooks/useProfile";
+// import useProfile from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
-import { Hex } from "viem";
+// import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
 import Eligibiliies from "./Eligibilities";
+import { ProfileReturnType } from "../../../types/quiz";
 
 interface ProfileComponentProps {
     fid: number | undefined;
@@ -28,7 +29,7 @@ function ProfileComponent(
         fid,
         profileData: {
             profile: {
-                other: { totalQuizPerWeek }
+                other: { totalQuizPerWeek, }
             },
             protocolReward: { erc20Amount, nativeAmount },
             claimDeadline,
@@ -39,12 +40,14 @@ function ProfileComponent(
             eligibility,
             totalPointsInRequestedCampaign,
             campaign,
-            claimed
+            claimed,
+            protocolVerified
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
-
+    
+    const { } = eligibility;
     const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const back = () => {
@@ -56,7 +59,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { activeLearners, canClaim } = campaign;
+    const { data: { activeLearners,}, users } = campaign;
 
     if(showQRCode) {
         return(
@@ -87,10 +90,10 @@ function ProfileComponent(
                         <div className="text-lg opacity-80 capitalize">
                             <h3>Learners: {activeLearners.toString()}</h3>
                         </div>
-                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${canClaim? 'text-cyan-900' : ''}`}>
+                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${protocolVerified? 'text-cyan-900' : ''}`}>
                             <div className="flex justify-between gap-3 p-2">
                                 <BaggageClaim className={`w-5 h-5 text-gray-`} />
-                                <h3>{canClaim? 'Ready to claim' : 'Claim not Ready'}</h3>
+                                <h3>{protocolVerified? 'Ready to claim' : 'Claim not Ready'}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Sorted date</h3>
@@ -190,8 +193,8 @@ function ProfileComponent(
 }
 
 export default function Profile() {
-    const { setpath, campaignStrings, wkId, campaignData } = useStorage();
-    const { returnObj, setHash: setRequestedHash, setWeekId } = useProfile();
+    const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId, campaignData } = useStorage();
+    // const { formattedData, setHash: setRequestedHash, setWeekId } = useProfile();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -205,7 +208,7 @@ export default function Profile() {
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
     const setselectedWeek = (arg: string) => {
-        setWeekId(Number(arg));
+        setweekId(BigInt(arg));
     }
 
     const goToQuiz = () => {
@@ -220,10 +223,10 @@ export default function Profile() {
         setpath('setupcampaign');
     };
 
-    const setHash = (arg: string) => {
-        const found = campaignData.filter(q => q.campaign === arg);
-        if(found.length > 0) setRequestedHash(found[0].campaignHash as Hex);
-    }
+    // const setHash = (arg: string) => {
+    //     const found = campaignData.filter(q => q.campaign === arg);
+    //     if(found.length > 0) setRequestedHash(found[0].hash_);
+    // }
 
     return(
         <Wrapper2xl useMinHeight={true} >
@@ -261,7 +264,7 @@ export default function Profile() {
                     <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
                         <SelectComponent 
-                            setHash={setHash}
+                            setHash={sethash}
                             campaigns={campaignStrings}
                             placeHolder="Select campaign"
                             width="w-"
@@ -283,7 +286,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={returnObj}
+                    profileData={formattedData}
                 />
                 
                 {/* Exit button */}

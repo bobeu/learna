@@ -1,12 +1,12 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { Address, QuizResultOuput,UserStats } from '../../../types/quiz';
+import { ProfileReturnType, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-import useProfile, { type ProfileReturnType } from '../hooks/useProfile';
+// import useProfile from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -26,7 +26,7 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 
   const {  appData } = useStorage();
   const { profile: { quizResults} } = profile;
-
+ 
   useEffect(() => {
     if (quizResults && quizResults.length > 0) {
       const totalScore = quizResults.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
@@ -153,17 +153,17 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 };
 
 export default function Dashbaord() {
-  const { onQuizSelect, setpath, campaignStrings, campaignData, appData } = useStorage();
+  const { onQuizSelect, setpath, formattedData , sethash, campaignStrings, campaignData, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  const { returnObj , setHash: setRequestedHash } = useProfile();
+  // const { formattedData , setHash: setRequestedHash } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(1, 7);
 
   const setHash = (arg: string) => {
     const found = campaignData.find(q => q.campaign === arg);
-    setRequestedHash(found?.campaignHash as Address);
+    sethash(found?.hash_ as string);
   };
 
   const backHome = () => {
@@ -274,7 +274,7 @@ export default function Dashbaord() {
             />
           </div>
         </div>
-        <DashboardInfo profile={returnObj} />
+        <DashboardInfo profile={formattedData} />
       </div>
 
        {/* Featured Quizzes */}

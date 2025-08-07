@@ -4,7 +4,7 @@ import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucid
 import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
-import useProfile from '../hooks/useProfile';
+// import useProfile from '../hooks/useProfile'; 
 import { Hex, hexToString } from 'viem';
 
 export const QuizInterface = () => {
@@ -13,9 +13,9 @@ export const QuizInterface = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerInput | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  const { returnObj: { profile: { quizResults }}, setHash } = useProfile();
+  // const { formattedData: { profile: { quizResults }}, setHash } = useProfile();
 
-  const { quiz, onComplete, onBack } = useStorage();
+  const { quiz, formattedData: { profile: { quizResults }}, sethash, onComplete, onBack } = useStorage();
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
   const [startTime] = useState(Date.now());
 
@@ -24,7 +24,7 @@ export const QuizInterface = () => {
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   React.useEffect(() => { 
-    setHash(quiz.id as Hex);
+    sethash(quiz.id as Hex);
   }, [quiz]);
 
   const formatTime = (seconds: number) => {

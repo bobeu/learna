@@ -123,6 +123,8 @@ interface ILearna {
         uint amountClaimedInNative;
         uint amountClaimedInERC20;
         uint8 totalQuizPerWeek;
+        bytes32 passkey;
+        bool haskey;
     }
 
     struct Profile {
@@ -169,5 +171,5 @@ interface ILearna {
     function checkEligibility(address user) external view returns (Eligibility[] memory, uint weekId);
     function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
     function getCampaignsForThePastWeek() external view returns(Campaign[] memory result);
-    // function getWeek() external view returns(uint);
+    function getWeek() external view returns(uint);
 }

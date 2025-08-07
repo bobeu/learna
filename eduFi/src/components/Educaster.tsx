@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable---d */
 import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
@@ -6,7 +6,9 @@ import type {
     Campaign, 
     CampaignDatum, 
     CategoryType, 
+    ClaimResult, 
     Path, 
+    ProfilePerReqWk, 
     Quiz, 
     QuizResultInput, 
     QuizResultOtherInput, 
@@ -35,7 +37,9 @@ import {
     mockAdmins,
     formatValue,
     getTimeFromEpoch,
-    mockHash
+    mockHash,
+    mockClaimResult,
+    formatData
 } from './utilities';
 
 import LandingPage from './landingPage';
@@ -64,8 +68,11 @@ export default function Educaster() {
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
     const [stateData, setStateData] = React.useState<ReadData>(mockReadData);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
+    const [claimables, setClaimables] = React.useState<ClaimResult[]>([mockClaimResult]); //
     const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
+    const [requestedWkId, setWeekId] = React.useState<number>(0);
     const [requestedHash, setHash] = React.useState<Hex>(mockHash);
+    // const [requestedProfileHash, setHashProfile] = React.useState<Hex>(mockHash);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -119,10 +126,6 @@ export default function Educaster() {
 
     const toggleOpen = (arg: boolean) => {
         setMenu(arg);
-    }
-
-    const sethash = (arg: string) => {
-        setHash(arg as Hex);
     }
 
     const handleQuizComplete = (result: QuizResultInput) => {
@@ -191,13 +194,13 @@ export default function Educaster() {
     const { transactionData: td } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdmins'],
+        functionNames: ['owner', 'getData', 'getAdmins', 'getClaimable'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-    const readArgs = [[], [account], []];
+    const readArgs = [[], [account], [], [account]];
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
@@ -225,22 +228,27 @@ export default function Educaster() {
         let stateData_ : ReadData = mockReadData;
         let owner_ : Address = zeroAddress;
         let admins_ : Admin[] = [mockAdmins];
+        let claimables_ : ClaimResult[] = [mockClaimResult];
         if(result && result.length > 0) {
+            owner_ = result[0].result as Address;
             stateData_ = result[1].result as ReadData;
             admins_ = result[2].result as Admin[];
-            owner_ = result[0].result as Address;
+            claimables_ = result[3].result as ClaimResult[];
         }
+        setOwner(owner_);
         setStateData(stateData_);
         setAdmins(admins_);
-        setOwner(owner_);
+        setClaimables(claimables_);
     }, [result]);
 
-    const { weekId, state, wkId, weekData, app, userAdminStatus, campaignData, campaignHashes, campaignStrings } = React.useMemo(() => {
+    const { weekId, state, wkId, weekData, app, formattedData, userAdminStatus, campaignData, allCampaign, campaignStrings } = React.useMemo(() => {
         const data = stateData?? mockReadData;
         const weekId = data.state.weekId; // Current week Id
         const state = data.state;
         const weekProfileData = data.profileData;
-        const allCampaign = data.approved.map(({hash_, encoded}) => {
+
+        // Return all approved campaigns
+        const allCampaign : CampaignDatum[] = data.approved.map(({hash_, encoded}) => {
             const campaign = hexToString(encoded);
             return{
                 campaign,
@@ -248,22 +256,29 @@ export default function Educaster() {
             }
         }) 
         const wkId = toBN(weekId.toString()).toNumber();
+
+        // Will always return the campaign for the current week
         const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { data: { hash_, encoded }}}) => {
             const campaign = hexToString(encoded);
             return {hash_, campaign}
         });
         
-        const campaignHashes = campaignData.map(({hash_}) => hash_);
-        const campaignStrings = campaignData.map(({campaign}) => {
-            return campaign;
-        });
-        // const owner = result?.[0]?.result as Address || zeroAddress;
+        // const campaignHashes = allCampaign.map(({hash_}) => hash_);
+        const campaignStrings = allCampaign.map(({campaign}) => hexToString(campaign as Hex));
+        
         const weekData = [...data.wd];
         const admins = result?.[2]?.result as Admin[] || [mockAdmins];
-        // console.log("Admins: ", admins);
+
         let userAdminStatus = false;
         const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
         if(found && found.length > 0) userAdminStatus = found[0].active;
+
+        const formattedData = formatData(
+            {weekProfileData, claimables},
+            weekData,
+            requestedWkId,
+            requestedHash
+        );
 
         let app = <></>;
         switch (currentPath) {
@@ -308,44 +323,144 @@ export default function Educaster() {
             weekData,
             campaignData,
             campaignStrings,
-            campaignHashes,
-            userAdminStatus
+            allCampaign,
+            formattedData,
+            // campaignHashes,
+            userAdminStatus,
+            // weekProfileData
         }
-    }, [currentPath, stateData]);
+    }, [currentPath, stateData, requestedWkId, requestedHash]);
+
+    const sethash = (arg: string) => {
+        const filtered = allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
+        if(filtered.length > 0){
+            setHash(filtered[0]?.hash_);
+        } else {
+            alert("Can't find corresponding campaign");
+        }
+    }
+
+    const setweekId = (arg: bigint) => {
+        setWeekId(toBN(arg).toNumber());
+        // const filtered = allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
+        // if(filtered.length > 0){
+        //     setWeekId(arg);
+        // } else {
+        //     alert("Can't find corresponding campaign");
+        // }
+    }
+
+    // const getFormattedProfile = React.useCallback((weekId: number) => {
+    //     // Search the data corresponding to the weekId
+    //     const fWeek = weekProfileData.filter(({weekId: wk}) => toBN(wk.toString()).toNumber() === weekId);
+    //     const found = fWeek[0];
+    //     const profilesPerReqWk : ProfilePerReqWk[] = found.campaigns.map(({eligibility: elg, hash_, profile: pf}) => {
+    //         const erc20 = toBN(elg.erc20Amount);
+    //         const native = toBN(elg.nativeAmount);
+    //         const platform = toBN(elg.platform);
+    //         const showVerificationButton = elg.protocolVerified && (erc20.gt(0) || native.gt(0) || platform.gt(0));
+    //         const wkClaimables = claimables.filter(({weekId: wk}) => toBN(wk.toString()).toNumber() === weekId); 
+    //         // const campaignClaimable = wkClaimables[0].elgs.filter(({hash_}) => hash_.toLowerCase() === requestedProfileHash.toLowerCase());
+    //         // const eligibility = campaignClaimable[0]?? mockClaimResult;
+    //         // const { platform } = eligibility;
+    //         const { elgs, barred, isVerified, claimed} = wkClaimables[0]?? mockClaimResult;
+    //         let showWithdrawalButton = false;
+    //         elgs.forEach(({erc20Amount, nativeAmount, protocolVerified}) => {
+    //             if((erc20Amount > 0n || nativeAmount > 0n) && protocolVerified  && !barred && isVerified && !claimed) {
+    //                 showWithdrawalButton = true;
+    //             }
+    //         });
+
+    //         return {
+    //             hash: hash_,
+    //             showWithdrawalButton,
+    //             eligibility: {
+    //                 showVerificationButton,
+    //                 erc20: formatValue(elg.erc20Amount),
+    //                 native: formatValue(elg.nativeAmount),
+    //                 platform: formatValue(elg.platform),
+    //                 protocolVerified: elg.protocolVerified,
+    //                 token: <AddressWrapper display={true} account={elg.token} size={3} />,
+    //             },
+    //             profile: {
+    //                 quizResults:  pf.quizResults,
+    //                 erc20Claimed: formatValue(pf.other.amountClaimedInERC20),
+    //                 nativeClaimed: formatValue(pf.other.amountClaimedInNative),
+    //                 amountMinted: formatValue(pf.other.amountMinted),
+    //                 haskey: pf.other.haskey,
+    //                 passkey: pf.other.passkey as Hex,
+    //                 totalQuizTaken: pf.other.totalQuizPerWeek
+    //             },
+    //             selector: <SelectComponent 
+    //                 setHash={sethashProfile}
+    //                 campaigns={campaignStrings}
+    //                 placeHolder="Learners"
+    //                 width="w-"
+    //             />
+    //         }
+    //     });
+    //     const filteredWkData = weekData.filter(({weekId: wId}) => toBN(wId).toNumber() === weekId);
+    //     const deadline = toBN(filteredWkData[0].claimDeadline).toNumber();
+    //     const filteredCampaign = filteredWkData[0].campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedProfileHash.toLowerCase());
+    //     const totalPoints = filteredCampaign[0].data.totalPoints;
+    //     const formattedProfile = profilesPerReqWk.filter(({hash}) => hash.toLowerCase() === requestedProfileHash.toLowerCase());
+    //     return {
+    //         formattedProfiles: profilesPerReqWk,
+    //         formattedProfile: formattedProfile[0],
+    //         deadline: {
+    //             toDate: getTimeFromEpoch(deadline),
+    //             toNum: deadline
+    //         },
+    //         totalPoints: {
+    //             toStr: totalPoints.toString(),
+    //             toNum: toBN(totalPoints).toNumber()
+    //         }
+    //     }
+    // }, [weekProfileData, requestedProfileHash]);
 
     /**
      * @dev Fetches all the campaigns from a particular week and return the formatted version
      * @param weekId: The week Id to pull from
      * @param setHash A function that is used to update the state somewhere when a child from a mapped string is selected   
      */
-    const getFormattedCampaign  = React.useCallback((weekId: number) => {
-        assert(weekId < weekData.length, "Week Id exceeds the weekData length");
-        const formattedCampaigns = weekData[weekId].campaigns.map(({data: { data: { hash_, encoded }, ...rest}, users}) => {
-            return {
-                hash_,
-                campaignName: hexToString(encoded),
-                totalLearners: users.length,
-                fundsNative: formatValue(rest.fundsNative),
-                fundsERC20: formatValue(rest.fundsERC20),
-                platform: formatValue(rest.platformToken),
-                lastUpdated: getTimeFromEpoch(rest.lastUpdated),
-                totalPoints: rest.totalPoints.toString(),
-                operator: <AddressWrapper display={true} account={rest.operator} size={3} />,
-                token: <AddressWrapper display={true} account={rest.token} size={3} />,
-                users: <SelectComponent 
-                    setHash={sethash}
-                    campaigns={users}
-                    placeHolder="Learners"
-                    width="w-"
-                />
-            }
-        });
-        const formattedCampaign = formattedCampaigns.filter(({hash_}) => hash_.toLowerCase() === requestedHash.toLowerCase());
-        return {
-            formattedCampaign: formattedCampaign[0]?? mockFormattedCampaign,
-            formattedCampaigns
-        }
-    }, [weekData, requestedHash]);
+    // const getFormattedCampaign  = React.useCallback((weekId: number) => {
+    //     assert(weekId < weekData.length, "Week Id exceeds the weekData length");
+    //     const formattedCampaigns = weekData[weekId].campaigns.map(({data: { data: { hash_, encoded }, ...rest}, users}) => {
+    //         return {
+    //             hash_,
+    //             campaignName: hexToString(encoded),
+    //             totalLearners: users.length,
+    //             fundsNative: formatValue(rest.fundsNative),
+    //             fundsERC20: formatValue(rest.fundsERC20),
+    //             platform: formatValue(rest.platformToken),
+    //             lastUpdated: getTimeFromEpoch(rest.lastUpdated),
+    //             totalPoints: {
+    //                 toStr: rest.totalPoints.toString(),
+    //                 toNum: toBN(rest.totalPoints).toNumber()
+    //             },
+    //             operator: <AddressWrapper display={true} account={rest.operator} size={3} />,
+    //             token: <AddressWrapper display={true} account={rest.token} size={3} />,
+    //             users,
+    //             campaignSelector: <SelectComponent 
+    //                 setHash={sethashStat}
+    //                 campaigns={campaignStrings}
+    //                 placeHolder="Learners"
+    //                 width="w-"
+    //             />
+    //         }
+    //     });
+    //     const filteredDeadline = weekData.filter(({weekId: wId}) => toBN(wId).toNumber() === weekId);
+    //     const deadline = toBN(filteredDeadline[0].claimDeadline).toNumber();
+    //     const formattedCampaign = formattedCampaigns.filter(({hash_}) => hash_.toLowerCase() === requestedHashStat.toLowerCase());
+    //     return {
+    //         formattedCampaign: formattedCampaign[0]?? mockFormattedCampaign,
+    //         formattedCampaigns,
+    //         deadline: {
+    //             toDate: getTimeFromEpoch(deadline),
+    //             toNum: deadline
+    //         }
+    //     }
+    // }, [weekData, requestedHashStat]);
 
     return (  
         <StorageContextProvider
@@ -362,17 +477,21 @@ export default function Educaster() {
                 admins,
                 wkId,
                 refetch,
-                campaignHashes,
                 campaignStrings,
                 recordPoints,
                 isMenuOpen,
+                claimables,
+                formattedData,
                 toggleRecordPoints,
                 appData,
                 setmessage,
                 setselectedCampaign,
                 setError,
+                setweekId,
+                sethash,
                 toggleOpen,
-                getFormattedCampaign,
+                // getFormattedCampaign,
+                // getFormattedProfile,
                 result: quizResult? quizResult : mockQuizResult,
                 quiz: selectedQuiz? selectedQuiz : mockQuiz,
                 onPlayAgain: handlePlayAgain,
@@ -382,6 +501,8 @@ export default function Educaster() {
                 onBack: handleBackToDashboard,
                 userResults,
                 campaignData,
+                allCampaign,
+                // weekProfileData,
                 userAdminStatus,
                 toggleLoading,
                 callback,
