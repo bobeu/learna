@@ -30,6 +30,7 @@ export type FunctionName =
   'setPermission' |
   'banOrUnbanUser'|
   'getCampaingData' |
+  'getVerificationStatus' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
@@ -195,8 +196,6 @@ export interface Claim {
 
 export interface ProfileOther {
   amountMinted: bigint;
-  amountClaimedInNative: bigint;
-  amountClaimedInERC20: bigint;
   passkey: string;
   haskey: boolean;
   totalQuizPerWeek: number;
@@ -215,16 +214,17 @@ export interface ReadProfile {
 
 export interface WeekProfileData {
   weekId: bigint;
+  isClaimed: boolean;
   campaigns: Readonly<ReadProfile[]>;
 }
 
-export interface ClaimResult {
-  elgs: Readonly<Eligibility[]>;
-  weekId: bigint;
-  isVerified: boolean;
-  barred: boolean;
-  claimed: boolean;
-}
+// export interface ClaimResult {
+//   elgs: Readonly<Eligibility[]>;
+//   weekId: bigint;
+//   isVerified: boolean;
+//   barred: boolean;
+//   claimed: boolean;
+// }
 
 export interface CampaignHash {
   hash_: Hex;
@@ -316,26 +316,26 @@ export type FilterTransactionDataProps = {
 // export type ScoresReturn = () => ScoresParam;
 
 export interface FormattedValue {
-    toStr: string;
-    toNum: number;
+  toStr: string;
+  toNum: number;
 }
 
 export interface GetFormattedCampaign {
-    hash_: Hex;
-    campaignName: string;
-    totalLearners: number;
-    fundsNative: FormattedValue;
-    fundsERC20: FormattedValue;
-    platform: FormattedValue;
-    lastUpdated: string;
-    totalPoints: {
-      toStr: string;
-      toNum: number;
-    };
-    operator: React.JSX.Element;
-    token: React.JSX.Element;
-    campaignSelector: React.JSX.Element;
-    users: Address[];
+  hash_: Hex;
+  campaignName: string;
+  totalLearners: number;
+  fundsNative: FormattedValue;
+  fundsERC20: FormattedValue;
+  platform: FormattedValue;
+  lastUpdated: string;
+  totalPoints: {
+    toStr: string;
+    toNum: number;
+  };
+  operator: React.JSX.Element;
+  token: React.JSX.Element;
+  campaignSelector: React.JSX.Element;
+  users: Address[];
 }
 
 export interface ProfilePerReqWk {
@@ -365,7 +365,7 @@ export interface CampaignDatum {
 }
 
 export interface Eligibility {
-  protocolVerified: boolean;
+  isEligible: boolean;
   erc20Amount: bigint;
   nativeAmount: bigint;
   platform: bigint;
@@ -414,24 +414,18 @@ export interface QuizData {
   categoryData: CategoryData[];
 }
 
-export type StateData = { weekProfileData: WeekProfileData[], claimables: ClaimResult[] }
+export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: [boolean, boolean];}
 export interface UseProfileType { inHash?: Hex, wkId?: number }
-export interface ProfileReturnType {
+export interface FormattedData {
   campaign: Campaign;
-  profile: Profile;
-  protocolReward: {
-      erc20Amount: bigint;
-      nativeAmount: bigint;
-  };
-  claimed: boolean;
-  claimId: bigint;
-  hash_: Hex;
-  protocolVerified: boolean;
-  eligibility: ClaimResult;
+  isClaimed: boolean;
+  profile: ProfileOther;
+  eligibility: Eligibility;
   requestedWeekId: bigint;
-  claimDeadline: number;
-  totalPointsForACampaign: number;
-  showVerificationButton: boolean;
-  showWithdrawalButton: boolean;
   totalPointsInRequestedCampaign: bigint;
+  claimDeadline: number;
+  profileQuizzes: QuizResultOuput[];
+  showWithdrawalButton: boolean;
+  showVerificationButton: boolean;
+  totalPointsForACampaign: number;
 }

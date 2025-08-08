@@ -144,10 +144,11 @@ export default function Stats() {
         setpath, 
         owner,
         wkId,
+        requestedWkId,
         campaignStrings,
         userAdminStatus,
         campaignData,
-        formattedData: { claimDeadline, campaign, protocolVerified }, 
+        formattedData: { claimDeadline, campaign }, 
         sethash, 
         setweekId,
         state: { transitionInterval, weekId, transitionDate }
@@ -286,7 +287,7 @@ export default function Stats() {
                     campaign={campaign} 
                     transitionDate={transitionDate}
                     claimDeadline={claimDeadline}
-                    protocolVerified={protocolVerified}
+                    protocolVerified={requestedWkId < wkId}
                 />
             </div>
 

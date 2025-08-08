@@ -14,7 +14,7 @@ interface QuizCardProps {
 }
 
 export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, onSelect }) => {
-    const { activeLearners, lastUpdated, totalPoints, operator, token, fundsERC20, fundsNative } = campaign;
+    const { activeLearners, lastUpdated, totalPoints, operator, token, fundsERC20, fundsNative } = campaign.data;
     const chainId = useChainId();
     const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
     const growToken = ca.GrowToken as Address;

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x848D28880c6155Df2d8C6520F936A7C5B2e398eb",
+  "contractAddress": "0xaEe680d23CDb4C159e13468489Fc9B4c1f21F23d",
   "functionName": "getData",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -161,12 +161,17 @@
                   "type": "uint256"
                 },
                 {
+                  "internalType": "bool",
+                  "name": "isClaimed",
+                  "type": "bool"
+                },
+                {
                   "components": [
                     {
                       "components": [
                         {
                           "internalType": "bool",
-                          "name": "protocolVerified",
+                          "name": "isEligible",
                           "type": "bool"
                         },
                         {
@@ -185,11 +190,6 @@
                           "type": "uint256"
                         },
                         {
-                          "internalType": "uint256",
-                          "name": "weekId",
-                          "type": "uint256"
-                        },
-                        {
                           "internalType": "address",
                           "name": "token",
                           "type": "address"
@@ -198,6 +198,11 @@
                           "internalType": "bytes32",
                           "name": "hash_",
                           "type": "bytes32"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "weekId",
+                          "type": "uint256"
                         }
                       ],
                       "internalType": "struct ILearna.Eligibility",
@@ -287,16 +292,6 @@
                             {
                               "internalType": "uint256",
                               "name": "amountMinted",
-                              "type": "uint256"
-                            },
-                            {
-                              "internalType": "uint256",
-                              "name": "amountClaimedInNative",
-                              "type": "uint256"
-                            },
-                            {
-                              "internalType": "uint256",
-                              "name": "amountClaimedInERC20",
                               "type": "uint256"
                             },
                             {

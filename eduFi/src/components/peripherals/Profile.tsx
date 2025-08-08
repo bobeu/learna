@@ -15,13 +15,13 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 // import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
-import Eligibiliies from "./Eligibilities";
-import { ProfileReturnType } from "../../../types/quiz";
+// import Eligibiliies from "./Eligibilities";
+import { FormattedData } from "../../../types/quiz";
 
 interface ProfileComponentProps {
     fid: number | undefined;
     weekId: number;
-    profileData: ProfileReturnType;
+    profileData: FormattedData;
 }
 
 function ProfileComponent(
@@ -29,9 +29,9 @@ function ProfileComponent(
         fid,
         profileData: {
             profile: {
-                other: { totalQuizPerWeek, }
+                totalQuizPerWeek,
             },
-            protocolReward: { erc20Amount, nativeAmount },
+            isClaimed,
             claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
@@ -39,15 +39,13 @@ function ProfileComponent(
             requestedWeekId,
             eligibility,
             totalPointsInRequestedCampaign,
-            campaign,
-            claimed,
-            protocolVerified
+            campaign
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
     
-    const { } = eligibility;
+    const { isEligible, erc20Amount, nativeAmount, platform } = eligibility;
     const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const back = () => {
@@ -90,10 +88,10 @@ function ProfileComponent(
                         <div className="text-lg opacity-80 capitalize">
                             <h3>Learners: {activeLearners.toString()}</h3>
                         </div>
-                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${protocolVerified? 'text-cyan-900' : ''}`}>
+                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${isEligible? 'text-cyan-900' : ''}`}>
                             <div className="flex justify-between gap-3 p-2">
                                 <BaggageClaim className={`w-5 h-5 text-gray-`} />
-                                <h3>{protocolVerified? 'Ready to claim' : 'Claim not Ready'}</h3>
+                                <h3>{isEligible? 'Ready to claim' : 'Claim not Ready'}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Sorted date</h3>
@@ -111,10 +109,10 @@ function ProfileComponent(
                     </div>
                 </div>
 
-                {/* Eligibiliies */}
+                {/* Eligibiliies
                 <Eligibiliies  
                     eligibility={eligibility}
-                />
+                /> */}
 
                 {/* Stats Grid*/}
                 <div className="space-y-3">
@@ -127,7 +125,7 @@ function ProfileComponent(
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {totalQuizPerWeek || 0}
                             </div>
-                            <div className="text-sm text-gray-600">Total Onchain Streak</div>
+                            <div className="text-sm text-gray-600">Total Quiz attempted</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -136,16 +134,23 @@ function ProfileComponent(
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {
-                                    (showVerificationButton && !showWithdrawalButton && !claimed) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                    showVerificationButton && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
-                                    (showWithdrawalButton || claimed ) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                    showWithdrawalButton && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
-                                    (!showVerificationButton && !showWithdrawalButton && !claimed) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
+                                    (!showVerificationButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
                                 }
                             </div>
                             <div className="text-sm text-gray-600">Verification status</div>
+                        </div>
+                       
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <CheckCircle className={`w-8 h-8 ${!isClaimed? 'text-red-600' : 'text-green-600' }`} />
+                            </div>
+                            <div className="text-sm text-gray-600">Reward claimed</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -153,9 +158,19 @@ function ProfileComponent(
                                 <HandCoins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(erc20Amount?.toString()).toStr || '0'}
+                                {formatValue(erc20Amount.toString()).toStr || '0'}
                             </div>
-                            <div className="text-sm text-gray-600">Amount of $GROW earned</div>
+                            <div className="text-sm text-gray-600">Reward in other token</div>
+                        </div>
+                       
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <HandCoins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(platform.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Reward in $GROW token</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -165,7 +180,7 @@ function ProfileComponent(
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {formatValue(nativeAmount?.toString()).toStr || '0'}
                             </div>
-                            <div className="text-sm text-gray-600">Amount of $CELO earned</div>
+                            <div className="text-sm text-gray-600">Reward in $CELO</div>
                         </div>
                     </div>
 
@@ -178,15 +193,14 @@ function ProfileComponent(
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />
-                <span>{(showVerificationButton && !showWithdrawalButton && !claimed) && 'Verify To Claim'}</span>
-                <span>{(showWithdrawalButton && !claimed) && 'Withdraw'}</span>
-                <span>{(!showVerificationButton && !showWithdrawalButton && !claimed) && 'Not Eligible'}</span>
-                <span>{claimed && 'Claimed'}</span>
+                <span>{showVerificationButton && 'Verify To Claim'}</span>
+                <span>{showWithdrawalButton && 'Withdraw'}</span>
+                <span>{(!showVerificationButton || !showWithdrawalButton) && 'Not Eligible'}</span>
+                <span>{isClaimed && 'Claimed'}</span>
             </CustomButton>
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                weekId={requestedWeekId}
             />
         </MotionDisplayWrapper>
     );

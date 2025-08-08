@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { ProfileReturnType, QuizResultOuput,UserStats } from '../../../types/quiz';
+import { FormattedData, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
@@ -21,30 +21,30 @@ const emptyStats = {
   streak: 0
 };
 
-export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
+export const DashboardInfo = ({data} : {data: FormattedData}) => {
   const [stats, setStats] = useState<UserStats>(emptyStats);
 
   const {  appData } = useStorage();
-  const { profile: { quizResults} } = profile;
+  const { profileQuizzes } = data;
  
   useEffect(() => {
-    if (quizResults && quizResults.length > 0) {
-      const totalScore = quizResults.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
-      const totalPoints = quizResults?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
+    if (profileQuizzes && profileQuizzes.length > 0) {
+      const totalScore = profileQuizzes.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
+      const totalPoints = profileQuizzes?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
       const averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
-      const bestScore = Math.max(...quizResults.map(result => result.other.percentage));
+      const bestScore = Math.max(...profileQuizzes.map(result => result.other.percentage));
 
       setStats({
-        totalQuizzes: quizResults.length,
+        totalQuizzes: profileQuizzes.length,
         totalScore,
         averageScore,
         bestScore,
-        streak: calculateStreak(quizResults)
+        streak: calculateStreak(profileQuizzes)
       });
     } else {
       setStats(emptyStats);
     }
-  }, [quizResults]);
+  }, [profileQuizzes]);
 
   const calculateStreak = (results: QuizResultOuput[]): number => {
     // Simple streak calculation - consecutive quizzes with 70%+ score
@@ -109,13 +109,13 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
       </div>
 
       {/* Recent Results */}
-      {quizResults.length > 0 && (
+      {profileQuizzes.length > 0 && (
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Results</h2>
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6">
               <div className="space-y-4">
-                {quizResults?.slice(0, 5).map((result, key) => {
+                {profileQuizzes?.slice(0, 5).map((result, key) => {
                   const quiz = appData?.quizData?.find(q => q.id === result.other.quizId);
                   return (
                     <div key={key} className="flex items-center justify-between p-4 bg-white/50 rounded-xl hover:bg-white/70 transition-colors">
@@ -274,7 +274,7 @@ export default function Dashbaord() {
             />
           </div>
         </div>
-        <DashboardInfo profile={formattedData} />
+        <DashboardInfo data={formattedData} />
       </div>
 
        {/* Featured Quizzes */}

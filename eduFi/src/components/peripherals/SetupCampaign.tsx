@@ -5,7 +5,7 @@ import useStorage from "../hooks/useStorage";
 import { useChainId, } from "wagmi";
 import { filterTransactionData, formatAddr } from "../utilities";
 import { parseUnits, zeroAddress } from "viem";
-import { Address, CampaignDataFormatted } from "../../../types/quiz";
+import { Address, CampaignHashFormatted } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
 import CustomButton from "./CustomButton";
 import { Info, Award } from "lucide-react";
@@ -26,13 +26,13 @@ export function CampaignMap(
     {campaignData, setCampaign} : 
     {
         selectedCampaign: string; 
-        campaignData: CampaignDataFormatted[];
-        setCampaign: (data: CampaignDataFormatted) => void;
+        campaignData: CampaignHashFormatted[];
+        setCampaign: (data: CampaignHashFormatted) => void;
     }) 
 {
     const onChange = (value: string) => {
         if(campaignData && campaignData.length > 0){
-            const filtered : CampaignDataFormatted[] = campaignData.filter(({campaign}) => value === campaign);
+            const filtered : CampaignHashFormatted[] = campaignData.filter(({campaign}) => value === campaign);
             setCampaign(filtered?.[0]);
         } else {
             alert('Please check you connection.')

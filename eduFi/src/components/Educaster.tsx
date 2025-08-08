@@ -6,7 +6,6 @@ import type {
     Campaign, 
     CampaignDatum, 
     CategoryType, 
-    ClaimResult, 
     Path, 
     ProfilePerReqWk, 
     Quiz, 
@@ -35,10 +34,7 @@ import {
     mockCampaign, 
     toBN,
     mockAdmins,
-    formatValue,
-    getTimeFromEpoch,
     mockHash,
-    mockClaimResult,
     formatData
 } from './utilities';
 
@@ -68,7 +64,7 @@ export default function Educaster() {
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
     const [stateData, setStateData] = React.useState<ReadData>(mockReadData);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
-    const [claimables, setClaimables] = React.useState<ClaimResult[]>([mockClaimResult]); //
+    const [verificationStatus, setVerificationStatus] = React.useState<[boolean, boolean]>([false, false]); //
     const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
     const [requestedWkId, setWeekId] = React.useState<number>(0);
     const [requestedHash, setHash] = React.useState<Hex>(mockHash);
@@ -194,7 +190,7 @@ export default function Educaster() {
     const { transactionData: td } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdmins', 'getClaimable'],
+        functionNames: ['owner', 'getData', 'getAdmins', 'getVerificationStatus'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
@@ -228,17 +224,17 @@ export default function Educaster() {
         let stateData_ : ReadData = mockReadData;
         let owner_ : Address = zeroAddress;
         let admins_ : Admin[] = [mockAdmins];
-        let claimables_ : ClaimResult[] = [mockClaimResult];
+        let verificationStatus_ : [boolean, boolean] = [false, false];
         if(result && result.length > 0) {
             owner_ = result[0].result as Address;
             stateData_ = result[1].result as ReadData;
             admins_ = result[2].result as Admin[];
-            claimables_ = result[3].result as ClaimResult[];
+            verificationStatus_ = result[3].result as [boolean, boolean];
         }
         setOwner(owner_);
         setStateData(stateData_);
         setAdmins(admins_);
-        setClaimables(claimables_);
+        setVerificationStatus(verificationStatus_);
     }, [result]);
 
     const { weekId, state, wkId, weekData, app, formattedData, userAdminStatus, campaignData, allCampaign, campaignStrings } = React.useMemo(() => {
@@ -274,7 +270,7 @@ export default function Educaster() {
         if(found && found.length > 0) userAdminStatus = found[0].active;
 
         const formattedData = formatData(
-            {weekProfileData, claimables},
+            {weekProfileData, verificationStatus},
             weekData,
             requestedWkId,
             requestedHash
@@ -480,7 +476,8 @@ export default function Educaster() {
                 campaignStrings,
                 recordPoints,
                 isMenuOpen,
-                claimables,
+                requestedHash,
+                requestedWkId,
                 formattedData,
                 toggleRecordPoints,
                 appData,

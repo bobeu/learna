@@ -5,7 +5,7 @@ import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 
-export default function ClaimReward({ weekId, openDrawer, toggleDrawer }: claimProps) {
+export default function ClaimReward({openDrawer, toggleDrawer }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -24,7 +24,7 @@ export default function ClaimReward({ weekId, openDrawer, toggleDrawer }: claimP
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [weekId],
+                args: [],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -33,7 +33,7 @@ export default function ClaimReward({ weekId, openDrawer, toggleDrawer }: claimP
         })
         return transactions;
     
-   }, [td, weekId]);
+   }, [td]);
 
     return(
         <Confirmation 
@@ -48,5 +48,4 @@ export default function ClaimReward({ weekId, openDrawer, toggleDrawer }: claimP
 type claimProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    weekId: bigint;
 };

@@ -8,7 +8,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CategoryType, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, GetFormattedCampaign, Profile, ProfileReturnType, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, CampaignHash, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FormattedData, FunctionName, GetFormattedCampaign, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -40,8 +40,6 @@ export const mockCData : CampaignHash[] = [
 
 export const mockProfile : Profile = {
   other: {
-    amountClaimedInNative: 0n,
-    amountClaimedInERC20: 0n,
     passkey: "0x",
     haskey: false,
     totalQuizPerWeek: 0,
@@ -71,7 +69,7 @@ export const mockProfile : Profile = {
 }
 
 export const mockEligibility : Eligibility = {
-  protocolVerified: false,
+  isEligible: false,
   erc20Amount: 0n,
   nativeAmount: 0n,
   weekId: 0n,
@@ -88,9 +86,11 @@ export const mockReadProfile : ReadProfile = {
 
 export const mockWeekProfileData : WeekProfileData = {
   campaigns: [mockReadProfile],
-  weekId: 0n
+  weekId: 0n,
+  isClaimed: false
 }
 
+export const mockWeekData : WeekData[] = [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}];
 export const mockReadData : ReadData = {
   state: {
     minimumToken: 0n,
@@ -98,7 +98,7 @@ export const mockReadData : ReadData = {
     transitionInterval: 0,
     transitionDate: 0
   },
-  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}],
+  wd: mockWeekData,
   approved: mockCData,
   profileData: [mockWeekProfileData]
 }
@@ -188,35 +188,6 @@ export const mockQuizResult : QuizResultInput = {
     completedAt: new Date().toString(),
   }
 }
-
-export const mockClaimResult : ClaimResult = {
-  elgs: [0, 1].map(() => mockEligibility),
-  weekId: 0n,
-  isVerified: false,
-  barred: false,
-  claimed: false
-}
-
-export const mockProfileReturn : ProfileReturnType = {
-  showVerificationButton: false,
-  showWithdrawalButton: false,
-  profile: mockProfile,
-  protocolReward: {
-      erc20Amount: 0n,
-      nativeAmount: 0n
-  }, 
-  claimDeadline: 0,
-  protocolVerified: false,
-  eligibility: mockClaimResult,
-  claimId: 0n,
-  requestedWeekId: 0n,
-  campaign: mockCampaign,
-  hash_: mockHash,
-  claimed: false,
-  totalPointsForACampaign: 0,
-  totalPointsInRequestedCampaign: 0n
-}
-
 
 /**
  * @dev Converts an argument to a bigInt value
@@ -431,60 +402,47 @@ export function encodeUserData(campaignSlot: number): string {
   
 }
 
+/**
+ * @dev Search for a campaign with the corresponding weekId and campaign hash
+ * @param weekData : Week data list i.e Data from the backend or blockchain data
+ * @param requestedWkId : Week Id.
+ * @param requestedHash : Requested campaign hash
+ * @returns Found campaign
+ */
+export function filterWeekData(weekData: WeekData[], requestedWkId: number, requestedHash: Hex) {
+  const weeklyCampaigns = weekData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
+  const wcp = weeklyCampaigns?.[0] || mockWeekData;
+  const filteredCampaign = wcp.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+  const found = filteredCampaign?.[0] || mockCampaign;
+  return found;
+}
 
-export const formatData = (stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex) : ProfileReturnType => {
-  // const reqWeek = BigInt(requestedWkId);
-  // if(stateData && stateData.claimables && stateData.claimables.length > 0 && )
-  // console.log("requestedHash", requestedHash);
-  // console.log("stateData", stateData);
-  const claimables = stateData.claimables;
-  const readProfile = stateData.weekProfileData;
-
-  // Filter all the claimables you have for the requested week
-  // const eligibility = claimables?.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId)?.[0] || mockClaimResult;
-  const eligibility = claimables?.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId)?.[0] || mockClaimResult;
-
-  // Find the eligible campaign data for the requested week
-  const { elgs, barred, isVerified, weekId: claimId, claimed } = eligibility;
-  let showWithdrawalButton = false;
-  elgs.forEach(({erc20Amount, nativeAmount, protocolVerified}) => {
-      if((erc20Amount > 0n || nativeAmount > 0n) && protocolVerified  && !barred && isVerified && !claimed) showWithdrawalButton = true;
-  });
-
-  // Filter user profiles using the requestedWkId - Returns all the campaign profiles for that week
-  const wkFound = readProfile?.filter((_, i) => i === requestedWkId)?.[0] || [mockWeekProfileData];
-
-  // const filteredUserCampaigns = wkFound.campaigns;
-  const filteredUser = wkFound.campaigns?.filter(({hash_}) => hash_.toLowerCase() == requestedHash.toLowerCase())?.[0] || mockReadProfile;
-
-  const { eligibility: { protocolVerified, ...rest }, profile, hash_ } = filteredUser;
-
-  // Reward eligibility for the selected campaign. Soon as the week is sorted, users are eligible provided they 
-  // have earned points. Sort however does not qualify for withdrawal unless users earned valid points and verify their idemtity. 
-  const showVerificationButton = protocolVerified && rest?.erc20Amount > 0 && rest?.nativeAmount > 0n;
-  
-  // Total points earned in a campaign
-  const totalUserPointsForACampaign = profile.quizResults.reduce((total, quizResult) => total + quizResult.other.score, 0);
-  
-  // Search for the dashboard and Stat requested campaign using the requested parameters
-  const weekCampaigns = weekData.filter((_, i) => i === requestedWkId);
-  const filtered = weekCampaigns?.[0]?.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
-  const generalCampaign = filtered?.[0] || mockCampaign;
-    
+export function formatData(stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex): FormattedData {
+  const [isVerified, isBlacklisted] = stateData.verificationStatus;
+  const weekProfileData = stateData.weekProfileData;
+  const filteredWPD = weekProfileData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
+  const wpd = filteredWPD?.[0] || mockWeekProfileData;
+  const isClaimed = wpd.isClaimed;
+  const userCampaigns = wpd.campaigns.filter(({hash_, }) => hash_.toLowerCase() == requestedHash.toLowerCase());
+  const userCampaign = userCampaigns?.[0] || mockReadProfile;
+  const eligibility = userCampaign.eligibility;
+  const profileOther = userCampaign.profile.other;
+  const profileQuizzes = userCampaign.profile.quizResults;
+  const showVerificationButton = !isVerified && !isClaimed;
+  const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
+  const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
+  const campaign = filterWeekData(weekData, requestedWkId, requestedHash);
   return {
-    protocolVerified,
-    protocolReward: { ...rest },
-    campaign: generalCampaign,
+    campaign,
+    isClaimed,
+    profile: profileOther,
     eligibility,
-    claimId,
+    profileQuizzes,
     requestedWeekId: BigInt(requestedWkId),
-    totalPointsInRequestedCampaign: generalCampaign.data.totalPoints,
+    totalPointsInRequestedCampaign: campaign.data.totalPoints,
     claimDeadline: toBN(weekData?.[requestedWkId]?.claimDeadline?.toString() || '0').toNumber(),
-    hash_,
-    profile,
     showWithdrawalButton,
     showVerificationButton,
-    totalPointsForACampaign: totalUserPointsForACampaign,
-    claimed
+    totalPointsForACampaign: totalUserPointsForACampaign
   };
 };

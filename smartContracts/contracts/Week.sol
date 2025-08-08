@@ -18,7 +18,14 @@ abstract contract Week is ILearna, Admins {
     address public claim;
 
     /// @dev Claim deadlines
-    mapping (uint => uint96) private claimDeadlines;
+    mapping(uint => uint96) private claimDeadlines;
+
+    ///@dev Mapping that shows whether user has claimed reward for a specific week or not
+    mapping(address user => mapping(uint week => bool)) internal isClaimed;
+
+    function setIsClaimed(address user, uint weekId) external whenNotPaused onlyApproved() {
+        if(!isClaimed[user][weekId]) isClaimed[user][weekId] = true;
+    }
 
     function _getDeadline(uint weekId) internal view returns(uint96 deadline) {
         deadline = claimDeadlines[weekId];
@@ -102,6 +109,11 @@ abstract contract Week is ILearna, Admins {
         require(_token != address(0), "Token is empty");
         token = IGrowToken(_token);
         return true;
+    }
+
+    /// @dev Get platform token
+    function getPlatformToken() external view returns(address) {
+        return address(token);
     }
 
     // Return the current unix time stamp on the network

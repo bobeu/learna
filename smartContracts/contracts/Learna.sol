@@ -89,6 +89,8 @@ contract Learna is Campaigns, ReentrancyGuard {
         profile = learners[weekId][hash_][user];
     }
 
+    // function setMinimumToken(minToken);
+
     /**
      * Toggle useKey status. 
      @notice Toggling the function will continously alter the state of the useKey variable by negating the current status 
@@ -293,13 +295,37 @@ contract Learna is Campaigns, ReentrancyGuard {
     */
     function _generatekey(address user, uint value, uint weekId, bytes32 hash_) internal returns(Profile memory pf) {
         pf = _getProfile(weekId, hash_, user);
-        if(useKey && value > 0) {
-            if(!pf.other.haskey) {
-                pf.other.haskey = true;
-                pf.other.passkey = keccak256(abi.encodePacked(user, weekId, value));
-                token.allocate(value, user);
+        if(value > 0) {
+            token.allocate(value, user);
+        }
+        if(!pf.other.haskey) {
+            pf.other.haskey = true;
+            pf.other.passkey = keccak256(abi.encodePacked(user, weekId, value));
+        }
+    }
+
+    ///@dev Generate user key for all campaigns in the current week.
+    function generatekey() external payable returns(bool) {
+        uint weekId = _getState().weekId;
+        uint minimumToken = _getState().minimumToken;
+        Campaign[] memory cps = _getCampaings(weekId);
+        if(minimumToken > 0) {
+            require(msg.value >= (minimumToken * cps.length), "Insufficient token");
+        }
+        _sendValue(msg.value, feeTo);
+        uint valuePerCampaign;
+        if(msg.value > 0 && msg.value >= cps.length) {
+            unchecked {
+                valuePerCampaign = msg.value / cps.length;
             }
         }
+        address user = _msgSender();
+        for(uint i = 0; i < cps.length; i++) {
+            bytes32 hash_ = cps[i].data.data.hash_;
+            Profile memory pf = _generatekey(user, valuePerCampaign, weekId, hash_);
+            _setProfile(weekId,  hash_, user, pf.other);
+        }
+        return true;
     }
 
     function _checkRegistration(uint weekId, bytes32 hash_, address user) internal returns(bool isReg) {
@@ -348,12 +374,13 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param weekId : Requested week Id
      * @param hash_ : Hash of the campaign name
      */
-    function _getEligibility(address user, bytes32 hash_, uint weekId) 
+    function _getEligibility(address user, bytes32 hash_, uint weekId, bool nullifier) 
         internal 
         view 
         returns(Eligibility memory elg) 
     {
         _validateCampaign(hash_, weekId, 2);
+        if(isClaimed[user][weekId]) return elg;
         CData memory cp = _getCampaign(weekId, hash_).cp.data;
         Profile memory pf = _getProfile(weekId, hash_, user);
         uint64 totalScore;
@@ -362,16 +389,17 @@ contract Learna is Campaigns, ReentrancyGuard {
                 totalScore += pf.quizResults[i].other.score;
             }
         }
-        (uint erc20, uint native, uint platform) = _calculateShare(totalScore, cp);
+        (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
         bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0) : true;
+        bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
         elg = Eligibility(
-            protocolVerified,
+            isEligible,
             erc20,  
             native, 
             platform,
-            weekId,
             cp.token, 
-            hash_
+            hash_,
+            weekId
         );
     }
 
@@ -402,76 +430,42 @@ contract Learna is Campaigns, ReentrancyGuard {
             }
         }
     }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    //                          EXTERNAL FUNCTIONS                                //
-    /////////////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * @dev Event run after claim is made in claim contract. it updates the user profile and the campaign
-     * @param elgs : All Eligibilities for the requested week
-     * @param weekId : Week Id
-     * @param sender : User account not msg.sender
-     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
-    */
-    function onClaimed(Eligibility[] memory elgs, uint weekId, address sender) 
-        external
-        whenNotPaused 
-        onlyApproved
-        returns(bool) 
-    {
-        for(uint i = 0; i < elgs.length; i++){
-            Eligibility memory elg = elgs[i];
-            GetCampaign memory res = _getCampaign(weekId, elg.hash_);
-            CData memory cd = res.cp.data;
-            Profile memory pf = _getProfile(weekId, elg.hash_, sender);
-            unchecked {
-                if(cd.fundsNative > elg.nativeAmount) cd.fundsNative -= elg.nativeAmount;
-                if(cd.fundsERC20 > elg.nativeAmount) cd.fundsERC20 -= elg.erc20Amount;
-                pf.other.amountClaimedInNative += elg.nativeAmount;
-                pf.other.amountClaimedInERC20 += elg.erc20Amount;
-            }
-            _setProfile(weekId, elg.hash_, sender, pf.other);
-            _setCampaign(res.slot, weekId, cd);
 
-        }
-        emit ClaimedWeeklyReward(sender, weekId, elgs);
-
-        return true;
-    }
-    
     /////////////////////////////////////////////////////////////////////////////////
     //                          READ-ONLY FUNCTIONS                                //
     /////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get users eligibility for all the campaigns in the previous week
+     * Get users eligibility for all the campaigns for the previous three weeks only
      * @param user : User
-     * @notice Claim will always be for the concluded week. The position must match and can be extracted directly from 
-     * the frontend when reading the user's campaigns. If current weekId is greater than 0, is an indication that a week was concluded.
-     * Since users can only claim for a concluded week
+     * @notice Claim will always be for the concluded 3 weeks back. The position must match and can be extracted directly from 
+     * the frontend when reading the user's campaigns. Learner can only claim from the past three weeks campaign pool; 
      */
     function checkEligibility(address user) 
         external 
         view
-        returns(Eligibility[] memory result, uint weekId) 
+        returns(Eligibilities[] memory result) 
     {
-        weekId = _getState().weekId;
-        if(weekId == 0) return (result, weekId);
-        weekId -= 1;
-        Campaign[] memory cps = _getCampaings(weekId);
-        uint sSize = cps.length;
-        result = new Eligibility[](sSize);
-        if(useKey){
-            if(sSize > 0){
-                require(_getProfile(weekId, cps[0].data.data.hash_, user).other.haskey, "At least one passkey is required");
+        uint weekId = _getState().weekId;
+        if(weekId < 3) weekId += 3;
+        uint startPoint = weekId - 3;
+        result = new Eligibilities[](weekId);
+        for(uint i = startPoint; i < weekId; i++){
+            Campaign[] memory cps = _getCampaings(i);
+            uint cSize = cps.length;
+            result[i].elgs = new Eligibility[](cSize);
+            result[i].weekId = i;
+            for(uint j = 0; j < cSize; j++){
+                bool nullifier = false;
+                // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                if(useKey){
+                    if(!_getProfile(weekId, cps[j].data.data.hash_, user).other.haskey) nullifier = true;
+                }
+                result[i].elgs[j] = _getEligibility(user, cps[j].data.data.hash_, i, nullifier);
             }
         }
-        for(uint i = 0; i < sSize; i++){
-            result[i] = _getEligibility(user, cps[i].data.data.hash_, weekId);
-        }
         
-        return (result, weekId);
+        return result;
     } 
 
     // Fetch past claims
@@ -481,7 +475,6 @@ contract Learna is Campaigns, ReentrancyGuard {
         uint weekIds = data.state.weekId;
         weekIds ++;
         data.wd = new WeekData[](weekIds);
-        // CampaignData[] memory cData = _getApprovedCampaigns();
         data.profileData = new WeekProfileData[](weekIds);
         uint hashSize = data.approved.length; 
         for(uint i = 0; i < weekIds; i++) {
@@ -489,10 +482,18 @@ contract Learna is Campaigns, ReentrancyGuard {
             data.wd[i].claimDeadline = _getDeadline(i);
             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
+                data.profileData[i].weekId = i;
+                data.profileData[i].isClaimed = isClaimed[user][i];
                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
                     bytes32 hash_ = data.approved[hashId].hash_;
+                    bool nullifier = false;
+
+                    // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                    if(useKey){
+                        if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
+                    }
                     _userCampaigns[hashId] = ReadProfile( 
-                        _getEligibility(user, hash_, i),
+                        _getEligibility(user, hash_, i, nullifier),
                         _getProfile(i, hash_, user), 
                         hash_
                     );
@@ -503,59 +504,4 @@ contract Learna is Campaigns, ReentrancyGuard {
 
         return data;
     } 
-
-    // function getUsers(uint weekId, bytes32 hash_) external view returns(address[] memory) {
-    //     return totalLearners[weekId][hash_];
-    // }
-
-    // /// @dev Fetches all user campaigns for the current week
-    // /// @param user : target account
-    // function _getUserhash_es(address user, uint weekId) internal view returns(UserCampaigns memory result) {
-    //     result = UserCampaigns(weekId, userCampaigns[weekId][user]);
-    // } 
-
-    // Get user's data for the concluded weeks including current week
-    // function getProfile(address user, uint weekId) public view returns(WeekProfileData memory result) {
-    //     // UserCampaigns[] memory hashes = _getUserhash_es(user);
-    //     uint currentWeek = _getState().weekId;
-    //     require(weekId <= currentWeek, "Invalid weekId");
-    //     result.weekId = weekId;
-    //     CampaignData[] memory cData = _getApprovedCampaigns();
-    //     uint hashSize = cData.length; 
-    //     ReadProfile[] memory campaigns = new ReadProfile[](hashSize);
-    //     for(uint hashId = 0; hashId < hashSize; hashId++) { 
-    //         bytes32 hash_ = cData[hashId].hash_;
-    //         campaigns[hashId] = ReadProfile( 
-    //             _getEligibility(user, hash_, weekId),
-    //             _getProfile(weekId, hash_, user), 
-    //             hash_
-    //         );
-    //     }
-    //     result.campaigns = campaigns;
-        // uint wId = 1;
-        // result = new WeekProfileData[](weekIds);
-        
-        // for(uint wkId = 0; wkId < weekIds; wkId++) {
-        //     result[wkId].weekId = wkId;
-        //     bytes32[] memory hashes = userCampaigns[wkId][user];
-        //     uint hashSize = hashes.length; 
-        //     ReadProfile[] memory campaigns = new ReadProfile[](hashSize);
-        //     for(uint hashId = 0; hashId < hashSize; hashId++) { 
-        //         bytes32 hash_ = hashes[hashId];
-        //         campaigns[hashId] = ReadProfile( 
-        //             _getEligibility(user, hash_, wkId),
-        //             _getProfile(wkId, hash_, user), 
-        //             hash_
-        //         );
-        //     }
-        //     result[wkId].campaigns = campaigns;
-            
-        // }
-        // return result;
-    // }
-
-    function getWeek() external view returns(uint) {
-        return _getState().weekId;
-    }
-
 }

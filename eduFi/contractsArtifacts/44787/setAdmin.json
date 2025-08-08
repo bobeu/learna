@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x848D28880c6155Df2d8C6520F936A7C5B2e398eb",
+  "contractAddress": "0xaEe680d23CDb4C159e13468489Fc9B4c1f21F23d",
   "functionName": "setAdmin",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -332,68 +332,6 @@
         }
       ],
       "name": "CampaignUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "components": [
-            {
-              "internalType": "bool",
-              "name": "protocolVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "erc20Amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nativeAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "platform",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct ILearna.Eligibility[]",
-          "name": "elgs",
-          "type": "tuple[]"
-        }
-      ],
-      "name": "ClaimedWeeklyReward",
       "type": "event"
     },
     {
@@ -738,49 +676,56 @@
         {
           "components": [
             {
-              "internalType": "bool",
-              "name": "protocolVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "erc20Amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nativeAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "platform",
-              "type": "uint256"
+              "components": [
+                {
+                  "internalType": "bool",
+                  "name": "isEligible",
+                  "type": "bool"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "erc20Amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "nativeAmount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "platform",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "token",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "hash_",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "weekId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct ILearna.Eligibility[]",
+              "name": "elgs",
+              "type": "tuple[]"
             },
             {
               "internalType": "uint256",
               "name": "weekId",
               "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
             }
           ],
-          "internalType": "struct ILearna.Eligibility[]",
+          "internalType": "struct ILearna.Eligibilities[]",
           "name": "result",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -797,6 +742,19 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "generatekey",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -1065,12 +1023,17 @@
                   "type": "uint256"
                 },
                 {
+                  "internalType": "bool",
+                  "name": "isClaimed",
+                  "type": "bool"
+                },
+                {
                   "components": [
                     {
                       "components": [
                         {
                           "internalType": "bool",
-                          "name": "protocolVerified",
+                          "name": "isEligible",
                           "type": "bool"
                         },
                         {
@@ -1089,11 +1052,6 @@
                           "type": "uint256"
                         },
                         {
-                          "internalType": "uint256",
-                          "name": "weekId",
-                          "type": "uint256"
-                        },
-                        {
                           "internalType": "address",
                           "name": "token",
                           "type": "address"
@@ -1102,6 +1060,11 @@
                           "internalType": "bytes32",
                           "name": "hash_",
                           "type": "bytes32"
+                        },
+                        {
+                          "internalType": "uint256",
+                          "name": "weekId",
+                          "type": "uint256"
                         }
                       ],
                       "internalType": "struct ILearna.Eligibility",
@@ -1194,16 +1157,6 @@
                               "type": "uint256"
                             },
                             {
-                              "internalType": "uint256",
-                              "name": "amountClaimedInNative",
-                              "type": "uint256"
-                            },
-                            {
-                              "internalType": "uint256",
-                              "name": "amountClaimedInERC20",
-                              "type": "uint256"
-                            },
-                            {
                               "internalType": "uint8",
                               "name": "totalQuizPerWeek",
                               "type": "uint8"
@@ -1253,6 +1206,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "getPlatformToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1269,72 +1235,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "bool",
-              "name": "protocolVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256",
-              "name": "erc20Amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "nativeAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "platform",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            }
-          ],
-          "internalType": "struct ILearna.Eligibility[]",
-          "name": "elgs",
-          "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "onClaimed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1506,6 +1406,24 @@
           "type": "bool"
         }
       ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        }
+      ],
+      "name": "setIsClaimed",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },

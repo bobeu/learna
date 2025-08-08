@@ -15,7 +15,7 @@ export const QuizInterface = () => {
 
   // const { formattedData: { profile: { quizResults }}, setHash } = useProfile();
 
-  const { quiz, formattedData: { profile: { quizResults }}, sethash, onComplete, onBack } = useStorage();
+  const { quiz, formattedData: { profileQuizzes }, sethash, onComplete, onBack } = useStorage();
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
   const [startTime] = useState(Date.now());
 
@@ -44,8 +44,8 @@ export const QuizInterface = () => {
   // by ensure that learners don't get rewarded for the questions they've previously attempted in a week.
   const screenQuiz = (hash: Hex) => {
     let taken = false;
-    if(quizResults.length > 0){
-      quizResults.forEach(({answers: answs}) => {
+    if(profileQuizzes.length > 0){
+      profileQuizzes.forEach(({answers: answs}) => {
         for(let i = 0; i < answs.length; i++) {
           const questionHash = hexToString(answs[i].questionHash as Hex);
           if(questionHash?.toLowerCase() === hash?.toLowerCase()){

@@ -17,6 +17,8 @@ import { Admins } from "./Admins.sol";
 contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
+    enum Type { UNCLAIM, CLAIMED }
+
     // Errors
     error NativeClaimUnsuccessful();
     error TokenIsZeroAddress();
@@ -37,11 +39,10 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
 
     /// @notice Structured data for reading Claimable results 
     struct ClaimResult {
-        ILearna.Eligibility[] elgs;
-        uint weekId;
+        ILearna.Eligibilities[] unclaimed;
+        ILearna.Eligibilities[] claimed;
         bool isVerified;
         bool barred;
-        bool claimed;
     }
 
     // Learna contract
@@ -56,14 +57,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     ///@notice When this flag is turned off, user will need no verification to claim reward
     bool public useSelf;
 
-    // /// @notice Maps of campaigns to user identifiers to registration status
-    mapping(uint weekId => mapping(address user => ILearna.Eligibility[])) internal claimables;
-
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
-    mapping(address user => bool) internal isVerifiedClaim;
-
-    /// @dev User's claim status. We use this to prevent users from trying to claim twice
-    mapping(uint weekId => mapping(address user => bool)) internal isClaimed;
+    mapping(address user => bool) internal isVerified;
 
     // Blacklist
     mapping(address => bool) internal blacklisted;
@@ -96,21 +91,11 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         return configId;
     }
 
-    ///@dev Fetch user's claimables for all the campaign in the previous week.
-    function getClaimable(address user) public view returns(ClaimResult[] memory result) {
-        uint weeksId = learna.getWeek();
-        result.isVerified = isVerifiedClaim[user];
-        // ILearna.Campaign[] memory cps = learna.getCampaignsForThePastWeek();
-        for(uint i = 0; i < weeksId; i++){
-            result[i] = ClaimResult(
-                claimables[i][user], 
-                i, 
-                isVerifiedClaim[user],
-                blacklisted[user],
-                isClaimed[i][user]
-            );
-        }
-        return result;
+    /**@dev Return user's verification status
+        * @param user : User's account
+     */
+    function getVerificationStatus(address user) public view returns(bool _isVerified, bool _isBlacklisted) {
+        return (isVerified[user], blacklisted[user]);
     }
 
     // Set verification config ID
@@ -157,47 +142,44 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
 
     /**
      * @dev claim reward
-     * @param weekId  : The very weekId user want to claim from
      * @notice Users cannot claim for the current week. They can only claim for the week that has ended
      */
-    function claimReward(uint weekId) external nonReentrant returns(bool done) {
+    function claimReward() external nonReentrant returns(bool) {
         address user = _msgSender();
-        ILearna.Eligibility[] memory claims = claimables[weekId][user];
-        require(isVerifiedClaim[user] && !blacklisted[user], "Not verified or blacklisted");
-        require(claims.length > 0, "Nothing to claim"); 
-        require(!isClaimed[weekId][user], "Already claimed"); 
-        isClaimed[weekId][user] = true;
-        for(uint i = 0; i < claims.length; i++) {
-            ILearna.Eligibility memory claim = claims[i];
-            if(claim.protocolVerified){
-                claimables[weekId][user][i].erc20Amount = 0;
-                claimables[weekId][user][i].nativeAmount = 0;
-                if(claim.erc20Amount > 0) _claimErc20(user, claim.erc20Amount, IERC20(claim.token)); 
-                if(claim.nativeAmount > 0) _claimNativeToken(user, claim.nativeAmount);
+        ILearna.Eligibilities[] memory unclaims = learna.checkEligibility(user);
+        require(isVerified[user] && !blacklisted[user], "Not verified or blacklisted");
+        require(unclaims.length > 0, "Nothing to claim");
+        for(uint i = 0; i < unclaims.length; i++) {
+            ILearna.Eligibilities memory claims = unclaims[i];
+            learna.setIsClaimed(user, claims.weekId);
+            for(uint j = 0; j < claims.elgs.length; j++) {
+                ILearna.Eligibility memory claim = claims.elgs[j];
+                if(claim.isEligible){
+                    if(claim.nativeAmount > 0) {
+                        _claimNativeToken(user, claim.nativeAmount);
+                    }
+                    if(claim.erc20Amount > 0) {
+                        _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
+                    } 
+                    if(claim.platform > 0) {
+                        _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
+                    } 
+                }
             }
         }
-        learna.onClaimed(claims, weekId, user);
-        return done; 
+        // learna.onClaimed(claims, weekId, user);
+        return true; 
     }
 
     /**
-     * @dev Registers user to claim reward. 
+     * @dev Verify and register users for unclaim rewards. 
      * @param user : User account
      * @notice This is expected to be the data parse as userData to the verification hook. To prevent attack,
      * user cannot make eligibity check twice in the same week. 
      * Note: User cannot verify eligibility for a week twice.
      */
-    function _setClaim(address user) internal returns(bool _return) {
-        (ILearna.Eligibility[] memory eligibilities, uint weekId) = learna.checkEligibility(user);
-        require(!isVerifiedClaim[user], "Claim already registered");
-        isVerifiedClaim[user] = true;
-        for(uint i = 0; i < eligibilities.length; i++) {
-            ILearna.Eligibility memory elg = eligibilities[i];
-            if(elg.erc20Amount > 0 || elg.nativeAmount > 0 || elg.platform > 0){
-                claimables[weekId][user].push(eligibilities[i]); 
-            }
-        }
-        _return = true;
+    function _setClaim(address user) internal {
+        if(!isVerified[user]) isVerified[user] = true;
     }
 
     /**
@@ -207,7 +189,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
     function setClaim() external whenNotUseSelf returns(bool) {
-        return _setClaim(_msgSender());
+        _setClaim(_msgSender());
+        return true;
     }
  
     /**
@@ -218,7 +201,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      * Must not be using Self verification.
      */
     function setClaim(address user) external whenNotUseSelf onlyApproved returns(bool) {
-        return _setClaim(user);
+        _setClaim(user);
+        return true;
     }
  
     /**
