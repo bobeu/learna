@@ -265,7 +265,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, _callback);
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
         if(amountInGrowToken > 0) {
             require(address(token) != address(0), "Tk empty");
             require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
@@ -341,11 +341,15 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
     }
 
-    function _callback(CData memory _cp) internal returns(CData memory cp) {
+    function _callback(CData memory _cp, uint platformToken) internal returns(CData memory cp) {
         cp = _cp;
         (uint native, uint256 erc20) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
         cp.fundsNative = native;
         cp.fundsERC20 = erc20;
+        unchecked {
+            cp.platformToken += platformToken;
+        }
+        cp.lastUpdated = _now();
     }
     
     /**

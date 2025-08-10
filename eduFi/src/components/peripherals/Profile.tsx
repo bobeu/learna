@@ -188,7 +188,7 @@ function ProfileComponent(
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
-                disabled={!showWithdrawalButton || showQRCode}
+                disabled={showQRCode}
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />

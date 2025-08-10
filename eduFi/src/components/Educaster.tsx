@@ -244,7 +244,6 @@ export default function Educaster() {
         let owner : Address = zeroAddress;
         let admins : Admin[] = [mockAdmins];
         let verificationStatus : [boolean, boolean] = [false, false];
-        console.log("result", result); 
         if(result && result[0].status === 'success' && result[0].result !== undefined) {
             owner = result[0].result as Address;
         }
@@ -350,8 +349,6 @@ export default function Educaster() {
     }, [currentPath]);
 
     const sethash = React.useCallback((arg: string) => {
-        // console.log("arg", arg)
-        // console.log("AllCampaign", allCampaign)
         const filtered = stateData.allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
         if(filtered.length > 0){
             setHash(filtered[0]?.hash_);
