@@ -220,7 +220,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         require(output.olderThan >= 16, "You should be at least 16 yrs");
         bool[3] memory ofacs = output.ofac;
         for(uint8 i = 0; i < ofacs.length; i++) {
-            require(!ofacs[i], "Sanction individual");
+            require(ofacs[i], "Sanction individual");
         }
  
         _setClaim(user);

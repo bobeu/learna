@@ -9,7 +9,6 @@ import { toBN } from '~/components/utilities';
 export default function SortWeeklyPayout() {
     const [ growTokenAmount, setGrowTokenAmount ] = React.useState<string>('0');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
-    // const [ newClaimDeadline, setNewDeadline ] = React.useState<number>(0);
     const [ newInterval, setNewInterval ] = React.useState<number>(0);
 
     const { weekId } = useStorage();
@@ -39,14 +38,6 @@ export default function SortWeeklyPayout() {
                 placeHolder: 'Enter amount',
                 type: 'text',
                 required: true
-            },
-            {
-                tag: 'celoamount',
-                id: 'GrowTokenAmount',
-                label: 'New claim deadline (In Min)',
-                placeHolder: 'Deadline',
-                type: 'number',
-                required: false
             },
             {
                 tag: 'erc20amount',
@@ -114,3 +105,12 @@ export interface ContentType {
     id: string, 
     required: boolean
 };
+
+            // {
+            //     tag: 'celoamount',
+            //     id: 'GrowTokenAmount',
+            //     label: 'New claim deadline (In Min)',
+            //     placeHolder: 'Deadline',
+            //     type: 'number',
+            //     required: false
+            // },

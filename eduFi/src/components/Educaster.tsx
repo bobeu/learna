@@ -1,13 +1,12 @@
-/* eslint-disable---d */
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
     Admin, 
     Campaign, 
-    CampaignDatum, 
+    CampaignHashFormatted, 
     CategoryType, 
     Path, 
-    ProfilePerReqWk, 
     Quiz, 
     QuizResultInput, 
     QuizResultOtherInput, 
@@ -23,7 +22,6 @@ import { useAccount, useChainId, useConfig, useConnect, useReadContracts } from 
 import { Hex, hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';
 import { StorageContextProvider } from './StorageContextProvider';
-
 import { 
     filterTransactionData, 
     mockQuiz, 
@@ -42,10 +40,6 @@ import LandingPage from './landingPage';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import SetupCampaign from './peripherals/SetupCampaign';
-import AddressWrapper from './peripherals/AddressFormatter/AddressWrapper';
-import { SelectComponent } from './peripherals/SelectComponent';
-import assert from 'assert';
-import { mockFormattedCampaign } from './StorageContextProvider/AppContext';
 
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
@@ -62,13 +56,9 @@ export default function Educaster() {
     const [loading, setLoading] = React.useState<boolean>(false);
     const [isMenuOpen, setMenu] = React.useState<boolean>(false);
     const [recordPoints, setRecordPoints] = React.useState<boolean>(false);
-    const [stateData, setStateData] = React.useState<ReadData>(mockReadData);
-    const [owner, setOwner] = React.useState<Address>(zeroAddress);
-    const [verificationStatus, setVerificationStatus] = React.useState<[boolean, boolean]>([false, false]); //
-    const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
+    const [statUser, setStatUser] = React.useState<Address>(zeroAddress);
     const [requestedWkId, setWeekId] = React.useState<number>(0);
     const [requestedHash, setHash] = React.useState<Hex>(mockHash);
-    // const [requestedProfileHash, setHashProfile] = React.useState<Hex>(mockHash);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -89,7 +79,7 @@ export default function Educaster() {
         if(!isConnected && connector) connect({connector, chainId});
         if(isConnected && currentPath === 'home') setpath('dashboard');
         if(!isConnected && currentPath !== 'home') setpath('home');
-    }, [isConnected, connector, chainId, currentPath]);
+    }, [isConnected, connector, chainId, currentPath, connect]);
 
     // Load user results from localStorage on component mount
     useEffect(() => {
@@ -196,7 +186,7 @@ export default function Educaster() {
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-    const readArgs = [[], [account], [], [account]];
+    const readArgs = [[], [currentPath === 'stats'? statUser : account], [], [account]];
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
@@ -220,31 +210,65 @@ export default function Educaster() {
     });
 
          // Update quiz data
-    React.useEffect(() => {
-        let stateData_ : ReadData = mockReadData;
-        let owner_ : Address = zeroAddress;
-        let admins_ : Admin[] = [mockAdmins];
-        let verificationStatus_ : [boolean, boolean] = [false, false];
-        if(result && result.length > 0) {
-            owner_ = result[0].result as Address;
-            stateData_ = result[1].result as ReadData;
-            admins_ = result[2].result as Admin[];
-            verificationStatus_ = result[3].result as [boolean, boolean];
-        }
-        setOwner(owner_);
-        setStateData(stateData_);
-        setAdmins(admins_);
-        setVerificationStatus(verificationStatus_);
-    }, [result]);
+    // React.useEffect(() => {
+    //     let stateData_ : ReadData = mockReadData;
+    //     let owner_ : Address = zeroAddress;
+    //     let admins_ : Admin[] = [mockAdmins];
+    //     let verificationStatus_ : [boolean, boolean] = [false, false];
+    //     if(result && result.length > 0) {
+    //         owner_ = result[0].result as Address;
+    //         stateData_ = result[1].result as ReadData;
+    //         admins_ = result[2].result as Admin[];
+    //         verificationStatus_ = result[3].result as [boolean, boolean];
+    //         console.log("result[3].result", result[3].result); 
 
-    const { weekId, state, wkId, weekData, app, formattedData, userAdminStatus, campaignData, allCampaign, campaignStrings } = React.useMemo(() => {
-        const data = stateData?? mockReadData;
+    //         setOwner(owner_);
+    //         setStateData(stateData_);
+    //         setVerificationStatus(verificationStatus_);
+    //         setAdmins(admins_);
+    //     }
+    // }, [result]);
+
+    // const userAdminStatus = React.useMemo(() => {
+    //     let userAdminStatus = false;
+    //     console.log("admins", admins);
+    //     if(admins && admins.length > 0) {
+    //         const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
+    //         if(found && found.length > 0) userAdminStatus = found[0].active;
+    //     }
+    //     return userAdminStatus;
+    // }, [admins]);
+
+    const stateData = React.useMemo(() => {
+        let data : ReadData = mockReadData;
+        let owner : Address = zeroAddress;
+        let admins : Admin[] = [mockAdmins];
+        let verificationStatus : [boolean, boolean] = [false, false];
+        console.log("result", result); 
+        if(result && result[0].status === 'success' && result[0].result !== undefined) {
+            owner = result[0].result as Address;
+        }
+        if(result && result[1].status === 'success' && result[1].result !== undefined) {
+            data = result[1].result as ReadData;
+        }
+        if(result && result[2].status === 'success' && result[2].result !== undefined) {
+            admins = result[2].result as Admin[];
+        }
+        if(result && result[3].status === 'success' && result[3].result !== undefined) {
+            verificationStatus = result[3].result as [boolean, boolean];
+        }
+        
+        // const data = stateData;
         const weekId = data.state.weekId; // Current week Id
         const state = data.state;
         const weekProfileData = data.profileData;
 
+        let userAdminStatus = false;
+        const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
+        if(found && found.length > 0) userAdminStatus = found[0].active;
+
         // Return all approved campaigns
-        const allCampaign : CampaignDatum[] = data.approved.map(({hash_, encoded}) => {
+        const allCampaign : CampaignHashFormatted[] = data.approved.map(({hash_, encoded}) => {
             const campaign = hexToString(encoded);
             return{
                 campaign,
@@ -254,20 +278,15 @@ export default function Educaster() {
         const wkId = toBN(weekId.toString()).toNumber();
 
         // Will always return the campaign for the current week
-        const campaignData : CampaignDatum[] = data.wd[wkId].campaigns.map(({data: { data: { hash_, encoded }}}) => {
+        const campaignData : CampaignHashFormatted[] = data.wd[wkId].campaigns.map(({data: { data: { hash_, encoded }}}) => {
             const campaign = hexToString(encoded);
             return {hash_, campaign}
         });
         
         // const campaignHashes = allCampaign.map(({hash_}) => hash_);
-        const campaignStrings = allCampaign.map(({campaign}) => hexToString(campaign as Hex));
+        const campaignStrings = allCampaign.map(({campaign}) => campaign);
         
         const weekData = [...data.wd];
-        const admins = result?.[2]?.result as Admin[] || [mockAdmins];
-
-        let userAdminStatus = false;
-        const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
-        if(found && found.length > 0) userAdminStatus = found[0].active;
 
         const formattedData = formatData(
             {weekProfileData, verificationStatus},
@@ -276,6 +295,22 @@ export default function Educaster() {
             requestedHash
         );
 
+        return {
+            wkId,
+            weekId,
+            state,
+            admins,
+            owner,
+            weekData,
+            campaignData,
+            campaignStrings,
+            allCampaign,
+            formattedData,
+            userAdminStatus,
+        }
+    }, [result, requestedWkId, requestedHash, account]);
+
+    const app = React.useMemo(() => {
         let app = <></>;
         switch (currentPath) {
             case 'dashboard':
@@ -311,40 +346,27 @@ export default function Educaster() {
                 break;
         }
 
-        return {
-            app,
-            wkId,
-            weekId,
-            state,
-            weekData,
-            campaignData,
-            campaignStrings,
-            allCampaign,
-            formattedData,
-            // campaignHashes,
-            userAdminStatus,
-            // weekProfileData
-        }
-    }, [currentPath, stateData, requestedWkId, requestedHash]);
+        return app;
+    }, [currentPath]);
 
-    const sethash = (arg: string) => {
-        const filtered = allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
+    const sethash = React.useCallback((arg: string) => {
+        // console.log("arg", arg)
+        // console.log("AllCampaign", allCampaign)
+        const filtered = stateData.allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
         if(filtered.length > 0){
             setHash(filtered[0]?.hash_);
         } else {
-            alert("Can't find corresponding campaign");
+            setHash(mockHash);
         }
-    }
+    }, [stateData.allCampaign]);
 
-    const setweekId = (arg: bigint) => {
+    const setweekId = React.useCallback((arg: bigint) => {
         setWeekId(toBN(arg).toNumber());
-        // const filtered = allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
-        // if(filtered.length > 0){
-        //     setWeekId(arg);
-        // } else {
-        //     alert("Can't find corresponding campaign");
-        // }
-    }
+    }, []);
+
+    const setstatUser = React.useCallback((arg: string) => {
+        setStatUser(arg as Address);
+    }, []);
 
     // const getFormattedProfile = React.useCallback((weekId: number) => {
     //     // Search the data corresponding to the weekId
@@ -466,20 +488,22 @@ export default function Educaster() {
                 setpath,
                 currentPath,
                 messages,
-                state,
-                weekData,
-                weekId,
-                owner,
-                admins,
-                wkId,
+                ...stateData,
+                // state,
+                // weekData,
+                // weekId,
+                // owner,
+                // admins,
+                // wkId,
                 refetch,
-                campaignStrings,
+                // campaignStrings,
                 recordPoints,
                 isMenuOpen,
                 requestedHash,
                 requestedWkId,
-                formattedData,
+                // formattedData,
                 toggleRecordPoints,
+                setstatUser,
                 appData,
                 setmessage,
                 setselectedCampaign,
@@ -497,10 +521,10 @@ export default function Educaster() {
                 onComplete: handleQuizComplete,
                 onBack: handleBackToDashboard,
                 userResults,
-                campaignData,
-                allCampaign,
+                // campaignData,
+                // allCampaign,
                 // weekProfileData,
-                userAdminStatus,
+                // userAdminStatus,
                 toggleLoading,
                 callback,
                 errorMessage,

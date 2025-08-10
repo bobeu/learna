@@ -212,12 +212,16 @@ contract Learna is Campaigns, ReentrancyGuard {
         require(user != address(0), "Invalid user"); 
         _validateCampaign(hash_, weekId, 2);
         GetCampaign memory res = _getCampaign(weekId, hash_);
-        if(!_checkRegistration(weekId, hash_, user)) _updateCampaignUsersList(res.slot, weekId, user);
         Profile memory pf = _generatekey(user, msg.value, weekId, hash_);
-        require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
+        if(!_checkRegistration(weekId, hash_, user)) {
+            _updateCampaignUsersList(res.slot, weekId, user);
+            unchecked {
+                res.cp.data.activeLearners += 1;
+            }
+        }
+        require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
     
         unchecked {
-            res.cp.data.activeLearners += 1;
             pf.other.totalQuizPerWeek += 1;
             res.cp.data.totalPoints += quizResult.other.score; 
         }

@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -10,13 +8,11 @@ import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
-// import useProfile from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
-// import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
-// import Eligibiliies from "./Eligibilities";
 import { FormattedData } from "../../../types/quiz";
+import CountdownTimer from "./CountdownTimer";
 
 interface ProfileComponentProps {
     fid: number | undefined;
@@ -32,14 +28,15 @@ function ProfileComponent(
                 totalQuizPerWeek,
             },
             isClaimed,
-            claimDeadline,
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
-            requestedWeekId,
             eligibility,
-            totalPointsInRequestedCampaign,
-            campaign
+            statData: {
+                campaign,
+                claimDeadline,
+                totalPoints,
+            }
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
@@ -57,7 +54,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { data: { activeLearners,}, users } = campaign;
+    const { data: { activeLearners,} } = campaign;
 
     if(showQRCode) {
         return(
@@ -80,7 +77,7 @@ function ProfileComponent(
                                 {totalPointsForACampaign || 0}
                             </div>
                         <div className="text-xl opacity-90 mb-2">
-                            You earned {totalPointsForACampaign} out of {totalPointsInRequestedCampaign.toString()} total points for the week
+                            You earned {totalPointsForACampaign} out of {totalPoints} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             Your FID: {fid || 'NA'}
@@ -96,10 +93,12 @@ function ProfileComponent(
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Sorted date</h3>
                                 <h3>{getTimeFromEpoch(transitionDate)}</h3>
+                                <CountdownTimer notification="Eligibility activated" targetDate={BigInt(transitionDate)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-">Claim ends: </h3>
                                 <h3>{getTimeFromEpoch(claimDeadline)}</h3>
+                                <CountdownTimer notification="Claim period expired" targetDate={BigInt(claimDeadline)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Reward: </h3>
@@ -189,13 +188,13 @@ function ProfileComponent(
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
-                disabled={(!showVerificationButton && !showWithdrawalButton) || showQRCode}
+                disabled={!showWithdrawalButton || showQRCode}
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />
                 <span>{showVerificationButton && 'Verify To Claim'}</span>
                 <span>{showWithdrawalButton && 'Withdraw'}</span>
-                <span>{(!showVerificationButton || !showWithdrawalButton) && 'Not Eligible'}</span>
+                <span>{(!showVerificationButton && !showWithdrawalButton && !isEligible) && 'Not Eligible'}</span>
                 <span>{isClaimed && 'Claimed'}</span>
             </CustomButton>
             <ClaimReward 
@@ -207,8 +206,7 @@ function ProfileComponent(
 }
 
 export default function Profile() {
-    const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId, campaignData } = useStorage();
-    // const { formattedData, setHash: setRequestedHash, setWeekId } = useProfile();
+    const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId } = useStorage();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -236,11 +234,6 @@ export default function Profile() {
     const createCampaign = () => {
         setpath('setupcampaign');
     };
-
-    // const setHash = (arg: string) => {
-    //     const found = campaignData.filter(q => q.campaign === arg);
-    //     if(found.length > 0) setRequestedHash(found[0].hash_);
-    // }
 
     return(
         <Wrapper2xl useMinHeight={true} >
@@ -273,7 +266,7 @@ export default function Profile() {
                     </CustomButton>
                 </div>
                 
-                <div className="flex justify-between gap-4 max-w-sm">
+                <div className="flex justify-between gap-4 max-w-sm md:max-w-full">
                     {/* User can view their profile in a selected campaign */}
                     <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
@@ -312,5 +305,3 @@ export default function Profile() {
         </Wrapper2xl>
     )
 }
-
-// ...Array(wkId === 0? 1 : wkId + 1).keys()

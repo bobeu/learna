@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { formatEther, Hex,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
@@ -8,11 +7,12 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FormattedData, FunctionName, GetFormattedCampaign, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, CampaignHash, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FormattedData, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
-export const mockHash = keccak256(stringToBytes('mockHash'), 'hex')
+export const mockHash = keccak256(stringToBytes('solidity'), 'hex');
+export const mockEncoded = stringToHex("solidity");
 export const mockCampaign : Campaign = {
   users: [zeroAddress],
   data: {
@@ -26,14 +26,14 @@ export const mockCampaign : Campaign = {
     token: zeroAddress,
     data: {
       hash_: mockHash,
-      encoded: stringToHex("solidity")
+      encoded: mockEncoded
     }
   }
 }
 
 export const mockCData : CampaignHash[] = [
   {
-    encoded: `0x${''}`,
+    encoded:  mockEncoded,
     hash_: mockHash,
   }
 ];
@@ -56,10 +56,10 @@ export const mockProfile : Profile = {
       ],
       other: {
         completedAt: '',
-        id: '',
-        title: '',
+        id: '1',
+        title: 'solidity',
         percentage: 0,
-        quizId: '',
+        quizId: '2',
         score: 0,
         timeSpent: 0,
         totalPoints: 0
@@ -73,7 +73,7 @@ export const mockEligibility : Eligibility = {
   erc20Amount: 0n,
   nativeAmount: 0n,
   weekId: 0n,
-  token: `0x`,
+  token: zeroAddress,
   hash_: mockHash,
   platform: 0n
 }
@@ -111,39 +111,6 @@ export const mockAdmins : Admin = {
 export const toHash = (arg: string) => {
   return keccak256(stringToHex(arg));
 }
-
-// export const mockScoresParam : ScoresParam =  {
-//   category: '',
-//   difficultyLevel: '',
-//   totalScores: 0,
-//   questionSize: 0,
-//   weightPerQuestion: 0,
-//   noAnswer: 0,
-//   totalAnsweredCorrectly: [
-//     {
-//       answer: '0',
-//       hash: mockReadProfile.campaignHash,
-//       options: [{label: '', value: ''}],
-//       question: '',
-//       userAnswer: '',
-//     }
-//   ],
-//   totalAnsweredIncorrectly: 0
-// }
-
-// export const mockSelectedData : SelectedData = {
-//   category: '',
-//   selectedLevel: '',
-//   data: [mockScoresParam.totalAnsweredCorrectly[0]],
-//   scoreParam: mockScoresParam,
-//   id: 0
-// };
-
-// export const emptyQuizData : SelectedQuizData = {
-//   category: "",
-//   level: "",
-//   questions: [mockScoresParam.totalAnsweredCorrectly[0]]
-// }
 
 export const mockQuiz : Quiz = {
   id: "",
@@ -206,7 +173,7 @@ export const toBigInt = (x: string | number | ethers.BigNumberish | bigint | und
 */
 export function getTimeFromEpoch(onchainUnixTime: number | bigint) {
   const toNumber = toBN(onchainUnixTime.toString()).toNumber()
-  var date = new Date(toNumber * 1000);
+  const date = new Date(toNumber * 1000);
   return (toNumber === 0? 'Not Set' : `${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-US")}`);
 }
 
@@ -216,7 +183,7 @@ export function getTimeFromEpoch(onchainUnixTime: number | bigint) {
  * @param arg : Argument to convert;
  * @returns BigNumber
 */
-export const toBN = (x: string | number | BigNumber | any) => {
+export const toBN = (x: string | number | BigNumber | bigint | Hex) => {
   return new BigNumber(x);
 }
 
@@ -264,12 +231,11 @@ export const formatValue = (arg: string | number | ethers.BigNumberish | bigint 
  * @returns Hashed values
 */
 export function getCampaignHashes(data: string[]) {
-  let result : Hex[] = [];
-  data.forEach((item, i) => {
+  const result : Hex[] = [];
+  data.forEach((item) => {
     const hash = keccak256(stringToBytes(item));
     result.push(hash);
   })
-  console.log("Result", result);
   return result;
 }
   
@@ -291,10 +257,8 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @returns object containing array of transaction data and approved functions
  */
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
-  // console.log("Function", functionNames)
-  // console.log("chainId", chainId)
   const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
-  let transactionData : TransactionData[] = [];
+  const transactionData : TransactionData[] = [];
   const index = chainIds.indexOf(chainId || chainIds[0]);
   if(filter) {
     functionNames.forEach((functionName) => {
@@ -326,16 +290,14 @@ export function getCastText(task: FunctionName, weekId: number) {
  */
 export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: CategoryType[], quizData: Quiz[] | null} {
   const d : QuizData = { categories: _d_.categories, difficulties: _d_.difficulties, categoryData: _d_.categoryData } ;
-  // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
   const categories : CategoryType[] = d.categories.split(',') as CategoryType[];
-  // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
   const quizData : Quiz[] = [];
 
   // Loop through the categories
   d.categoryData.forEach(({category, levels, description}) => {
     // Loop through the levels
     levels.forEach(({questions, difficulty,}) => {
-      let qs : Question[] = [];
+      const qs : Question[] = [];
       const questionSize = questions.length;
       assert(totalPoints >= questionSize, "Totalpoints is invalid");
       const points = totalPoints / questionSize;
@@ -343,7 +305,7 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
       // Run through the questions
       questions.forEach(({answer, options, hash, question, explanation}, id) => {
-        let correctAnswer = 0;
+        const correctAnswer = 0;
         qs.push({
           id,
           question,
@@ -374,7 +336,6 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
     });
   });
-  // console.log("QuizData:", quizData);
   return {
     quizData,
     categories
@@ -383,21 +344,9 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
 // Encode multiple values in binary format
 export function encodeUserData(campaignSlot: number): string {
-  // Frontend: Creating user defined data
-  const actionData = {
-    action: 1,
-    campaignSlot: campaignSlot
-  };
-
-  // const userDefinedData = "0x" + Buffer.from(JSON.stringify({
-  //   action: "create_account",
-  //   referralCode: "SUMMER2024",
-  //   tier: "premium"
-  // })).toString('hex').slice(0, 128);
   const buffer = Buffer.alloc(64);
-  
   buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
-  console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
+  // console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
   return "0x" + buffer.toString('hex');
   
 }
@@ -410,11 +359,14 @@ export function encodeUserData(campaignSlot: number): string {
  * @returns Found campaign
  */
 export function filterWeekData(weekData: WeekData[], requestedWkId: number, requestedHash: Hex) {
-  const weeklyCampaigns = weekData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
-  const wcp = weeklyCampaigns?.[0] || mockWeekData;
+  const wcp = weekData[requestedWkId] || mockWeekData; 
   const filteredCampaign = wcp.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
   const found = filteredCampaign?.[0] || mockCampaign;
-  return found;
+  return {
+    campaign: found,
+    claimDeadline: toBN(wcp.claimDeadline.toString()).toNumber(),
+    totalPoints: toBN(found.data.totalPoints.toString()).toNumber()
+  }
 }
 
 export function formatData(stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex): FormattedData {
@@ -428,21 +380,27 @@ export function formatData(stateData: StateData, weekData: WeekData[], requested
   const eligibility = userCampaign.eligibility;
   const profileOther = userCampaign.profile.other;
   const profileQuizzes = userCampaign.profile.quizResults;
-  const showVerificationButton = !isVerified && !isClaimed;
+  const showVerificationButton = !isVerified && !isClaimed && eligibility.isEligible;
   const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
   const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
-  const campaign = filterWeekData(weekData, requestedWkId, requestedHash);
+  const statData = filterWeekData(weekData, requestedWkId, requestedHash);
   return {
-    campaign,
+    statData,
     isClaimed,
     profile: profileOther,
     eligibility,
     profileQuizzes,
     requestedWeekId: BigInt(requestedWkId),
-    totalPointsInRequestedCampaign: campaign.data.totalPoints,
-    claimDeadline: toBN(weekData?.[requestedWkId]?.claimDeadline?.toString() || '0').toNumber(),
     showWithdrawalButton,
     showVerificationButton,
     totalPointsForACampaign: totalUserPointsForACampaign
   };
+};
+
+export const formatTime = (seconds: number) => {
+  const secondsInNumber = toBN(seconds).toNumber();
+  const mins = Math.floor(secondsInNumber / 60);
+  const hrs = Math.floor(mins / 60);
+  const secs = secondsInNumber % 60;
+  return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };

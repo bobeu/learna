@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
@@ -6,18 +5,18 @@ import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
-import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
+import { filterWeekData, formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle, Box} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
-// import useProfile from "../hooks/useProfile";
 import MinimumToken from "./inputs/MinimumToken";
 import TransitionInterval from "./inputs/TransitionInterval";
 import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
+import CountdownTimer from "./CountdownTimer";
 
 function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {campaign: Campaign, transitionDate: number, claimDeadline: number, protocolVerified: boolean}) {
     const { 
@@ -69,6 +68,7 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                     </div>
                     <div className="font-semibold text-gray-800 mb-1">
                         {getTimeFromEpoch(claimDeadline)}
+                        <CountdownTimer targetDate={BigInt(claimDeadline)} notification="Claim Ended" />
                     </div>
                     <div className="text-xs text-gray-600">Claimable until</div>
                 </div>
@@ -77,8 +77,9 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                     <div className="flex items-center justify-center mb-3">
                         <Fuel className="w-4 h-4 text-purple-600" />
                     </div>
-                    <div className="font-semibold text-gray-800 mb-1">
+                    <div className="font-semibold text-gra-800 mb-1">
                         {getTimeFromEpoch(transitionDate)}
+                        <CountdownTimer targetDate={BigInt(transitionDate)} notification="Sorting active"/>
                     </div>
                     <div className="text-xs text-gray-600">Date until sorting active</div>
                 </div>
@@ -139,21 +140,23 @@ export default function Stats() {
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
 
-    // const { formattedData: { claimDeadline, campaign, protocolVerified }, setHash, setWeekId } = useProfile();
     const { 
         setpath, 
         owner,
         wkId,
         requestedWkId,
+        requestedHash,
         campaignStrings,
         userAdminStatus,
-        campaignData,
-        formattedData: { claimDeadline, campaign }, 
+        formattedData: { totalPointsForACampaign },
+        weekData,
+        setstatUser,
         sethash, 
         setweekId,
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
+    const { campaign, claimDeadline } = filterWeekData(weekData, requestedWkId, requestedHash);
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -180,11 +183,6 @@ export default function Stats() {
         } else {
             setpath('home')
         }
-    }
-
-    const setCampaignStr = (arg: string) => {
-        const fd = campaignData.filter(q => q.campaign.toLowerCase() === arg.toLowerCase());
-        if(fd) sethash(fd?.[0]?.hash_);
     }
 
     const setselectedWeek = (arg: string) => {
@@ -267,7 +265,7 @@ export default function Stats() {
                     <div className="w-2/4  md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
                         <SelectComponent 
-                            setHash={setCampaignStr}
+                            setHash={sethash}
                             campaigns={campaignStrings}
                             placeHolder="Campaigns"
                             width="w-"
@@ -281,6 +279,21 @@ export default function Stats() {
                             placeHolder="Weeks"
                             width="w-"
                         />
+                    </div>
+                </div>
+                <div className="w-full flex justify-between items-center gap-2">
+                    <div className="w-2/4  md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Learnas</h3>
+                        <SelectComponent 
+                            setHash={setstatUser}
+                            campaigns={campaign.users}
+                            placeHolder="All Learners"
+                            width="w-"
+                        />
+                    </div>
+                     <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>User points</h3>
+                        <h3 className="max-w-sm md:max-w-md border rounded-md p-2">{totalPointsForACampaign}</h3>
                     </div>
                 </div>
                 <Stat 
@@ -307,9 +320,9 @@ export default function Stats() {
                     <Admins />
                     <SelectComponent 
                         campaigns={['none', 'pause', 'unpause']}
-                        placeHolder="Set contract state"
+                        placeHolder="Contract execution state"
                         setHash={setaction}
-                        title="Set contract state"
+                        title="Contract execution state"
                         width="w-full"
                     />
                 </div>

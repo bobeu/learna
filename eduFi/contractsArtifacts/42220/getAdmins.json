@@ -1,0 +1,33 @@
+{
+  "contractAddress": "0xCba6FA32429881e9E57F3da8c4321e5f99042b38",
+  "functionName": "getAdmins",
+  "inputCount": 0,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getAdmins",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "id",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Admins.Admin[]",
+          "name": "_admins",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

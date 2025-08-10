@@ -106,80 +106,10 @@ export interface UserStats {
   streak: number;
 }
 
-////////////////////////////////////////////////
-
-// export interface SelectedData {
-//     id: number;
-//     category: Category;
-//     selectedLevel: DifficultyLevel;
-//     data: QuestionObj[];
-//     scoreParam: ScoresParam;
-// }
-
-// export interface QuizCategory {
-//   easy: {
-//     questions: QuestionObj[];
-//   };
-//   medium: {
-//     questions: QuestionObj[];
-//   };
-//   hard: {
-//     questions: QuestionObj[];
-//   };
-// };
-
-// export interface SelectedQuizData {
-//   category: Category, 
-//   level: DifficultyLevel, 
-//   questions: QuestionObj[];
- 
-// };
-// export type QuizReturnData = QuizCategory[]; 
-
-// export interface QuizDatum {
-//   category: string;
-//   id: number,
-//   difficultyLevel: string;
-//   identifier: string;
-//   taken: boolean;
-//   questions: Array<{
-//     quest: string;
-//     options: Array<{
-//       label: string;
-//       value: string;
-//     }>;
-//     correctAnswer: {
-//       label: string;
-//       value: string;
-//     };
-//     userAnswer?: {
-//       label: string;
-//       value: string;
-//     };
-//   }>;
-// };
-
 export interface Answer {
   label: string;
   value: string;
 }
-
-// export interface Data {
-//   question: string;
-//   userAnswer: Answer;
-//   correctAnswer: Answer;
-//   quizHash?: string;
-//   userSelect: boolean;
-//   isCorrect: boolean;
-//   options: Array<Answer>;
-// };
-
-// export type DisplayQuizProps = {
-//   indexedAnswer: number;
-//   selectedQuizData: {category: string, data: QuizDatum};
-//   setpath: (arg: Path) => void;
-//   handleSelectAnswer: (arg: {label: string, value: string}) => void;
-// }
 
 interface Values {
   totalAllocated: bigint;
@@ -217,14 +147,6 @@ export interface WeekProfileData {
   isClaimed: boolean;
   campaigns: Readonly<ReadProfile[]>;
 }
-
-// export interface ClaimResult {
-//   elgs: Readonly<Eligibility[]>;
-//   weekId: bigint;
-//   isVerified: boolean;
-//   barred: boolean;
-//   claimed: boolean;
-// }
 
 export interface CampaignHash {
   hash_: Hex;
@@ -294,27 +216,6 @@ export type FilterTransactionDataProps = {
   filter: boolean;
 }
 
-// export interface HandleSelectAnswerProps {
-//   userAnswer?: Answer; 
-//   correctAnswer: Answer; 
-//   question: string;
-//   userSelect: boolean;
-//   options: Array<Answer>;
-// }
-
-// export interface ScoresParam {
-//   category: string;
-//   difficultyLevel: string;
-//   totalScores: number;
-//   questionSize: number;
-//   weightPerQuestion: number;
-//   totalAnsweredCorrectly: QuestionObj[];
-//   noAnswer: number;
-//   totalAnsweredIncorrectly: number;
-// }
-
-// export type ScoresReturn = () => ScoresParam;
-
 export interface FormattedValue {
   toStr: string;
   toNum: number;
@@ -359,10 +260,10 @@ export interface ProfilePerReqWk {
   selector: JSX.Element;
 }
 
-export interface CampaignDatum {
-  hash_: Address;
-  campaign: string;
-}
+// export interface CampaignDatum {
+//   hash_: Address;
+//   campaign: string;
+// }
 
 export interface Eligibility {
   isEligible: boolean;
@@ -417,13 +318,15 @@ export interface QuizData {
 export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: [boolean, boolean];}
 export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface FormattedData {
-  campaign: Campaign;
+  statData: {
+    campaign: Campaign;
+    claimDeadline: number;
+    totalPoints: number;
+  };
   isClaimed: boolean;
   profile: ProfileOther;
   eligibility: Eligibility;
   requestedWeekId: bigint;
-  totalPointsInRequestedCampaign: bigint;
-  claimDeadline: number;
   profileQuizzes: QuizResultOuput[];
   showWithdrawalButton: boolean;
   showVerificationButton: boolean;

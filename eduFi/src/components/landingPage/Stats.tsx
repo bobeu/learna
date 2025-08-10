@@ -4,7 +4,7 @@ import { Star, CheckCircle } from "lucide-react";
 export default function Stats() {
 
     return(
-        <section id="stats" className="px-4 py-16 md:py-20 bg-white">
+        <section id="stats" className="px-4 py-16 md:py-20 bg-white font-mono">
             <div className="max-w-4xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-16">
                     Join the <span className="bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">Web3 Revolution</span>

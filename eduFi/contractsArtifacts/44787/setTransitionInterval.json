@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xaEe680d23CDb4C159e13468489Fc9B4c1f21F23d",
+  "contractAddress": "0xB770a0e0D5bDFAEC10b08066Cdb1cd66cCE70beC",
   "functionName": "setTransitionInterval",
   "inputCount": 1,
   "requireArgUpdate": true,

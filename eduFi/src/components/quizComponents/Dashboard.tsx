@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
 import { FormattedData, QuizResultOuput,UserStats } from '../../../types/quiz';
@@ -6,7 +5,6 @@ import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-// import useProfile from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -182,17 +180,17 @@ export default function Dashbaord() {
 
         <div className="max-w-7xl flex justify-between mx-auto px-4 py-6">
           <div className="flex items-center cursor-pointer space-x-4">
-            <div onClick={backHome} className="md:w-12 md:h-12 p-2 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <div onClick={backHome} className="w-20 h-20 rounded-lg flex items-center justify-center">
               <Image 
                 src="/learna-logo.png"
                 alt="Learna Logo"
-                width={40}
-                height={40}
-                className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full"
+                width={100}
+                height={100}
+                className="object-cover rounded-full"
               />
             </div>
             <div>
-              <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
                 Learna
               </h1>
               <p className="text-gray-600">

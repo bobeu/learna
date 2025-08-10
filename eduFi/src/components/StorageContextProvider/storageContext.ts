@@ -1,4 +1,4 @@
-import type { Address, State, TransactionCallback, WeekData, Path, VoidFunc, Quiz, Campaign, QuizResultInput, CampaignDatum, Admin, CategoryType, FormattedData } from "../../../types/quiz";
+import type { Address, State, TransactionCallback, WeekData, Path, VoidFunc, Quiz, Campaign, QuizResultInput, Admin, CategoryType, FormattedData, CampaignHashFormatted } from "../../../types/quiz";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Hex } from "viem";
 import { ReadContractsErrorType } from "wagmi/actions";
@@ -20,7 +20,7 @@ export interface DataContextProps {
     setselectedCampaign: (arg: Campaign) => void;
     campaignStrings: string[];
     loading: boolean;
-    campaignData: CampaignDatum[];
+    campaignData: CampaignHashFormatted[];
     setpath: (arg: Path) => void;
     refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<({
         error?: undefined;
@@ -38,13 +38,14 @@ export interface DataContextProps {
     userAdminStatus: boolean;
     userResults: QuizResultInput[];
     result: QuizResultInput;
-    allCampaign: CampaignDatum[];
+    allCampaign: CampaignHashFormatted[];
     quiz: Quiz;
     wkId: number;
     recordPoints: boolean;
     formattedData: FormattedData;
     requestedHash: Hex;
     requestedWkId: number;
+    setstatUser: (arg: string) => void;
     toggleRecordPoints: (arg:boolean) => void;
     appData: {categories: CategoryType[], quizData: Quiz[] | null};
     onPlayAgain: () => void;

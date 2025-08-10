@@ -304,7 +304,9 @@ abstract contract Campaigns is Week {
     function _bringForward(uint weekEnded, uint newWeek, bytes32 hash_) internal {
         GetCampaign memory prevWk;
         if(weekEnded > 0){
-            prevWk = _getCampaign(weekEnded - 1, hash_);
+            uint prevWkId = weekEnded - 1;
+            // If the week ended is greater than 0, then we can bring forward the funds
+            prevWk = _getCampaign(prevWkId, hash_);
             _tryInitializeCampaign(
                 newWeek,
                 prevWk.cp.data.data,
@@ -314,6 +316,12 @@ abstract contract Campaigns is Week {
                 prevWk.cp.data.platformToken,
                 prevWk.cp.data.token
             );
+            // Reset the funds for the previous week
+            prevWk.cp.data.fundsERC20 = 0;
+            prevWk.cp.data.fundsNative = 0;
+            prevWk.cp.data.platformToken = 0;
+            prevWk.cp.data.lastUpdated = _now();
+            _setCampaign(prevWk.slot, prevWkId, prevWk.cp.data);
         } else {
             prevWk = _getCampaign(weekEnded, hash_);
             _tryInitializeCampaign(

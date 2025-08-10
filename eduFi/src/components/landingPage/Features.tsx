@@ -2,7 +2,7 @@ import { Coins, BookOpen, Trophy, Users, Shield, TrendingUp } from "lucide-react
 
 export default function Features() {
     return(
-        <section id="features" className="px-4 py-16 md:py-20 bg-white">
+        <section id="features" className="px-4 py-16 md:py-20 bg-white font-mono">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
