@@ -30,12 +30,13 @@ export type FunctionName =
   'setPermission' |
   'banOrUnbanUser'|
   'getCampaingData' |
+  'getVerificationStatus' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
 export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 export type Path = 'dashboard' | 'results' | 'review' | 'admin' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile' | 'setupcampaign';
-export type CData = CampaignData[];
+// export type CData = CampaignHash[];
 
 export interface Question {
   id: number;
@@ -105,80 +106,10 @@ export interface UserStats {
   streak: number;
 }
 
-////////////////////////////////////////////////
-
-// export interface SelectedData {
-//     id: number;
-//     category: Category;
-//     selectedLevel: DifficultyLevel;
-//     data: QuestionObj[];
-//     scoreParam: ScoresParam;
-// }
-
-// export interface QuizCategory {
-//   easy: {
-//     questions: QuestionObj[];
-//   };
-//   medium: {
-//     questions: QuestionObj[];
-//   };
-//   hard: {
-//     questions: QuestionObj[];
-//   };
-// };
-
-// export interface SelectedQuizData {
-//   category: Category, 
-//   level: DifficultyLevel, 
-//   questions: QuestionObj[];
- 
-// };
-// export type QuizReturnData = QuizCategory[]; 
-
-// export interface QuizDatum {
-//   category: string;
-//   id: number,
-//   difficultyLevel: string;
-//   identifier: string;
-//   taken: boolean;
-//   questions: Array<{
-//     quest: string;
-//     options: Array<{
-//       label: string;
-//       value: string;
-//     }>;
-//     correctAnswer: {
-//       label: string;
-//       value: string;
-//     };
-//     userAnswer?: {
-//       label: string;
-//       value: string;
-//     };
-//   }>;
-// };
-
 export interface Answer {
   label: string;
   value: string;
 }
-
-// export interface Data {
-//   question: string;
-//   userAnswer: Answer;
-//   correctAnswer: Answer;
-//   quizHash?: string;
-//   userSelect: boolean;
-//   isCorrect: boolean;
-//   options: Array<Answer>;
-// };
-
-// export type DisplayQuizProps = {
-//   indexedAnswer: number;
-//   selectedQuizData: {category: string, data: QuizDatum};
-//   setpath: (arg: Path) => void;
-//   handleSelectAnswer: (arg: {label: string, value: string}) => void;
-// }
 
 interface Values {
   totalAllocated: bigint;
@@ -195,10 +126,7 @@ export interface Claim {
 
 export interface ProfileOther {
   amountMinted: bigint;
-  amountClaimedInNative: bigint;
-  amountClaimedInERC20: bigint;
-  claimed: boolean;
-  passKey: string;
+  passkey: string;
   haskey: boolean;
   totalQuizPerWeek: number;
 }
@@ -211,28 +139,27 @@ export interface Profile {
 export interface ReadProfile {
   eligibility: Eligibility;
   profile: Profile;
-  campaignHash: `0x${string}`;
+  hash_: `0x${string}`;
 }
 
 export interface WeekProfileData {
   weekId: bigint;
+  isClaimed: boolean;
   campaigns: Readonly<ReadProfile[]>;
 }
 
-export interface ClaimResult {
-  elgs: Readonly<Eligibility[]>;
-  weekId: bigint;
-  isVerified: boolean;
-  barred: boolean;
-  claimed: boolean;
-}
-
-export interface CampaignData {
-  campaignHash: Hex;
+export interface CampaignHash {
+  hash_: Hex;
   encoded: Hex;
 }
 
 export interface Campaign {
+  data: CampaignData;
+  users: Address[];
+}
+
+export interface CampaignData {
+  platformToken: bigint;
   fundsNative: bigint;
   fundsERC20: bigint;
   totalPoints: bigint;
@@ -240,13 +167,11 @@ export interface Campaign {
   activeLearners: bigint; 
   operator: Address;
   token: Address;
-  hash_: Hex
-  canClaim: boolean;
-  data: CampaignData;
+  data: CampaignHash;
 }
 
-export interface CampaignDataFormatted {
-  campaignHash: `0x${string}`;
+export interface CampaignHashFormatted {
+  hash_: Hex;
   campaign: string;
 };
 
@@ -266,6 +191,8 @@ export interface WeekData {
 export interface ReadData {
   state: State;
   wd: Readonly<WeekData[]>;
+  approved: CampaignHash[];
+  profileData: WeekProfileData[];
 }
 
 export type TransactionCallback = (arg: TrxState) => void;
@@ -289,45 +216,69 @@ export type FilterTransactionDataProps = {
   filter: boolean;
 }
 
-// export interface HandleSelectAnswerProps {
-//   userAnswer?: Answer; 
-//   correctAnswer: Answer; 
-//   question: string;
-//   userSelect: boolean;
-//   options: Array<Answer>;
-// }
-
-// export interface ScoresParam {
-//   category: string;
-//   difficultyLevel: string;
-//   totalScores: number;
-//   questionSize: number;
-//   weightPerQuestion: number;
-//   totalAnsweredCorrectly: QuestionObj[];
-//   noAnswer: number;
-//   totalAnsweredIncorrectly: number;
-// }
-
-// export type ScoresReturn = () => ScoresParam;
-export interface CampaignDatum {
-  campaignHash: Address;
-  campaign: string;
+export interface FormattedValue {
+  toStr: string;
+  toNum: number;
 }
 
+export interface GetFormattedCampaign {
+  hash_: Hex;
+  campaignName: string;
+  totalLearners: number;
+  fundsNative: FormattedValue;
+  fundsERC20: FormattedValue;
+  platform: FormattedValue;
+  lastUpdated: string;
+  totalPoints: {
+    toStr: string;
+    toNum: number;
+  };
+  operator: React.JSX.Element;
+  token: React.JSX.Element;
+  campaignSelector: React.JSX.Element;
+  users: Address[];
+}
+
+export interface ProfilePerReqWk {
+  hash: Hex;
+  eligibility: {
+    erc20: FormattedValue;
+    native: FormattedValue;
+    platform: FormattedValue;
+    protocolVerified: boolean;
+    token: JSX.Element;
+  },
+  profile: {
+    quizResults:  QuizResultOuput[];
+    erc20Claimed: FormattedValue;
+    nativeClaimed: FormattedValue;
+    amountMinted: FormattedValue;
+    haskey: boolean;
+    passkey: Hex;
+    totalQuizTaken: number;
+  },
+  selector: JSX.Element;
+}
+
+// export interface CampaignDatum {
+//   hash_: Address;
+//   campaign: string;
+// }
+
 export interface Eligibility {
-  protocolVerified: boolean;
+  isEligible: boolean;
   erc20Amount: bigint;
   nativeAmount: bigint;
+  platform: bigint;
   weekId: bigint;
   token: Address;
-  campaignHash: Hex;
+  hash_: Hex;
 }
 
 export interface Admin {
   id: Address;
   active: boolean;
 }
-
 
 export interface QuestionObj {
   id: string | number;
@@ -362,4 +313,22 @@ export interface QuizData {
   categories: string;
   difficulties: string;
   categoryData: CategoryData[];
+}
+
+export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: [boolean, boolean];}
+export interface UseProfileType { inHash?: Hex, wkId?: number }
+export interface FormattedData {
+  statData: {
+    campaign: Campaign;
+    claimDeadline: number;
+    totalPoints: number;
+  };
+  isClaimed: boolean;
+  profile: ProfileOther;
+  eligibility: Eligibility;
+  requestedWeekId: bigint;
+  profileQuizzes: QuizResultOuput[];
+  showWithdrawalButton: boolean;
+  showVerificationButton: boolean;
+  totalPointsForACampaign: number;
 }

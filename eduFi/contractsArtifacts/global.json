@@ -2,7 +2,7 @@
   "approvedFunctions": [
     "checkEligibility",
     "recordPoints",
-    "banUserFromCampaign",
+    "toggleAdminStatus",
     "setAdmin",
     "getAdmins",
     "setTransitionInterval",
@@ -20,9 +20,9 @@
     "claimReward",
     "setScope",
     "setConfigId",
-    "getClaimable",
     "configId",
-    "banOrUnbanUser"
+    "banOrUnbanUser",
+    "getVerificationStatus"
   ],
   "chainName": {
     "42220": "celo",
@@ -49,17 +49,17 @@
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0xec3A5EDAFF8B3e9c74b64b2c54ad1cf2dc5aa637",
-      "FeeManager": "0xA1C9C076583997Ad336EAf25E4cf790377B81fd7",
-      "GrowToken": "0x8573Ca487C45F08076E7e8ad8FA8edb1117b9Cd5",
-      "Learna": "0xDC34Ba11f7A4DC988b8359465787338E5a5EDA04"
+      "Claim": "0xc2b778F3B7e2b00b4F698F0119CFa118462b37f8",
+      "FeeManager": "0x0f596Ab93E922a1f8D56725e00acC74dd75d3926",
+      "GrowToken": "0xFa62F66Def8d5CA0f3eB6d087737F106305F87A6",
+      "Learna": "0xB770a0e0D5bDFAEC10b08066Cdb1cd66cCE70beC"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "Claim": "0x2082625E83E04776Ea33C10d97AeE1A356a5aE47",
-      "FeeManager": "0x25d6936aa067F42B4B8f0ab4c9FEE09194965C93",
-      "GrowToken": "0x6d64E61500FFc5Eef0B0CC5d8cf15bCdd58ed668",
-      "Learna": "0xd89B1C85a2BFc115AC6e849a05C20866B466fcE5"
+      "Claim": "0xb6586d6530c057C07F451a9C0166423A7249e42E",
+      "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",
+      "GrowToken": "0xEBc82ccb80Ae2A27Fad13807E369FD3bB29B35ec",
+      "Learna": "0xCba6FA32429881e9E57F3da8c4321e5f99042b38"
     }
   ]
 }

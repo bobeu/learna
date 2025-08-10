@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0x2082625E83E04776Ea33C10d97AeE1A356a5aE47",
+  "contractAddress": "0xb6586d6530c057C07F451a9C0166423A7249e42E",
   "functionName": "claimReward",
-  "inputCount": 1,
+  "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {
@@ -287,18 +287,12 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        }
-      ],
+      "inputs": [],
       "name": "claimReward",
       "outputs": [
         {
           "internalType": "bool",
-          "name": "done",
+          "name": "",
           "type": "bool"
         }
       ],
@@ -346,84 +340,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "getClaimable",
-      "outputs": [
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "bool",
-                  "name": "protocolVerified",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "erc20Amount",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "nativeAmount",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "weekId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "campaignHash",
-                  "type": "bytes32"
-                }
-              ],
-              "internalType": "struct ILearna.Eligibility[]",
-              "name": "elgs",
-              "type": "tuple[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "isVerified",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "barred",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "claimed",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct Claim.ClaimResult[]",
-          "name": "result",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "bytes32",
           "name": "destinationChainId",
           "type": "bytes32"
@@ -445,6 +361,30 @@
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getVerificationStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "_isVerified",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "_isBlacklisted",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

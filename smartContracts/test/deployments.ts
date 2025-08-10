@@ -58,6 +58,7 @@ export async function deployContracts(getSigners_: () => Signers) {
   const growTokenAddr = await growToken.getAddress() as Address;
 
   await learna.connect(deployer).setClaimAddress(claimAddr);
+  await learna.connect(deployer).setToken(growTokenAddr);
 
   return {
     growToken,

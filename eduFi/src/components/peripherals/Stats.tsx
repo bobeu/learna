@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
@@ -6,29 +5,28 @@ import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
-import { formatValue, getTimeFromEpoch, toBN } from "../utilities";
+import { filterWeekData, formatValue, getTimeFromEpoch, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle, Box} from "lucide-react";
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
-import useProfile from "../hooks/useProfile";
 import MinimumToken from "./inputs/MinimumToken";
 import TransitionInterval from "./inputs/TransitionInterval";
 import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
+import CountdownTimer from "./CountdownTimer";
 
-function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, transitionDate: number, claimDeadline: number}) {
+function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {campaign: Campaign, transitionDate: number, claimDeadline: number, protocolVerified: boolean}) {
     const { 
         activeLearners, 
         totalPoints, 
-        canClaim,
         fundsERC20,
         fundsNative,
         lastUpdated,
         token
-    } = campaign;
+    } = campaign.data;
 
     return(
         <MotionDisplayWrapper>
@@ -70,6 +68,7 @@ function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, t
                     </div>
                     <div className="font-semibold text-gray-800 mb-1">
                         {getTimeFromEpoch(claimDeadline)}
+                        <CountdownTimer targetDate={BigInt(claimDeadline)} notification="Claim Ended" />
                     </div>
                     <div className="text-xs text-gray-600">Claimable until</div>
                 </div>
@@ -78,16 +77,17 @@ function Stat({campaign, claimDeadline, transitionDate} : {campaign: Campaign, t
                     <div className="flex items-center justify-center mb-3">
                         <Fuel className="w-4 h-4 text-purple-600" />
                     </div>
-                    <div className="font-semibold text-gray-800 mb-1">
+                    <div className="font-semibold text-gra-800 mb-1">
                         {getTimeFromEpoch(transitionDate)}
+                        <CountdownTimer targetDate={BigInt(transitionDate)} notification="Sorting active"/>
                     </div>
                     <div className="text-xs text-gray-600">Date until sorting active</div>
                 </div>
 
-                    <div className={`glass-card rounded-xl p-4 ${canClaim? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`glass-card rounded-xl p-4 ${protocolVerified? 'text-green-600' : 'text-red-600'}`}>
                     <div className="flex items-center justify-center mb-3">
                         <BaggageClaim className={`w-5 h-5`} />
-                        <h3>{canClaim? 'Ready' : 'Not Ready'}</h3>
+                        <h3>{protocolVerified? 'Ready' : 'Not Ready'}</h3>
                     </div>
                         <div className="font-semibold text-gray-800 mb-1">
                         {getTimeFromEpoch(claimDeadline)}
@@ -140,17 +140,23 @@ export default function Stats() {
     const [ openUnPausePopUp, setUnPausePopUp ] = React.useState<number>(0);
     const [ action, setAction ] = React.useState<string>('none');
 
-    const { returnObj: { claimDeadline, campaign, }, setHash, setWeekId } = useProfile();
     const { 
         setpath, 
         owner,
         wkId,
+        requestedWkId,
+        requestedHash,
         campaignStrings,
         userAdminStatus,
-        campaignData,
+        formattedData: { totalPointsForACampaign },
+        weekData,
+        setstatUser,
+        sethash, 
+        setweekId,
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
 
+    const { campaign, claimDeadline } = filterWeekData(weekData, requestedWkId, requestedHash);
     const account = useAccount().address as Address || zeroAddress;
     const { isConnected } = useAccount();
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
@@ -179,13 +185,8 @@ export default function Stats() {
         }
     }
 
-    const setCampaignStr = (arg: string) => {
-        const fd = campaignData.filter(q => q.campaign.toLowerCase() === arg.toLowerCase());
-        if(fd) setHash(fd?.[0]?.campaignHash);
-    }
-
     const setselectedWeek = (arg: string) => {
-        setWeekId(toBN(arg).toNumber());
+        setweekId(BigInt(arg));
     }
 
     const setaction = (arg: string) => {
@@ -264,7 +265,7 @@ export default function Stats() {
                     <div className="w-2/4  md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
                         <SelectComponent 
-                            setHash={setCampaignStr}
+                            setHash={sethash}
                             campaigns={campaignStrings}
                             placeHolder="Campaigns"
                             width="w-"
@@ -280,10 +281,26 @@ export default function Stats() {
                         />
                     </div>
                 </div>
+                <div className="w-full flex justify-between items-center gap-2">
+                    <div className="w-2/4  md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>Learnas</h3>
+                        <SelectComponent 
+                            setHash={setstatUser}
+                            campaigns={campaign.users}
+                            placeHolder="All Learners"
+                            width="w-"
+                        />
+                    </div>
+                     <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
+                        <h3>User points</h3>
+                        <h3 className="max-w-sm md:max-w-md border rounded-md p-2">{totalPointsForACampaign}</h3>
+                    </div>
+                </div>
                 <Stat 
                     campaign={campaign} 
                     transitionDate={transitionDate}
                     claimDeadline={claimDeadline}
+                    protocolVerified={requestedWkId < wkId}
                 />
             </div>
 
@@ -303,9 +320,9 @@ export default function Stats() {
                     <Admins />
                     <SelectComponent 
                         campaigns={['none', 'pause', 'unpause']}
-                        placeHolder="Set contract state"
+                        placeHolder="Contract execution state"
                         setHash={setaction}
-                        title="Set contract state"
+                        title="Contract execution state"
                         width="w-full"
                     />
                 </div>

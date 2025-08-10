@@ -6,7 +6,6 @@ import { filterTransactionData, formatAddr } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Hex, parseUnits } from "viem";
 import { FunctionName, Address } from '../../../types/quiz';
-import useProfile from '../hooks/useProfile';
 
 export const VALUE = parseUnits('0', 16);
 export default function GenerateKey({campaignHash, buttonClassName} : {campaignHash: Hex, buttonClassName?: string}) {
@@ -15,8 +14,7 @@ export default function GenerateKey({campaignHash, buttonClassName} : {campaignH
     const toggleDrawer = (arg:number) => setDrawer(arg); 
     const { chainId, address } = useAccount();
     const account = formatAddr(address);
-    const { weekId } = useStorage();
-    const { returnObj:{ profile: { other: { haskey}}} } = useProfile();
+    const { weekId, formattedData: { profile: { haskey }} } = useStorage();
 
     // Build the transactions to run
     const { mutate, funcArgs } = React.useMemo(() => {
@@ -26,8 +24,7 @@ export default function GenerateKey({campaignHash, buttonClassName} : {campaignH
             functionNames: ['generateKey'],
         });
         
-        const growToken = mutate.contractAddresses.GrowToken as Address;
-        const generateArgs = [growToken, [campaignHash]];
+        const generateArgs: any[] = [];
         // const recordPointsArgs = [account, result, growToken, result.other.quizId];
         return { mutate, funcArgs: [generateArgs] };
     }, [chainId, campaignHash, account]);

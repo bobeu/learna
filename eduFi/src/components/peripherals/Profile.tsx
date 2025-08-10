@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
@@ -10,17 +8,16 @@ import { useMiniApp } from "@neynar/react";
 import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
-import useProfile, { ProfileReturnType } from "../hooks/useProfile";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
-import { Hex } from "viem";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
-import Eligibiliies from "./Eligibilities";
+import { FormattedData } from "../../../types/quiz";
+import CountdownTimer from "./CountdownTimer";
 
 interface ProfileComponentProps {
     fid: number | undefined;
     weekId: number;
-    profileData: ProfileReturnType;
+    profileData: FormattedData;
 }
 
 function ProfileComponent(
@@ -28,23 +25,24 @@ function ProfileComponent(
         fid,
         profileData: {
             profile: {
-                other: { totalQuizPerWeek }
+                totalQuizPerWeek,
             },
-            protocolReward: { erc20Amount, nativeAmount },
-            claimDeadline,
+            isClaimed,
             showVerificationButton,
             showWithdrawalButton,
             totalPointsForACampaign,
-            requestedWeekId,
             eligibility,
-            totalPointsInRequestedCampaign,
-            campaign,
-            claimed
+            statData: {
+                campaign,
+                claimDeadline,
+                totalPoints,
+            }
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
-
+    
+    const { isEligible, erc20Amount, nativeAmount, platform } = eligibility;
     const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const back = () => {
@@ -56,7 +54,7 @@ function ProfileComponent(
         if(showWithdrawalButton) setDrawer(1);
         if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
     };
-    const { activeLearners, canClaim } = campaign;
+    const { data: { activeLearners,} } = campaign;
 
     if(showQRCode) {
         return(
@@ -79,7 +77,7 @@ function ProfileComponent(
                                 {totalPointsForACampaign || 0}
                             </div>
                         <div className="text-xl opacity-90 mb-2">
-                            You earned {totalPointsForACampaign} out of {totalPointsInRequestedCampaign.toString()} total points for the week
+                            You earned {totalPointsForACampaign} out of {totalPoints} total points for the week
                         </div>
                         <div className="text-lg opacity-80 capitalize">
                             Your FID: {fid || 'NA'}
@@ -87,18 +85,20 @@ function ProfileComponent(
                         <div className="text-lg opacity-80 capitalize">
                             <h3>Learners: {activeLearners.toString()}</h3>
                         </div>
-                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${canClaim? 'text-cyan-900' : ''}`}>
+                        <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${isEligible? 'text-cyan-900' : ''}`}>
                             <div className="flex justify-between gap-3 p-2">
                                 <BaggageClaim className={`w-5 h-5 text-gray-`} />
-                                <h3>{canClaim? 'Ready to claim' : 'Claim not Ready'}</h3>
+                                <h3>{isEligible? 'Ready to claim' : 'Claim not Ready'}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Sorted date</h3>
                                 <h3>{getTimeFromEpoch(transitionDate)}</h3>
+                                <CountdownTimer notification="Eligibility activated" targetDate={BigInt(transitionDate)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-">Claim ends: </h3>
                                 <h3>{getTimeFromEpoch(claimDeadline)}</h3>
+                                <CountdownTimer notification="Claim period expired" targetDate={BigInt(claimDeadline)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Reward: </h3>
@@ -108,10 +108,10 @@ function ProfileComponent(
                     </div>
                 </div>
 
-                {/* Eligibiliies */}
+                {/* Eligibiliies
                 <Eligibiliies  
                     eligibility={eligibility}
-                />
+                /> */}
 
                 {/* Stats Grid*/}
                 <div className="space-y-3">
@@ -124,7 +124,7 @@ function ProfileComponent(
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {totalQuizPerWeek || 0}
                             </div>
-                            <div className="text-sm text-gray-600">Total Onchain Streak</div>
+                            <div className="text-sm text-gray-600">Total Quiz attempted</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -133,16 +133,23 @@ function ProfileComponent(
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {
-                                    (showVerificationButton && !showWithdrawalButton && !claimed) && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                    showVerificationButton && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
-                                    (showWithdrawalButton || claimed ) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
+                                    showWithdrawalButton && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
-                                    (!showVerificationButton && !showWithdrawalButton && !claimed) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
+                                    (!showVerificationButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
                                 }
                             </div>
                             <div className="text-sm text-gray-600">Verification status</div>
+                        </div>
+                       
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <CheckCircle className={`w-8 h-8 ${!isClaimed? 'text-red-600' : 'text-green-600' }`} />
+                            </div>
+                            <div className="text-sm text-gray-600">Reward claimed</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -150,9 +157,19 @@ function ProfileComponent(
                                 <HandCoins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(erc20Amount?.toString()).toStr || '0'}
+                                {formatValue(erc20Amount.toString()).toStr || '0'}
                             </div>
-                            <div className="text-sm text-gray-600">Amount of $GROW earned</div>
+                            <div className="text-sm text-gray-600">Reward in other token</div>
+                        </div>
+                       
+                        <div className="glass-card rounded-xl p-4">
+                            <div className="flex items-center justify-center mb-3">
+                                <HandCoins className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">
+                                {formatValue(platform.toString()).toStr || '0'}
+                            </div>
+                            <div className="text-sm text-gray-600">Reward in $GROW token</div>
                         </div>
 
                         <div className="glass-card rounded-xl p-4">
@@ -162,7 +179,7 @@ function ProfileComponent(
                             <div className="text-3xl font-bold text-gray-800 mb-1">
                                 {formatValue(nativeAmount?.toString()).toStr || '0'}
                             </div>
-                            <div className="text-sm text-gray-600">Amount of $CELO earned</div>
+                            <div className="text-sm text-gray-600">Reward in $CELO</div>
                         </div>
                     </div>
 
@@ -171,27 +188,25 @@ function ProfileComponent(
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
-                disabled={(!showVerificationButton && !showWithdrawalButton) || showQRCode}
+                disabled={!showWithdrawalButton || showQRCode}
                 overrideClassName="w-full mt-4"
             >
                 <BaggageClaim className="w-5 h-5 text-orange-white" />
-                <span>{(showVerificationButton && !showWithdrawalButton && !claimed) && 'Verify To Claim'}</span>
-                <span>{(showWithdrawalButton && !claimed) && 'Withdraw'}</span>
-                <span>{(!showVerificationButton && !showWithdrawalButton && !claimed) && 'Not Eligible'}</span>
-                <span>{claimed && 'Claimed'}</span>
+                <span>{showVerificationButton && 'Verify To Claim'}</span>
+                <span>{showWithdrawalButton && 'Withdraw'}</span>
+                <span>{(!showVerificationButton && !showWithdrawalButton && !isEligible) && 'Not Eligible'}</span>
+                <span>{isClaimed && 'Claimed'}</span>
             </CustomButton>
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                weekId={requestedWeekId}
             />
         </MotionDisplayWrapper>
     );
 }
 
 export default function Profile() {
-    const { setpath, campaignStrings, wkId, campaignData } = useStorage();
-    const { returnObj, setHash: setRequestedHash, setWeekId } = useProfile();
+    const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId } = useStorage();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
     
@@ -205,7 +220,7 @@ export default function Profile() {
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
     const setselectedWeek = (arg: string) => {
-        setWeekId(Number(arg));
+        setweekId(BigInt(arg));
     }
 
     const goToQuiz = () => {
@@ -219,11 +234,6 @@ export default function Profile() {
     const createCampaign = () => {
         setpath('setupcampaign');
     };
-
-    const setHash = (arg: string) => {
-        const found = campaignData.filter(q => q.campaign === arg);
-        if(found.length > 0) setRequestedHash(found[0].campaignHash as Hex);
-    }
 
     return(
         <Wrapper2xl useMinHeight={true} >
@@ -256,12 +266,12 @@ export default function Profile() {
                     </CustomButton>
                 </div>
                 
-                <div className="flex justify-between gap-4 max-w-sm">
+                <div className="flex justify-between gap-4 max-w-sm md:max-w-full">
                     {/* User can view their profile in a selected campaign */}
                     <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Campaigns</h3>
                         <SelectComponent 
-                            setHash={setHash}
+                            setHash={sethash}
                             campaigns={campaignStrings}
                             placeHolder="Select campaign"
                             width="w-"
@@ -283,7 +293,7 @@ export default function Profile() {
                 <ProfileComponent 
                     weekId={wkId}
                     fid={context?.user?.fid} 
-                    profileData={returnObj}
+                    profileData={formattedData}
                 />
                 
                 {/* Exit button */}
@@ -295,5 +305,3 @@ export default function Profile() {
         </Wrapper2xl>
     )
 }
-
-// ...Array(wkId === 0? 1 : wkId + 1).keys()

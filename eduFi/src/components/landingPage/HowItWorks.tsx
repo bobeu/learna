@@ -1,7 +1,7 @@
 export default function HowItWorks() {
 
     return(
-        <section id="how-it-works" className="px-4 py-16 md:py-20 bg-gradient-to-br from-gray-50 to-cyan-50">
+        <section id="how-it-works" className="px-4 py-16 md:py-20 bg-gradient-to-br from-gray-50 to-cyan-50 font-mono">
             <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">How It Works</h2>

@@ -9,8 +9,8 @@ export default function Hero({handleClick} : {handleClick: () => void}) {
     }
 
     return(
-        <section className="relative px-4 py-12 md:py-20 text-center bg-gradient-to-br from-gray-50 to-cyan-50">
-            <div className="max-w-4xl mx-auto">
+        <section className="mx-auto bg-[url('/learna-image-2.png')] bg-red-400 bg-no-repeat relative px-4 py-12 md:py-20 text-center bg-gradient-to-br from-gray-50 to-cyan-50 font-mono">
+            <div className="">
                 <div className="mb-8">
                     <div className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-cyan-200 mb-6 shadow-sm">
                         <Zap className="w-4 h-4 text-cyan-600 mr-2" />
@@ -23,7 +23,7 @@ export default function Hero({handleClick} : {handleClick: () => void}) {
                         <br />
                         <span className="text-gray-900">Earn Crypto.</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-lg md:text-xl text-gray-800 mb-8 max-w-2xl mx-auto leading-relaxed">
                         Master technologies, protocols, subjects, tools, architectures, libraries including web3 fundamentals through interactive quizzes. 
                         Earn real cryptocurrency rewards as you build your knowledge and skills.
                     </p>

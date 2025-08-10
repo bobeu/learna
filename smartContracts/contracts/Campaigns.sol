@@ -12,13 +12,13 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 */ 
 abstract contract Campaigns is Week {
     ///@dev 
-    bytes32[] private campaignList;   
+    CampaignData[] private campaignList;   
 
     ///@dev All registered campaign
     mapping(bytes32 => bool) private isRegistered;
 
     // Campaigns
-    mapping(bytes32 campaignHash => Initializer) private initializer;
+    // mapping(bytes32 campaignHash => Initializer) private initializer;
 
     ///@dev Week inititializer
     mapping(uint weekId => mapping(bytes32 => WeekInitializer)) private wInit;
@@ -34,19 +34,22 @@ abstract contract Campaigns is Week {
     mapping(uint campaignIndex => bytes32 campaingHashValue) private indexer;
 
     ///@dev Registers a new campaign
-    function _checkAndInitializeCampaign(bytes32 hash_) internal {
-        if(!isRegistered[hash_]){
-            isRegistered[hash_] = true;
-            campaignList.push(hash_);
+    function _checkAndInitializeCampaign(CampaignData memory data) internal {
+        if(!isRegistered[data.hash_]){
+            isRegistered[data.hash_] = true;
+            campaignList.push(data);
         }
     }
 
     /**
      * @dev Adds a campaign to a new week
+     * @param data : Campaign data struct
      * @param weekId : Week Id
-     * @param hash_ : Campaign Hash
-     * @param encoded : Encoded campaign data
-     * @param operator : Operator address
+     * @param operator : Campaign operator or owner
+     * @param fundsNative : Amount to fund in native asset
+     * @param fundsERC20 : Amount to fund in erc20 asset
+     * @param platformToken : Amount to fund in platform asset
+     * @param token : ERC20 token address
     */
     function _addCampaignToNewWeek(
         CampaignData memory data,
@@ -61,17 +64,18 @@ abstract contract Campaigns is Week {
         if(!wi.hasSlot){
             wi.hasSlot = true;
             wi.slot = uint32(campaigns[weekId].length);
-            campaigns[weekId].push(Campaign(platformToken, fundsNative, fundsERC20, 0, _now(), 0, operator, token, false, data));
+            campaigns[weekId].push();
+            campaigns[weekId][wi.slot].data = CData(platformToken, fundsNative, fundsERC20, 0, _now(), 0, operator, token, data);
             wInit[weekId][data.hash_] = wi;
             cmp = _getCampaign(weekId, data.hash_).cp;
             emit NewCampaign(cmp);
         } else {
             cmp = _getCampaign(weekId, data.hash_).cp;
             unchecked {
-                cmp.fundsNative += fundsNative;
-                cmp.platformToken += platformToken;
+                cmp.data.fundsNative += fundsNative;
+                cmp.data.platformToken += platformToken;
             }
-            if(operator != cmp.operator) cmp.operator = operator;
+            if(operator != cmp.data.operator) cmp.data.operator = operator;
             // If token is not zero address, then update the fundsERC20
             // If token is zero address, then fundsERC20 will not be updated
 
@@ -79,26 +83,26 @@ abstract contract Campaigns is Week {
             // If token is different, then update the token address and fundsERC20
             if(fundsERC20 > 0 && token != address(0)) {
                 bool execute = false;
-                if(token == cmp.token){
+                if(token == cmp.data.token){
                     if(fundsERC20 > 0) execute = true;
                 } else {
-                    if(cmp.fundsERC20 == 0) {
-                        cmp.token = token;
+                    if(cmp.data.fundsERC20 == 0) {
+                        cmp.data.token = token;
                         execute = true;
                     }
                 }
                 if(execute) {
                     if(IERC20(token).allowance(_msgSender(), address(this)) >= fundsERC20) {
-                        if(IERC20(token).transferFrom(_msgSender(), address(this), fundsERC20)){
+                        if(IERC20(token).transferFrom(_msgSender(), claim, fundsERC20)){
                             unchecked {
-                                cmp.fundsERC20 += fundsERC20;
+                                cmp.data.fundsERC20 += fundsERC20;
                             }
                         }
                     }
                 }
             }
-            cmp.lastUpdated = _now();
-            _setCampaign(wi.slot, weekId, cmp);
+            cmp.data.lastUpdated = _now();
+            _setCampaign(wi.slot, weekId, cmp.data);
             emit CampaignUpdated(cmp);
         }
     }
@@ -106,6 +110,8 @@ abstract contract Campaigns is Week {
     /**
      * @dev Only approved campaign can pass
      * @param hash_ : Campaign Hash : Hash of the campaign string e.g keccack256("Solidity")
+     * @param weekId : week id
+     * @param flag : Branching flag
     */
     function _validateCampaign(bytes32 hash_, uint weekId, uint flag) internal view {
         if(flag == 0) {
@@ -144,21 +150,21 @@ abstract contract Campaigns is Week {
      * @dev Return the hashed result of a campaign string
      * @param campaign : Campaign string
      */
-    function _getCampaignHash(string memory campaign) internal pure returns(CampaignData memory data) {
+    function _getHash(string memory campaign) internal pure returns(CampaignData memory data) {
         data.encoded = bytes(campaign);
-        data.hash_ = keccak256(encoded);
+        data.hash_ = keccak256(data.encoded);
     }
 
     /**
      * @dev Initializeds a new campaign and create an index for it if not exist, Then initialize the campaign for the
      * parsed weekId. If already iniitialized, update the existing campaign in storage.
-     * @param weekId : Week to initialize. Should be the current week.
-     * @param hash_ : Bytes32 hashed representation of the campaign
-     * @param encoded : Bytes representation of the campaign string
-     * @param operator : Campaign manager or creator
-     * @param fundsNative : Amount funded in native token
-     * @param fundsERC20 : Amount funded in erc20 token
-     * @param token : Contract address of the funding token
+     * @param data : Campaign data struct
+     * @param weekId : Week Id
+     * @param operator : Campaign operator or owner
+     * @param fundsNative : Amount to fund in native asset
+     * @param fundsERC20 : Amount to fund in erc20 asset
+     * @param platformToken : Amount to fund in platform asset
+     * @param token : ERC20 token address
     */
     function _tryInitializeCampaign(
         uint weekId,
@@ -169,7 +175,7 @@ abstract contract Campaigns is Week {
         uint256 platformToken,
         address token
     ) internal returns(Campaign memory cmp) {
-        _checkAndInitializeCampaign(data.hash_);
+        _checkAndInitializeCampaign(data);
         cmp = _addCampaignToNewWeek(
             data, 
             weekId, 
@@ -180,58 +186,12 @@ abstract contract Campaigns is Week {
             token
         );
         _validateCampaign(data.hash_, weekId, 2);
-        // if(!_isInitialized(hash_)){
-        //     uint index = allCampaigns;
-        //     allCampaigns = index + 1;
-        //     indexer[index] = hash_;
-        //     initializer[hash_] = Initializer(true, index, encoded, hash_);
-        // } else {
-        //     _init = initializer[hash_];
-        // }
-        // WeekInitializer memory wi = wInit[weekId][hash_];
-        // if(!wi.hasSlot){
-        //     wi.hasSlot = true;
-        //     wi.slot = uint32(campaigns[weekId].length);
-        //     campaigns[weekId].push(Campaign(fundsNative, fundsERC20, 0, _now(), 0, operator, token, hash_, false, CampaignData(hash_, encoded)));
-        //     wInit[weekId][hash_] = wi;
-        //     cmp = _getCampaign(weekId, hash_).cp;
-        //     emit NewCampaign(cmp);
-        // } else {
-        //     cmp = _getCampaign(weekId, hash_).cp;
-        //     unchecked {
-        //         cmp.fundsNative += fundsNative;
-        //     }
-        //     if(operator != cmp.operator) cmp.operator = operator;
-        //     if(token != address(0)){
-        //         bool execute = false;
-        //         if(token == cmp.token){
-        //             if(fundsERC20 > 0) execute = true;
-        //         } else {
-        //             if(cmp.fundsERC20 == 0) {
-        //                 cmp.token = token;
-        //                 execute = true;
-        //             }
-        //         }
-        //         if(execute) {
-        //             if(IERC20(token).allowance(_msgSender(), address(this)) >= fundsERC20) {
-        //                 if(IERC20(token).transferFrom(_msgSender(), address(this), fundsERC20)){
-        //                     unchecked {
-        //                         cmp.fundsERC20 += fundsERC20;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     cmp.lastUpdated = _now();
-        //     _setCampaign(wi.slot, weekId, cmp);
-            // emit CampaignUpdated(cmp);
-        // }
     }
 
     ///@dev Activates or deactivates campaigns
     function toggleCampaignStatus(string[] memory _campaigns) public returns(bool) {
         for(uint i = 0; i < _campaigns.length; i++) {
-            bytes32 hash_ = _getCampaignHash(_campaigns[i]).hash_;
+            bytes32 hash_ = _getHash(_campaigns[i]).hash_;
             bool status = isRegistered[hash_];
             isRegistered[hash_] = !status;
         }
@@ -239,27 +199,40 @@ abstract contract Campaigns is Week {
     }
 
     /**
-     * Update other data in Week data
+     * Fetches the campaign for the particular week
      * @param weekId : Week id
-     * @return data : Other data
+     * @return data : Campaigns
      */
     function _getCampaings(uint weekId) internal view returns(Campaign[] memory data) {
         data = campaigns[weekId];
     }
 
     /**
-     * Update other campaign data
+     * Update campaign data in storage
      * @param weekId : Week id
-     * @param campaign : Other data
+     * @param _campaign : Other data
      * @param slot : Campaign Id
      */
     function _setCampaign(
         uint32 slot,
         uint weekId, 
-        Campaign memory campaign
+        CData memory _campaign
     ) internal  {
-        // onlyValidCampaignSlot(weekId, slot);
-        campaigns[weekId][slot] = campaign;
+        campaigns[weekId][slot].data = _campaign;
+    }
+
+    /**
+     * Update campaign data in storage
+     * @param weekId : Week id
+     * @param slot : Campaign Id
+     * @param user : Target user
+     */
+    function _updateCampaignUsersList(
+        uint32 slot,
+        uint weekId, 
+        address user
+    ) internal  {
+        campaigns[weekId][slot].users.push(user);
     }
 
     /**
@@ -289,58 +262,76 @@ abstract contract Campaigns is Week {
     //     id = wInit[weekId][hash_].slot; 
     // }
 
-    /**Return all approved campaigns */
-    function _getApprovedCampaigns() internal view returns(bytes[] memory result) {
+    ///@dev Return approved campaigns
+    function _getApprovedCampaigns() internal view returns(CampaignData[] memory result) {
         result = campaignList;
     }
 
+    ///@dev Return campaigns for the previous week. This will be used to determine the amount claimables by learners
+    function getCampaignsForThePastWeek() external view returns(Campaign[] memory result) {
+        uint pastWeek = _getState().weekId;
+        if(pastWeek == 0) return result;
+        return _getCampaings(pastWeek - 1);
+    }
+
     /**
-     * @dev Transition the week into a new week, aggregate all the campaigns and initialize them for the new week.
+     * @dev Set up all campaigns for the new week. 
+     * @notice it transition into a new week bringing forward the funds from the previous week to the new week.
      * @param newIntervalInMin : New interval to update
      * @param callback : Callback function to run for each campaign
-     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, function(Campaign memory) internal returns(Campaign memory) callback) internal returns(uint pastWeekId, uint newWeekId, bytes32[] memory hashes) {
+    */
+    function _initializeAllCampaigns(uint32 newIntervalInMin, function(CData memory) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition date in future");
         pastWeek = st.weekId;
-        hashes = _getApprovedCampaigns();
+        cData = _getApprovedCampaigns();
         newWeek = _transitionToNewWeek();
         _setTransitionInterval(newIntervalInMin, pastWeek);
-        for(uint i = 0; i < _inits.length; i++) { 
-            bytes32 hash_ = _hashes[i];
-            GetCampaign memory getC = _getCampaign(pastWeek, hash_);
+        for(uint i = 0; i < cData.length; i++) { 
+            bytes32 hash_ = cData[i].hash_;
+            GetCampaign memory cmp = _getCampaign(pastWeek, hash_);
             _bringForward(pastWeek, newWeek, hash_);
-            _setCampaign(res.slot, pastWeek, callback(getC.cp)); 
+            _setCampaign(cmp.slot, pastWeek, callback(cmp.cp.data)); 
         }
     }
 
     /**
      * @dev Bring forward the campaign balances from the previous week to a new week
-     * @param currentWeek : Current week
+     * @param weekEnded : Current week
      * @param newWeek : New week
      * @param hash_ : Campaign hash
      */
-    function _bringForward(uint currentWeek, uint newWeek, bytes32 hash_) internal {
-        if(currentWeek > 0){
-            Campaign memory prevWk = _getCampaign(currentWeek - 1, hash_);
+    function _bringForward(uint weekEnded, uint newWeek, bytes32 hash_) internal {
+        GetCampaign memory prevWk;
+        if(weekEnded > 0){
+            uint prevWkId = weekEnded - 1;
+            // If the week ended is greater than 0, then we can bring forward the funds
+            prevWk = _getCampaign(prevWkId, hash_);
             _tryInitializeCampaign(
                 newWeek,
-                prevWk.cp.data,
-                prevWk.cp.operator,
-                prevWk.cp.fundsNative,
-                prevWk.cp.fundsERC20,
-                prevWk.cp.platformToken,
-                prevWk.cp.token
+                prevWk.cp.data.data,
+                prevWk.cp.data.operator,
+                prevWk.cp.data.fundsNative,
+                prevWk.cp.data.fundsERC20,
+                prevWk.cp.data.platformToken,
+                prevWk.cp.data.token
             );
+            // Reset the funds for the previous week
+            prevWk.cp.data.fundsERC20 = 0;
+            prevWk.cp.data.fundsNative = 0;
+            prevWk.cp.data.platformToken = 0;
+            prevWk.cp.data.lastUpdated = _now();
+            _setCampaign(prevWk.slot, prevWkId, prevWk.cp.data);
         } else {
+            prevWk = _getCampaign(weekEnded, hash_);
             _tryInitializeCampaign(
                 newWeek,
-                prevWk.cp.data,
-                prevWk.cp.operator,
+                prevWk.cp.data.data,
+                prevWk.cp.data.operator,
                 0,
                 0,
                 0,
-                prevWk.cp.token
+                prevWk.cp.data.token
             );
         }
     }

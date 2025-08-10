@@ -19,13 +19,13 @@ interface ILearna {
     event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
-    event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
-    event Sorted(uint _weekId, uint newWeekId, bytes32[] campaigns);
+    // event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
+    event Sorted(uint _weekId, uint newWeekId, CampaignData[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);
 
-    struct Campaign {
-        uint platformToken
+    struct CData {
+        uint platformToken;
         uint256 fundsNative;
         uint256 fundsERC20;
         uint96 totalPoints;
@@ -33,8 +33,12 @@ interface ILearna {
         uint activeLearners; 
         address operator;
         address token;
-        bytes32 hash_;
         CampaignData data;
+    }
+
+    struct Campaign {
+        CData data;
+        address[] users;
     }
 
     struct GetCampaign {
@@ -61,6 +65,7 @@ interface ILearna {
 
     struct WeekProfileData {
         uint weekId;
+        bool isClaimed;
         ReadProfile[] campaigns;
     }
 
@@ -116,9 +121,9 @@ interface ILearna {
 
     struct ProfileOther {
         uint amountMinted;
-        uint amountClaimedInNative;
-        uint amountClaimedInERC20;
         uint8 totalQuizPerWeek;
+        bytes32 passkey;
+        bool haskey;
     }
 
     struct Profile {
@@ -136,7 +141,8 @@ interface ILearna {
     struct ReadData {
         State state;
         WeekData[] wd;
-        Initializer[] approved;
+        CampaignData[] approved;
+        WeekProfileData[] profileData;
     }
 
     struct State {
@@ -147,12 +153,19 @@ interface ILearna {
     }
 
     struct Eligibility {
-        bool protocolVerified;
+        bool isEligible;
         uint erc20Amount;
         uint nativeAmount;
-        uint weekId;
+        uint platform;
         address token;
         bytes32 hash_;
+        uint weekId;
+    }
+
+    // Eligibilities for the previous 3 weeks at most
+    struct Eligibilities {
+        Eligibility[] elgs;
+        uint weekId;
     }
 
     struct UserCampaigns {
@@ -160,7 +173,9 @@ interface ILearna {
         bytes32[] campaigns;
     }
 
-    function checkEligibility(address user) external view returns (Eligibility[] memory, uint weekId);
-    function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
-    function getWeek() external view returns(uint);
+    function checkEligibility(address user) external view returns (Eligibilities[] memory);
+    function setIsClaimed(address user, uint weekId) external;
+    // function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
+    // function getCampaignsForThePastWeek() external view returns(Campaign[] memory result);
+    function getPlatformToken() external view returns(address);
 }

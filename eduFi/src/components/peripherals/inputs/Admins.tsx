@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Input, InputTag } from './Input';
-import useStorage from '~/components/hooks/useStorage';
 import CustomButton from '../CustomButton';
 import { formatAddr } from '~/components/utilities';
 import SetAdmin from '~/components/transactions/SetAdmin';
@@ -9,13 +8,12 @@ export default function Admins() {
     const [ admin, setAdmin ] = React.useState<string>('');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
 
-    const { weekId } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
     const onChange = (e: React.ChangeEvent<HTMLInputElement>, tag: InputTag) => {
         e.preventDefault();
         const value = e.target.value;
         switch (tag) {
-            case 'growtokenamount':
+            case 'token':
                 if(value.startsWith('0x') && value.length === 42){
                     setAdmin(value);
                 }
@@ -27,14 +25,14 @@ export default function Admins() {
 
     // Memoize and update the argments
     const {argsReady, arg, sortContent} = React.useMemo(() => {
-        const argsReady = admin !== '';
+        const argsReady = admin !== '' && admin.length === 42 && admin.startsWith('0x');
         const arg = formatAddr(admin);
         const sortContent : ContentType[] = [
             {
-                tag: 'growtokenamount',
-                id: 'GrowTokenAmount',
-                label: 'Amount of $GROW Token to share this week',
-                placeHolder: 'Enter amount',
+                tag: 'token',
+                id: 'AdminAddress',
+                label: 'Enter admin address',
+                placeHolder: 'Only valid address',
                 type: 'text',
                 required: true
             }
@@ -44,14 +42,14 @@ export default function Admins() {
 
     // Display transaction drawer
     const handleSort = () => {
-        if(!argsReady) return alert('Please provide amount to fund in $GROW token');
+        if(!argsReady) return alert('Please provide a valid admin address');
         toggleDrawer(1);
     }
 
     return (
         <div className='space-y-2 my-2 mb-4 font-mono border bg-gradient-to-r rounded-2xl p-4 w-full '>
             <div className='space-y-4 rounded-xl p-4'>
-                <h3 className='font-semibold text-xl'>{`Set up week ${weekId} payout. (Only Admin)`}</h3>
+                <h3 className='font-semibold text-xl'>{`Add an admin address. (Only Owner)`}</h3>
                 {
                     sortContent.map(({id, type, required, label, placeHolder, tag}) => (
                         <Input 

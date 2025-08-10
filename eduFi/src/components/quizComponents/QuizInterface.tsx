@@ -1,11 +1,40 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucide-react';
-import { Address, AnswerInput, QuizResultInput } from '../../../types/quiz';
+import { Address, AnswerInput, Quiz, QuizResultInput } from '../../../types/quiz';
 import { Button } from '~/components/ui/button';
 import useStorage from '../hooks/useStorage';
-import useProfile from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
+import { formatTime } from '../utilities';
+
+export const CountDown = ({quiz, handleQuizComplete}: {quiz: Quiz, handleQuizComplete?: () => void}) => {
+  const [ timeLeft, setTimeLeft ] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
+
+  // Start the ounter
+  useEffect(() => {
+    if (quiz && quiz.timeLimit && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleQuizComplete?.();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft, handleQuizComplete, quiz]);
+
+  return(
+    <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-mono font-semibold ${
+      timeLeft < 60 ? 'bg-red-100 text-red-700' : 'bg-brand-gradient text-white'
+    }`}>
+      <Clock className="w-4 h-4" />
+      <span>{formatTime(timeLeft)}</span>
+    </div>
+  )
+}
 
 export const QuizInterface = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -13,10 +42,7 @@ export const QuizInterface = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerInput | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  const { returnObj: { profile: { quizResults }}, setHash } = useProfile();
-
-  const { quiz, onComplete, onBack } = useStorage();
-  const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : 0);
+  const { quiz, formattedData: { profileQuizzes }, sethash, onComplete, onBack } = useStorage();
   const [startTime] = useState(Date.now());
 
   const currentQuestion = quiz?.questions[currentQuestionIndex];
@@ -24,14 +50,8 @@ export const QuizInterface = () => {
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   React.useEffect(() => { 
-    setHash(quiz.id as Hex);
-  }, [quiz]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    sethash(quiz.id as Hex);
+  }, [quiz, sethash]);
 
   // Handle select answer
   const handleAnswerSelect = (answerIndex: number, hash: Address, isUserSelected: boolean) => {
@@ -44,8 +64,8 @@ export const QuizInterface = () => {
   // by ensure that learners don't get rewarded for the questions they've previously attempted in a week.
   const screenQuiz = (hash: Hex) => {
     let taken = false;
-    if(quizResults.length > 0){
-      quizResults.forEach(({answers: answs}) => {
+    if(profileQuizzes.length > 0){
+      profileQuizzes.forEach(({answers: answs}) => {
         for(let i = 0; i < answs.length; i++) {
           const questionHash = hexToString(answs[i].questionHash as Hex);
           if(questionHash?.toLowerCase() === hash?.toLowerCase()){
@@ -118,22 +138,22 @@ export const QuizInterface = () => {
     }, 300);
   };
 
-  // Start the ounter
-  useEffect(() => {
-    if (quiz && quiz.timeLimit && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleQuizComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+  // // Start the ounter
+  // useEffect(() => {
+  //   if (quiz && quiz.timeLimit && timeLeft > 0) {
+  //     const timer = setInterval(() => {
+  //       setTimeLeft(prev => {
+  //         if (prev <= 1) {
+  //           handleQuizComplete();
+  //           return 0;
+  //         }
+  //         return prev - 1;
+  //       });
+  //     }, 1000);
 
-      return () => clearInterval(timer);
-    }
-  }, [timeLeft, handleQuizComplete, quiz]);
+  //     return () => clearInterval(timer);
+  //   }
+  // }, [timeLeft, handleQuizComplete, quiz]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-pink-50 p-4">
@@ -152,14 +172,7 @@ export const QuizInterface = () => {
                 {quiz.title}
               </h1>
             </div>
-            {quiz.timeLimit && (
-              <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-mono font-semibold ${
-                timeLeft < 60 ? 'bg-red-100 text-red-700' : 'bg-brand-gradient text-white'
-              }`}>
-                <Clock className="w-4 h-4" />
-                <span>{formatTime(timeLeft)}</span>
-              </div>
-            )}
+            {quiz.timeLimit && <CountDown quiz={quiz} handleQuizComplete={handleQuizComplete} />}
           </div>
 
           {/* Progress Bar */}

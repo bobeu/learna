@@ -1,7 +1,7 @@
 {
   "contractAddress": "0xCba6FA32429881e9E57F3da8c4321e5f99042b38",
-  "functionName": "setUpCampaign",
-  "inputCount": 3,
+  "functionName": "toggleAdminStatus",
+  "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
     {

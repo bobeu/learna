@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { formatEther, Hex,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
@@ -8,63 +7,40 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "~/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CategoryType, CData, ClaimResult, DifficultyLevel, Eligibility, FilterTransactionDataProps, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, TransactionData, WeekProfileData } from "../../types/quiz";
+import { Address, Admin, Campaign, CampaignHash, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FormattedData, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
 
 export const TOTAL_WEIGHT = 100;
 
+export const mockHash = keccak256(stringToBytes('solidity'), 'hex');
+export const mockEncoded = stringToHex("solidity");
 export const mockCampaign : Campaign = {
-  fundsNative: 0n,
-  fundsERC20: 0n,
-  totalPoints: 0n, 
-  lastUpdated: 0,
-  activeLearners: 0n,
-  operator: zeroAddress,
-  token: zeroAddress,
-  hash_: zeroAddress,
-  canClaim: false,
+  users: [zeroAddress],
   data: {
-    campaignHash: keccak256(stringToBytes('solidity'), 'hex'),
-    encoded: stringToHex("solidity")
+    platformToken: 0n,
+    fundsNative: 0n,
+    fundsERC20: 0n,
+    totalPoints: 0n, 
+    lastUpdated: 0,
+    activeLearners: 0n,
+    operator: zeroAddress,
+    token: zeroAddress,
+    data: {
+      hash_: mockHash,
+      encoded: mockEncoded
+    }
   }
 }
 
-export const mockReadData : ReadData = {
-  state: {
-    minimumToken: 0n,
-    weekId: 0n,
-    transitionInterval: 0,
-    transitionDate: 0
-  },
-  wd: [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}],
-}
-
-export const mockCData : CData = [
+export const mockCData : CampaignHash[] = [
   {
-    campaignHash: `0x${''}`,
-    encoded: `0x${''}`
+    encoded:  mockEncoded,
+    hash_: mockHash,
   }
 ];
 
-export const mockAdmins : Admin = {
-  id: zeroAddress,
-  active: false
-}
-
-export const mockEligibility : Eligibility = {
-  protocolVerified: false,
-  erc20Amount: 0n,
-  nativeAmount: 0n,
-  weekId: 0n,
-  token: `0x`,
-  campaignHash: `0x`
-}
-
 export const mockProfile : Profile = {
   other: {
-    amountClaimedInNative: 0n,
-    amountClaimedInERC20: 0n,
-    claimed: false,
-    passKey: "0x",
+    passkey: "0x",
     haskey: false,
     totalQuizPerWeek: 0,
     amountMinted: 0n
@@ -80,10 +56,10 @@ export const mockProfile : Profile = {
       ],
       other: {
         completedAt: '',
-        id: '',
-        title: '',
+        id: '1',
+        title: 'solidity',
         percentage: 0,
-        quizId: '',
+        quizId: '2',
         score: 0,
         timeSpent: 0,
         totalPoints: 0
@@ -92,49 +68,49 @@ export const mockProfile : Profile = {
   ]
 }
 
+export const mockEligibility : Eligibility = {
+  isEligible: false,
+  erc20Amount: 0n,
+  nativeAmount: 0n,
+  weekId: 0n,
+  token: zeroAddress,
+  hash_: mockHash,
+  platform: 0n
+}
+
 export const mockReadProfile : ReadProfile = {
   eligibility: mockEligibility,
-  campaignHash: `0x${''}`,
+  hash_: mockHash,
   profile: mockProfile
 }
 
 export const mockWeekProfileData : WeekProfileData = {
   campaigns: [mockReadProfile],
-  weekId: 0n
+  weekId: 0n,
+  isClaimed: false
 }
 
-// export const mockScoresParam : ScoresParam =  {
-//   category: '',
-//   difficultyLevel: '',
-//   totalScores: 0,
-//   questionSize: 0,
-//   weightPerQuestion: 0,
-//   noAnswer: 0,
-//   totalAnsweredCorrectly: [
-//     {
-//       answer: '0',
-//       hash: mockReadProfile.campaignHash,
-//       options: [{label: '', value: ''}],
-//       question: '',
-//       userAnswer: '',
-//     }
-//   ],
-//   totalAnsweredIncorrectly: 0
-// }
+export const mockWeekData : WeekData[] = [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}];
+export const mockReadData : ReadData = {
+  state: {
+    minimumToken: 0n,
+    weekId: 0n,
+    transitionInterval: 0,
+    transitionDate: 0
+  },
+  wd: mockWeekData,
+  approved: mockCData,
+  profileData: [mockWeekProfileData]
+}
 
-// export const mockSelectedData : SelectedData = {
-//   category: '',
-//   selectedLevel: '',
-//   data: [mockScoresParam.totalAnsweredCorrectly[0]],
-//   scoreParam: mockScoresParam,
-//   id: 0
-// };
+export const mockAdmins : Admin = {
+  id: zeroAddress,
+  active: false
+}
 
-// export const emptyQuizData : SelectedQuizData = {
-//   category: "",
-//   level: "",
-//   questions: [mockScoresParam.totalAnsweredCorrectly[0]]
-// }
+export const toHash = (arg: string) => {
+  return keccak256(stringToHex(arg));
+}
 
 export const mockQuiz : Quiz = {
   id: "",
@@ -145,7 +121,7 @@ export const mockQuiz : Quiz = {
       category: '',
       correctAnswer: 0,
       difficulty: '',
-      hash: mockReadProfile.campaignHash,
+      hash: mockReadProfile.hash_,
       id: 0,
       options: [''],
       points: 0,
@@ -165,7 +141,7 @@ export const mockQuizResult : QuizResultInput = {
   answers: [
     {
       isUserSelected: false,
-      questionHash: mockReadProfile.campaignHash,
+      questionHash: mockReadProfile.hash_,
       selected: 0
     }
   ],
@@ -178,14 +154,6 @@ export const mockQuizResult : QuizResultInput = {
     timeSpent: 0,
     completedAt: new Date().toString(),
   }
-}
-
-export const mockClaimResult : ClaimResult = {
-  elgs: [0, 1].map(() => mockEligibility),
-  weekId: 0n,
-  isVerified: false,
-  barred: false,
-  claimed: false
 }
 
 /**
@@ -205,7 +173,7 @@ export const toBigInt = (x: string | number | ethers.BigNumberish | bigint | und
 */
 export function getTimeFromEpoch(onchainUnixTime: number | bigint) {
   const toNumber = toBN(onchainUnixTime.toString()).toNumber()
-  var date = new Date(toNumber * 1000);
+  const date = new Date(toNumber * 1000);
   return (toNumber === 0? 'Not Set' : `${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-US")}`);
 }
 
@@ -215,7 +183,7 @@ export function getTimeFromEpoch(onchainUnixTime: number | bigint) {
  * @param arg : Argument to convert;
  * @returns BigNumber
 */
-export const toBN = (x: string | number | BigNumber | any) => {
+export const toBN = (x: string | number | BigNumber | bigint | Hex) => {
   return new BigNumber(x);
 }
 
@@ -263,12 +231,11 @@ export const formatValue = (arg: string | number | ethers.BigNumberish | bigint 
  * @returns Hashed values
 */
 export function getCampaignHashes(data: string[]) {
-  let result : Hex[] = [];
-  data.forEach((item, i) => {
+  const result : Hex[] = [];
+  data.forEach((item) => {
     const hash = keccak256(stringToBytes(item));
     result.push(hash);
   })
-  console.log("Result", result);
   return result;
 }
   
@@ -290,10 +257,8 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @returns object containing array of transaction data and approved functions
  */
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
-  // console.log("Function", functionNames)
-  // console.log("chainId", chainId)
   const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
-  let transactionData : TransactionData[] = [];
+  const transactionData : TransactionData[] = [];
   const index = chainIds.indexOf(chainId || chainIds[0]);
   if(filter) {
     functionNames.forEach((functionName) => {
@@ -325,16 +290,14 @@ export function getCastText(task: FunctionName, weekId: number) {
  */
 export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: CategoryType[], quizData: Quiz[] | null} {
   const d : QuizData = { categories: _d_.categories, difficulties: _d_.difficulties, categoryData: _d_.categoryData } ;
-  // const difficultyLevels : DifficultyLevel[] = d.difficulties.split(',') as DifficultyLevel[];
   const categories : CategoryType[] = d.categories.split(',') as CategoryType[];
-  // let quizData : {id: number, category: Category, selectedLevel:DifficultyLevel, data: QuizCategory}[] = [];
   const quizData : Quiz[] = [];
 
   // Loop through the categories
   d.categoryData.forEach(({category, levels, description}) => {
     // Loop through the levels
     levels.forEach(({questions, difficulty,}) => {
-      let qs : Question[] = [];
+      const qs : Question[] = [];
       const questionSize = questions.length;
       assert(totalPoints >= questionSize, "Totalpoints is invalid");
       const points = totalPoints / questionSize;
@@ -342,7 +305,7 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
       // Run through the questions
       questions.forEach(({answer, options, hash, question, explanation}, id) => {
-        let correctAnswer = 0;
+        const correctAnswer = 0;
         qs.push({
           id,
           question,
@@ -373,7 +336,6 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
     });
   });
-  // console.log("QuizData:", quizData);
   return {
     quizData,
     categories
@@ -382,21 +344,63 @@ export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, ti
 
 // Encode multiple values in binary format
 export function encodeUserData(campaignSlot: number): string {
-  // Frontend: Creating user defined data
-  const actionData = {
-    action: 1,
-    campaignSlot: campaignSlot
-  };
-
-  // const userDefinedData = "0x" + Buffer.from(JSON.stringify({
-  //   action: "create_account",
-  //   referralCode: "SUMMER2024",
-  //   tier: "premium"
-  // })).toString('hex').slice(0, 128);
   const buffer = Buffer.alloc(64);
-  
   buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
-  console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
+  // console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
   return "0x" + buffer.toString('hex');
   
 }
+
+/**
+ * @dev Search for a campaign with the corresponding weekId and campaign hash
+ * @param weekData : Week data list i.e Data from the backend or blockchain data
+ * @param requestedWkId : Week Id.
+ * @param requestedHash : Requested campaign hash
+ * @returns Found campaign
+ */
+export function filterWeekData(weekData: WeekData[], requestedWkId: number, requestedHash: Hex) {
+  const wcp = weekData[requestedWkId] || mockWeekData; 
+  const filteredCampaign = wcp.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+  const found = filteredCampaign?.[0] || mockCampaign;
+  return {
+    campaign: found,
+    claimDeadline: toBN(wcp.claimDeadline.toString()).toNumber(),
+    totalPoints: toBN(found.data.totalPoints.toString()).toNumber()
+  }
+}
+
+export function formatData(stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex): FormattedData {
+  const [isVerified, isBlacklisted] = stateData.verificationStatus;
+  const weekProfileData = stateData.weekProfileData;
+  const filteredWPD = weekProfileData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
+  const wpd = filteredWPD?.[0] || mockWeekProfileData;
+  const isClaimed = wpd.isClaimed;
+  const userCampaigns = wpd.campaigns.filter(({hash_, }) => hash_.toLowerCase() == requestedHash.toLowerCase());
+  const userCampaign = userCampaigns?.[0] || mockReadProfile;
+  const eligibility = userCampaign.eligibility;
+  const profileOther = userCampaign.profile.other;
+  const profileQuizzes = userCampaign.profile.quizResults;
+  const showVerificationButton = !isVerified && !isClaimed && eligibility.isEligible;
+  const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
+  const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
+  const statData = filterWeekData(weekData, requestedWkId, requestedHash);
+  return {
+    statData,
+    isClaimed,
+    profile: profileOther,
+    eligibility,
+    profileQuizzes,
+    requestedWeekId: BigInt(requestedWkId),
+    showWithdrawalButton,
+    showVerificationButton,
+    totalPointsForACampaign: totalUserPointsForACampaign
+  };
+};
+
+export const formatTime = (seconds: number) => {
+  const secondsInNumber = toBN(seconds).toNumber();
+  const mins = Math.floor(secondsInNumber / 60);
+  const hrs = Math.floor(mins / 60);
+  const secs = secondsInNumber % 60;
+  return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};

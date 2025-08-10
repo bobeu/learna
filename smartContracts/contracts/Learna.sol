@@ -13,16 +13,20 @@ contract Learna is Campaigns, ReentrancyGuard {
 
     Mode private mode;
 
+    ///@notice Flag that controls whether to use key mechanism for learners or not
+    bool public useKey;
+
     // Dev Address
     address private dev;
-
-    address public claim;
 
     // Campaign fee receiver
     address private immutable feeTo;
 
     // Profiles for each campaign in week id
     mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private learners;
+
+    ///@notice Total users number of users in a campaign 
+    // mapping(uint weekId => mapping(bytes32 hash_ => address[] users)) internal totalLearners;
 
     /// @dev All campaigns user subscribed to for all the weeks.
     mapping(uint => mapping(address => bytes32[])) private userCampaigns;
@@ -58,28 +62,21 @@ contract Learna is Campaigns, ReentrancyGuard {
         require(_feeTo != address(0), "Fee manager is zero");
         feeTo = _feeTo;
         if(mode == Mode.LIVE){
-            _setTransitionInterval(transitionInterval, 0, _getState().weekId);
-        } 
+            _setTransitionInterval(transitionInterval, _getState().weekId);
+            useKey = false;
+        } else {
+            useKey = true;
+        }
         for(uint i = 0; i < _admins.length; i++) {
             if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
         } 
 
         for(uint i = 0; i < _campaigns.length; i++) {
-            (bytes32 hash_, bytes memory encoded) = _gethash_(_campaigns[i]);
-            _tryInitializeCampaign(hash_, encoded, _msgSender(), 0, 0, address(0));
+            _tryInitializeCampaign(_getState().weekId, _getHash(_campaigns[i]), _msgSender(), 0, 0, 0, address(0));
         }
     }
 
     receive() external payable {}
-
-    /**
-     * @dev Set approval for target
-     * @param newClaim : Account to set approval for
-     */
-    function setClaimAddress(address newClaim) public onlyOwner returns(bool) {
-        claim = newClaim;
-        return true;
-    }
 
     /**
      * Fetch profile
@@ -90,6 +87,18 @@ contract Learna is Campaigns, ReentrancyGuard {
     */
     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
         profile = learners[weekId][hash_][user];
+    }
+
+    // function setMinimumToken(minToken);
+
+    /**
+     * Toggle useKey status. 
+     @notice Toggling the function will continously alter the state of the useKey variable by negating the current status 
+    */
+    function toggleUseKey() public onlyOwner returns(bool) {
+        bool status = useKey;
+        useKey = !status;
+        return true;
     }
 
     /**
@@ -137,7 +146,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         _sendValue(msg.value, claim);
         _tryInitializeCampaign(
             _getState().weekId,
-            _gethash_(_campaign),
+            _getHash(_campaign),
             _msgSender(),
             msg.value,
             fundsErc20,
@@ -169,13 +178,13 @@ contract Learna is Campaigns, ReentrancyGuard {
         uint weekId = _getState().weekId;
         _validateCampaign(hash_, weekId, 2);
         GetCampaign memory res = _getCampaign(weekId, hash_);
-        require(res.cp.token != address(0), "Token is empty");
-        require(IERC20(res.cp.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
-        require(address(this).balance >= nativeValue, "New value exceeds balance");
-        res.cp.fundsERC20 = erc20Value;
-        res.cp.fundsNative = nativeValue;
-        res.cp.lastUpdated = _now();
-        _setCampaign(res.slot, weekId, res.cp);
+        require(res.cp.data.token != address(0), "Token is empty");
+        require(IERC20(res.cp.data.token).balanceOf(claim) >= erc20Value, "ERC20Bal inconsistent");
+        require(claim.balance >= nativeValue, "New value exceeds balance");
+        res.cp.data.fundsERC20 = erc20Value;
+        res.cp.data.fundsNative = nativeValue;
+        res.cp.data.lastUpdated = _now();
+        _setCampaign(res.slot, weekId, res.cp.data);
 
         return true;
     }
@@ -202,15 +211,19 @@ contract Learna is Campaigns, ReentrancyGuard {
         _sendValue(msg.value, feeTo);
         require(user != address(0), "Invalid user"); 
         _validateCampaign(hash_, weekId, 2);
-        _checkRegistration(weekId, hash_, user);
         GetCampaign memory res = _getCampaign(weekId, hash_);
-        Profile memory pf = _getProfile(weekId, hash_, user);
-        require(pf.other.totalQuizPerWeek <= 36, 'Storage limit exceeded');
+        Profile memory pf = _generatekey(user, msg.value, weekId, hash_);
+        if(!_checkRegistration(weekId, hash_, user)) {
+            _updateCampaignUsersList(res.slot, weekId, user);
+            unchecked {
+                res.cp.data.activeLearners += 1;
+            }
+        }
+        require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
     
         unchecked {
-            res.cp.activeLearners += 1;
             pf.other.totalQuizPerWeek += 1;
-            res.cp.totalPoints += quizResult.other.score; 
+            res.cp.data.totalPoints += quizResult.other.score; 
         }
         _setProfile(weekId,  hash_, user, pf.other);
         uint index = learners[weekId][hash_][user].quizResults.length;
@@ -229,7 +242,7 @@ contract Learna is Campaigns, ReentrancyGuard {
             learners[weekId][hash_][user].quizResults[index].answers.push();
             learners[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
         }
-        _setCampaign(res.slot, weekId, res.cp); 
+        _setCampaign(res.slot, weekId, res.cp.data); 
 
         emit PointRecorded(user, weekId, hash_, quizResult);
         return true;
@@ -241,29 +254,24 @@ contract Learna is Campaigns, ReentrancyGuard {
 
      /**
      * @dev Allocate weekly earnings
-     * @param growTokenContract : Grow Token contract address.
      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
      * @param amountInGrowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(
-        address growTokenContract,
-        uint amountInGrowToken, 
-        uint32 newIntervalInMin
-    ) 
+    function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, bytes32[] memory hashes) = _initializeAllCampaigns(newIntervalInMin, _callback);
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, _callback);
         if(amountInGrowToken > 0) {
-            require(growTokenContract != address(0), "Tk empty");
-            require(IGrowToken(growTokenContract).allocate(amountInGrowToken, address(0)), 'Allocation failed');
+            require(address(token) != address(0), "Tk empty");
+            require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
         }
 
-        emit Sorted(currentWk, newWk, hashes);  
+        emit Sorted(currentWk, newWk, cData);  
  
         return true;
     }
@@ -286,16 +294,56 @@ contract Learna is Campaigns, ReentrancyGuard {
     //        INTERNAL FUNCTIONS     //
     ///////////////////////////////////
 
-    function _checkRegistration(uint weekId, bytes32 hash_, address user) internal {
-        if(!registered[user][hash_][weekId]){
-            registered[user][hash_][weekId] = true;
-            userCampaigns[weekId][user].push(hash_);
+    /**@dev If activated, generate new key for the user, and allocate some amount of GROW token to them based on the 
+        amount of value they have sent along with the call. 
+    */
+    function _generatekey(address user, uint value, uint weekId, bytes32 hash_) internal returns(Profile memory pf) {
+        pf = _getProfile(weekId, hash_, user);
+        if(value > 0) {
+            token.allocate(value, user);
+        }
+        if(!pf.other.haskey) {
+            pf.other.haskey = true;
+            pf.other.passkey = keccak256(abi.encodePacked(user, weekId, value));
         }
     }
 
-    function _callback(Campaign memory _cp) internal returns(Campaign memory cp) {
+    ///@dev Generate user key for all campaigns in the current week.
+    function generatekey() external payable returns(bool) {
+        uint weekId = _getState().weekId;
+        uint minimumToken = _getState().minimumToken;
+        Campaign[] memory cps = _getCampaings(weekId);
+        if(minimumToken > 0) {
+            require(msg.value >= (minimumToken * cps.length), "Insufficient token");
+        }
+        _sendValue(msg.value, feeTo);
+        uint valuePerCampaign;
+        if(msg.value > 0 && msg.value >= cps.length) {
+            unchecked {
+                valuePerCampaign = msg.value / cps.length;
+            }
+        }
+        address user = _msgSender();
+        for(uint i = 0; i < cps.length; i++) {
+            bytes32 hash_ = cps[i].data.data.hash_;
+            Profile memory pf = _generatekey(user, valuePerCampaign, weekId, hash_);
+            _setProfile(weekId,  hash_, user, pf.other);
+        }
+        return true;
+    }
+
+    function _checkRegistration(uint weekId, bytes32 hash_, address user) internal returns(bool isReg) {
+        if(!registered[user][hash_][weekId]){
+            registered[user][hash_][weekId] = true;
+            userCampaigns[weekId][user].push(hash_);
+        } else {
+            isReg = true;
+        }
+    }
+
+    function _callback(CData memory _cp) internal returns(CData memory cp) {
         cp = _cp;
-        (uiativeBalance, uint256 erc20) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
+        (uint native, uint256 erc20) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
         cp.fundsNative = native;
         cp.fundsERC20 = erc20;
     }
@@ -307,8 +355,8 @@ contract Learna is Campaigns, ReentrancyGuard {
      */
     function _calculateShare( 
         uint64 userPoints, 
-        Campaign memory cp
-    ) internal view returns(uint erc20Amount, uint nativeClaim) {
+        CData memory cp
+    ) internal view returns(uint erc20Amount, uint nativeClaim, uint platform) {
         uint8 erc20Decimals;
         assert(cp.totalPoints >= userPoints);
         if(cp.totalPoints > 0 && cp.token != address(0)) { 
@@ -316,6 +364,10 @@ contract Learna is Campaigns, ReentrancyGuard {
             unchecked {
                 if(cp.fundsERC20 > 0) erc20Amount = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, erc20Decimals);
                 if(cp.fundsNative > 0) nativeClaim = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
+                if(cp.platformToken > 0) {
+                    erc20Decimals = IERC20Metadata(address(token)).decimals();
+                    platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, erc20Decimals);
+                }
             }
         }
     }
@@ -326,13 +378,14 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param weekId : Requested week Id
      * @param hash_ : Hash of the campaign name
      */
-    function _getEligibility(address user, bytes32 hash_, uint weekId) 
+    function _getEligibility(address user, bytes32 hash_, uint weekId, bool nullifier) 
         internal 
         view 
         returns(Eligibility memory elg) 
     {
-        _validateCampaign(hash_, weekId);
-        Campaign memory cp = _getCampaign(weekId, hash_).cp;
+        _validateCampaign(hash_, weekId, 2);
+        if(isClaimed[user][weekId]) return elg;
+        CData memory cp = _getCampaign(weekId, hash_).cp.data;
         Profile memory pf = _getProfile(weekId, hash_, user);
         uint64 totalScore;
         for(uint i = 0; i < pf.quizResults.length; i++) { 
@@ -340,15 +393,17 @@ contract Learna is Campaigns, ReentrancyGuard {
                 totalScore += pf.quizResults[i].other.score;
             }
         }
-        (uint erc20, uint native) = _calculateShare(totalScore, cp);
+        (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
         bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0) : true;
+        bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
         elg = Eligibility(
-            protocolVerified,
+            isEligible,
             erc20,  
             native, 
-            weekId, 
+            platform,
             cp.token, 
-            hash_
+            hash_,
+            weekId
         );
     }
 
@@ -379,123 +434,78 @@ contract Learna is Campaigns, ReentrancyGuard {
             }
         }
     }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    //                          EXTERNAL FUNCTIONS                                //
-    /////////////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * @dev Event run after claim is made in claim contract. it updates the user profile and the campaign
-     * @param elgs : All Eligibilities for the requested week
-     * @param weekId : Week Id
-     * @param sender : User account not msg.sender
-     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
-    */
-    function onClaimed(Eligibility[] memory elgs, uint weekId, address sender) 
-        external
-        whenNotPaused 
-        onlyApproved
-        returns(bool) 
-    {
-        for(uint i = 0; i < elgs.length; i++){
-            Eligibility memory elg = elgs[i];
-            GetCampaign memory res = _getCampaign(weekId, elg.hash_);
-            Profile memory pf = _getProfile(weekId, elg.hash_, sender);
-            unchecked {
-                if(res.cp.fundsNative > elg.nativeAmount) res.cp.fundsNative -= elg.nativeAmount;
-                if(res.cp.fundsERC20 > elg.nativeAmount) res.cp.fundsERC20 -= elg.erc20Amount;
-                pf.other.amountClaimedInNative += elg.nativeAmount;
-                pf.other.amountClaimedInERC20 += elg.erc20Amount;
-            }
-            _setProfile(weekId, elg.hash_, sender, pf.other);
-            _setCampaign(res.slot, weekId, res.cp);
 
-        }
-        emit ClaimedWeeklyReward(sender, weekId, elgs);
-
-        return true;
-    }
-    
     /////////////////////////////////////////////////////////////////////////////////
     //                          READ-ONLY FUNCTIONS                                //
     /////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Check Eligibility for all campaigns in the concluded week
+     * Get users eligibility for all the campaigns for the previous three weeks only
      * @param user : User
-     * @notice Claim will always be for the concluded week. The position must match and can be extracted directly from 
-     * the frontend when reading the user's campaigns. If current weekId is greater than 0, is an indication that a week was concluded.
-     * Since users can only claim for a concluded week
+     * @notice Claim will always be for the concluded 3 weeks back. The position must match and can be extracted directly from 
+     * the frontend when reading the user's campaigns. Learner can only claim from the past three weeks campaign pool; 
      */
     function checkEligibility(address user) 
         external 
         view
-        returns(Eligibility[] memory result, uint weekId) 
+        returns(Eligibilities[] memory result) 
     {
-        weekId = _getState().weekId;
-        
-        if(weekId > 0) {
-            weekId -= 1;
-            UserCampaigns memory usc = _getUserhash_es(user, weekId);
-            uint sSize = usc.campaigns.length;
-            require(sSize > 0, "No participation found for the past week");
-            result = new Eligibility[](sSize);
-            for(uint i = 0; i < sSize; i++){
-                result[i] = _getEligibility(user, usc.campaigns[i], weekId);
+        uint weekId = _getState().weekId;
+        if(weekId < 3) weekId += 3;
+        uint startPoint = weekId - 3;
+        result = new Eligibilities[](weekId);
+        for(uint i = startPoint; i < weekId; i++){
+            Campaign[] memory cps = _getCampaings(i);
+            uint cSize = cps.length;
+            result[i].elgs = new Eligibility[](cSize);
+            result[i].weekId = i;
+            for(uint j = 0; j < cSize; j++){
+                bool nullifier = false;
+                // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                if(useKey){
+                    if(!_getProfile(weekId, cps[j].data.data.hash_, user).other.haskey) nullifier = true;
+                }
+                result[i].elgs[j] = _getEligibility(user, cps[j].data.data.hash_, i, nullifier);
             }
-        } 
-        return (result, weekId);
+        }
+        
+        return result;
     } 
 
     // Fetch past claims
-    function getData() public view returns(ReadData memory data) {
+    function getData(address user) public view returns(ReadData memory data) {
         data.state = _getState();
         data.approved = _getApprovedCampaigns();
         uint weekIds = data.state.weekId;
         weekIds ++;
         data.wd = new WeekData[](weekIds);
+        data.profileData = new WeekProfileData[](weekIds);
+        uint hashSize = data.approved.length; 
         for(uint i = 0; i < weekIds; i++) {
             data.wd[i].campaigns = _getCampaings(i);
             data.wd[i].claimDeadline = _getDeadline(i);
+            ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
+            if(user != address(0)) {
+                data.profileData[i].weekId = i;
+                data.profileData[i].isClaimed = isClaimed[user][i];
+                for(uint hashId = 0; hashId < hashSize; hashId++) { 
+                    bytes32 hash_ = data.approved[hashId].hash_;
+                    bool nullifier = false;
+
+                    // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                    if(useKey){
+                        if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
+                    }
+                    _userCampaigns[hashId] = ReadProfile( 
+                        _getEligibility(user, hash_, i, nullifier),
+                        _getProfile(i, hash_, user), 
+                        hash_
+                    );
+                }
+                data.profileData[i].campaigns = _userCampaigns;
+            }
         }
 
         return data;
     } 
-
-    /// @dev Fetches all user campaigns for the current week
-    /// @param user : target account
-    function _getUserhash_es(address user, uint weekId) internal view returns(UserCampaigns memory result) {
-        result = UserCampaigns(weekId, userCampaigns[weekId][user]);
-    } 
-
-    // Get user's data for the concluded weeks including current week
-    function getProfile(address user) public view returns(WeekProfileData[] memory result) {
-        // UserCampaigns[] memory hashes = _getUserhash_es(user);
-        uint weekIds = _getState().weekId;
-        weekIds += 1;
-        result = new WeekProfileData[](weekIds); 
-        
-        for(uint wkId = 0; wkId < weekIds; wkId++) {
-            result[wkId].weekId = wkId;
-            bytes32[] memory hashes = userCampaigns[wkId][user];
-            uint hashSize = hashes.length; 
-            ReadProfile[] memory campaigns = new ReadProfile[](hashSize);
-            for(uint hashId = 0; hashId < hashSize; hashId++) { 
-                bytes32 hash_ = hashes[hashId];
-                campaigns[hashId] = ReadProfile( 
-                    _getEligibility(user, hash_, wkId),
-                    _getProfile(wkId, hash_, user), 
-                    hash_
-                );
-            }
-            result[wkId].campaigns = campaigns;
-            
-        }
-        return result;
-    }
-
-    function getWeek() external view returns(uint) {
-        return _getState().weekId;
-    }
-
 }

@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('17584060933293127637204697724362073811053114998064440472947877920627118982998') : BigInt('16491795379214993993845921571295052164701259396155955472160620420208858192484');
+	const scopeValue = networkName === 'alfajores'? BigInt('9693693554599193610625812741772199432776874705605356098598758796991660181069') : BigInt('5677681812270350523234606372289149389867422899346670559816808275009573611567');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		args: [routeTo],
 		log: true,
 	});
-	console.log(`Learna contract deployed to: ${feeManager.address}`);
+	console.log(`Fee Manager contract deployed to: ${feeManager.address}`);
 	// console.log("CAMPAIGNS", CAMPAIGNS.length)
 
 	/**
@@ -82,6 +82,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const admins = await read("Learna", "getAdmins");
 	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
 	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
+	await execute('Learna', {from: deployer}, 'setToken', growToken.address);
 	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
@@ -98,18 +99,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 export default func;
 
 func.tags = ['Learna', 'GrowToken', 'FeeManager', 'Claim'];
-
-
-
-
-
-// Frontend: Creating user defined data
-// const actionData = {
-//   action: "withdraw",
-//   amount: 10000,
-//   sessionId: "xyz123"
-// };
-
-// const userDefinedData = "0x" + Buffer.from(
-//   JSON.stringify(actionData)
-// ).toString('hex').padEnd(128, '0'); // 128 hex chars = 64 bytes
+func.dependencies = [
+	'1_deploy_learna',
+	'2_deploy_feeManager',
+	'3_deploy_claim',
+	'4_deploy_growToken'
+];

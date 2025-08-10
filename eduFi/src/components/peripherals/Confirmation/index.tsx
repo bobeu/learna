@@ -9,7 +9,7 @@ import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
-import { parseUnits } from "viem";
+import { Hex, parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "~/lib/constants";
@@ -24,7 +24,7 @@ export const Confirmation :
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
-    const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address).address});
+    const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Hex).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
 

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xd89B1C85a2BFc115AC6e849a05C20866B466fcE5",
+  "contractAddress": "0xCba6FA32429881e9E57F3da8c4321e5f99042b38",
   "functionName": "getAdmins",
   "inputCount": 0,
   "requireArgUpdate": true,

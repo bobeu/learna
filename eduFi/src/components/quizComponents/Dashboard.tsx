@@ -1,12 +1,10 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { Address, QuizResultOuput,UserStats } from '../../../types/quiz';
+import { FormattedData, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '~/components/ui/button';
 import { useAccount } from "wagmi";
-import useProfile, { type ProfileReturnType } from '../hooks/useProfile';
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -21,30 +19,30 @@ const emptyStats = {
   streak: 0
 };
 
-export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
+export const DashboardInfo = ({data} : {data: FormattedData}) => {
   const [stats, setStats] = useState<UserStats>(emptyStats);
 
   const {  appData } = useStorage();
-  const { profile: { quizResults} } = profile;
-
+  const { profileQuizzes } = data;
+ 
   useEffect(() => {
-    if (quizResults && quizResults.length > 0) {
-      const totalScore = quizResults.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
-      const totalPoints = quizResults?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
+    if (profileQuizzes && profileQuizzes.length > 0) {
+      const totalScore = profileQuizzes.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
+      const totalPoints = profileQuizzes?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
       const averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
-      const bestScore = Math.max(...quizResults.map(result => result.other.percentage));
+      const bestScore = Math.max(...profileQuizzes.map(result => result.other.percentage));
 
       setStats({
-        totalQuizzes: quizResults.length,
+        totalQuizzes: profileQuizzes.length,
         totalScore,
         averageScore,
         bestScore,
-        streak: calculateStreak(quizResults)
+        streak: calculateStreak(profileQuizzes)
       });
     } else {
       setStats(emptyStats);
     }
-  }, [quizResults]);
+  }, [profileQuizzes]);
 
   const calculateStreak = (results: QuizResultOuput[]): number => {
     // Simple streak calculation - consecutive quizzes with 70%+ score
@@ -109,13 +107,13 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
       </div>
 
       {/* Recent Results */}
-      {quizResults.length > 0 && (
+      {profileQuizzes.length > 0 && (
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Recent Results</h2>
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6">
               <div className="space-y-4">
-                {quizResults?.slice(0, 5).map((result, key) => {
+                {profileQuizzes?.slice(0, 5).map((result, key) => {
                   const quiz = appData?.quizData?.find(q => q.id === result.other.quizId);
                   return (
                     <div key={key} className="flex items-center justify-between p-4 bg-white/50 rounded-xl hover:bg-white/70 transition-colors">
@@ -153,17 +151,17 @@ export const DashboardInfo = ({profile} : {profile: ProfileReturnType}) => {
 };
 
 export default function Dashbaord() {
-  const { onQuizSelect, setpath, campaignStrings, campaignData, appData } = useStorage();
+  const { onQuizSelect, setpath, formattedData , sethash, campaignStrings, campaignData, appData } = useStorage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  const { returnObj , setHash: setRequestedHash } = useProfile();
+  // const { formattedData , setHash: setRequestedHash } = useProfile();
   const { isConnected } = useAccount();
   const allQuizzes = appData.quizData;
   const featuredQuizzes = appData.quizData?.slice(1, 7);
 
   const setHash = (arg: string) => {
     const found = campaignData.find(q => q.campaign === arg);
-    setRequestedHash(found?.campaignHash as Address);
+    sethash(found?.hash_ as string);
   };
 
   const backHome = () => {
@@ -182,17 +180,17 @@ export default function Dashbaord() {
 
         <div className="max-w-7xl flex justify-between mx-auto px-4 py-6">
           <div className="flex items-center cursor-pointer space-x-4">
-            <div onClick={backHome} className="md:w-12 md:h-12 p-2 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <div onClick={backHome} className="w-20 h-20 rounded-lg flex items-center justify-center">
               <Image 
                 src="/learna-logo.png"
                 alt="Learna Logo"
-                width={40}
-                height={40}
-                className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full"
+                width={100}
+                height={100}
+                className="object-cover rounded-full"
               />
             </div>
             <div>
-              <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
                 Learna
               </h1>
               <p className="text-gray-600">
@@ -274,7 +272,7 @@ export default function Dashbaord() {
             />
           </div>
         </div>
-        <DashboardInfo profile={returnObj} />
+        <DashboardInfo data={formattedData} />
       </div>
 
        {/* Featured Quizzes */}
