@@ -20,7 +20,6 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash} 
 
   React.useEffect(() => {
     if(!mounted){
-      console.log("campaigns?.[0]", campaigns?.[0])
       setHash(campaigns?.[0] || 'mockHash');
       setMounted(true);
     }

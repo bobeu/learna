@@ -179,7 +179,10 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      * Note: User cannot verify eligibility for a week twice.
      */
     function _setClaim(address user) internal {
-        if(!isVerified[user]) isVerified[user] = true;
+        require(user != address(0), "Zero address");
+        require(!blacklisted[user], "Blacklisted user");
+        require(!isVerified[user], "Already verified");
+        isVerified[user] = true;
     }
 
     /**

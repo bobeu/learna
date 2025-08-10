@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('9693693554599193610625812741772199432776874705605356098598758796991660181069') : BigInt('5677681812270350523234606372289149389867422899346670559816808275009573611567');
+	const scopeValue = networkName === 'alfajores'? BigInt('9693693554599193610625812741772199432776874705605356098598758796991660181069') : BigInt('3321354802163846810667652648824177491317284837795615907503363671180190385068');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];

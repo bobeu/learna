@@ -280,18 +280,18 @@ abstract contract Campaigns is Week {
      * @param newIntervalInMin : New interval to update
      * @param callback : Callback function to run for each campaign
     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, function(CData memory) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
+    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint platformToken) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition date in future");
         pastWeek = st.weekId;
         cData = _getApprovedCampaigns();
         newWeek = _transitionToNewWeek();
         _setTransitionInterval(newIntervalInMin, pastWeek);
-        for(uint i = 0; i < cData.length; i++) { 
+        for(uint i = 0; i < cData.length; i++) {
             bytes32 hash_ = cData[i].hash_;
             GetCampaign memory cmp = _getCampaign(pastWeek, hash_);
             _bringForward(pastWeek, newWeek, hash_);
-            _setCampaign(cmp.slot, pastWeek, callback(cmp.cp.data)); 
+            _setCampaign(cmp.slot, pastWeek, callback(cmp.cp.data, _platformToken)); 
         }
     }
 
