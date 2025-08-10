@@ -7,9 +7,9 @@ export default function Hero({handleClick} : {handleClick: () => void}) {
     const goToSetupCampaign = () => {
         setpath('setupcampaign');
     }
-
+    // bg-gradient-to-br from-gray-50 to-cyan-50
     return(
-        <section className="mx-auto bg-[url('/learna-image-2.png')] bg-red-400 bg-no-repeat relative px-4 py-12 md:py-20 text-center bg-gradient-to-br from-gray-50 to-cyan-50 font-mono">
+        <section className="mx-auto bg-[url('/learna-image-2.png')] bg-red-400 bg-no-repeat relative px-4 py-12 md:py-20 text-center font-mono">
             <div className="">
                 <div className="mb-8">
                     <div className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-cyan-200 mb-6 shadow-sm">
