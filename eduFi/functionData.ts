@@ -19,6 +19,7 @@ import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
 import setScope44787 from "./contractsArtifacts/44787/setScope.json";
 import pause44787 from "./contractsArtifacts/44787/pause.json";
 import unpause44787 from "./contractsArtifacts/44787/unpause.json";
+import setClaim44787 from "./contractsArtifacts/44787/setClaim.json";
 
 // Mainnet contract configs
 import claimReward42220 from "./contractsArtifacts/42220/claimReward.json";
@@ -39,9 +40,10 @@ import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransition
 import adjustCampaignValues42220 from "./contractsArtifacts/42220/adjustCampaignValues.json";
 import getAdmins42220 from "./contractsArtifacts/42220/getAdmins.json";
 import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
-import configId42220 from "./contractsArtifacts/44787/configId.json";
-import setConfigId42220 from "./contractsArtifacts/44787/setConfigId.json";
-import setScope42220 from "./contractsArtifacts/44787/setScope.json";
+import configId42220 from "./contractsArtifacts/42220/configId.json";
+import setConfigId42220 from "./contractsArtifacts/42220/setConfigId.json";
+import setScope42220 from "./contractsArtifacts/42220/setScope.json";
+import setClaim42220 from "./contractsArtifacts/42220/setClaim.json";
 
 // Global data import
 import globalData from "./contractsArtifacts/global.json";
@@ -71,6 +73,7 @@ const functionData = [
         { key: 'setConfigId', value: { ...setConfigId44787} },
         { key: 'setScope', value: { ...setScope44787} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus44787} },
+        { key: 'setClaim', value: { ...setClaim44787} },
     ],
     [
         { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
@@ -94,6 +97,7 @@ const functionData = [
         { key: 'setConfigId', value: { ...setConfigId42220} },
         { key: 'setScope', value: { ...setScope42220} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus42220} },
+        { key: 'setClaim', value: { ...setClaim42220} },
     ]
 ];
 

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xf2fc20D95bd0abB9dB124225fB6C13526Cd6e63c",
+  "contractAddress": "0xaFd85CB74932a73a34F0cB15AE8A4256b977D1D3",
   "functionName": "getData",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -161,11 +161,6 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "bool",
-                  "name": "isClaimed",
-                  "type": "bool"
-                },
-                {
                   "components": [
                     {
                       "components": [
@@ -318,6 +313,11 @@
                       "internalType": "struct ILearna.Profile",
                       "name": "profile",
                       "type": "tuple"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isClaimed",
+                      "type": "bool"
                     },
                     {
                       "internalType": "bytes32",

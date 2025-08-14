@@ -25,9 +25,6 @@ contract Learna is Campaigns, ReentrancyGuard {
     // Profiles for each campaign in week id
     mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private learners;
 
-    ///@notice Total users number of users in a campaign 
-    // mapping(uint weekId => mapping(bytes32 hash_ => address[] users)) internal totalLearners;
-
     /// @dev All campaigns user subscribed to for all the weeks.
     mapping(uint => mapping(address => bytes32[])) private userCampaigns;
 
@@ -88,8 +85,6 @@ contract Learna is Campaigns, ReentrancyGuard {
     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
         profile = learners[weekId][hash_][user];
     }
-
-    // function setMinimumToken(minToken);
 
     /**
      * Toggle useKey status. 
@@ -341,6 +336,36 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
     }
 
+    /**
+     * @dev Callback function to update campaign values
+     * @param weekId : Week Id
+     * @param hash_ : Campaign hash
+     * @param fundsNative : Amount in native currency e.g CELO
+     * @param fundsERC20 : Amount in ERC20 currency e.g $GROW, $G. etc
+     * @param platformToken : Amount in platform token e.g GROW token
+    */
+    function onCampaignValueChanged(
+        uint weekId, 
+        bytes32 hash_, 
+        uint256 fundsNative, 
+        uint256 fundsERC20,
+        uint256 platformToken
+    ) external onlyApproved {
+        _validateCampaign(hash_, weekId, 2);
+        GetCampaign memory res = _getCampaign(weekId, hash_);
+        if(res.cp.data.fundsERC20 >= fundsERC20){
+            res.cp.data.fundsERC20 -= fundsERC20;
+        }
+        if(res.cp.data.fundsNative >= fundsNative){
+            res.cp.data.fundsNative -= fundsNative;
+        }
+        if(res.cp.data.platformToken >= platformToken){
+            res.cp.data.platformToken -= platformToken;
+        }
+        res.cp.data.lastUpdated = _now();
+        _setCampaign(res.slot, weekId, res.cp.data);
+    }
+
     function _callback(CData memory _cp, uint platformToken) internal returns(CData memory cp) {
         cp = _cp;
         (uint native, uint256 erc20) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
@@ -388,7 +413,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         returns(Eligibility memory elg) 
     {
         _validateCampaign(hash_, weekId, 2);
-        if(isClaimed[user][weekId]) return elg;
+        if(isClaimed[user][weekId][hash_]) return elg;
         CData memory cp = _getCampaign(weekId, hash_).cp.data;
         Profile memory pf = _getProfile(weekId, hash_, user);
         uint64 totalScore;
@@ -491,7 +516,6 @@ contract Learna is Campaigns, ReentrancyGuard {
             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
                 data.profileData[i].weekId = i;
-                data.profileData[i].isClaimed = isClaimed[user][i];
                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
                     bytes32 hash_ = data.approved[hashId].hash_;
                     bool nullifier = false;
@@ -503,6 +527,7 @@ contract Learna is Campaigns, ReentrancyGuard {
                     _userCampaigns[hashId] = ReadProfile( 
                         _getEligibility(user, hash_, i, nullifier),
                         _getProfile(i, hash_, user), 
+                        isClaimed[user][i][hash_],
                         hash_
                     );
                 }

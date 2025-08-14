@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xc2b778F3B7e2b00b4F698F0119CFa118462b37f8",
+  "contractAddress": "0x57DfC153F3077D13b3B6E1c73B421d4Ce2c76D43",
   "functionName": "setScope",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -411,6 +411,19 @@
     },
     {
       "inputs": [],
+      "name": "isWalletVerificationRequired",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "learna",
       "outputs": [
         {
@@ -598,7 +611,7 @@
     },
     {
       "inputs": [],
-      "name": "toggleUseSelfFlag",
+      "name": "toggleUseWalletVerification",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -627,19 +640,6 @@
       "name": "unApprove",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "useSelf",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {

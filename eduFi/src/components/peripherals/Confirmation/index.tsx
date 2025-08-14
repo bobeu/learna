@@ -66,6 +66,9 @@ export const Confirmation :
                    case 'recordPoints':
                        setpath('profile');
                        break;
+                   case 'setClaim':
+                       setpath('profile');
+                       break;
                    case 'sortWeeklyReward':
                        setpath('stats');
                        break;
@@ -179,7 +182,7 @@ export const Confirmation :
     }
 
     const runTransaction = async(arg: Transaction, ) => {
-        console.log("Args1: ", arg)
+        // console.log("Args1: ", arg)
         const { abi, functionName, args, contractAddress, value, useAdmin } = arg;
         const { getDataSuffix } = getDivviReferralUtilities();
         const useDivvi = chainId === celo.id;
@@ -207,6 +210,9 @@ export const Confirmation :
                 break;
             case 'setUpCampaign':
                 message = 'Setting up your campaign...';
+                break;
+            case 'setClaim':
+                message = 'Setting up your claim...';
                 break;
         
             default:
@@ -287,7 +293,7 @@ export const Confirmation :
             //             requireArgUpdate: false, 
             //             useAdmin: 0,
             //         });
-            //     }
+            //     }https://celo.blockscout.com/tx/0x29ff43829950aadffa71425778184dff516afd880b89f2134efe8045a307bd3a
             // }
             callback({message: 'Sending transaction to the network...'});
             await runTransaction({abi, contractAddress, args, functionName, value, requireArgUpdate: false, useAdmin});

@@ -49,7 +49,7 @@ export interface DataContextProps {
     toggleRecordPoints: (arg:boolean) => void;
     appData: {categories: CategoryType[], quizData: Quiz[] | null};
     onPlayAgain: () => void;
-    setweekId: (arg: bigint) => void;
+    setweekId: (arg: string) => void;
     sethash: (arg: string) => void;
     onBackToHome: (path: Path) => void;
     onQuizSelect: (quiz: Quiz) => void;

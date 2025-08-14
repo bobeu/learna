@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x6A298450E98d168c7a68bDd4a46A5cC7C90ACC3C",
+  "contractAddress": "0x892Ee9E6e701D0E7476eCfd6821Bc7Dd314ae865",
   "functionName": "claimReward",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -411,6 +411,19 @@
     },
     {
       "inputs": [],
+      "name": "isWalletVerificationRequired",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "learna",
       "outputs": [
         {
@@ -598,7 +611,7 @@
     },
     {
       "inputs": [],
-      "name": "toggleUseSelfFlag",
+      "name": "toggleUseWalletVerification",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -627,19 +640,6 @@
       "name": "unApprove",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "useSelf",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {

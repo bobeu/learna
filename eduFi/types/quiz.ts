@@ -27,6 +27,7 @@ export type FunctionName =
   'setConfigId' |
   'getClaimable' |
   'setScope' |
+  'setClaim' |
   'setPermission' |
   'banOrUnbanUser'|
   'getCampaingData' |
@@ -139,12 +140,12 @@ export interface Profile {
 export interface ReadProfile {
   eligibility: Eligibility;
   profile: Profile;
+  isClaimed: boolean;
   hash_: `0x${string}`;
 }
 
 export interface WeekProfileData {
   weekId: bigint;
-  isClaimed: boolean;
   campaigns: Readonly<ReadProfile[]>;
 }
 

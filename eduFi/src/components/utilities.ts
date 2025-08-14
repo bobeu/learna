@@ -81,13 +81,13 @@ export const mockEligibility : Eligibility = {
 export const mockReadProfile : ReadProfile = {
   eligibility: mockEligibility,
   hash_: mockHash,
-  profile: mockProfile
+  profile: mockProfile,
+  isClaimed: false
 }
 
 export const mockWeekProfileData : WeekProfileData = {
   campaigns: [mockReadProfile],
-  weekId: 0n,
-  isClaimed: false
+  weekId: 0n
 }
 
 export const mockWeekData : WeekData[] = [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}];
@@ -218,6 +218,14 @@ export function getDivviReferralUtilities() {
  * @returns Formatted value.
  */
 export const formatValue = (arg: string | number | ethers.BigNumberish | bigint | undefined) => {
+  if(typeof arg === 'bigint') {
+    const valueInBigNumber = toBN(formatEther(arg)).decimalPlaces(4);
+    return {
+      toStr: valueInBigNumber.toString(),
+      toNum: valueInBigNumber.toNumber()
+   };
+  }
+    
   const valueInBigNumber = toBN(formatEther(toBigInt(arg))).decimalPlaces(4)
   return {
     toStr: valueInBigNumber.toString(),
@@ -374,9 +382,9 @@ export function formatData(stateData: StateData, weekData: WeekData[], requested
   const weekProfileData = stateData.weekProfileData;
   const filteredWPD = weekProfileData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
   const wpd = filteredWPD?.[0] || mockWeekProfileData;
-  const isClaimed = wpd.isClaimed;
   const userCampaigns = wpd.campaigns.filter(({hash_, }) => hash_.toLowerCase() == requestedHash.toLowerCase());
   const userCampaign = userCampaigns?.[0] || mockReadProfile;
+  const isClaimed = userCampaign.isClaimed;
   const eligibility = userCampaign.eligibility;
   const profileOther = userCampaign.profile.other;
   const profileQuizzes = userCampaign.profile.quizResults;

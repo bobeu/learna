@@ -21,10 +21,26 @@ abstract contract Week is ILearna, Admins {
     mapping(uint => uint96) private claimDeadlines;
 
     ///@dev Mapping that shows whether user has claimed reward for a specific week or not
-    mapping(address user => mapping(uint week => bool)) internal isClaimed;
+    mapping(address user => mapping(uint week => mapping(bytes32 => bool))) internal isClaimed;
 
-    function setIsClaimed(address user, uint weekId) external whenNotPaused onlyApproved() {
-        if(!isClaimed[user][weekId]) isClaimed[user][weekId] = true;
+    /**@dev Set claimed status for a user
+     * @param user : User address
+     * @param weekId : Week Id
+     * @param hash_ : Hash of the claim
+     */
+    function setIsClaimed(address user, uint weekId, bytes32 hash_) external whenNotPaused onlyApproved() {
+        if(!isClaimed[user][weekId][hash_]) isClaimed[user][weekId][hash_] = true;
+    }
+
+    /**
+        * @notice This function checks if a user has claimed their reward for a specific week.
+        * @dev It returns true if the user has claimed the reward, false otherwise.
+        * @param user : User address
+        * @param weekId : Week Id
+        * @return bool : True if user has claimed reward for the week, false otherwise
+     */
+    function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool) {
+        return isClaimed[user][weekId][hash_];
     }
 
     function _getDeadline(uint weekId) internal view returns(uint96 deadline) {

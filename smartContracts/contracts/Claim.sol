@@ -37,25 +37,14 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     event UserIdentifierVerified(address indexed registeredUserIdentifier);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
-    /// @notice Structured data for reading Claimable results 
-    struct ClaimResult {
-        ILearna.Eligibilities[] unclaimed;
-        ILearna.Eligibilities[] claimed;
-        bool isVerified;
-        bool barred;
-    }
-
     // Learna contract
     ILearna public learna;
 
     /// @notice Verification config ID for identity verification
     bytes32 public configId;
 
-    /// @notice Merkle root used to validate reward claims.
-    // bytes32 public merkleRoot;
-
     ///@notice When this flag is turned off, user will need no verification to claim reward
-    bool public useSelf;
+    bool public isWalletVerificationRequired; // default is true in the constructor, meaning user must verify before claiming
 
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
     mapping(address user => bool) internal isVerified;
@@ -63,8 +52,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     // Blacklist
     mapping(address => bool) internal blacklisted;
 
-    modifier whenNotUseSelf {
-        require(!useSelf, "In verify mode");
+    modifier whenWalletRequired() {
+        require(isWalletVerificationRequired, "Wallet verification required");
         _;
     }
 
@@ -77,7 +66,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     constructor(address identityVerificationHubAddress)
         SelfVerificationRoot(identityVerificationHubAddress, 0)
     {
-        useSelf = true; 
+        isWalletVerificationRequired = true; 
     }
 
     receive() external payable {}
@@ -151,19 +140,22 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         require(unclaims.length > 0, "Nothing to claim");
         for(uint i = 0; i < unclaims.length; i++) {
             ILearna.Eligibilities memory claims = unclaims[i];
-            learna.setIsClaimed(user, claims.weekId);
             for(uint j = 0; j < claims.elgs.length; j++) {
                 ILearna.Eligibility memory claim = claims.elgs[j];
-                if(claim.isEligible){
-                    if(claim.nativeAmount > 0) {
-                        _claimNativeToken(user, claim.nativeAmount);
+                if(!learna.hasClaimed(user, claims.weekId, claim.hash_)) {
+                    if(claim.isEligible){
+                        learna.setIsClaimed(user, claims.weekId, claim.hash_);
+                        learna.onCampaignValueChanged(claim.weekId, claim.hash_, claim.nativeAmount, claim.erc20Amount, claim.platform);
+                        if(claim.nativeAmount > 0) {
+                            _claimNativeToken(user, claim.nativeAmount);
+                        }
+                        if(claim.erc20Amount > 0) {
+                            _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
+                        } 
+                        if(claim.platform > 0) {
+                            _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
+                        }
                     }
-                    if(claim.erc20Amount > 0) {
-                        _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
-                    } 
-                    if(claim.platform > 0) {
-                        _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
-                    } 
                 }
             }
         }
@@ -191,7 +183,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
-    function setClaim() external whenNotUseSelf returns(bool) {
+    function setClaim() external whenWalletRequired returns(bool) {
         _setClaim(_msgSender());
         return true;
     }
@@ -203,7 +195,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
      * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
      * Must not be using Self verification.
      */
-    function setClaim(address user) external whenNotUseSelf onlyApproved returns(bool) {
+    function setClaim(address user) external whenWalletRequired onlyApproved returns(bool) {
         _setClaim(user);
         return true;
     }
@@ -217,7 +209,6 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData 
     ) internal override {
-        require(useSelf, "Not in verify mode");
         address user = address(uint160(output.userIdentifier));
         require(output.userIdentifier > 0, "InvalidUserIdentifier");
         require(output.olderThan >= 16, "You should be at least 16 yrs");
@@ -240,10 +231,10 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     }
 
     /**
-     * @dev Update the useSelf flag
+     * @dev Update the isWalletVerificationRequired = true; flag
      */
-    function toggleUseSelfFlag() public onlyApproved {
-       useSelf = !useSelf;
+    function toggleUseWalletVerification() public onlyApproved {
+       isWalletVerificationRequired = !isWalletVerificationRequired;
     }
 
     /**

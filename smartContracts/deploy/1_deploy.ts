@@ -2,7 +2,6 @@ import { HardhatRuntimeEnvironment, } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
 import { CAMPAIGNS  } from "../hashes";
-import { keccak256, stringToHex } from 'viem';
 import { toBigInt } from 'ethers';
 
 dotconfig();
@@ -17,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('9693693554599193610625812741772199432776874705605356098598758796991660181069') : BigInt('3321354802163846810667652648824177491317284837795615907503363671180190385068');
+	const scopeValue = networkName === 'alfajores'? BigInt('14000655775750890061646252203233631380232591167831633002086193002509521754566') : BigInt('12114867146632761766499564830059671616946370820555069452163170720079989210880');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -78,6 +77,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		log: true,
 	});
 	console.log(`GrowToken deployed to: ${growToken.address}`);
+	// await execute('Claim', {from: deployer}, 'toggleUseWalletVerification');
 	
 	const admins = await read("Learna", "getAdmins");
 	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
@@ -87,10 +87,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
 
+	for(let i = 0; i < newAdmins.length; i++) {
+		await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
+	}
+
+	const isWalletVerificationRequired = await read('Claim', 'isWalletVerificationRequired');
 	const config = await read('Claim', 'configId');
 	const scope = await read('Claim', 'scope');
 
 	console.log("scope", toBigInt(scope.toString()));
+	console.log("isWalletVerificationRequired", isWalletVerificationRequired);
 	console.log("config", config);
 	console.log("isAdmin1", admins?.[0].active);
 	console.log("isAdmin2", admins?.[1].active);

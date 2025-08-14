@@ -5,7 +5,7 @@ import { formatValue, getTimeFromEpoch } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
-import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Verified, Store, PlusCircle, Coins, HandCoins, BaggageClaim, CheckCircle, IdCard, ArrowRightCircle, Wallet } from "lucide-react";
 import CustomButton from "./CustomButton"
 import Wrapper2xl from "./Wrapper2xl";                                                                      
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -13,12 +13,16 @@ import { SelectComponent } from "./SelectComponent";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
 import { FormattedData } from "../../../types/quiz";
 import CountdownTimer from "./CountdownTimer";
+import VerifyByWallet from "../transactions/VerifyByWallet";
 
 interface ProfileComponentProps {
     fid: number | undefined;
     weekId: number;
     profileData: FormattedData;
 }
+
+type VerificationMethod = 'wallet' | 'self';
+const verificationMethods : VerificationMethod[] = ['self', 'wallet'];
 
 function ProfileComponent(
     {
@@ -40,11 +44,14 @@ function ProfileComponent(
         }
     } : ProfileComponentProps) {
     const [openDrawer, setDrawer] = React.useState<number>(0);
+    const [openWalletMethod, setWalletMethodDrawer] = React.useState<number>(0);
     const [showQRCode, setShowQRCode] = React.useState<boolean>(false);
+    const [verifiyMethod, setVerificationMethod] = React.useState<VerificationMethod>('self');
     
     const { isEligible, erc20Amount, nativeAmount, platform } = eligibility;
     const { state: { transitionDate } } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
+    const toggleWalletDrawer = (arg:number) => setWalletMethodDrawer(arg);
     const back = () => {
         setShowQRCode(false);
     }
@@ -52,7 +59,7 @@ function ProfileComponent(
     const handleClaim = () => {
         if(!showVerificationButton && !showWithdrawalButton) return null;
         if(showWithdrawalButton) setDrawer(1);
-        if(showVerificationButton && !showWithdrawalButton) setShowQRCode(true);
+        if(showVerificationButton && !showWithdrawalButton) verifiyMethod === 'self'? setShowQRCode(true) : setWalletMethodDrawer(1);
     };
     const { data: { activeLearners,} } = campaign;
 
@@ -136,10 +143,7 @@ function ProfileComponent(
                                     showVerificationButton && <h3 className='text-orange-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                                 {
-                                    showWithdrawalButton && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
-                                }
-                                {
-                                    (!showVerificationButton) && <h3 className='text-red-600 font-bold text-center w-full flex justify-center items-center'> <CheckCircle className="w-8 h-8 " /> </h3> 
+                                    (showWithdrawalButton || isClaimed) && <h3 className='text-green-600 font-bold text-center w-full flex justify-center items-center'> <Verified className="w-8 h-8 " /> </h3> 
                                 }
                             </div>
                             <div className="text-sm text-gray-600">Verification status</div>
@@ -157,7 +161,7 @@ function ProfileComponent(
                                 <HandCoins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(erc20Amount.toString()).toStr || '0'}
+                                {formatValue(erc20Amount).toStr || '0'}
                             </div>
                             <div className="text-sm text-gray-600">Reward in other token</div>
                         </div>
@@ -167,7 +171,7 @@ function ProfileComponent(
                                 <HandCoins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(platform.toString()).toStr || '0'}
+                                {formatValue(platform).toStr || '0'}
                             </div>
                             <div className="text-sm text-gray-600">Reward in $GROW token</div>
                         </div>
@@ -177,7 +181,7 @@ function ProfileComponent(
                                 <Coins className="w-8 h-8 text-purple-600" />
                             </div>
                             <div className="text-3xl font-bold text-gray-800 mb-1">
-                                {formatValue(nativeAmount?.toString()).toStr || '0'}
+                                {formatValue(nativeAmount).toStr || '0'}
                             </div>
                             <div className="text-sm text-gray-600">Reward in $CELO</div>
                         </div>
@@ -185,21 +189,34 @@ function ProfileComponent(
 
                 </div>
             </div>
+            <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl space-y-2">
+                <h3>Choose verification method</h3>
+                <SelectComponent 
+                    setHash={(arg) => setVerificationMethod(arg as VerificationMethod)}
+                    campaigns={verificationMethods}
+                    placeHolder="Select method"
+                    width="w-"
+                />
+            </div>
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
-                disabled={showQRCode}
+                disabled={isClaimed || showQRCode}
                 overrideClassName="w-full mt-4"
             >
-                <BaggageClaim className="w-5 h-5 text-orange-white" />
+                { verifiyMethod === 'wallet'? <Wallet className="w-5 h-5 text-orange-white" /> : <BaggageClaim className="w-5 h-5 text-orange-white" />}
                 <span>{showVerificationButton && 'Verify To Claim'}</span>
                 <span>{showWithdrawalButton && 'Withdraw'}</span>
-                <span>{(!showVerificationButton && !showWithdrawalButton && !isEligible) && 'Not Eligible'}</span>
+                <span>{(!showVerificationButton && !showWithdrawalButton && !isEligible && !isClaimed) && 'Not Eligible'}</span>
                 <span>{isClaimed && 'Claimed'}</span>
             </CustomButton>
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
+            />
+            <VerifyByWallet 
+                openDrawer={openWalletMethod}
+                toggleDrawer={toggleWalletDrawer}
             />
         </MotionDisplayWrapper>
     );
@@ -219,9 +236,9 @@ export default function Profile() {
     };
     
     const weekIds = Array.from({length: wkId + 1}, (_: number, i: number) => i).map(q => q.toString());
-    const setselectedWeek = (arg: string) => {
-        setweekId(BigInt(arg));
-    }
+    // const setselectedWeek = (arg: string) => {
+    //     setweekId(BigInt(arg));
+    // }
 
     const goToQuiz = () => {
         setpath('dashboard');
@@ -281,7 +298,7 @@ export default function Profile() {
                      <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Week</h3>
                         <SelectComponent 
-                            setHash={setselectedWeek}
+                            setHash={setweekId}
                             campaigns={weekIds}
                             placeHolder="Select campaign"
                             width="w-"
