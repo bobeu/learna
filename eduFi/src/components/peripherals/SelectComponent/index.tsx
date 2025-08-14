@@ -41,7 +41,7 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash} 
                 value={campaign} 
                 className="capitalize"
               >
-                { campaign?.length === 42 ? <AddressWrapper account={campaign} display size={6} /> : campaign }
+                { campaign?.length === 42 ? <AddressWrapper account={campaign} display size={3} /> : campaign }
               </SelectItem>
             )) : <SelectItem value={"No campaign"}>No campaign</SelectItem>
           }

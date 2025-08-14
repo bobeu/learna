@@ -86,8 +86,15 @@ export default function SetupCampaign() {
 
     // Memoize and update the argments
     const {fundsErc20, fundsNative, sortContent, contractAddresses} = React.useMemo(() => {
-        const fundsErc20 = parseUnits(erc20Amount, 18);
-        const fundsNative = parseUnits(celoAmount, 18);
+        let fundsErc20 = 0n;
+        let fundsNative = 0n;
+        try {
+            fundsErc20 = parseUnits(erc20Amount, 18);
+            fundsNative = parseUnits(celoAmount, 18);
+        } catch (error) {
+            alert('Please enter a valid amount');
+            // return {fundsErc20: 0n, fundsNative: 0n, sortContent: [], contractAddresses: []};
+        }
         const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
         const contractAddresses = [{name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.GrowToken as Address}];
         const sortContent : ContentType[] = [

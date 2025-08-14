@@ -24,6 +24,8 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
         totalPoints, 
         fundsERC20,
         fundsNative,
+        platformToken,
+        operator,
         lastUpdated,
         token
     } = campaign.data;
@@ -105,9 +107,9 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                             <Fuel className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                            {formatValue(fundsERC20.toString()).toStr || '0'} 
+                            {formatValue(fundsERC20).toStr || '0'} 
                         </div>
-                        <div className="text-xs text-gray-600">ERC20 balance after claim</div>
+                        <div className="text-xs text-gray-600">Reward in $ERC20 balance</div>
                     </div>
 
                     <div className="glass-card rounded-xl p-4">
@@ -115,9 +117,18 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                             <Fuel className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                            {formatValue(fundsNative.toString()).toStr || '0'} 
+                            {formatValue(fundsNative).toStr || '0'} 
                         </div>
-                        <div className="text-xs text-gray-600">$CELO balance after claim</div>
+                        <div className="text-xs text-gray-600">Reward in $CELO balance</div>
+                    </div>
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            {formatValue(platformToken).toStr || '0'} 
+                        </div>
+                        <div className="text-xs text-gray-600">$Reward in $GROW</div>
                     </div>
                     
                     <div className="glass-card rounded-xl p-4">
@@ -128,6 +139,15 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                             <AddressWrapper account={token} size={4} display/> 
                         </div>
                         <div className="text-xs text-gray-600">Funded asset</div>
+                    </div>
+                    <div className="glass-card rounded-xl p-4">
+                        <div className="flex items-center justify-center mb-3">
+                            <Fuel className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="font-semibold text-gray-800 mb-1">
+                            <AddressWrapper account={operator} size={4} display/> 
+                        </div>  
+                        <div className="text-xs text-gray-600">Operator</div>
                     </div>
                 </div>
             </div>
@@ -183,10 +203,6 @@ export default function Stats() {
         } else {
             setpath('home')
         }
-    }
-
-    const setselectedWeek = (arg: string) => {
-        setweekId(BigInt(arg));
     }
 
     const setaction = (arg: string) => {
@@ -274,7 +290,7 @@ export default function Stats() {
                     <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
                         <h3>Week</h3>
                          <SelectComponent 
-                            setHash={setselectedWeek}
+                            setHash={setweekId}
                             campaigns={weekIds}
                             placeHolder="Weeks"
                             width="w-"

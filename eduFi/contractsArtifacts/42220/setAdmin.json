@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xf2fc20D95bd0abB9dB124225fB6C13526Cd6e63c",
+  "contractAddress": "0xaFd85CB74932a73a34F0cB15AE8A4256b977D1D3",
   "functionName": "setAdmin",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -1023,11 +1023,6 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "bool",
-                  "name": "isClaimed",
-                  "type": "bool"
-                },
-                {
                   "components": [
                     {
                       "components": [
@@ -1182,6 +1177,11 @@
                       "type": "tuple"
                     },
                     {
+                      "internalType": "bool",
+                      "name": "isClaimed",
+                      "type": "bool"
+                    },
+                    {
                       "internalType": "bytes32",
                       "name": "hash_",
                       "type": "bytes32"
@@ -1222,6 +1222,35 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "hash_",
+          "type": "bytes32"
+        }
+      ],
+      "name": "hasClaimed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "target",
           "type": "address"
         }
@@ -1235,6 +1264,39 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "hash_",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fundsNative",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fundsERC20",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "platformToken",
+          "type": "uint256"
+        }
+      ],
+      "name": "onCampaignValueChanged",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1420,6 +1482,11 @@
           "internalType": "uint256",
           "name": "weekId",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "hash_",
+          "type": "bytes32"
         }
       ],
       "name": "setIsClaimed",

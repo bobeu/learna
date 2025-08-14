@@ -49,7 +49,7 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
                     endpoint: claim,
                     logoBase64: APP_ICON_URL,
                     userId: account,
-                    endpointType: "staging_celo",
+                    endpointType: chainId === 44787? "staging_celo" : "celo",
                     userIdType: "hex",
                     userDefinedData,
                     devMode: chainId === 44787? true : false,
@@ -58,7 +58,6 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
                     }
                 }
             ).build();
-
             setSelfApp(app);
             setUniversalLink(getUniversalLink(app));
         } catch (error) {

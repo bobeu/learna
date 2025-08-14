@@ -84,7 +84,7 @@ abstract contract Campaigns is Week {
             if(fundsERC20 > 0 && token != address(0)) {
                 bool execute = false;
                 if(token == cmp.data.token){
-                    if(fundsERC20 > 0) execute = true;
+                    execute = true;
                 } else {
                     if(cmp.data.fundsERC20 == 0) {
                         cmp.data.token = token;
@@ -123,28 +123,6 @@ abstract contract Campaigns is Week {
             require(wInit[weekId][hash_].hasSlot, "Campaign not in current week");
         }
     }
-
-    // /**
-    //  * @dev Only valid campaign id can pass
-    //  * @param weekId : Week Id
-    //  * @param slot : Campaign slot
-    // */
-    // function onlyValidCampaignSlot(uint weekId, uint32 slot) internal view {
-    //     require(slot < _getTotalCampaignForAGivenWeek(weekId), "Invalid campaign id");
-    // }
-
-    // /// Returns the length of users in a campaign for the given week 
-    // function _getTotalCampaignForAGivenWeek(uint weekId) internal view returns(uint32 result) {
-    //     result = uint32(campaigns[weekId].length);
-    // }
-
-    // /**
-    //  * @dev Check whether a campaign is initialized or not
-    //  * @param campaignHash : Campaign hash
-    // */
-    // function _isInitialized(bytes32 campaignHash) internal view returns(bool result) {
-    //     result = initializer[campaignHash].initialized;
-    // }
 
     /**
      * @dev Return the hashed result of a campaign string
@@ -245,23 +223,6 @@ abstract contract Campaigns is Week {
         res.cp = campaigns[weekId][res.slot];
     }
 
-    // /**
-    //  * @dev Returns campaign data
-    //  * @param hash_ : Campaign hash iD
-    //  */
-    // function _getCampaignSlot(bytes32 hash_) internal view returns(uint id) {
-    //     id = initializer[hash_].index; 
-    // }
-
-    // /**
-    //  * @dev Returns campaign data
-    //  * @param hash_ : Campaign hash iD
-    //  * @param weekId : weekId
-    //  */
-    // function _getCampaignWeekSlot(uint weekId, bytes32 hash_) internal view returns(uint32 id) {
-    //     id = wInit[weekId][hash_].slot; 
-    // }
-
     ///@dev Return approved campaigns
     function _getApprovedCampaigns() internal view returns(CampaignData[] memory result) {
         result = campaignList;
@@ -282,7 +243,7 @@ abstract contract Campaigns is Week {
     */
     function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint platformToken) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
         State memory st = _getState();
-        require(st.transitionDate < _now(), "Transition date in future");
+        require(st.transitionDate < _now(), "Transition is in future");
         pastWeek = st.weekId;
         cData = _getApprovedCampaigns();
         newWeek = _transitionToNewWeek();

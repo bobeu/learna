@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0x892Ee9E6e701D0E7476eCfd6821Bc7Dd314ae865",
-  "functionName": "banOrUnbanUser",
-  "inputCount": 1,
+  "contractAddress": "0x57DfC153F3077D13b3B6E1c73B421d4Ce2c76D43",
+  "functionName": "setClaim",
+  "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {

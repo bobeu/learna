@@ -19,7 +19,6 @@ interface ILearna {
     event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
-    // event ClaimedWeeklyReward(address indexed user, uint weekId, Eligibility[] elgs);
     event Sorted(uint _weekId, uint newWeekId, CampaignData[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);
@@ -51,13 +50,6 @@ interface ILearna {
         bytes encoded;
     }
 
-    // struct Initializer {
-    //     bool initialized;
-    //     uint index;
-    //     bytes encoded;
-    //     bytes32 hash_;
-    // }
-
     struct WeekInitializer {
         bool hasSlot;
         uint32 slot;
@@ -65,13 +57,13 @@ interface ILearna {
 
     struct WeekProfileData {
         uint weekId;
-        bool isClaimed;
         ReadProfile[] campaigns;
     }
 
     struct ReadProfile {
         Eligibility eligibility;
         Profile profile;
+        bool isClaimed;
         bytes32 hash_;
     }
 
@@ -174,8 +166,14 @@ interface ILearna {
     }
 
     function checkEligibility(address user) external view returns (Eligibilities[] memory);
-    function setIsClaimed(address user, uint weekId) external;
-    // function onClaimed(Eligibility[] memory elg, uint weekId, address user) external returns(bool);
-    // function getCampaignsForThePastWeek() external view returns(Campaign[] memory result);
+    function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
+    function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool);
     function getPlatformToken() external view returns(address);
+    function onCampaignValueChanged(
+        uint weekId, 
+        bytes32 hash_, 
+        uint256 fundsNative, 
+        uint256 fundsERC20,
+        uint256 platformToken
+    ) external;
 }
