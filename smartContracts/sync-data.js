@@ -7,8 +7,8 @@ const path = require('path');
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
 const REACT_DATA_PATH = '../eduFi/contractsArtifacts';
 const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
-const approvedFunctions = ['checkEligibility', 'recordPoints', 'toggleAdminStatus', 'setAdmin', 'getAdmins', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'setClaim', 'isWalletVerificationRequired'];
-const readFunctions = ['getData', 'checkligibility', 'getAdmins', 'owner', 'allowance', 'configId', 'getVerificationStatus', ''];
+const approvedFunctions = ['checkEligibility', 'recordPoints', 'toggleAdminStatus', 'setAdmin', 'getAdmins', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'setClaim', 'isWalletVerificationRequired', 'balanceOf'];
+const readFunctions = ['getData', 'checkligibility', 'getAdmins', 'owner', 'allowance', 'configId', 'getVerificationStatus', '', 'balanceOf'];
 const functionsRequireArgUpdate = approvedFunctions;
 const chainName = {44787: 'alfajores', 42220: 'celo'};
 const chainIds = [44787, 42220]
@@ -24,7 +24,6 @@ let globalOutput = {
     paths: workBuild,
     contractAddresses: [{"stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"}, {"stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a'}],
 };
-
 
 let itemOutput = {
     contractAddress: '',

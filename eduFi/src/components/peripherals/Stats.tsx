@@ -17,6 +17,8 @@ import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
 import CountdownTimer from "./CountdownTimer";
+import FeeManager from "../read/FeeManager";
+import ClaimContract from "../read/ClaimContract";
 
 function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {campaign: Campaign, transitionDate: number, claimDeadline: number, protocolVerified: boolean}) {
     const { 
@@ -324,6 +326,8 @@ export default function Stats() {
             {
                 (userAdminStatus || owner?.toLowerCase() === account.toLowerCase()) && 
                     <div className="space-y-4 mt-4" >
+                        <FeeManager />
+                        <ClaimContract />
                         <SortWeeklyPayout /> 
                         <MinimumToken />
                         <TransitionInterval />

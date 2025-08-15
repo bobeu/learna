@@ -16,7 +16,6 @@ export type FunctionName =
   'adjustCampaignValues'|
   'setUpCampaign'|
   'getProfile'|
-  'generateKey'|
   'getData'|
   'owner'|
   'allowance'|
@@ -32,6 +31,7 @@ export type FunctionName =
   'banOrUnbanUser'|
   'getCampaingData' |
   'getVerificationStatus' |
+  'balanceOf' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;

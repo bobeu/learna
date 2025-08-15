@@ -132,7 +132,7 @@ export default function Educaster() {
         setQuizResult(newResult);
         setUserResults(prev => [newResult, ...prev]);
         setPath('results');
-        setTimeout(() => setRecordPoints(true), 3000);
+        // setTimeout(() => setRecordPoints(true), 3000);
         clearTimeout(3000);
         
     };
