@@ -75,25 +75,31 @@ export default function ClaimContract() {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2 md:gap-6 mb-8">
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Wallet className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div className="font-semibold text-gray-800 mb-1">
-                            <AddressWrapper account={grotToken} size={4} display/> 
-                        </div>
-                        <div className="text-xs text-gray-600">ERC20 Token in contract</div>
-                    </div>
+                    {
+                        rest.isLoading || rest.isFetching ? <Spinner color='purple' /> :
+                            <div className="glass-card rounded-xl p-4">
+                                <div className="flex items-center justify-center mb-3">
+                                    <Wallet className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <div className="font-semibold text-gray-800 mb-1">
+                                    <AddressWrapper account={grotToken} size={4} display/> 
+                                </div>
+                                <div className="text-xs text-gray-600">ERC20 Token in contract</div>
+                            </div>
+                    }
 
-                    <div className="glass-card rounded-xl p-4">
-                        <div className="flex items-center justify-center mb-3">
-                            <Coins className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div className="font-semibold text-gray-800 mb-1">
-                            {formatValue(erc20Balance || 0n).toStr || '0'} 
-                        </div>
-                        <div className="text-xs text-gray-600">Balances in {`GROT`}</div>
-                    </div>
+                    {
+                        rest.isLoading || rest.isFetching ? <Spinner color='purple' /> :
+                            <div className="glass-card rounded-xl p-4">
+                                <div className="flex items-center justify-center mb-3">
+                                    <Coins className="w-4 h-4 text-purple-600" />
+                                </div>
+                                <div className="font-semibold text-gray-800 mb-1">
+                                    {formatValue(erc20Balance || 0n).toStr || '0'} 
+                                </div>
+                                <div className="text-xs text-gray-600">Balances in {`GROT`}</div>
+                            </div>
+                    }
                 </div>
             </div>
 
