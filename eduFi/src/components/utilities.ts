@@ -368,12 +368,12 @@ export function encodeUserData(campaignSlot: number): string {
  */
 export function filterWeekData(weekData: WeekData[], requestedWkId: number, requestedHash: Hex) {
   const wcp = weekData[requestedWkId] || mockWeekData; 
-  const filteredCampaign = wcp.campaigns.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
+  const filteredCampaign = wcp?.campaigns?.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
   const found = filteredCampaign?.[0] || mockCampaign;
   return {
     campaign: found,
-    claimDeadline: toBN(wcp.claimDeadline.toString()).toNumber(),
-    totalPoints: toBN(found.data.totalPoints.toString()).toNumber()
+    claimDeadline: toBN(wcp?.claimDeadline?.toString()).toNumber(),
+    totalPoints: toBN(found?.data.totalPoints?.toString()).toNumber()
   }
 }
 

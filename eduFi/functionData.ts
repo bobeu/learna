@@ -20,6 +20,7 @@ import setScope44787 from "./contractsArtifacts/44787/setScope.json";
 import pause44787 from "./contractsArtifacts/44787/pause.json";
 import unpause44787 from "./contractsArtifacts/44787/unpause.json";
 import setClaim44787 from "./contractsArtifacts/44787/setClaim.json";
+import balanceOf44787 from "./contractsArtifacts/44787/balanceOf.json";
 
 // Mainnet contract configs
 import claimReward42220 from "./contractsArtifacts/42220/claimReward.json";
@@ -44,6 +45,7 @@ import configId42220 from "./contractsArtifacts/42220/configId.json";
 import setConfigId42220 from "./contractsArtifacts/42220/setConfigId.json";
 import setScope42220 from "./contractsArtifacts/42220/setScope.json";
 import setClaim42220 from "./contractsArtifacts/42220/setClaim.json";
+import balanceOf42220 from "./contractsArtifacts/42220/balanceOf.json";
 
 // Global data import
 import globalData from "./contractsArtifacts/global.json";
@@ -74,6 +76,7 @@ const functionData = [
         { key: 'setScope', value: { ...setScope44787} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus44787} },
         { key: 'setClaim', value: { ...setClaim44787} },
+        { key: 'balanceOf', value: { ...balanceOf44787} },
     ],
     [
         { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
@@ -98,6 +101,7 @@ const functionData = [
         { key: 'setScope', value: { ...setScope42220} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus42220} },
         { key: 'setClaim', value: { ...setClaim42220} },
+        { key: 'balanceOf', value: { ...balanceOf42220} },
     ]
 ];
 

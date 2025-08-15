@@ -124,11 +124,11 @@ export const QuizInterface = () => {
         timeSpent: Math.round((Date.now() - startTime) / 1000),
         completedAt: new Date().toString(),
         quizId: quiz.id,
-        title: quiz.title
+        title: quiz.title,
       },
       answers
     }
-
+    console.log("Reult", result.other.title);
     onComplete(result);
   };
 

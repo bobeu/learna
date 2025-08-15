@@ -2,18 +2,20 @@
 
 import React from "react";
 import Drawer from './Drawer';
-import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId, useBalance, } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
 import { filterTransactionData, getCastText, getDivviReferralUtilities, toBN } from "~/components/utilities";
 import useStorage from "~/components/hooks/useStorage";
 import Message from "~/components/peripherals/Message";
 import { Spinner } from "~/components/peripherals/Spinner";
 import { privateKeyToAccount } from 'viem/accounts';
-import { Hex, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "~/lib/constants";
 import { Address, FunctionName } from "../../../../types/quiz";
+
+const DELEGATE_VALUE = parseUnits('2', 16);
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
@@ -24,7 +26,7 @@ export const Confirmation :
     const { address, isConnected } = useAccount();
     const chainId = useChainId();
     const config = useConfig();
-    const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Hex).address});
+    // const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Hex).address});
     const account = address as Address;
     const weekId = toBN(wkId.toString()).toNumber();
 
@@ -60,9 +62,6 @@ export const Confirmation :
                    case 'adjustCampaignValues':
                        setpath('stats');
                        break;
-                   case 'generateKey':
-                       setpath('dashboard');
-                       break;
                    case 'recordPoints':
                        setpath('profile');
                        break;
@@ -92,9 +91,9 @@ export const Confirmation :
             if(useDivvi) {
                 const result = await submitReferralData(hash, chainId);
                 if(result.status === 200) {
-                    setmessage('Divvi ref submission successful');
-                    // setmessage('Publishing cast...');
-                    // await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
+                    // setmessage('Divvi ref submission successful');
+                    callback({message: 'Publishing cast...'});
+                    await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
                 } else {
                     setmessage('Failed to submit Divvi ref');
                 }
@@ -162,27 +161,27 @@ export const Confirmation :
         const hash = await sendTransactionAsync({
             account,
             to: viemAccountObj.address,
-            value: parseUnits('2', 16)
+            value: DELEGATE_VALUE
         });
+        callback({message: 'Waiting for confirmation'});
         await waitForConfirmation(hash, 'delegation'); 
     }
 
-    const forwardBalances = async() => {
-        const celoBalance = (await fetchBalance()).data?.value;
-        console.log("CeloBalance", celoBalance);
-        // const amount = parseUnits('8', 15)
-        // if(celoBalance && celoBalance > amount) {
-        //     const hash_ = await sendTransactionAsync({
-        //         account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-        //         to: RECEIVER,
-        //         value: amount
-        //     });
-        //     await waitForConfirmation(hash_, "Rebalancing completed");
-        // }
-    }
+    // const forwardBalances = async() => {
+    //     const celoBalance = (await fetchBalance()).data?.value;
+    //     console.log("CeloBalance", celoBalance);
+    //     // const amount = parseUnits('8', 15)
+    //     // if(celoBalance && celoBalance > amount) {
+    //     //     const hash_ = await sendTransactionAsync({
+    //     //         account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
+    //     //         to: RECEIVER,
+    //     //         value: amount
+    //     //     });
+    //     //     await waitForConfirmation(hash_, "Rebalancing completed");
+    //     // }
+    // }
 
     const runTransaction = async(arg: Transaction, ) => {
-        // console.log("Args1: ", arg)
         const { abi, functionName, args, contractAddress, value, useAdmin } = arg;
         const { getDataSuffix } = getDivviReferralUtilities();
         const useDivvi = chainId === celo.id;
@@ -225,29 +224,19 @@ export const Confirmation :
                 if(!useAdmin || useAdmin === 0)  {
                     await delegateTransactionTask();
                 }
+                callback({message: 'Saving your scores onchain...'});
                 hash = await writeContractAsync({
                     abi,
                     functionName,
                     address: contractAddress,
-                    account: (useAdmin && useAdmin > 0)? privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address) : account,
+                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
                     args,
-                    value,
+                    value: DELEGATE_VALUE,
                     dataSuffix
                 });
+                callback({message: 'Confirming transaction...'});
                 hash = await waitForConfirmation(hash, '');
-                await forwardBalances();         
-                await setCompletion(functionName, useDivvi, hash);
-            } else if(functionName === 'generateKey') {
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account: account,
-                    args,
-                    dataSuffix,
-                    value
-                });
-                hash = await waitForConfirmation(hash, '');
+                // await forwardBalances();         
                 await setCompletion(functionName, useDivvi, hash);
             } else {
                 callback({message})
@@ -279,22 +268,6 @@ export const Confirmation :
         const transactions = getTransactions();
         for( let i = 0; i < transactions.length; i++) {
             const {abi, value, functionName, contractAddress, args, useAdmin} = transactions[i];
-            // if(functionName === 'recordPoints'){
-            //     const campaignHash = result.other.quizId as Hex;
-            //     if(!haskey){
-            //         callback({message: "Oops! We can't find your key for this week. Requesting to generate a new key"});
-            //         const { transactionData: td, contractAddresses: { Learna, GrowToken } } = filterTransactionData({chainId, filter: true, functionNames: ['generateKey']});
-            //         await runTransaction({
-            //             abi: td[0].abi, 
-            //             contractAddress: formatAddr(Learna), 
-            //             args: [formatAddr(GrowToken), [campaignHash]], 
-            //             functionName, 
-            //             value: VALUE, 
-            //             requireArgUpdate: false, 
-            //             useAdmin: 0,
-            //         });
-            //     }https://celo.blockscout.com/tx/0x29ff43829950aadffa71425778184dff516afd880b89f2134efe8045a307bd3a
-            // }
             callback({message: 'Sending transaction to the network...'});
             await runTransaction({abi, contractAddress, args, functionName, value, requireArgUpdate: false, useAdmin});
         }

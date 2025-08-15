@@ -24,7 +24,8 @@
     "banOrUnbanUser",
     "getVerificationStatus",
     "setClaim",
-    "isWalletVerificationRequired"
+    "isWalletVerificationRequired",
+    "balanceOf"
   ],
   "chainName": {
     "42220": "celo",

@@ -189,6 +189,7 @@ function ProfileComponent(
 
                 </div>
             </div>
+            {/* Verification options */}
             <div className="w-2/4 text-start text-sm p-4 bg-white rounded-2xl space-y-2">
                 <h3>Choose verification method</h3>
                 <SelectComponent 
@@ -198,6 +199,7 @@ function ProfileComponent(
                     width="w-"
                 />
             </div>
+            {/* Action button */}
             <CustomButton
                 exit={false}
                 onClick={handleClaim}
@@ -210,6 +212,8 @@ function ProfileComponent(
                 <span>{(!showVerificationButton && !showWithdrawalButton && !isEligible && !isClaimed) && 'Not Eligible'}</span>
                 <span>{isClaimed && 'Claimed'}</span>
             </CustomButton>
+
+            {/* Transaction Drawers */}
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}

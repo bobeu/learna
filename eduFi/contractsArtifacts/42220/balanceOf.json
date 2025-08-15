@@ -1,0 +1,27 @@
+{
+  "contractAddress": "0x4DaC0671376712689ce790f567bf508948A8eff3",
+  "functionName": "balanceOf",
+  "inputCount": 1,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

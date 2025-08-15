@@ -19,10 +19,6 @@ export const MINI_APP_METADATA = process.env.NEXT_PUBLIC_MINI_APP_METADATA;
 
 export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string}[] = [
     {
-        key: 'generateKey',
-        handler: (weekId) => `I just generated my passkey for week ${weekId}`
-    },
-    {
         key: 'claimReward',
         handler: (weekId) => `Claimed my reward for week ${weekId}`
     },
