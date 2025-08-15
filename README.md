@@ -62,8 +62,9 @@ Educaster is a mobile-first, React-based application built for the web3 and web2
 - Backend service that manages interactions with the Farcaster client, such as publishing casts, notifying the users, etc.
 - 
 ## Smart contracts information (Celo mainnet)
-- Grow token smart contract deployed at __[0x800B1666d554e249FCCf5f0855455F43a140d2e5]()__ 
-- Factory contract (main app logic) deployed at __[0x9761496D5a1968B0320bb0059e4D0fDA29861805]()__ 
+- Grow token smart contract deployed at __[0x4DaC0671376712689ce790f567bf508948A8eff3](https://celoscan.io/address/0x4DaC0671376712689ce790f567bf508948A8eff3#code)__ 
+- Claim contract deployed at __[0x892Ee9E6e701D0E7476eCfd6821Bc7Dd314ae865](https://celoscan.io/address/0x892Ee9E6e701D0E7476eCfd6821Bc7Dd314ae865#code)__ 
+- Learna Factory contract (main) deployed at __[0xaFd85CB74932a73a34F0cB15AE8A4256b977D1D3](https://celoscan.io/address/0xaFd85CB74932a73a34F0cB15AE8A4256b977D1D3#code)__ 
 
 ## Site
 - [Interact with Educaster here](https://learna.vercel.app)
@@ -78,8 +79,3 @@ Learna addresses the lack of motivation and engagement in traditional learning s
 Our team is comprised of curious minds with a teacher’s touch and a developer’s discipline. We craft interactive quizzes like a sculptor carves marble — precisely, creatively, and always with purpose. Sometimes, we achieve this manually, and often with the help of Artificial intelligence using a carefully and skillfully prepared prompt. We navigate subjects such as Solidity, ReactJS, DeFi, Wagmi, etc, with ease, blending logic and learning into bite-sized brilliance. When not hashing questions into unique hex codes (literally), we are building tools that teach, challenge, and empower others.
 Our team got a strong grasp of dev skills and an interest in ed-tech-style systems. 
 
-
-<!-- 0xA7999939AD2BBD2c9571dE3F48210f491D0Dd204 GROWTOKEN -->
-
- <!-- 0xfFe64d3D0F7D1Bba456C7530206B7Ab3007F33AB Learna new -->
- 
