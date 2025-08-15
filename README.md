@@ -1,4 +1,5 @@
-<img width="1341" height="633" alt="image" src="https://github.com/user-attachments/assets/afe36899-6136-4ecb-b46a-ddfc028276a8" />
+<img width="1362" height="598" alt="image" src="https://github.com/user-attachments/assets/968c24d7-915c-4644-b269-915f49727844" />
+
 
 ## Description
 Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education.
