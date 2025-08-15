@@ -126,8 +126,8 @@ export async function getMiniAppMetadata(): Promise<MiniAppManifest> {
     },
     frame: {
       version:"1",
-      name:"Educaster",
-      iconUrl:"https://learna.vercel.app/icon.png",
+      name:"Learna",
+      iconUrl:"https://learna.vercel.app/learna-logo.png",
       homeUrl:"https://learna.vercel.app",
       imageUrl:"https://learna.vercel.app/api/opengraph-image",
       buttonTitle:"open",

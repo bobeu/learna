@@ -1,6 +1,6 @@
 {
-  "name": "Educaster",
-  "short_name": "Educaster",
+  "name": "Learna",
+  "short_name": "Learna",
   "description": "Learn Web3, Earn Crypto - Master blockchain technology through interactive quizzes",
   "icons": [
     {
@@ -9,7 +9,7 @@
       "type": "image/png"
     },
     {
-      "src": "/favicon-32x32.png",
+      "src": "/favicon.png",
       "sizes": "32x32",
       "type": "image/png"
     },
@@ -19,14 +19,14 @@
       "type": "image/png"
     },
     {
-      "src": "/logo.svg",
+      "src": "/learna-logo.png",
       "sizes": "64x64",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/splash-screen.svg",
+      "src": "/splash-screen.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
