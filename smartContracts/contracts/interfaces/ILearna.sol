@@ -165,8 +165,8 @@ interface ILearna {
         bytes32[] campaigns;
     }
 
-    function checkEligibility(address user) external view returns (Eligibilities[] memory);
-    function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
+    function checkEligibility(address user) external view returns (Eligibilities memory);
+    // function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
     function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool);
     function getPlatformToken() external view returns(address);
     function onCampaignValueChanged(
@@ -174,6 +174,7 @@ interface ILearna {
         bytes32 hash_, 
         uint256 fundsNative, 
         uint256 fundsERC20,
-        uint256 platformToken
+        uint256 platformToken,
+        address user
     ) external;
 }

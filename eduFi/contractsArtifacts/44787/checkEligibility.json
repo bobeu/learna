@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xCE3968A7B6B421F08b691BEcb583AFa932732640",
+  "contractAddress": "0xB090ee24C194abA566212BFBE643491fd5a26478",
   "functionName": "checkEligibility",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -723,9 +723,9 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct ILearna.Eligibilities[]",
+          "internalType": "struct ILearna.Eligibilities",
           "name": "result",
-          "type": "tuple[]"
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -746,7 +746,7 @@
     },
     {
       "inputs": [],
-      "name": "generatekey",
+      "name": "delegateTransaction",
       "outputs": [
         {
           "internalType": "bool",
@@ -1292,6 +1292,11 @@
           "internalType": "uint256",
           "name": "platformToken",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
         }
       ],
       "name": "onCampaignValueChanged",
@@ -1474,29 +1479,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "hash_",
-          "type": "bytes32"
-        }
-      ],
-      "name": "setIsClaimed",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "minToken",
           "type": "uint256"
@@ -1585,7 +1567,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "amountInGrowToken",
+          "name": "amountInKnowToken",
           "type": "uint256"
         },
         {

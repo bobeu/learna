@@ -53,9 +53,9 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the defaut config from RainbowKit
   const config = getDefaultConfig({
-    appName: 'Educaster',
+    appName: 'Learna',
     projectId,
-    appIcon: 'https://learna.vercel.app/favicon-32x32.png',
+    appIcon: 'https://learna.vercel.app/learna-logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
     chains: [ celoAlfajores, celo ],
@@ -91,7 +91,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           // initialChain={celo.id} 
           showRecentTransactions={true}
           appInfo={{
-            appName: "Educaster",
+            appName: "Learna",
             learnMoreUrl: 'https://learna.vercel.app'
           }}
         >

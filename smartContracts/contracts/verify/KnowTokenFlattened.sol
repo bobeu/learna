@@ -719,24 +719,24 @@ abstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
 }
 
 
-// File contracts/interfaces/IGrowToken.sol
+// File contracts/interfaces/IKnowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
 
-interface IGrowToken {
+interface IKnowToken {
     function allocate(uint amount, address to) external returns(bool);
     function burn(address holder, uint amount) external returns(bool);
 }
 
 
-// File contracts/GrowToken.sol
+// File contracts/KnowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract GrowToken is IGrowToken, ERC20, Ownable {
+contract KnowTokenFlattened is IKnowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
     address private mainContract;
 

@@ -12,7 +12,7 @@ describe("Learna", function () {
   
   describe("Should allocate weekly payout", function () {
     it("An admin should be able to allocate weekly earning payout with relevant data", async function () {
-      const { learna, growToken, signers : { deployer },} = await loadFixture(deployContractsFixcture);
+      const { learna, knowToken, signers : { deployer },} = await loadFixture(deployContractsFixcture);
       const amountInERC20 = parseEther('10');
       const { 
         balanceInGrowReserveAfterAllocation,
@@ -20,7 +20,7 @@ describe("Learna", function () {
         balanceOfLearnaAfterAllocation,
         balanceOfLearnaB4Allocation,
         // data
-      } = await sortWeeklyEarning({amountInERC20, deployer, growToken, learna});
+      } = await sortWeeklyEarning({amountInERC20, deployer, knowToken, learna});
 
       expect(balanceInGrowReserveAfterAllocation < balanceInGrowReserveB4Allocation).to.be.true;
       expect(balanceOfLearnaAfterAllocation === balanceOfLearnaB4Allocation).to.be.true;

@@ -3,20 +3,22 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
 import { CAMPAIGNS  } from "../hashes";
 import { toBigInt } from 'ethers';
+import { parseUnits } from 'viem';
 
 dotconfig();
 enum Mode { LOCAL, LIVE }
 const NAME = "LEARNA Token";
-const SYMBOL = "GROT";
+const SYMBOL = "KNOW";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
 	const {deploy, read, execute} = deployments;
 	let {deployer, reserve, routeTo, admin, admin2, identityVerificationHub } = await getNamedAccounts();
 	let mode = Mode.LOCAL;
+	const minimumToken = parseUnits('15', 15);
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('14000655775750890061646252203233631380232591167831633002086193002509521754566') : BigInt('12114867146632761766499564830059671616946370820555069452163170720079989210880');
+	const scopeValue = networkName === 'alfajores'? BigInt('16471696678327332985914775849278661918570336497884683710503370493117196254323') : BigInt('3542991684855835435683013465219636413780013744546190993182789701496969832366');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -71,18 +73,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	/**
 	 * Deploy Ownership Manager
 	 */
-	const growToken = await deploy("GrowToken", {
+	const knowToken = await deploy("KnowToken", {
 		from: deployer,
 		args: [reserve, learna.address, NAME, SYMBOL],
 		log: true,
 	});
-	console.log(`GrowToken deployed to: ${growToken.address}`);
+	console.log(`KnowToken deployed to: ${knowToken.address}`);
 	// await execute('Claim', {from: deployer}, 'toggleUseWalletVerification');
 	
 	const admins = await read("Learna", "getAdmins");
 	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
 	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
-	await execute('Learna', {from: deployer}, 'setToken', growToken.address);
+	await execute('Learna', {from: deployer}, 'setToken', knowToken.address);
+	await execute('Learna', {from: deployer}, 'setMinimumToken', minimumToken);
 	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
 	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
@@ -90,6 +93,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	for(let i = 0; i < newAdmins.length; i++) {
 		await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
 	}
+
+	// const amount = parseUnits('165', 17)
+	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 
 	const isWalletVerificationRequired = await read('Claim', 'isWalletVerificationRequired');
 	const config = await read('Claim', 'configId');
@@ -104,10 +110,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 export default func;
 
-func.tags = ['Learna', 'GrowToken', 'FeeManager', 'Claim'];
+func.tags = ['Learna', 'KnowToken', 'FeeManager', 'Claim'];
 func.dependencies = [
 	'1_deploy_learna',
 	'2_deploy_feeManager',
 	'3_deploy_claim',
-	'4_deploy_growToken'
+	'4_deploy_knowToken'
 ];

@@ -111,17 +111,10 @@ abstract contract Campaigns is Week {
      * @dev Only approved campaign can pass
      * @param hash_ : Campaign Hash : Hash of the campaign string e.g keccack256("Solidity")
      * @param weekId : week id
-     * @param flag : Branching flag
     */
-    function _validateCampaign(bytes32 hash_, uint weekId, uint flag) internal view {
-        if(flag == 0) {
-            require(isRegistered[hash_], "Campaign not registered");
-        } else if(flag == 1) {
-            require(wInit[weekId][hash_].hasSlot, "Campaign not in current week");
-        } else {
-            require(isRegistered[hash_], "Campaign not registered");
-            require(wInit[weekId][hash_].hasSlot, "Campaign not in current week");
-        }
+    function _validateCampaign(bytes32 hash_, uint weekId) internal view {
+        require(isRegistered[hash_], "Campaign not registered");
+        require(wInit[weekId][hash_].hasSlot, "Campaign not in current week");
     }
 
     /**
@@ -163,7 +156,7 @@ abstract contract Campaigns is Week {
             platformToken,
             token
         );
-        _validateCampaign(data.hash_, weekId, 2);
+        _validateCampaign(data.hash_, weekId);
     }
 
     ///@dev Activates or deactivates campaigns
@@ -217,10 +210,14 @@ abstract contract Campaigns is Week {
      * Update other campaign data
      * @param weekId : Week id
      * @param hash_ : Campaign Id
+     * @notice Fetch a campaign only if there is a slot for such campaign for the requested week
      */
     function _getCampaign(uint weekId, bytes32 hash_) internal view returns(GetCampaign memory res) {
-        res.slot = wInit[weekId][hash_].slot;
-        res.cp = campaigns[weekId][res.slot];
+        WeekInitializer memory wi = wInit[weekId][hash_];
+        res.slot = wi.slot;
+        if(wi.hasSlot) {
+            res.cp = campaigns[weekId][wi.slot];
+        }
     }
 
     ///@dev Return approved campaigns
@@ -241,7 +238,7 @@ abstract contract Campaigns is Week {
      * @param newIntervalInMin : New interval to update
      * @param callback : Callback function to run for each campaign
     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint platformToken) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
+    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition is in future");
         pastWeek = st.weekId;

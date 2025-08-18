@@ -25,7 +25,8 @@
     "getVerificationStatus",
     "setClaim",
     "isWalletVerificationRequired",
-    "balanceOf"
+    "balanceOf",
+    "delegateTransaction"
   ],
   "chainName": {
     "42220": "celo",
@@ -40,29 +41,31 @@
       "deployments\\celo\\Claim.json",
       "deployments\\celo\\FeeManager.json",
       "deployments\\celo\\GrowToken.json",
+      "deployments\\celo\\KnowToken.json",
       "deployments\\celo\\Learna.json"
     ],
     "44787": [
       "deployments\\alfajores\\Claim.json",
       "deployments\\alfajores\\FeeManager.json",
-      "deployments\\alfajores\\GrowToken.json",
+      "deployments\\alfajores\\KnowToken.json",
       "deployments\\alfajores\\Learna.json"
     ]
   },
   "contractAddresses": [
     {
       "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "Claim": "0x57DfC153F3077D13b3B6E1c73B421d4Ce2c76D43",
+      "Claim": "0xd82b9d291AabBE57A62fab3aBA38C202a7ee50EC",
       "FeeManager": "0x0f596Ab93E922a1f8D56725e00acC74dd75d3926",
-      "GrowToken": "0x48731B85DD588C64f1158b5eEb8CF756C28f464f",
-      "Learna": "0xCE3968A7B6B421F08b691BEcb583AFa932732640"
+      "KnowToken": "0x99be9756fBf36ecd8b2eA61436F83942f6297093",
+      "Learna": "0xB090ee24C194abA566212BFBE643491fd5a26478"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "Claim": "0x892Ee9E6e701D0E7476eCfd6821Bc7Dd314ae865",
+      "Claim": "0x6457379559217e110135a4301Fd9E7F192Cc8A7f",
       "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",
       "GrowToken": "0x4DaC0671376712689ce790f567bf508948A8eff3",
-      "Learna": "0xaFd85CB74932a73a34F0cB15AE8A4256b977D1D3"
+      "KnowToken": "0x424393F57dF25a67569F880eDA759eedb953E510",
+      "Learna": "0x5A6E1AB9df1a304BA8EaCd0A68343A08452074C4"
     }
   ]
 }

@@ -215,6 +215,7 @@ export default function Educaster() {
 
     // Update quiz data
     React.useEffect(() => {
+        // console.log("Result", result);
         let data : ReadData = mockReadData;
         let owner_ : Address = zeroAddress;
         let admins_ : Admin[] = [mockAdmins];
@@ -341,6 +342,7 @@ export default function Educaster() {
     }, []);
 
     const setstatUser = React.useCallback((arg: string) => {
+        console.log("Arg", arg)
         setStatUser(arg as Address);
     }, []);
 

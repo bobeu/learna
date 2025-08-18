@@ -15,7 +15,7 @@ import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "~/lib/constants";
 import { Address, FunctionName } from "../../../../types/quiz";
 
-const DELEGATE_VALUE = parseUnits('2', 16);
+const DELEGATE_VALUE = parseUnits('15', 15);
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
@@ -155,17 +155,18 @@ export const Confirmation :
 
     // Delegate recordPoint transaction task to an admin
     // Forward balances to receiver
-    const delegateTransactionTask = async() => {
-        callback({message: 'Delegating transaction call to an admin'});
-        const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
-        const hash = await sendTransactionAsync({
-            account,
-            to: viemAccountObj.address,
-            value: DELEGATE_VALUE
-        });
-        callback({message: 'Waiting for confirmation'});
-        await waitForConfirmation(hash, 'delegation'); 
-    }
+    // const delegateTransaction = async() => {
+    //     callback({message: 'Delegating storage power to an admin'});
+    //     const viemAccountObj = privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address);
+    //     const hash = await sendTransactionAsync({
+    //         account,
+    //         to: viemAccountObj.address,
+    //         value: DELEGATE_VALUE
+    //     });
+    //     delegateTransaction
+    //     callback({message: 'Waiting for confirmation'});
+    //     await waitForConfirmation(hash, 'delegation'); 
+    // }
 
     // const forwardBalances = async() => {
     //     const celoBalance = (await fetchBalance()).data?.value;
@@ -222,7 +223,17 @@ export const Confirmation :
         try {
             if(functionName === 'recordPoints') {
                 if(!useAdmin || useAdmin === 0)  {
-                    await delegateTransactionTask();
+                        hash = await writeContractAsync({
+                        abi,
+                        functionName: 'delegateTransaction',
+                        address: contractAddress,
+                        account,
+                        args: [],
+                        value: DELEGATE_VALUE,
+                        dataSuffix
+                    });
+                    callback({message: 'Waiting for confirmation'});
+                    await waitForConfirmation(hash, 'delegation'); 
                 }
                 callback({message: 'Saving your scores onchain...'});
                 hash = await writeContractAsync({
@@ -231,7 +242,7 @@ export const Confirmation :
                     address: contractAddress,
                     account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
                     args,
-                    value: DELEGATE_VALUE,
+                    value: 0n,
                     dataSuffix
                 });
                 callback({message: 'Confirming transaction...'});

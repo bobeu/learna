@@ -979,13 +979,13 @@ abstract contract Admins is Approved {
 }
 
 
-// File contracts/interfaces/IGrowToken.sol
+// File contracts/interfaces/IKnowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
 
-interface IGrowToken {
+interface IKnowToken {
     function allocate(uint amount, address to) external returns(bool);
     function burn(address holder, uint amount) external returns(bool);
 }
@@ -1182,7 +1182,7 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IGrowToken internal token;
+    IKnowToken internal token;
 
     ///@notice Claim address
     address public claim;
@@ -1293,7 +1293,7 @@ abstract contract Week is ILearna, Admins {
     /// @dev Update the token variable. Only-owner function
     function setToken(address _token) public onlyOwner returns(bool) {
         require(_token != address(0), "Token is empty");
-        token = IGrowToken(_token);
+        token = IKnowToken(_token);
         return true;
     }
 
@@ -1550,7 +1550,7 @@ abstract contract Campaigns is Week {
      * @param newIntervalInMin : New interval to update
      * @param callback : Callback function to run for each campaign
     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint platformToken) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
+    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function(CData memory, uint) internal returns(CData memory) callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory cData) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition is in future");
         pastWeek = st.weekId;
@@ -1739,7 +1739,7 @@ library Utils {
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract Learna is Campaigns, ReentrancyGuard {
+contract LearnaFlattened is Campaigns, ReentrancyGuard {
     using Utils for uint96;
 
     Mode private mode;
@@ -1981,20 +1981,20 @@ contract Learna is Campaigns, ReentrancyGuard {
      /**
      * @dev Allocate weekly earnings
      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
-     * @param amountInGrowToken : Amount to allocate in GROW token
+     * @param amountInKnowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
+    function sortWeeklyReward(uint amountInKnowToken, uint32 newIntervalInMin) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
-        if(amountInGrowToken > 0) {
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInKnowToken, _callback);
+        if(amountInKnowToken > 0) {
             require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
+            require(token.allocate(amountInKnowToken, claim), 'Allocation failed');
         }
 
         emit Sorted(currentWk, newWk, cData);  
