@@ -89,13 +89,18 @@ export const Confirmation :
             }
     
             if(useDivvi) {
-                const result = await submitReferralData(hash, chainId);
-                if(result.status === 200) {
-                    // setmessage('Divvi ref submission successful');
-                    callback({message: 'Publishing cast...'});
-                    await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
-                } else {
+                try {
+                    const result = await submitReferralData(hash, chainId);
+                    if(result.status === 200) {
+                        // setmessage('Divvi ref submission successful');
+                        callback({message: 'Publishing cast...'});
+                        await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
+                    } else {
+                        setmessage('Failed to submit Divvi ref');
+                    }
+                } catch (error) {
                     setmessage('Failed to submit Divvi ref');
+                    console.error("Error submitting Divvi ref:", error);
                 }
             }
     

@@ -177,7 +177,7 @@ export default function Stats() {
         setweekId,
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
-    console.log("formattedData", totalPointsForACampaign)
+    // console.log("formattedData", totalPointsForACampaign)
 
     const { campaign, claimDeadline } = filterWeekData(weekData, requestedWkId, requestedHash);
     const account = useAccount().address as Address || zeroAddress;

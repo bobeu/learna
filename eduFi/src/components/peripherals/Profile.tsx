@@ -231,7 +231,6 @@ export default function Profile() {
     const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId } = useStorage();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
-    // console.log("formattedData", formattedData)
     const backToHome = () => {
         if(isConnected){
             setpath('dashboard');
