@@ -17,7 +17,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
             filter: true,
             functionNames: ['balanceOf', 'balanceOf']
         });
-        const abi = filtered.transactionData[0].abi;
+        // const abi = filtered.transactionData[0].abi;
         const claim = filtered.contractAddresses.Claim as Address;
         const knowToken = filtered.contractAddresses.KnowToken as Address;
         const contractAddresses = [erc20InContract, knowToken];
@@ -39,7 +39,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
         config
     });
 
-    const { data: result, ...rest } = useReadContracts({
+    const { data: result } = useReadContracts({
         config,
         account,
         contracts: readTxObject,
