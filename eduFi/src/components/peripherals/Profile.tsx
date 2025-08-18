@@ -1,7 +1,7 @@
 import React from "react";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
-import { formatValue, getTimeFromEpoch } from "../utilities";
+import { formatValue, getTimeFromEpoch, toBigInt } from "../utilities";
 import { useAccount } from "wagmi";
 import ClaimReward from "../transactions/ClaimReward";
 import { useMiniApp } from "@neynar/react";
@@ -94,18 +94,18 @@ function ProfileComponent(
                         </div>
                         <div className={`grid grid-cols-1 text-lg my-4 space-y-2 opacity-80 capitalize ${isEligible? 'text-cyan-900' : ''}`}>
                             <div className="flex justify-between gap-3 p-2">
-                                <BaggageClaim className={`w-5 h-5 text-gray-`} />
+                                <BaggageClaim className={`w-5 h-5 ${isEligible? 'text-green-600' : 'text-orange-600'}`} />
                                 <h3>{isEligible? 'Ready to claim' : 'Claim not Ready'}</h3>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Sorted date</h3>
                                 <h3>{getTimeFromEpoch(transitionDate)}</h3>
-                                <CountdownTimer notification="Eligibility activated" targetDate={BigInt(transitionDate)}/>
+                                <CountdownTimer notification="Eligibility activated" targetDate={toBigInt(transitionDate)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-">Claim ends: </h3>
                                 <h3>{getTimeFromEpoch(claimDeadline)}</h3>
-                                <CountdownTimer notification="Claim period expired" targetDate={BigInt(claimDeadline)}/>
+                                <CountdownTimer notification="Claim period expired" targetDate={toBigInt(claimDeadline)}/>
                             </div>
                             <div className="flex justify-between gap-3 p-2">
                                 <h3 className="text-gray-9">Reward: </h3>
@@ -197,6 +197,7 @@ function ProfileComponent(
                     campaigns={verificationMethods}
                     placeHolder="Select method"
                     width="w-"
+                    contentType="string"
                 />
             </div>
             {/* Action button */}
@@ -230,7 +231,6 @@ export default function Profile() {
     const { setpath, formattedData, sethash, setweekId, campaignStrings, wkId } = useStorage();
     const { context } = useMiniApp();
     const { isConnected } = useAccount();
-    
     const backToHome = () => {
         if(isConnected){
             setpath('dashboard');
@@ -296,6 +296,7 @@ export default function Profile() {
                             campaigns={campaignStrings}
                             placeHolder="Select campaign"
                             width="w-"
+                            contentType="string"
                         />
                     </div>
                     {/* User can view their profile in a selected campaign */}
@@ -306,6 +307,7 @@ export default function Profile() {
                             campaigns={weekIds}
                             placeHolder="Select campaign"
                             width="w-"
+                            contentType="string"
                         />
                     </div>
                 </div>

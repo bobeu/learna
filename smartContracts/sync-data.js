@@ -7,7 +7,7 @@ const path = require('path');
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
 const REACT_DATA_PATH = '../eduFi/contractsArtifacts';
 const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
-const approvedFunctions = ['checkEligibility', 'recordPoints', 'toggleAdminStatus', 'setAdmin', 'getAdmins', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'setClaim', 'isWalletVerificationRequired', 'balanceOf'];
+const approvedFunctions = ['checkEligibility', 'recordPoints', 'toggleAdminStatus', 'setAdmin', 'getAdmins', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'setClaim', 'isWalletVerificationRequired', 'balanceOf', 'delegateTransaction'];
 const readFunctions = ['getData', 'checkligibility', 'getAdmins', 'owner', 'allowance', 'configId', 'getVerificationStatus', '', 'balanceOf'];
 const functionsRequireArgUpdate = approvedFunctions;
 const chainName = {44787: 'alfajores', 42220: 'celo'};
@@ -104,7 +104,6 @@ try {
 
     });
     fs.writeFileSync(GLOBAL_OUTPUT_PATH, JSON.stringify(globalOutput, null, 2));
-    // console.log("StdOut", stdOut);
     console.log("✅ Data synchronization completed!");
 } catch (error) {
     console.error("❌ Error syncing ABIs:", error);

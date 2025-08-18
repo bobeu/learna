@@ -11,8 +11,10 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import AddressWrapper from "../AddressFormatter/AddressWrapper";
+import { zeroAddress } from "viem";
 
-export function SelectComponent({placeHolder, width, campaigns, title, setHash} : {placeHolder: string, campaigns: string[]; width?: string; setHash: (arg: string) => void; title?: string;}) {
+type ContentType = 'address' | 'string';
+export function SelectComponent({placeHolder, width, campaigns, title, setHash, contentType} : {placeHolder: string, campaigns: string[]; width?: string; contentType: ContentType; setHash: (arg: string) => void; title?: string;}) {
   const [mounted, setMounted] = React.useState<boolean>(false)
   const onChange = (value: string) => {
     setHash(value);
@@ -20,7 +22,17 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash} 
 
   React.useEffect(() => {
     if(!mounted){
-      setHash(campaigns?.[0] || 'mockHash');
+      let initContent = '';
+      switch (contentType) {
+        case 'address':
+          initContent = campaigns?.[0] || zeroAddress;
+          break;
+
+        default:
+          initContent = campaigns?.[0];
+          break;
+      }
+      setHash(initContent);
       setMounted(true);
     }
   }, [mounted, setHash, campaigns]);

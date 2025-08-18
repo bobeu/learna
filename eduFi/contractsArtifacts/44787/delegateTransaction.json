@@ -1,7 +1,7 @@
 {
   "contractAddress": "0xB090ee24C194abA566212BFBE643491fd5a26478",
-  "functionName": "setMinimumToken",
-  "inputCount": 1,
+  "functionName": "delegateTransaction",
+  "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {

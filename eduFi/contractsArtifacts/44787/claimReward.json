@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x57DfC153F3077D13b3B6E1c73B421d4Ce2c76D43",
+  "contractAddress": "0xd82b9d291AabBE57A62fab3aBA38C202a7ee50EC",
   "functionName": "claimReward",
   "inputCount": 0,
   "requireArgUpdate": true,

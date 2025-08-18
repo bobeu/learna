@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 
 import { ILearna } from "./interfaces/ILearna.sol";
 import { Admins } from "./Admins.sol";
-import { IGrowToken } from "./interfaces/IGrowToken.sol";
+import { IKnowToken } from "./interfaces/IKnowToken.sol";
 
 abstract contract Week is ILearna, Admins {
 
@@ -12,7 +12,7 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IGrowToken internal token;
+    IKnowToken internal token;
 
     ///@notice Claim address
     address public claim;
@@ -28,7 +28,8 @@ abstract contract Week is ILearna, Admins {
      * @param weekId : Week Id
      * @param hash_ : Hash of the claim
      */
-    function setIsClaimed(address user, uint weekId, bytes32 hash_) external whenNotPaused onlyApproved() {
+    // function _setIsClaimed(address user, uint weekId, bytes32 hash_) internal whenNotPaused onlyApproved() {
+    function _setIsClaimed(address user, uint weekId, bytes32 hash_) internal {
         if(!isClaimed[user][weekId][hash_]) isClaimed[user][weekId][hash_] = true;
     }
 
@@ -122,8 +123,8 @@ abstract contract Week is ILearna, Admins {
 
     /// @dev Update the token variable. Only-owner function
     function setToken(address _token) public onlyOwner returns(bool) {
-        require(_token != address(0), "Token is empty");
-        token = IGrowToken(_token);
+        require(_token != address(0), "Token is zero");
+        token = IKnowToken(_token);
         return true;
     }
 

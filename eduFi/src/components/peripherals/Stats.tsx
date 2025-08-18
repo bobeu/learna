@@ -5,7 +5,7 @@ import SortWeeklyPayout from "./inputs/SortWeeklyPayoutInfo";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
-import { filterWeekData, formatValue, getTimeFromEpoch, toBN } from "../utilities";
+import { filterWeekData, formatValue, getTimeFromEpoch, toBigInt, toBN } from "../utilities";
 import { Address, Campaign } from "../../../types/quiz";
 import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle, Box} from "lucide-react";
@@ -72,7 +72,7 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                     </div>
                     <div className="font-semibold text-gray-800 mb-1">
                         {getTimeFromEpoch(claimDeadline)}
-                        <CountdownTimer targetDate={BigInt(claimDeadline)} notification="Claim Ended" />
+                        <CountdownTimer targetDate={toBigInt(claimDeadline)} notification="Claim Ended" />
                     </div>
                     <div className="text-xs text-gray-600">Claimable until</div>
                 </div>
@@ -83,7 +83,7 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
                     </div>
                     <div className="font-semibold text-gra-800 mb-1">
                         {getTimeFromEpoch(transitionDate)}
-                        <CountdownTimer targetDate={BigInt(transitionDate)} notification="Sorting active"/>
+                        <CountdownTimer targetDate={toBigInt(transitionDate)} notification="Sorting active"/>
                     </div>
                     <div className="text-xs text-gray-600">Date until sorting active</div>
                 </div>
@@ -177,6 +177,7 @@ export default function Stats() {
         setweekId,
         state: { transitionInterval, weekId, transitionDate }
     } = useStorage();
+    // console.log("formattedData", totalPointsForACampaign)
 
     const { campaign, claimDeadline } = filterWeekData(weekData, requestedWkId, requestedHash);
     const account = useAccount().address as Address || zeroAddress;
@@ -287,6 +288,7 @@ export default function Stats() {
                             campaigns={campaignStrings}
                             placeHolder="Campaigns"
                             width="w-"
+                            contentType="string"
                         />
                     </div>
                     <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
@@ -296,6 +298,7 @@ export default function Stats() {
                             campaigns={weekIds}
                             placeHolder="Weeks"
                             width="w-"
+                            contentType="string"
                         />
                     </div>
                 </div>
@@ -307,6 +310,7 @@ export default function Stats() {
                             campaigns={campaign.users}
                             placeHolder="All Learners"
                             width="w-"
+                            contentType="address"
                         />
                     </div>
                      <div className="w-2/4 md:w-full space-y-2 text-start text-sm p-4 bg-white rounded-2xl">
@@ -327,7 +331,7 @@ export default function Stats() {
                 (userAdminStatus || owner?.toLowerCase() === account.toLowerCase()) && 
                     <div className="space-y-4 mt-4" >
                         <FeeManager />
-                        <ClaimContract />
+                        <ClaimContract erc20InContract={campaign.data.token} />
                         <SortWeeklyPayout /> 
                         <MinimumToken />
                         <TransitionInterval />
@@ -344,6 +348,7 @@ export default function Stats() {
                         setHash={setaction}
                         title="Contract execution state"
                         width="w-full"
+                        contentType="string"
                     />
                 </div>
             }

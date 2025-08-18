@@ -269,6 +269,7 @@ export default function Dashbaord() {
               placeHolder='Select campaign'
               setHash={setHash}
               width='w-full'
+              contentType='string'
             />
           </div>
         </div>

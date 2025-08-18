@@ -341,6 +341,7 @@ export default function Educaster() {
     }, []);
 
     const setstatUser = React.useCallback((arg: string) => {
+        // console.log("Arg", arg)
         setStatUser(arg as Address);
     }, []);
 
