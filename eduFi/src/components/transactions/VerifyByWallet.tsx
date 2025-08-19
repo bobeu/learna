@@ -13,7 +13,7 @@ export default function VerifyByWallet({openDrawer, toggleDrawer }: SetClaimProp
         const filtered = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['setClaim'],
+            functionNames: ['verify'],
             callback
         });
 
@@ -40,7 +40,7 @@ export default function VerifyByWallet({openDrawer, toggleDrawer }: SetClaimProp
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='setClaim'
+            lastStepInList='verify'
         />
     )
 }

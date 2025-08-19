@@ -56,28 +56,58 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`,
     },
-    reserve: {
+    t1: {
       default: 1,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xe5d as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xe5d as string}`
+    },
+    t2: {
+      default: 2,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xd53 as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xd53 as string}`
+    },
+    t3: {
+      default: 3,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_0x286a as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_0x286a as string}`
+    },
+    t4: {
+      default: 4,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xdd0 as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_0xdd0 as string}`
+    },
+    t5: {
+      default: 5,
+      44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
+    },
+    recorder: {
+      default: 0,
+      44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
+    },
+    reserve: {
+      default: 7,
       44787: `privatekey://${PRIVATE_KEY}`,
       42220: `privatekey://${PRIVATE_KEY_MAINNET}`
     },
     identityVerificationHub: {
-      default: 2,
+      default: 8,
       44787: '0x68c931C9a534D37aa78094877F46fE46a49F1A51',
       42220: '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF'
     },
     routeTo: {
-      default: 3,
+      default: 9,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_ROUTE_0x84F as string}`
     },
     admin: {
-      default: 4,
+      default: 1,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`
     },
     admin2: {
-      default: 5,
+      default: 2,
       44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
     }

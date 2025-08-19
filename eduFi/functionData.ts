@@ -19,7 +19,7 @@ import setConfigId44787 from "./contractsArtifacts/44787/setConfigId.json";
 import setScope44787 from "./contractsArtifacts/44787/setScope.json";
 import pause44787 from "./contractsArtifacts/44787/pause.json";
 import unpause44787 from "./contractsArtifacts/44787/unpause.json";
-import setClaim44787 from "./contractsArtifacts/44787/setClaim.json";
+import verify44787 from "./contractsArtifacts/44787/verify.json";
 import balanceOf44787 from "./contractsArtifacts/44787/balanceOf.json";
 import delegateTransaction44787 from "./contractsArtifacts/44787/delegateTransaction.json";
 
@@ -45,7 +45,7 @@ import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json"
 import configId42220 from "./contractsArtifacts/42220/configId.json";
 import setConfigId42220 from "./contractsArtifacts/42220/setConfigId.json";
 import setScope42220 from "./contractsArtifacts/42220/setScope.json";
-import setClaim42220 from "./contractsArtifacts/42220/setClaim.json";
+import verify42220 from "./contractsArtifacts/42220/verify.json";
 import balanceOf42220 from "./contractsArtifacts/42220/balanceOf.json";
 import delegateTransaction42220 from "./contractsArtifacts/42220/delegateTransaction.json";
 
@@ -77,7 +77,7 @@ const functionData = [
         { key: 'setConfigId', value: { ...setConfigId44787} },
         { key: 'setScope', value: { ...setScope44787} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus44787} },
-        { key: 'setClaim', value: { ...setClaim44787} },
+        { key: 'verify', value: { ...verify44787} },
         { key: 'balanceOf', value: { ...balanceOf44787} },
         { key: 'delegateTransaction', value: { ...delegateTransaction44787} },
     ],
@@ -103,7 +103,7 @@ const functionData = [
         { key: 'setConfigId', value: { ...setConfigId42220} },
         { key: 'setScope', value: { ...setScope42220} },
         { key: 'getVerificationStatus', value: { ...getVerificationStatus42220} },
-        { key: 'setClaim', value: { ...setClaim42220} },
+        { key: 'verify', value: { ...verify42220} },
         { key: 'balanceOf', value: { ...balanceOf42220} },
         { key: 'delegateTransaction', value: { ...delegateTransaction42220} },
     ]

@@ -2954,7 +2954,7 @@ pragma solidity 0.8.28;
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
+contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     enum Type { UNCLAIM, CLAIMED }

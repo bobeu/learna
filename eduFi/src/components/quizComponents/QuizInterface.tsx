@@ -128,7 +128,7 @@ export const QuizInterface = () => {
       },
       answers
     }
-    console.log("Reult", result.other.title);
+    // console.log("Reult", result.other.title);
     onComplete(result);
   };
 

@@ -1738,7 +1738,7 @@ library Utils {
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract Learna is Campaigns, ReentrancyGuard {
+contract LearnaFlattened is Campaigns, ReentrancyGuard {
     using Utils for uint96;
 
     Mode private mode;

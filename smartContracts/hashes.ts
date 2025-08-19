@@ -1,7 +1,11 @@
-import { Hex } from 'viem';
-// import { Hex, keccak256, stringToBytes } from 'viem';
+import { Hex, keccak256, stringToBytes } from 'viem';
+import type { QuizData, Quiz, Question, CategoryType, DifficultyLevel, QuizResultInput, AnswerInput, QuizResultOtherInput } from "./types";
+import assert from 'assert';
+import _d_ from "./_d_.json";
 // import { Campaigns } from "./typechain-types/contracts/Learna";
 
+const TOTAL_POINTS = 100;
+const TIME_PER_QUESTION = 0.4;
 export const campaignHashes = [
   '0xa477d97b122e6356d32a064f9ee824230d42d04c7d66d8e7d125a091a42b0b25',
   '0x443e20e50db22e9d9b71d12d2d6e67a50096909698e387edd5a38f71707fb1d4',
@@ -18,6 +22,140 @@ export const campaignHashes = [
   '0xc162469c13e9be46edb3d505b604b45100194a04c826d2f4a55f3ab391fb8267'
 ] as Hex[];
 
+export const CAMPAIGNS = [
+  'solidity',
+  'wagmi',
+  'reactjs',
+  'ethersjs',
+  'javascript',
+  'typescript',
+  'hardhat',
+  'farcaster',
+  'sdk',
+  'defi',
+  'celo',
+  'self-protocol-sdk',
+  'cryptocurrency'
+];
+
+/**
+ * @dev Load and prepare data from the JSON API
+ * @returns : Formatted data and categories
+ */
+export function loadData({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: CategoryType[], quizData: Quiz[] | null} {
+  const d : QuizData = { categories: _d_.categories, difficulties: _d_.difficulties, categoryData: _d_.categoryData } ;
+  const categories : CategoryType[] = d.categories.split(',') as CategoryType[];
+  const quizData : Quiz[] = [];
+
+  // Loop through the categories
+  d.categoryData.forEach(({category, levels, description}) => {
+    // Loop through the levels
+    levels.forEach(({questions, difficulty,}) => {
+      const qs : Question[] = [];
+      const questionSize = questions.length;
+      assert(totalPoints >= questionSize, "Totalpoints is invalid");
+      const points = totalPoints / questionSize;
+      const timeLimit = Math.ceil(timePerQuestion * questionSize);
+
+      // Run through the questions
+      questions.forEach(({answer, options, hash, question, explanation}, id) => {
+        const correctAnswer = 0;
+        qs.push({
+          id,
+          question,
+          options,
+          hash: `0x${hash}`,
+          correctAnswer: typeof answer === "number"? answer : options.indexOf(answer),
+          difficulty: difficulty as DifficultyLevel,
+          category,
+          points,
+          explanation:explanation === ""? `The answer to ${question} is ${options[correctAnswer]}` : explanation
+        })
+      });
+
+      quizData.push(
+        {
+          category,
+          description,
+          difficulty: difficulty as DifficultyLevel,
+          id: keccak256(stringToBytes(category)),
+          createdAt: new Date(),
+          questions:qs,
+          title: category,
+          totalPoints,
+          imageUrl: `/assets/${category}-${difficulty}.png`,
+          timeLimit
+        }
+      );
+
+    });
+  });
+  return {
+    quizData,
+    categories
+  };
+}
+
+export async function buildQuizInput(selectedCategory: string, selectedDifficulty: DifficultyLevel, correctAnswerCount: number) {
+  const startTime = Date.now();
+  const hashIndex = CAMPAIGNS.indexOf(selectedCategory);
+
+  const quizResult : QuizResultInput[] | undefined = loadData({timePerQuestion: TIME_PER_QUESTION, totalPoints: TOTAL_POINTS})
+    .quizData?.filter(
+      ({category, difficulty}) => category.toLowerCase() === selectedCategory.toLowerCase() && difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
+    ).map((quiz) => {
+    
+    const answers : AnswerInput[] = [];
+    let score = 0;
+    quiz.questions.forEach(
+      ({correctAnswer, points, hash}, i) => {
+        const userAnswer = i === correctAnswerCount? correctAnswer < 3? correctAnswer + 1 : correctAnswer - 1 : correctAnswer;
+        if(userAnswer === correctAnswer) score += points;
+        answers.push(
+            {
+            isUserSelected: true,
+            questionHash: hash,
+            selected: userAnswer
+          }
+        );
+      }
+    );
+    console.log("Answers", answers);
+    console.log("Score", score);
+
+    return {
+      other: {
+        score: Math.ceil(score),
+        totalPoints: quiz.totalPoints,
+        percentage: Math.round((score / quiz.totalPoints) * 100),
+        timeSpent: Math.round((Date.now() - startTime) / 1000),
+        completedAt: new Date().toString(),
+        quizId: quiz.id,
+        title: quiz.title,
+      },
+      answers
+    }
+  });
+
+  assert(quizResult !== undefined && quizResult?.length > 0)
+  const result = quizResult[0];
+  const resultOtherInput : QuizResultOtherInput = {
+    ...result.other,
+    id: Date.now().toString()
+  }
+  
+  const newResult: QuizResultInput= {
+    answers: result.answers,
+    other: resultOtherInput
+  };
+  console.log("New result", newResult);
+
+  return {
+    quizResult: newResult,
+    hash_: campaignHashes[hashIndex]
+  };
+} 
+
 // /**
 //  * @dev Dummy points data earned for each campaign
 //  * @param startPoint : Start amount
@@ -32,21 +170,6 @@ export const campaignHashes = [
 //     return result;
 // }
 
-export const CAMPAIGNS = [
-    'solidity',
-    'wagmi',
-    'reactjs',
-    'ethersjs',
-    'javascript',
-    'typescript',
-    'hardhat',
-    'farcaster',
-    'sdk',
-    'defi',
-    'celo',
-    'self-protocol-sdk',
-    'cryptocurrency'
-];
 
 // export function getCampaignHashes(campaignData: Campaigns.CampaignDataStructOutput[]) {
 //     let campaignHashes = campaignData.map(({campaignHash}) => campaignHash) as Hex[];
