@@ -40,7 +40,6 @@
     "42220": [
       "deployments\\celo\\Claim.json",
       "deployments\\celo\\FeeManager.json",
-      "deployments\\celo\\GrowToken.json",
       "deployments\\celo\\KnowToken.json",
       "deployments\\celo\\Learna.json"
     ],
@@ -63,7 +62,6 @@
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
       "Claim": "0x6457379559217e110135a4301Fd9E7F192Cc8A7f",
       "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",
-      "GrowToken": "0x4DaC0671376712689ce790f567bf508948A8eff3",
       "KnowToken": "0x424393F57dF25a67569F880eDA759eedb953E510",
       "Learna": "0x5A6E1AB9df1a304BA8EaCd0A68343A08452074C4"
     }

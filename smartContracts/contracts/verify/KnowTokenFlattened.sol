@@ -736,7 +736,7 @@ interface IKnowToken {
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract KnowTokenFlattened is IKnowToken, ERC20, Ownable {
+contract KnowToken is IKnowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
     address private mainContract;
 

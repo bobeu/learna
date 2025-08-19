@@ -47,7 +47,7 @@ import setConfigId42220 from "./contractsArtifacts/42220/setConfigId.json";
 import setScope42220 from "./contractsArtifacts/42220/setScope.json";
 import setClaim42220 from "./contractsArtifacts/42220/setClaim.json";
 import balanceOf42220 from "./contractsArtifacts/42220/balanceOf.json";
-// import delegateTransaction42220 from "./contractsArtifacts/42220/delegateTransaction.json";
+import delegateTransaction42220 from "./contractsArtifacts/42220/delegateTransaction.json";
 
 // Global data import
 import globalData from "./contractsArtifacts/global.json";
@@ -105,7 +105,7 @@ const functionData = [
         { key: 'getVerificationStatus', value: { ...getVerificationStatus42220} },
         { key: 'setClaim', value: { ...setClaim42220} },
         { key: 'balanceOf', value: { ...balanceOf42220} },
-        // { key: 'delegateTransaction', value: { ...delegateTransaction42220} },
+        { key: 'delegateTransaction', value: { ...delegateTransaction42220} },
     ]
 ];
 

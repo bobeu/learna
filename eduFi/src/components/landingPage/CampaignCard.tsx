@@ -17,7 +17,7 @@ export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, o
     const { activeLearners, lastUpdated, totalPoints, operator, token, fundsERC20, fundsNative } = campaign.data;
     const chainId = useChainId();
     const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
-    const growToken = ca.GrowToken as Address;
+    const knowToken = ca.KnowToken as Address;
 
     const getDifficultyColor = (difficulty: string) => {
         switch (difficulty) {
@@ -67,7 +67,7 @@ export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, o
             <div className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                 <h3>Funded in</h3>
                 <div className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                    { fundsERC20 > 0n && <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">{ token.toLowerCase() === growToken.toLowerCase()? 'GROW' : 'CUSD' }</span> }
+                    { fundsERC20 > 0n && <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">{ token.toLowerCase() === knowToken.toLowerCase()? 'GROW' : 'CUSD' }</span> }
                     { fundsNative > 0n && <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">CELO</span> }
                 </div>
             </div>
