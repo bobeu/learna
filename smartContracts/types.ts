@@ -2,43 +2,6 @@ import { Hex } from "viem";
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
-export type FunctionName = 
-  '' | 
-  'runall' | 
-  "checkEligibility"|
-  'recordPoints'|
-  'setAdmin'|
-  'getAdmins'|
-  'hasPassKey'|
-  'setTransitionInterval'|
-  'claimReward'|
-  'sortWeeklyReward'|
-  'adjustCampaignValues'|
-  'setUpCampaign'|
-  'getProfile'|
-  'getData'|
-  'owner'|
-  'allowance'|
-  'approve'|
-  'pause' | 
-  'unpause' |
-  'configId' |
-  'setConfigId' |
-  'getClaimable' |
-  'setScope' |
-  'verify' |
-  'verifyByApproved'|
-  'setPermission' |
-  'banOrUnbanUser'|
-  'getCampaingData' |
-  'getVerificationStatus' |
-  'balanceOf' |
-  'setMinimumToken';
-
-export type VoidFunc = () => void;
-export type ToggleDrawer = (value: number, setState: (value: number) => void) => (event: React.KeyboardEvent | React.MouseEvent) => void;
-export type Path = 'dashboard' | 'results' | 'review' | 'admin' | 'scores' | 'stats' | 'quiz' | 'home' | 'generateuserkey' | 'profile' | 'setupcampaign';
-// export type CData = CampaignHash[];
 
 export interface Question {
   id: number;
@@ -98,14 +61,6 @@ export interface AnswerOutput {
 export interface QuizResultOuput {
   answers: AnswerOutput[];
   other: QuizResultOtherOutput;
-}
-
-export interface UserStats {
-  totalQuizzes: number;
-  totalScore: number;
-  averageScore: number;
-  bestScore: number;
-  streak: number;
 }
 
 export interface Answer {
@@ -197,76 +152,6 @@ export interface ReadData {
   profileData: WeekProfileData[];
 }
 
-export type TransactionCallback = (arg: TrxState) => void;
-export type TransactionData = {
-  contractAddress: string;
-  inputCount: number;
-  functionName: string;
-  abi: any;
-  requireArgUpdate: boolean;
-};
-
-export interface TrxState {
-  message?: string;
-  errorMessage?: any;
-}
-
-export type FilterTransactionDataProps = {
-  chainId: number | undefined;
-  functionNames?: FunctionName[];
-  callback?: TransactionCallback;
-  filter: boolean;
-}
-
-export interface FormattedValue {
-  toStr: string;
-  toNum: number;
-}
-
-export interface GetFormattedCampaign {
-  hash_: Hex;
-  campaignName: string;
-  totalLearners: number;
-  fundsNative: FormattedValue;
-  fundsERC20: FormattedValue;
-  platform: FormattedValue;
-  lastUpdated: string;
-  totalPoints: {
-    toStr: string;
-    toNum: number;
-  };
-  operator: React.JSX.Element;
-  token: React.JSX.Element;
-  campaignSelector: React.JSX.Element;
-  users: Address[];
-}
-
-export interface ProfilePerReqWk {
-  hash: Hex;
-  eligibility: {
-    erc20: FormattedValue;
-    native: FormattedValue;
-    platform: FormattedValue;
-    protocolVerified: boolean;
-    token: JSX.Element;
-  },
-  profile: {
-    quizResults:  QuizResultOuput[];
-    erc20Claimed: FormattedValue;
-    nativeClaimed: FormattedValue;
-    amountMinted: FormattedValue;
-    haskey: boolean;
-    passkey: Hex;
-    totalQuizTaken: number;
-  },
-  selector: JSX.Element;
-}
-
-// export interface CampaignDatum {
-//   hash_: Address;
-//   campaign: string;
-// }
-
 export interface Eligibility {
   isEligible: boolean;
   erc20Amount: bigint;
@@ -317,20 +202,3 @@ export interface QuizData {
   categoryData: CategoryData[];
 }
 
-export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: [boolean, boolean];}
-export interface UseProfileType { inHash?: Hex, wkId?: number }
-export interface FormattedData {
-  statData: {
-    campaign: Campaign;
-    claimDeadline: number;
-    totalPoints: number;
-  };
-  isClaimed: boolean;
-  profile: ProfileOther;
-  eligibility: Eligibility;
-  requestedWeekId: bigint;
-  profileQuizzes: QuizResultOuput[];
-  showWithdrawalButton: boolean;
-  showVerificationButton: boolean;
-  totalPointsForACampaign: number;
-}

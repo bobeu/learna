@@ -173,7 +173,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         uint weekId = _getState().weekId;
         _validateCampaign(hash_, weekId);
         GetCampaign memory res = _getCampaign(weekId, hash_);
-        require(res.cp.data.token != address(0), "Token is empty");
+        require(res.cp.data.token != address(0), "Token is zero");
         require(IERC20(res.cp.data.token).balanceOf(claim) >= erc20Value, "ERC20Bal inconsistent");
         require(claim.balance >= nativeValue, "New value exceeds balance");
         res.cp.data.fundsERC20 = erc20Value;

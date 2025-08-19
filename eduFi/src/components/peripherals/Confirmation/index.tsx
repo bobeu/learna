@@ -65,7 +65,7 @@ export const Confirmation :
                    case 'recordPoints':
                        setpath('profile');
                        break;
-                   case 'setClaim':
+                   case 'verify':
                        setpath('profile');
                        break;
                    case 'sortWeeklyReward':
@@ -216,7 +216,7 @@ export const Confirmation :
             case 'setUpCampaign':
                 message = 'Setting up your campaign...';
                 break;
-            case 'setClaim':
+            case 'verify':
                 message = 'Setting up your claim...';
                 break;
         

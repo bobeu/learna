@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x5A6E1AB9df1a304BA8EaCd0A68343A08452074C4",
+  "contractAddress": "0x42B55484D8F550991820dC08C670f36C91325636",
   "functionName": "setMinimumToken",
   "inputCount": 1,
   "requireArgUpdate": true,

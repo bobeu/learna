@@ -1,9 +1,10 @@
 import { HardhatRuntimeEnvironment, } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
-import { CAMPAIGNS  } from "../hashes";
+import { buildQuizInput, CAMPAIGNS  } from "../hashes";
 import { toBigInt } from 'ethers';
-import { parseUnits } from 'viem';
+import { formatUnits, parseEther, parseUnits } from 'viem';
+import { DifficultyLevel, ReadData } from '../types';
 
 dotconfig();
 enum Mode { LOCAL, LIVE }
@@ -13,12 +14,34 @@ const SYMBOL = "KNOW";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
 	const {deploy, read, execute} = deployments;
-	let {deployer, reserve, routeTo, admin, admin2, identityVerificationHub } = await getNamedAccounts();
+	let {
+		t1, t2, t3, t4, t5,
+		recorder,
+		deployer, 
+		reserve, 
+		routeTo, 
+		admin, 
+		admin2, 
+		identityVerificationHub 
+	} = await getNamedAccounts();
+
 	let mode = Mode.LOCAL;
-	const minimumToken = parseUnits('15', 15);
+	const answerCount = [3, 2, 3, 1, 3];
+	const selectedCategories = ['solidity', 'wagmi', 'solidity', 'reactjs', 'celo'];
+	const selectedDifficulties : DifficultyLevel[] = ['easy', 'medium', 'hard', 'easy', 'medium'];
+	const testers = [t1, t2, t3, t4, t5].map((account, i) => {
+		return{
+			account,
+			correctAnswerCount: answerCount[i],
+			selectedCategory: selectedCategories[i],
+			selectedDifficulty: selectedDifficulties[i]
+		}
+	});
+	// const minimumToken = parseUnits('15', 15);
+	const minimumToken = parseUnits('0.001', 18);
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('16471696678327332985914775849278661918570336497884683710503370493117196254323') : BigInt('3542991684855835435683013465219636413780013744546190993182789701496969832366');
+	const scopeValue = networkName === 'alfajores'? BigInt('8357037332445845391300273215836313477662858825136795646264776763497500960591') : BigInt('9892191232128041141400406025255720980042155946518803651246392555443501561603');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2];
@@ -81,31 +104,70 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	console.log(`KnowToken deployed to: ${knowToken.address}`);
 	// await execute('Claim', {from: deployer}, 'toggleUseWalletVerification');
 	
-	const admins = await read("Learna", "getAdmins");
-	await execute('Learna', {from: deployer}, 'setPermission', claim.address);
-	await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
-	await execute('Learna', {from: deployer}, 'setToken', knowToken.address);
-	await execute('Learna', {from: deployer}, 'setMinimumToken', minimumToken);
-	await execute('Claim', {from: deployer}, 'setLearna', learna.address);
-	await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
-	await execute('Claim', {from: deployer}, 'setScope', scopeValue);
+	// await execute('Learna', {from: deployer}, 'setPermission', claim.address);
+	// await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
+	// await execute('Learna', {from: deployer}, 'setToken', knowToken.address);
+	// await execute('Learna', {from: deployer}, 'setMinimumToken', minimumToken);
+	// await execute('Claim', {from: deployer}, 'setLearna', learna.address);
+	// await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
+	// await execute('Claim', {from: deployer}, 'setScope', scopeValue);
 
-	for(let i = 0; i < newAdmins.length; i++) {
-		await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
-	}
+	// for(let i = 0; i < newAdmins.length; i++) {
+	// 	await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
+	// }
 
-	// const amount = parseUnits('165', 17)
+	// Withdraw from the fee manager
+	// const amount = parseUnits('0.175', 18)
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 
+	// Take quizzes and record scores
+	const verificationStatuses : {account: string, isVerified: boolean}[] = [];
+	// console.log("Testers", testers);
+	for(let i = 0; i < testers.length; i++){
+		const tester = testers[i];
+		const { quizResult, hash_ } = await buildQuizInput(tester.selectedCategory, tester.selectedDifficulty, tester.correctAnswerCount);
+		console.log("tester.account", tester.account, `account ${i + 1}`);
+		try {
+			await execute('Learna', {from: tester.account, value: minimumToken.toString()}, 'delegateTransaction');
+			await execute('Learna', {from: recorder}, 'recordPoints', tester.account, quizResult, hash_);
+		} catch (error) {
+			console.error("Error executing transactions for tester:", tester.account, error);
+		}
+		const statuses = await read("Claim", "getVerificationStatus", tester.account) as boolean[];
+		// console.log("Statuses", statuses);
+		verificationStatuses.push({
+			account: tester.account,
+			isVerified: statuses[0]
+		})
+	}
+	
+	// Sort weekly reward
+	// const amountInKnowToken = parseEther('10');
+	// const newIntervalInMin = networkName === 'alfajores'? 25 : 1440;
+	// await execute('Learna', {from: deployer}, 'sortWeeklyReward', amountInKnowToken, newIntervalInMin);
+
+	// Verify identity and claim reward
+	// for(let i = 0; i < verificationStatuses.length; i++) {
+	// 	const tester = verificationStatuses[i];
+	// 	if(!tester.isVerified) {
+	// 		await execute('Claim', {from: tester.account}, 'verify');
+	// 	}
+	// 	await execute('Claim', {from: tester.account}, 'claimReward');
+	// }
+
+	// Read actions
+	const admins = await read("Learna", "getAdmins");
 	const isWalletVerificationRequired = await read('Claim', 'isWalletVerificationRequired');
 	const config = await read('Claim', 'configId');
 	const scope = await read('Claim', 'scope');
+	const stateData = await read('Learna', 'getData', deployer) as ReadData;
 
 	console.log("scope", toBigInt(scope.toString()));
 	console.log("isWalletVerificationRequired", isWalletVerificationRequired);
 	console.log("config", config);
 	console.log("isAdmin1", admins?.[0].active);
 	console.log("isAdmin2", admins?.[1].active);
+	console.log("Minimum token", formatUnits(BigInt(stateData?.state?.minimumToken?.toString()), 18));
 	
 }
 export default func;
