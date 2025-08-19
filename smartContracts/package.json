@@ -13,7 +13,7 @@
     "watch": "node scripts/watch.js",
     "flearna": "npx hardhat flatten contracts/Learna.sol > contracts/verify/LearnaFlattened.sol",
     "fclaim": "npx hardhat flatten contracts/Claim.sol > contracts/verify/ClaimFlattened.sol",
-    "ftoken": "npx hardhat flatten contracts/GrowToken.sol > contracts/verify/GrowTokenFlattened.sol",
+    "ftoken": "npx hardhat flatten contracts/KnowToken.sol > contracts/verify/KnowTokenFlattened.sol",
     "sync:data": "node sync-data.js",
     "tsc": "npx tsc -p . && cp typechain/*.d.ts dist/typechain/",
     "build": "yarn compile && yarn tsc",

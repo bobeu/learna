@@ -2931,8 +2931,8 @@ interface ILearna {
         bytes32[] campaigns;
     }
 
-    function checkEligibility(address user) external view returns (Eligibilities[] memory);
-    function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
+    function checkEligibility(address user) external view returns (Eligibilities memory);
+    // function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
     function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool);
     function getPlatformToken() external view returns(address);
     function onCampaignValueChanged(
@@ -2940,7 +2940,8 @@ interface ILearna {
         bytes32 hash_, 
         uint256 fundsNative, 
         uint256 fundsERC20,
-        uint256 platformToken
+        uint256 platformToken,
+        address user
     ) external;
 }
 
@@ -2953,7 +2954,7 @@ pragma solidity 0.8.28;
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
+contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     enum Type { UNCLAIM, CLAIMED }
@@ -3002,9 +3003,7 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
      * @notice We set the scope to zero value hoping to set the real value immediately after deployment. This saves 
      * us the headache of generating the contract address ahead of time 
      */
-    constructor(address identityVerificationHubAddress)
-        SelfVerificationRoot(identityVerificationHubAddress, 0)
-    {
+    constructor(address identityVerificationHubAddress) SelfVerificationRoot(identityVerificationHubAddress, 0) {
         isWalletVerificationRequired = true; 
     }
 
@@ -3074,31 +3073,28 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
      */
     function claimReward() external nonReentrant returns(bool) {
         address user = _msgSender();
-        ILearna.Eligibilities[] memory unclaims = learna.checkEligibility(user);
+        ILearna.Eligibilities memory unclaims = learna.checkEligibility(user);
         require(isVerified[user] && !blacklisted[user], "Not verified or blacklisted");
-        require(unclaims.length > 0, "Nothing to claim");
-        for(uint i = 0; i < unclaims.length; i++) {
-            ILearna.Eligibilities memory claims = unclaims[i];
-            for(uint j = 0; j < claims.elgs.length; j++) {
-                ILearna.Eligibility memory claim = claims.elgs[j];
-                if(!learna.hasClaimed(user, claims.weekId, claim.hash_)) {
-                    if(claim.isEligible){
-                        learna.setIsClaimed(user, claims.weekId, claim.hash_);
-                        learna.onCampaignValueChanged(claim.weekId, claim.hash_, claim.nativeAmount, claim.erc20Amount, claim.platform);
-                        if(claim.nativeAmount > 0) {
-                            _claimNativeToken(user, claim.nativeAmount);
-                        }
-                        if(claim.erc20Amount > 0) {
-                            _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
-                        } 
-                        if(claim.platform > 0) {
-                            _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
-                        }
+        require(unclaims.elgs.length > 0, "Nothing to claim");
+        uint weekId = unclaims.weekId;
+        for(uint j = 0; j < unclaims.elgs.length; j++) {
+            ILearna.Eligibility memory claim = unclaims.elgs[j];
+            if(!learna.hasClaimed(user, weekId, claim.hash_)) {
+                if(claim.isEligible){
+                    learna.onCampaignValueChanged(weekId, claim.hash_, claim.nativeAmount, claim.erc20Amount, claim.platform, user);
+                    if(claim.nativeAmount > 0) {
+                        _claimNativeToken(user, claim.nativeAmount);
+                    }
+                    if(claim.erc20Amount > 0) {
+                        _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
+                    } 
+                    if(claim.platform > 0) {
+                        _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
                     }
                 }
             }
         }
-        // learna.onClaimed(claims, weekId, user);
+
         return true; 
     }
 
