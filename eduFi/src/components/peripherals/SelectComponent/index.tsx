@@ -35,7 +35,7 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash, 
       setHash(initContent);
       setMounted(true);
     }
-  }, [mounted, setHash, campaigns]);
+  }, [mounted, contentType, setHash, campaigns]);
 
   return (
   <Select onValueChange={onChange} defaultValue={campaigns?.[0]}>
