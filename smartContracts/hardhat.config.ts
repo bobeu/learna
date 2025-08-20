@@ -81,6 +81,21 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
     },
+    t6: {
+      default: 6,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`
+    },
+    t7: {
+      default: 7,
+      44787: `privatekey://${process.env.P_KEY_0x84F as string}`,
+      42220: `privatekey://${process.env.P_KEY_0x84F as string}`
+    },
+    t8: {
+      default: 8,
+      44787: `privatekey://${process.env.P_KEY_0xC0F as string}`,
+      42220: `privatekey://${process.env.P_KEY_0xC0F as string}`
+    },
     recorder: {
       default: 0,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,

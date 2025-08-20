@@ -48,7 +48,7 @@ export function CampaignMap(
                 <SelectGroup>
                 <SelectLabel>Campaigns</SelectLabel>
                 {
-                    (campaignData && campaignData.length > 0)? campaignData?.map((data, index) => (
+                    (campaignData && campaignData.length > 0)? campaignData?.filter((data) => data.campaign !== '').map((data, index) => (
                         <SelectItem
                             key={data.campaign.concat(index.toString())} 
                             value={data.campaign} 

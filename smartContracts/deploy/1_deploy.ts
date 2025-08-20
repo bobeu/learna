@@ -3,7 +3,7 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
 import { buildQuizInput, CAMPAIGNS  } from "../hashes";
 import { toBigInt } from 'ethers';
-import { formatUnits, parseEther, parseUnits } from 'viem';
+import { formatUnits, parseEther, parseUnits, zeroAddress } from 'viem';
 import { DifficultyLevel, ReadData } from '../types';
 
 dotconfig();
@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
 	const {deploy, read, execute} = deployments;
 	let {
-		t1, t2, t3, t4, t5,
+		t1, t2, t3, t4, t5, t6, t7, t8,
 		recorder,
 		deployer, 
 		reserve, 
@@ -26,10 +26,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	} = await getNamedAccounts();
 
 	let mode = Mode.LOCAL;
-	const answerCount = [3, 2, 3, 1, 3];
-	const selectedCategories = ['solidity', 'wagmi', 'solidity', 'reactjs', 'celo'];
-	const selectedDifficulties : DifficultyLevel[] = ['easy', 'medium', 'hard', 'easy', 'medium'];
-	const testers = [t1, t2, t3, t4, t5].map((account, i) => {
+	const answerCount = [3, 2, 3, 1, 3, 3, 2, 1, 3, 2];
+	const selectedCategories = ['celo', 'reactjs', 'wagmi', 'solidity', 'wagmi', 'reactjs', 'solidity', 'celo', 'solidity', 'celo'];
+	// const selectedCategories = ['wagmi', 'solidity', 'reactjs', 'wagmi', 'solidity', 'celo', 'wagmi', 'wagmi', 'celo', 'wagmi'];
+	// const selectedCategories = ['solidity', 'wagmi', 'solidity', 'reactjs', 'celo', 'solidity', 'celo', 'reactjs', 'divvi', 'solidity'];
+
+	const selectedDifficulties : DifficultyLevel[] = ['medium', 'easy', 'medium', 'hard', 'easy', 'easy', 'hard', 'easy', 'hard', 'medium'];
+	// const selectedDifficulties : DifficultyLevel[] = ['easy', 'medium', 'hard', 'easy', 'medium', 'hard', 'medium', 'hard', 'medium', 'hard'];
+	// const selectedDifficulties : DifficultyLevel[] = ['hard', 'hard', 'easy', 'medium', 'hard', 'medium', 'easy', 'medium', 'easy', 'hard'];
+
+	const testers = [t1, t2, t3, t4, t5, t6, t7, t8, deployer, routeTo].map((account, i) => {
 		return{
 			account,
 			correctAnswerCount: answerCount[i],
@@ -116,44 +122,60 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 	await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
 	// }
 
-	// Withdraw from the fee manager
-	// const amount = parseUnits('0.175', 18)
+	///////////////////////// Withdraw from the fee manager ///////////////////////////////////////
+	// const amount = parseUnits('0.342', 18)
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 
-	// Take quizzes and record scores
-	const verificationStatuses : {account: string, isVerified: boolean}[] = [];
-	// console.log("Testers", testers);
-	for(let i = 0; i < testers.length; i++){
-		const tester = testers[i];
-		const { quizResult, hash_ } = await buildQuizInput(tester.selectedCategory, tester.selectedDifficulty, tester.correctAnswerCount);
-		console.log("tester.account", tester.account, `account ${i + 1}`);
-		try {
-			await execute('Learna', {from: tester.account, value: minimumToken.toString()}, 'delegateTransaction');
-			await execute('Learna', {from: recorder}, 'recordPoints', tester.account, quizResult, hash_);
-		} catch (error) {
-			console.error("Error executing transactions for tester:", tester.account, error);
-		}
-		const statuses = await read("Claim", "getVerificationStatus", tester.account) as boolean[];
-		// console.log("Statuses", statuses);
-		verificationStatuses.push({
-			account: tester.account,
-			isVerified: statuses[0]
-		})
-	}
+	////////////////////////////// Take quizzes and record scores/////////////////////////////////
+	// for(let i = 0; i < testers.length; i++){
+	// 	const tester = testers[i];
+	// 	const { quizResult, hash_ } = await buildQuizInput(tester.selectedCategory, tester.selectedDifficulty, tester.correctAnswerCount);
+	// 	console.log("tester", tester.account, `account ${i + 1}`);
+	// 	try {
+	// 		await execute('Learna', {from: tester.account, value: minimumToken.toString()}, 'delegateTransaction');
+	// 		await execute('Learna', {from: deployer}, 'recordPoints', tester.account, quizResult, hash_);
+	// 	} catch (error) {
+	// 		console.log("Error executing transactions for tester:", tester.account, error?.message || error?.reason || error?.data?.message || error?.data?.reason);
+	// 	}
+		
+	// }
+
+	///////////////////// Set up and fund campaign /////////////////////////////////////
+	// for(let i = 0; i < selectedCategories.length; i++) {
+	// 	const unit = 100 / 1;
+	// 	const amount = parseUnits(unit.toString(), 18);
+	// 	const celoValue = parseUnits('1', 18).toString();
+	// 	const campaign = selectedCategories[i];
+	// 	await execute('Learna', {from: deployer, value: celoValue}, 'setUpCampaign', campaign, amount, zeroAddress);
+	// }
 	
 	// Sort weekly reward
-	// const amountInKnowToken = parseEther('10');
-	// const newIntervalInMin = networkName === 'alfajores'? 25 : 1440;
+	const amountInKnowToken = parseEther('10'); // 10 KNOW tokens
+	// const newIntervalInMin = networkName === 'alfajores'? 25 : 1440; // 25 mins for testnet : 1 day for mainnet
 	// await execute('Learna', {from: deployer}, 'sortWeeklyReward', amountInKnowToken, newIntervalInMin);
 
-	// Verify identity and claim reward
-	// for(let i = 0; i < verificationStatuses.length; i++) {
-	// 	const tester = verificationStatuses[i];
-	// 	if(!tester.isVerified) {
-	// 		await execute('Claim', {from: tester.account}, 'verify');
-	// 	}
-	// 	await execute('Claim', {from: tester.account}, 'claimReward');
-	// }
+	/////////////////////////// Verify identity and claim reward ////////////////////////////
+	const verificationStatuses : {account: string, isVerified: boolean, isBlacklisted: boolean}[] = [];
+	const users = testers.slice(0, testers.length/2);
+	// const users = testers.slice(testers.length/2);
+	for(let i = 0; i < users.length; i++) {
+		const user = users[i];
+		const [isVerified, isBlacklisted] = await read("Claim", "getVerificationStatus", user.account) as boolean[];
+		verificationStatuses.push({
+			account: user.account,
+			isVerified,
+			isBlacklisted
+		})
+		try {
+			if(!isVerified && !isBlacklisted) {
+				await execute('Claim', {from: user.account}, 'verify');
+			}
+			await execute('Claim', {from: user.account}, 'claimReward');
+		} catch (error) {
+			console.log("Error executing transactions for user:", user.account, error?.message || error?.reason || error?.data?.message || error?.data?.reason);
+		}
+
+	}
 
 	// Read actions
 	const admins = await read("Learna", "getAdmins");
