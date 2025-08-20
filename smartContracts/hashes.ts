@@ -120,8 +120,8 @@ export async function buildQuizInput(selectedCategory: string, selectedDifficult
         );
       }
     );
-    console.log("Answers", answers);
-    console.log("Score", score);
+    // console.log("Answers", answers);
+    // console.log("Score", score);
 
     return {
       other: {
@@ -148,7 +148,7 @@ export async function buildQuizInput(selectedCategory: string, selectedDifficult
     answers: result.answers,
     other: resultOtherInput
   };
-  console.log("New result", newResult);
+  // console.log("New result", newResult);
 
   return {
     quizResult: newResult,

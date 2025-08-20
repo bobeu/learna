@@ -14,6 +14,7 @@
     "flearna": "npx hardhat flatten contracts/Learna.sol > contracts/verify/LearnaFlattened.sol",
     "fclaim": "npx hardhat flatten contracts/Claim.sol > contracts/verify/ClaimFlattened.sol",
     "ftoken": "npx hardhat flatten contracts/KnowToken.sol > contracts/verify/KnowTokenFlattened.sol",
+    "flat-all": "yarn flearna && yarn fclaim && yarn ftoken",
     "sync:data": "node sync-data.js",
     "tsc": "npx tsc -p . && cp typechain/*.d.ts dist/typechain/",
     "build": "yarn compile && yarn tsc",
@@ -57,5 +58,5 @@
     "viem": "^2.7.6",
     "web3": "^1.0.0-beta.36"
   },
-  "author": "simplifinance"
+  "author": "Bobeu"
 }

@@ -3105,7 +3105,7 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
      * user cannot make eligibity check twice in the same week. 
      * Note: User cannot verify eligibility for a week twice.
      */
-    function _setClaim(address user) internal {
+    function _verify(address user) internal {
         require(user != address(0), "Zero address");
         require(!blacklisted[user], "Blacklisted user");
         require(!isVerified[user], "Already verified");
@@ -3118,8 +3118,8 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
-    function setClaim() external whenWalletRequired returns(bool) {
-        _setClaim(_msgSender());
+    function verify() external whenWalletRequired returns(bool) {
+        _verify(_msgSender());
         return true;
     }
  
@@ -3130,8 +3130,8 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
      * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
      * Must not be using Self verification.
      */
-    function setClaim(address user) external whenWalletRequired onlyApproved returns(bool) {
-        _setClaim(user);
+    function verifyByApproved(address user) external whenWalletRequired onlyApproved returns(bool) {
+        _verify(user);
         return true;
     }
  
@@ -3152,7 +3152,7 @@ contract ClaimFlattened is SelfVerificationRoot, Admins, ReentrancyGuard {
             require(ofacs[i], "Sanction individual");
         }
  
-        _setClaim(user);
+        _verify(user);
 
         emit UserIdentifierVerified(user);
     }

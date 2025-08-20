@@ -14,11 +14,12 @@ import AddressWrapper from "../AddressFormatter/AddressWrapper";
 import { zeroAddress } from "viem";
 
 type ContentType = 'address' | 'string';
-export function SelectComponent({placeHolder, width, campaigns, title, setHash, contentType} : {placeHolder: string, campaigns: string[]; width?: string; contentType: ContentType; setHash: (arg: string) => void; title?: string;}) {
+export function SelectComponent({placeHolder, width, campaigns: cmps, title, setHash, contentType} : {placeHolder: string, campaigns: string[]; width?: string; contentType: ContentType; setHash: (arg: string) => void; title?: string;}) {
   const [mounted, setMounted] = React.useState<boolean>(false)
   const onChange = (value: string) => {
     setHash(value);
   }
+  const campaigns = cmps?.filter(campaign => campaign !== '');
 
   React.useEffect(() => {
     if(!mounted){
@@ -29,7 +30,7 @@ export function SelectComponent({placeHolder, width, campaigns, title, setHash, 
           break;
 
         default:
-          initContent = campaigns?.[0];
+          initContent = campaigns?.[0] || 'empty';
           break;
       }
       setHash(initContent);
