@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x3046e76d04AF312DD8ede8d3541E1c1A365dc5C6",
+  "contractAddress": "0x3b2319c71Afa90519FC09C446CCa20Aca444FF4e",
   "functionName": "recordPoints",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -1567,7 +1567,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "amountInKnowToken",
+          "name": "amountInBrainToken",
           "type": "uint256"
         },
         {

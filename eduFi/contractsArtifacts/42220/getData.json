@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x42B55484D8F550991820dC08C670f36C91325636",
+  "contractAddress": "0x666d03a9147D6c04EA077CFFe1AD14b7919049EF",
   "functionName": "getData",
   "inputCount": 1,
   "requireArgUpdate": true,

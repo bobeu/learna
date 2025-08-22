@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x87B2d348a876B813a754C8d4D6A05Ab568F3e044",
+  "contractAddress": "0xa031aFf2CD53A5e52698AFbccA7E81f9861a6381",
   "functionName": "claimReward",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -239,19 +239,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "registeredUserIdentifier",
-          "type": "address"
-        }
-      ],
-      "name": "UserIdentifierVerified",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "address[]",
           "name": "users",
@@ -265,6 +252,19 @@
         }
       ],
       "name": "UserStatusChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "registeredUserIdentifier",
+          "type": "address"
+        }
+      ],
+      "name": "UserVerified",
       "type": "event"
     },
     {

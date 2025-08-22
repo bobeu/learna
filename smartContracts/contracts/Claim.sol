@@ -7,7 +7,6 @@ import { AttestationId } from "@selfxyz/contracts/contracts/constants/Attestatio
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ILearna } from "./interfaces/ILearna.sol";
-import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import { Admins } from "./Admins.sol";
 
 /**
@@ -34,7 +33,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     error UserIdentifierAlreadyVerified();
 
     // Events
-    event UserIdentifierVerified(address indexed registeredUserIdentifier);
+    event UserVerified(address indexed registeredUserIdentifier);
     event MerkleRootUpdated(bytes32 newMerkleRoot);
 
     // Learna contract
@@ -214,7 +213,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
  
         _verify(user);
 
-        emit UserIdentifierVerified(user);
+        emit UserVerified(user);
     }
 
     /**

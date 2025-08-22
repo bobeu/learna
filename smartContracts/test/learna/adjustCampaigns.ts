@@ -13,17 +13,17 @@ describe("Learna", function () {
   
   describe("Setup campaigns", function () { 
     it("Should setup and fund campaign successfully", async function () {
-      const { learna, knowToken, learnaAddr, signers : { signer1, admin2, signer1Addr, deployer }, knowTokenAddr} = await loadFixture(deployContractsFixcture);
+      const { learna, BrainToken, learnaAddr, signers : { signer1, admin2, signer1Addr, deployer }} = await loadFixture(deployContractsFixcture);
       let fundERC20 = parseEther('5');
       let value = parseEther('1');
       const { allCampaign } = await getCampaigns(learna);
       const campaignHash = allCampaign[0].hash_ as Address;
       const erc20Amount = fundERC20;
-      await knowToken.connect(deployer).transfer(signer1Addr, erc20Amount)
-      await knowToken.connect(signer1).approve(learnaAddr, erc20Amount);
+      await BrainToken.connect(deployer).transfer(signer1Addr, erc20Amount)
+      await BrainToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const campaign = campaigns[0];
       // const campaignHash = keccak256(stringToBytes(campaign));
-      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign, fundERC20, token: knowToken, value});
+      const {campaigns: cp} = await setUpCampaign({learna, signer: signer1, campaign, fundERC20, token: BrainToken, value});
       // const { campaignData } = await getCampaigns(learna);
       const newErc20Values = fundERC20 / 2n;
 

@@ -4,10 +4,13 @@ import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { APP_DESCRIPTION, APP_URL } from "~/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
-import { celoAlfajores, celo } from 'wagmi/chains';
+import { celoAlfajores, celo, celoSepolia } from 'wagmi/chains';
 
 // Your walletconnect project Id
-const projectId = String(process.env.NEXT_PUBLIC_PROJECT_ID);
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
+const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
+const alchemy_alfajores_api = process.env.NEXT_PUBLIC_ALCHEMY_CELOALFAJORES_API as string;
+const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
 
 if (!projectId) throw new Error('Project ID is undefined');
 
@@ -51,7 +54,7 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
 }
 
 export default function Provider({ children }: { children: React.ReactNode }) {
-  // Load the defaut config from RainbowKit
+  // Load the default config from RainbowKit
   const config = getDefaultConfig({
     appName: 'Learna',
     projectId,
@@ -64,8 +67,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     pollingInterval: 10_000,
     syncConnectedChain: true,
     transports: {
-      [celoAlfajores.id]: http(),
-      [celo.id]: http(),
+      [celoAlfajores.id]: http(alchemy_alfajores_api),
+      [celo.id]: http(alchemy_celo_api),
+      [celoSepolia.id]: http(alchemy_celosepolia_api),
     },
   });
 

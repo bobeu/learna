@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { IKnowToken } from "./interfaces/IKnowToken.sol";
 import { Utils } from "./libraries/Utils.sol";
 import { Campaigns, IERC20 } from "./Campaigns.sol";
 
@@ -257,20 +256,20 @@ contract Learna is Campaigns, ReentrancyGuard {
      /**
      * @dev Allocate weekly earnings
      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
-     * @param amountInKnowToken : Amount to allocate in GROW token
+     * @param amountInBrainToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(uint amountInKnowToken, uint32 newIntervalInMin) 
+    function sortWeeklyReward(uint amountInBrainToken, uint32 newIntervalInMin) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInKnowToken, _callback);
-        if(amountInKnowToken > 0) {
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInBrainToken, _callback);
+        if(amountInBrainToken > 0) {
             require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInKnowToken, claim), 'Allocation failed');
+            require(token.allocate(amountInBrainToken, claim), 'Allocation failed');
         }
 
         emit Sorted(currentWk, newWk, cData);  

@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 
 import { ILearna } from "./interfaces/ILearna.sol";
 import { Admins } from "./Admins.sol";
-import { IKnowToken } from "./interfaces/IKnowToken.sol";
+import { IBrainToken } from "./interfaces/IBrainToken.sol";
 
 abstract contract Week is ILearna, Admins {
 
@@ -12,7 +12,7 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IKnowToken internal token;
+    IBrainToken internal token;
 
     ///@notice Claim address
     address public claim;
@@ -124,7 +124,7 @@ abstract contract Week is ILearna, Admins {
     /// @dev Update the token variable. Only-owner function
     function setToken(address _token) public onlyOwner returns(bool) {
         require(_token != address(0), "Token is zero");
-        token = IKnowToken(_token);
+        token = IBrainToken(_token);
         return true;
     }
 

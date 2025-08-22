@@ -96,6 +96,11 @@ const config: HardhatUserConfig = {
       44787: `privatekey://${process.env.P_KEY_0xC0F as string}`,
       42220: `privatekey://${process.env.P_KEY_0xC0F as string}`
     },
+    t9: {
+      default: 8,
+      44787: `privatekey://${process.env.PRIVATE_KEY_MAIN_0xa1f as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_MAIN_0xa1f as string}`
+    },
     recorder: {
       default: 0,
       44787: `privatekey://${process.env.PRIVATE_KEY_0xC0F as string}`,
@@ -125,7 +130,12 @@ const config: HardhatUserConfig = {
       default: 2,
       44787: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
-    }
+    },
+    farc: {
+      default: 6,
+      44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`,
+      42220: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`
+    },
   },
 
   solidity: {
