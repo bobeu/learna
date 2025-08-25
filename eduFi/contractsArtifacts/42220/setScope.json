@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x87B2d348a876B813a754C8d4D6A05Ab568F3e044",
+  "contractAddress": "0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d",
   "functionName": "setScope",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -22,21 +22,6 @@
     },
     {
       "inputs": [],
-      "name": "AlreadyClaimed",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ClaimUnsuccessful",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "EligibilityCheckDenied",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "EnforcedPause",
       "type": "error"
     },
@@ -52,32 +37,7 @@
     },
     {
       "inputs": [],
-      "name": "InvalidProof",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidUserIdentifier",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NationalityRequired",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "NativeClaimUnsuccessful",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NoClaimable",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotVerified",
       "type": "error"
     },
     {
@@ -120,22 +80,7 @@
     },
     {
       "inputs": [],
-      "name": "TokenIsZeroAddress",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "UnauthorizedCaller",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "UserIdentifierAlreadyVerified",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "WeekNotReady",
       "type": "error"
     },
     {
@@ -149,19 +94,6 @@
         }
       ],
       "name": "Approval",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "newMerkleRoot",
-          "type": "bytes32"
-        }
-      ],
-      "name": "MerkleRootUpdated",
       "type": "event"
     },
     {
@@ -239,19 +171,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "registeredUserIdentifier",
-          "type": "address"
-        }
-      ],
-      "name": "UserIdentifierVerified",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "address[]",
           "name": "users",
@@ -265,6 +184,19 @@
         }
       ],
       "name": "UserStatusChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "registeredUserIdentifier",
+          "type": "address"
+        }
+      ],
+      "name": "UserVerified",
       "type": "event"
     },
     {
@@ -341,17 +273,17 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "destinationChainId",
+          "name": "",
           "type": "bytes32"
         },
         {
           "internalType": "bytes32",
-          "name": "userIdentifier",
+          "name": "",
           "type": "bytes32"
         },
         {
           "internalType": "bytes",
-          "name": "userDefinedData",
+          "name": "",
           "type": "bytes"
         }
       ],

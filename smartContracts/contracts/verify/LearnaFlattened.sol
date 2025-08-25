@@ -1,4 +1,4 @@
-// Sources flattened with hardhat v2.26.1 https://hardhat.org
+// Sources flattened with hardhat v2.26.3 https://hardhat.org
 
 // SPDX-License-Identifier: MIT
 
@@ -979,13 +979,13 @@ abstract contract Admins is Approved {
 }
 
 
-// File contracts/interfaces/IKnowToken.sol
+// File contracts/interfaces/IGrowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
 
-interface IKnowToken {
+interface IGrowToken {
     function allocate(uint amount, address to) external returns(bool);
     function burn(address holder, uint amount) external returns(bool);
 }
@@ -1183,7 +1183,7 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IKnowToken internal token;
+    IGrowToken internal token;
 
     ///@notice Claim address
     address public claim;
@@ -1276,14 +1276,18 @@ abstract contract Week is ILearna, Admins {
      * @notice Transition interval will always reset the transition date 
     */
     function setTransitionInterval(uint32 interval) public onlyOwner {
-        if(interval > 0) state.transitionInterval = interval * 1 minutes;
+        unchecked {
+            if(interval > 0) state.transitionInterval = interval * 1 minutes;
+        }
     }
 
     /**
      * @dev Transition to a new week and return the new week Id
      */
     function _transitionToNewWeek() internal returns(uint newWeekId) {
-        state.weekId ++;
+        unchecked {
+            state.weekId ++;
+        }
         newWeekId = state.weekId;
     }
 
@@ -1295,7 +1299,7 @@ abstract contract Week is ILearna, Admins {
     /// @dev Update the token variable. Only-owner function
     function setToken(address _token) public onlyOwner returns(bool) {
         require(_token != address(0), "Token is zero");
-        token = IKnowToken(_token);
+        token = IGrowToken(_token);
         return true;
     }
 
@@ -1572,36 +1576,38 @@ abstract contract Campaigns is Week {
      */
     function _bringForward(uint weekEnded, uint newWeek, bytes32 hash_) internal {
         GetCampaign memory prevWk;
-        if(weekEnded > 0){
-            uint prevWkId = weekEnded - 1;
-            // If the week ended is greater than 0, then we can bring forward the funds
-            prevWk = _getCampaign(prevWkId, hash_);
-            _tryInitializeCampaign(
-                newWeek,
-                prevWk.cp.data.data,
-                prevWk.cp.data.operator,
-                prevWk.cp.data.fundsNative,
-                prevWk.cp.data.fundsERC20,
-                prevWk.cp.data.platformToken,
-                prevWk.cp.data.token
-            );
-            // Reset the funds for the previous week
-            prevWk.cp.data.fundsERC20 = 0;
-            prevWk.cp.data.fundsNative = 0;
-            prevWk.cp.data.platformToken = 0;
-            prevWk.cp.data.lastUpdated = _now();
-            _setCampaign(prevWk.slot, prevWkId, prevWk.cp.data);
-        } else {
-            prevWk = _getCampaign(weekEnded, hash_);
-            _tryInitializeCampaign(
-                newWeek,
-                prevWk.cp.data.data,
-                prevWk.cp.data.operator,
-                0,
-                0,
-                0,
-                prevWk.cp.data.token
-            );
+        unchecked {
+            if(weekEnded > 0){
+                uint prevWkId = weekEnded - 1;
+                // If the week ended is greater than 0, then we can bring forward the funds
+                prevWk = _getCampaign(prevWkId, hash_);
+                _tryInitializeCampaign(
+                    newWeek,
+                    prevWk.cp.data.data,
+                    prevWk.cp.data.operator,
+                    prevWk.cp.data.fundsNative,
+                    prevWk.cp.data.fundsERC20,
+                    prevWk.cp.data.platformToken,
+                    prevWk.cp.data.token
+                );
+                // Reset the funds for the previous week
+                prevWk.cp.data.fundsERC20 = 0;
+                prevWk.cp.data.fundsNative = 0;
+                prevWk.cp.data.platformToken = 0;
+                prevWk.cp.data.lastUpdated = _now();
+                _setCampaign(prevWk.slot, prevWkId, prevWk.cp.data);
+            } else {
+                prevWk = _getCampaign(weekEnded, hash_);
+                _tryInitializeCampaign(
+                    newWeek,
+                    prevWk.cp.data.data,
+                    prevWk.cp.data.operator,
+                    0,
+                    0,
+                    0,
+                    prevWk.cp.data.token
+                );
+            }
         }
     }
 }
@@ -1738,12 +1744,14 @@ library Utils {
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract LearnaFlattened is Campaigns, ReentrancyGuard {
+contract Learna is Campaigns, ReentrancyGuard {
     using Utils for uint96;
+
+    error ToIsAddressZero();
 
     Mode private mode;
 
-    ///@notice Flag that controls whether to use key mechanism for learners or not
+    ///@notice Flag that controls whether to use key mechanism for data or not
     bool public useKey;
 
     // Dev Address
@@ -1753,7 +1761,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
     address private immutable feeTo;
 
     // Profiles for each campaign in week id
-    mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private learners;
+    mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private data;
 
     /// @dev All campaigns user subscribed to for all the weeks.
     mapping(uint => mapping(address => bytes32[])) private userCampaigns;
@@ -1813,7 +1821,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
      * @return profile : Profile data
     */
     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
-        profile = learners[weekId][hash_][user];
+        profile = data[weekId][hash_][user];
     }
 
     /**
@@ -1834,7 +1842,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
      * @param profile : Profile data
     */
     function _setProfile(uint weekId, bytes32 hash_, address user, ProfileOther memory profile) internal {
-        learners[weekId][hash_][user].other = profile;
+        data[weekId][hash_][user].other = profile;
     }
 
     /**
@@ -1845,6 +1853,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
     function _sendValue(uint amount, address to) internal {
         if(amount > 0) {
             require(address(this).balance >= amount, "Insufficient bal");
+            if(to == address(0)) revert ToIsAddressZero();
             (bool s,) = to.call{value: amount}('');
             require(s, "Failed");
         }
@@ -1868,6 +1877,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
         uint256 fundsErc20,
         address token
     ) public payable returns(bool) {
+        require(bytes(_campaign).length > 0, "Invalid campaign");
         _sendValue(msg.value, claim);
         _tryInitializeCampaign(
             _getState().weekId,
@@ -1951,28 +1961,28 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
                 res.cp.data.activeLearners += 1;
             }
         }
-        require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
+        // require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
     
         unchecked {
             pf.other.totalQuizPerWeek += 1;
             res.cp.data.totalPoints += quizResult.other.score; 
         }
         _setProfile(weekId,  hash_, user, pf.other);
-        uint index = learners[weekId][hash_][user].quizResults.length;
-        learners[weekId][hash_][user].quizResults.push();
-        learners[weekId][hash_][user].quizResults[index].other.id = bytes(quizResult.other.id);
-        learners[weekId][hash_][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
-        learners[weekId][hash_][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
-        learners[weekId][hash_][user].quizResults[index].other.title = bytes(quizResult.other.title);
-        learners[weekId][hash_][user].quizResults[index].other.score = quizResult.other.score;
-        learners[weekId][hash_][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
-        learners[weekId][hash_][user].quizResults[index].other.percentage = quizResult.other.percentage;
-        learners[weekId][hash_][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
+        uint index = data[weekId][hash_][user].quizResults.length;
+        data[weekId][hash_][user].quizResults.push();
+        data[weekId][hash_][user].quizResults[index].other.id = bytes(quizResult.other.id);
+        data[weekId][hash_][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
+        data[weekId][hash_][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
+        data[weekId][hash_][user].quizResults[index].other.title = bytes(quizResult.other.title);
+        data[weekId][hash_][user].quizResults[index].other.score = quizResult.other.score;
+        data[weekId][hash_][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
+        data[weekId][hash_][user].quizResults[index].other.percentage = quizResult.other.percentage;
+        data[weekId][hash_][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
 
         for(uint i = 0; i < quizResult.answers.length; i++){
             AnswerInput memory answer = quizResult.answers[i]; 
-            learners[weekId][hash_][user].quizResults[index].answers.push();
-            learners[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
+            data[weekId][hash_][user].quizResults[index].answers.push();
+            data[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
         }
         _setCampaign(res.slot, weekId, res.cp.data); 
 
@@ -1987,20 +1997,20 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
      /**
      * @dev Allocate weekly earnings
      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
-     * @param amountInKnowToken : Amount to allocate in GROW token
+     * @param amountInGrowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(uint amountInKnowToken, uint32 newIntervalInMin) 
+    function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInKnowToken, _callback);
-        if(amountInKnowToken > 0) {
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
+        if(amountInGrowToken > 0) {
             require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInKnowToken, claim), 'Allocation failed');
+            require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
         }
 
         emit Sorted(currentWk, newWk, cData);  
@@ -2230,7 +2240,7 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
         result.weekId = weekId;
         for(uint j = 0; j < cSize; j++){
             bool nullifier = false;
-            // If useKey is enabled, learners must have created a key for all the campaigns they subscribed to
+            // If useKey is enabled, data must have created a key for all the campaigns they subscribed to
             if(useKey){
                 if(!_getProfile(weekId, cps[j].data.data.hash_, user).other.haskey) nullifier = true;
             }
@@ -2241,24 +2251,24 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
     } 
 
     // Fetch past claims
-    function getData(address user) public view returns(ReadData memory data) {
-        data.state = _getState();
-        data.approved = _getApprovedCampaigns();
-        uint weekIds = data.state.weekId;
+    function getData(address user) public view returns(ReadData memory _return) {
+        _return.state = _getState();
+        _return.approved = _getApprovedCampaigns();
+        uint weekIds = _return.state.weekId;
         weekIds ++;
-        data.wd = new WeekData[](weekIds);
-        data.profileData = new WeekProfileData[](weekIds);
-        uint hashSize = data.approved.length; 
+        _return.wd = new WeekData[](weekIds);
+        _return.profileData = new WeekProfileData[](weekIds);
+        uint hashSize = _return.approved.length; 
         for(uint i = 0; i < weekIds; i++) {
-            data.wd[i].campaigns = _getCampaings(i);
-            data.wd[i].claimDeadline = _getDeadline(i);
+            _return.wd[i].campaigns = _getCampaings(i);
+            _return.wd[i].claimDeadline = _getDeadline(i);
             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
-                data.profileData[i].weekId = i;
+                _return.profileData[i].weekId = i;
                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
-                    bytes32 hash_ = data.approved[hashId].hash_;
+                    bytes32 hash_ = _return.approved[hashId].hash_;
                     bool nullifier = false;
-                    // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                    // If useKey is enabled, _return must have created a key for all the first campaign they joined
                     if(useKey){
                         if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
                     }
@@ -2269,9 +2279,9 @@ contract LearnaFlattened is Campaigns, ReentrancyGuard {
                         hash_
                     );
                 }
-                data.profileData[i].campaigns = _userCampaigns;
+                _return.profileData[i].campaigns = _userCampaigns;
             }
         }
-        return data;
+        return _return;
     } 
 }

@@ -96,7 +96,7 @@ export function loadData({totalPoints, timePerQuestion}: {totalPoints: number, t
   };
 }
 
-export async function buildQuizInput(selectedCategory: string, selectedDifficulty: DifficultyLevel, correctAnswerCount: number) {
+export function buildQuizInput(selectedCategory: string, selectedDifficulty: DifficultyLevel, correctAnswerCount: number) {
   const startTime = Date.now();
   const hashIndex = CAMPAIGNS.indexOf(selectedCategory);
 

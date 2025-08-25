@@ -6,7 +6,7 @@ export default function Features() {
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                        Why Choose <span className="bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">Educaster</span>?
+                        Why Choose <span className="bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">Learna</span>?
                     </h2>
                     <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
                         The most comprehensive, fun, engaging, and value-oriented learning platform with real crypto rewards

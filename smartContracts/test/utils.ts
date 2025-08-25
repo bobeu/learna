@@ -1,5 +1,5 @@
 import { Hex, parseEther, zeroAddress } from "viem";
-import type { Address, KnowToken, Learna, Null, Signer } from "./types";
+import type { Address, GrowToken, Learna, Null, Signer } from "./types";
 import { ILearna } from "../typechain-types";
 import { toNumber } from "ethers";
 
@@ -7,7 +7,7 @@ export const campaigns = ['solidity'];
   
 interface SortEarnings {
   learna: Learna; 
-  knowToken: KnowToken;
+  GrowToken: GrowToken;
   deployer: Signer;
   amountInERC20: bigint;
   // campaigns: string[];
@@ -16,16 +16,9 @@ interface SortEarnings {
 interface ClaimReward {
   learna: Learna; 
   signer: Signer;
-  knowToken: KnowToken;
+  GrowToken: GrowToken;
   campaignHash: Hex;
 }
-
-// interface GenerateKey {
-//   learna: Learna;
-//   signer: Signer;
-//   knowToken: Address;
-//   campaignHashes: Hex[];
-// }
 
 interface RecordPoints {
   user: Address;
@@ -46,7 +39,7 @@ interface Ban {
 interface SetUpCampaign {
   signer: Signer;
   fundERC20: bigint;
-  token: KnowToken;
+  token: GrowToken;
   learna: Learna;
   campaign: string;
   value: bigint;
@@ -86,14 +79,14 @@ export interface QuizResultInput {
  * }
 */
 export async function sortWeeklyEarning(x: SortEarnings) {
-  const { learna, amountInERC20, deployer, knowToken } = x;
+  const { learna, amountInERC20, deployer, GrowToken } = x;
   const learnaAddr = await learna.getAddress();
-  const knowTokenAddr = await knowToken.getAddress();
-  const balanceOfLearnaB4Allocation = await knowToken.balanceOf(learnaAddr);
-  const balanceInGrowReserveB4Allocation = await knowToken.balanceOf(knowTokenAddr);
+  const GrowTokenAddr = await GrowToken.getAddress();
+  const balanceOfLearnaB4Allocation = await GrowToken.balanceOf(learnaAddr);
+  const balanceInGrowReserveB4Allocation = await GrowToken.balanceOf(GrowTokenAddr);
   await learna.connect(deployer).sortWeeklyReward(amountInERC20, 0);
-  const balanceOfLearnaAfterAllocation = await knowToken.balanceOf(learnaAddr);
-  const balanceInGrowReserveAfterAllocation = await knowToken.balanceOf(knowTokenAddr);
+  const balanceOfLearnaAfterAllocation = await GrowToken.balanceOf(learnaAddr);
+  const balanceInGrowReserveAfterAllocation = await GrowToken.balanceOf(GrowTokenAddr);
   const data = await learna.getData(zeroAddress);
 
   return {
@@ -119,17 +112,17 @@ export async function sortWeeklyEarning(x: SortEarnings) {
  * }
 */
 export async function claimReward(x: ClaimReward) {
-  const { learna, signer, knowToken, campaignHash } = x;
+  const { learna, signer, GrowToken, campaignHash } = x;
   const signerAddr = await signer.getAddress();
   const learnaAddr = await learna.getAddress();
-  const erc20balanceOfSignerB4Claim = await knowToken.balanceOf(signerAddr);
-  const erc20balanceInLearnaB4Claim = await knowToken.balanceOf(learnaAddr);
+  const erc20balanceOfSignerB4Claim = await GrowToken.balanceOf(signerAddr);
+  const erc20balanceInLearnaB4Claim = await GrowToken.balanceOf(learnaAddr);
   const nativeBalOfSignerB4Claim = await signer.provider?.getBalance(signerAddr) as bigint;
   const eligibility = await learna.checkEligibility(signerAddr);
 
-  const erc20balanceOfSignerAfterClaim = await knowToken.balanceOf(signerAddr);
+  const erc20balanceOfSignerAfterClaim = await GrowToken.balanceOf(signerAddr);
   const nativeBalOfSignerAfterClaim = await signer.provider?.getBalance(signerAddr) as bigint;
-  const erc20balanceInLearnaAfterClaim = await knowToken.balanceOf(learnaAddr);
+  const erc20balanceInLearnaAfterClaim = await GrowToken.balanceOf(learnaAddr);
   const data = await learna.getData(signerAddr);
   const profile = data.profileData[toNumber(data.state.weekId)];
   // console.log("Profile", profile)
@@ -226,7 +219,7 @@ export async function getCampaigns(learna: Learna) {
  * @param x : Parameters of type FundAccountParam
  * @returns : Promise<{amtSentToEachAccount: Hex, amtSentToAlc1: Hex}>
  */
-export async function transferToken(x: {recipients: Address[], asset: KnowToken, sender: Signer, amount: bigint}) : Null {
+export async function transferToken(x: {recipients: Address[], asset: GrowToken, sender: Signer, amount: bigint}) : Null {
   for(let i = 0; i < x.recipients.length; i++) {
     await x.asset.connect(x.sender).transfer(x.recipients[i], x.amount);
   }
@@ -238,7 +231,7 @@ export async function transferToken(x: {recipients: Address[], asset: KnowToken,
  * @param x : Parameters of type FundAccountParam
  * @returns : Promise<{amtSentToEachAccount: Hex, amtSentToAlc1: Hex}>
  */
-export async function balanceOf({accounts, asset}: {accounts: Address[], asset: KnowToken}) {
+export async function balanceOf({accounts, asset}: {accounts: Address[], asset: GrowToken}) {
   let result : bigint[] = [];
   for(let i = 0; i < accounts.length; i++) {
     const balance = await asset.balanceOf(accounts[i]);

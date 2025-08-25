@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x3046e76d04AF312DD8ede8d3541E1c1A365dc5C6",
+  "contractAddress": "0xed495601C63aDD409Afcb17Af7F9B7db4DAA1Bc7",
   "functionName": "getData",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -336,7 +336,7 @@
             }
           ],
           "internalType": "struct ILearna.ReadData",
-          "name": "data",
+          "name": "_return",
           "type": "tuple"
         }
       ],

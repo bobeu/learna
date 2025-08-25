@@ -4,16 +4,17 @@ pragma solidity 0.8.28;
 
 import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { IKnowToken } from "./interfaces/IKnowToken.sol";
 import { Utils } from "./libraries/Utils.sol";
 import { Campaigns, IERC20 } from "./Campaigns.sol";
 
 contract Learna is Campaigns, ReentrancyGuard {
     using Utils for uint96;
 
+    error ToIsAddressZero();
+
     Mode private mode;
 
-    ///@notice Flag that controls whether to use key mechanism for learners or not
+    ///@notice Flag that controls whether to use key mechanism for data or not
     bool public useKey;
 
     // Dev Address
@@ -23,7 +24,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     address private immutable feeTo;
 
     // Profiles for each campaign in week id
-    mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private learners;
+    mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private data;
 
     /// @dev All campaigns user subscribed to for all the weeks.
     mapping(uint => mapping(address => bytes32[])) private userCampaigns;
@@ -83,7 +84,7 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @return profile : Profile data
     */
     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
-        profile = learners[weekId][hash_][user];
+        profile = data[weekId][hash_][user];
     }
 
     /**
@@ -104,7 +105,7 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param profile : Profile data
     */
     function _setProfile(uint weekId, bytes32 hash_, address user, ProfileOther memory profile) internal {
-        learners[weekId][hash_][user].other = profile;
+        data[weekId][hash_][user].other = profile;
     }
 
     /**
@@ -115,6 +116,7 @@ contract Learna is Campaigns, ReentrancyGuard {
     function _sendValue(uint amount, address to) internal {
         if(amount > 0) {
             require(address(this).balance >= amount, "Insufficient bal");
+            if(to == address(0)) revert ToIsAddressZero();
             (bool s,) = to.call{value: amount}('');
             require(s, "Failed");
         }
@@ -138,6 +140,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         uint256 fundsErc20,
         address token
     ) public payable returns(bool) {
+        require(bytes(_campaign).length > 0, "Invalid campaign");
         _sendValue(msg.value, claim);
         _tryInitializeCampaign(
             _getState().weekId,
@@ -221,28 +224,28 @@ contract Learna is Campaigns, ReentrancyGuard {
                 res.cp.data.activeLearners += 1;
             }
         }
-        require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
+        // require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
     
         unchecked {
             pf.other.totalQuizPerWeek += 1;
             res.cp.data.totalPoints += quizResult.other.score; 
         }
         _setProfile(weekId,  hash_, user, pf.other);
-        uint index = learners[weekId][hash_][user].quizResults.length;
-        learners[weekId][hash_][user].quizResults.push();
-        learners[weekId][hash_][user].quizResults[index].other.id = bytes(quizResult.other.id);
-        learners[weekId][hash_][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
-        learners[weekId][hash_][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
-        learners[weekId][hash_][user].quizResults[index].other.title = bytes(quizResult.other.title);
-        learners[weekId][hash_][user].quizResults[index].other.score = quizResult.other.score;
-        learners[weekId][hash_][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
-        learners[weekId][hash_][user].quizResults[index].other.percentage = quizResult.other.percentage;
-        learners[weekId][hash_][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
+        uint index = data[weekId][hash_][user].quizResults.length;
+        data[weekId][hash_][user].quizResults.push();
+        data[weekId][hash_][user].quizResults[index].other.id = bytes(quizResult.other.id);
+        data[weekId][hash_][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
+        data[weekId][hash_][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
+        data[weekId][hash_][user].quizResults[index].other.title = bytes(quizResult.other.title);
+        data[weekId][hash_][user].quizResults[index].other.score = quizResult.other.score;
+        data[weekId][hash_][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
+        data[weekId][hash_][user].quizResults[index].other.percentage = quizResult.other.percentage;
+        data[weekId][hash_][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
 
         for(uint i = 0; i < quizResult.answers.length; i++){
             AnswerInput memory answer = quizResult.answers[i]; 
-            learners[weekId][hash_][user].quizResults[index].answers.push();
-            learners[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
+            data[weekId][hash_][user].quizResults[index].answers.push();
+            data[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
         }
         _setCampaign(res.slot, weekId, res.cp.data); 
 
@@ -257,20 +260,20 @@ contract Learna is Campaigns, ReentrancyGuard {
      /**
      * @dev Allocate weekly earnings
      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
-     * @param amountInKnowToken : Amount to allocate in GROW token
+     * @param amountInGrowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(uint amountInKnowToken, uint32 newIntervalInMin) 
+    function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
         public 
         whenNotPaused 
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInKnowToken, _callback);
-        if(amountInKnowToken > 0) {
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
+        if(amountInGrowToken > 0) {
             require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInKnowToken, claim), 'Allocation failed');
+            require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
         }
 
         emit Sorted(currentWk, newWk, cData);  
@@ -500,7 +503,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         result.weekId = weekId;
         for(uint j = 0; j < cSize; j++){
             bool nullifier = false;
-            // If useKey is enabled, learners must have created a key for all the campaigns they subscribed to
+            // If useKey is enabled, data must have created a key for all the campaigns they subscribed to
             if(useKey){
                 if(!_getProfile(weekId, cps[j].data.data.hash_, user).other.haskey) nullifier = true;
             }
@@ -511,24 +514,24 @@ contract Learna is Campaigns, ReentrancyGuard {
     } 
 
     // Fetch past claims
-    function getData(address user) public view returns(ReadData memory data) {
-        data.state = _getState();
-        data.approved = _getApprovedCampaigns();
-        uint weekIds = data.state.weekId;
+    function getData(address user) public view returns(ReadData memory _return) {
+        _return.state = _getState();
+        _return.approved = _getApprovedCampaigns();
+        uint weekIds = _return.state.weekId;
         weekIds ++;
-        data.wd = new WeekData[](weekIds);
-        data.profileData = new WeekProfileData[](weekIds);
-        uint hashSize = data.approved.length; 
+        _return.wd = new WeekData[](weekIds);
+        _return.profileData = new WeekProfileData[](weekIds);
+        uint hashSize = _return.approved.length; 
         for(uint i = 0; i < weekIds; i++) {
-            data.wd[i].campaigns = _getCampaings(i);
-            data.wd[i].claimDeadline = _getDeadline(i);
+            _return.wd[i].campaigns = _getCampaings(i);
+            _return.wd[i].claimDeadline = _getDeadline(i);
             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
-                data.profileData[i].weekId = i;
+                _return.profileData[i].weekId = i;
                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
-                    bytes32 hash_ = data.approved[hashId].hash_;
+                    bytes32 hash_ = _return.approved[hashId].hash_;
                     bool nullifier = false;
-                    // If useKey is enabled, learners must have created a key for all the first campaign they joined
+                    // If useKey is enabled, _return must have created a key for all the first campaign they joined
                     if(useKey){
                         if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
                     }
@@ -539,9 +542,9 @@ contract Learna is Campaigns, ReentrancyGuard {
                         hash_
                     );
                 }
-                data.profileData[i].campaigns = _userCampaigns;
+                _return.profileData[i].campaigns = _userCampaigns;
             }
         }
-        return data;
+        return _return;
     } 
 }

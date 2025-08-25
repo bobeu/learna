@@ -1,4 +1,4 @@
-// Sources flattened with hardhat v2.26.1 https://hardhat.org
+// Sources flattened with hardhat v2.26.3 https://hardhat.org
 
 // SPDX-License-Identifier: MIT
 
@@ -719,24 +719,24 @@ abstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
 }
 
 
-// File contracts/interfaces/IKnowToken.sol
+// File contracts/interfaces/IGrowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
 
-interface IKnowToken {
+interface IGrowToken {
     function allocate(uint amount, address to) external returns(bool);
     function burn(address holder, uint amount) external returns(bool);
 }
 
 
-// File contracts/KnowToken.sol
+// File contracts/GrowToken.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract KnowTokenFlattened is IKnowToken, ERC20, Ownable {
+contract GrowToken is IGrowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
     address private mainContract;
 

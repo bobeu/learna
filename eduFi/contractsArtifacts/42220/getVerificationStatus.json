@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x87B2d348a876B813a754C8d4D6A05Ab568F3e044",
+  "contractAddress": "0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d",
   "functionName": "getVerificationStatus",
   "inputCount": 1,
   "requireArgUpdate": true,

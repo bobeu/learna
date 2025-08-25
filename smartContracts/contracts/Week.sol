@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 
 import { ILearna } from "./interfaces/ILearna.sol";
 import { Admins } from "./Admins.sol";
-import { IKnowToken } from "./interfaces/IKnowToken.sol";
+import { IGrowToken } from "./interfaces/IGrowToken.sol";
 
 abstract contract Week is ILearna, Admins {
 
@@ -12,7 +12,7 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IKnowToken internal token;
+    IGrowToken internal token;
 
     ///@notice Claim address
     address public claim;
@@ -105,14 +105,18 @@ abstract contract Week is ILearna, Admins {
      * @notice Transition interval will always reset the transition date 
     */
     function setTransitionInterval(uint32 interval) public onlyOwner {
-        if(interval > 0) state.transitionInterval = interval * 1 minutes;
+        unchecked {
+            if(interval > 0) state.transitionInterval = interval * 1 minutes;
+        }
     }
 
     /**
      * @dev Transition to a new week and return the new week Id
      */
     function _transitionToNewWeek() internal returns(uint newWeekId) {
-        state.weekId ++;
+        unchecked {
+            state.weekId ++;
+        }
         newWeekId = state.weekId;
     }
 
@@ -124,7 +128,7 @@ abstract contract Week is ILearna, Admins {
     /// @dev Update the token variable. Only-owner function
     function setToken(address _token) public onlyOwner returns(bool) {
         require(_token != address(0), "Token is zero");
-        token = IKnowToken(_token);
+        token = IGrowToken(_token);
         return true;
     }
 
