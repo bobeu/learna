@@ -11,7 +11,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
     const config = useConfig();
     const account = formatAddr(address);
 
-    const { claim, knowToken, readTxObject } = React.useMemo(() => {
+    const { claim, GrowToken, readTxObject } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
@@ -19,8 +19,8 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
         });
         // const abi = filtered.transactionData[0].abi;
         const claim = filtered.contractAddresses.Claim as Address;
-        const knowToken = filtered.contractAddresses.KnowToken as Address;
-        const contractAddresses = [erc20InContract, knowToken];
+        const GrowToken = filtered.contractAddresses.GrowToken as Address;
+        const contractAddresses = [erc20InContract, GrowToken];
         const args = [[claim], [claim]];
         const readTxObject = filtered.transactionData.map((item, i) => {
             return{
@@ -30,7 +30,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
                 args: args[i]
             }
         });
-        return { claim, knowToken, readTxObject }
+        return { claim, GrowToken, readTxObject }
     }, [chainId, erc20InContract]);
 
     const { data, isFetching, isLoading } = useBalance({
@@ -52,7 +52,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
     });
 
     const erc20Balance = result?.[0].result as bigint;
-    const knowTokenBalance = result?.[1].result as bigint;
+    const GrowTokenBalance = result?.[1].result as bigint;
 
     return(
         <div className="space-y-4">
@@ -91,7 +91,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
                             <Wallet className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                            <AddressWrapper account={knowToken} size={4} display/> 
+                            <AddressWrapper account={GrowToken} size={4} display/> 
                         </div>
                         <div className="text-xs text-gray-600">$KNOW contract</div>
                     </div>
@@ -101,7 +101,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
                             <Coins className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="font-semibold text-gray-800 mb-1">
-                            {formatValue(knowTokenBalance || 0n).toStr || '0'} 
+                            {formatValue(GrowTokenBalance || 0n).toStr || '0'} 
                         </div>
                         <div className="text-xs text-gray-600">Balances in {`KNOW Token`}</div>
                     </div>

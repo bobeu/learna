@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x666d03a9147D6c04EA077CFFe1AD14b7919049EF",
+  "contractAddress": "0xC6f50e2E63a1b12Fb2A4340DD7ccdebE687a026b",
   "functionName": "adjustCampaignValues",
   "inputCount": 3,
   "requireArgUpdate": true,
@@ -128,6 +128,11 @@
     {
       "inputs": [],
       "name": "ReentrancyGuardReentrantCall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ToIsAddressZero",
       "type": "error"
     },
     {
@@ -1198,7 +1203,7 @@
             }
           ],
           "internalType": "struct ILearna.ReadData",
-          "name": "data",
+          "name": "_return",
           "type": "tuple"
         }
       ],
@@ -1567,7 +1572,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "amountInBrainToken",
+          "name": "amountInGrowToken",
           "type": "uint256"
         },
         {

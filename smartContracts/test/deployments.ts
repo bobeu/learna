@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import type { Address, FeeManager,  BrainToken, Learna, Signer, Signers } from "./types";
+import type { Address, FeeManager,  GrowToken, Learna, Signer, Signers } from "./types";
 import { campaigns } from "./utils";
 
 enum Mode { LOCAL, LIVE }
@@ -26,15 +26,15 @@ async function deployLearna(deployer: Signer, admin2: Address, feeManager: Addre
 }
 
 /**
- * Deploys and return an instance of the BrainToken contract.
+ * Deploys and return an instance of the GrowToken contract.
  * @param deployer : Deployer address
  * @param reserve : Reserve address to receive initial token allocation
  * @param learna : Learna contract address
  * @returns Contract instance
  */
-async function deployBrainToken(reserve: Address, learna: Address, deployer: Signer) : Promise<BrainToken> {
-  const Brain = await ethers.getContractFactory("BrainToken");
-  return (await Brain.connect(deployer).deploy(reserve, learna, "BrainToken", "GROW")).waitForDeployment();
+async function deployGrowToken(reserve: Address, learna: Address, deployer: Signer) : Promise<GrowToken> {
+  const Brain = await ethers.getContractFactory("GrowToken");
+  return (await Brain.connect(deployer).deploy(reserve, learna, "GrowToken", "GROW")).waitForDeployment();
 }
 
 export async function deployContracts(getSigners_: () => Signers) {
@@ -54,15 +54,15 @@ export async function deployContracts(getSigners_: () => Signers) {
   const learna = await deployLearna(deployer, admin2Addr, feeManagerAddr);
   const learnaAddr = await learna.getAddress() as Address;
 
-  const Brain = await deployBrainToken(reserveAddr, learnaAddr, deployer);
-  const BrainTokenAddr = await Brain.getAddress() as Address;
+  const Brain = await deployGrowToken(reserveAddr, learnaAddr, deployer);
+  const GrowTokenAddr = await Brain.getAddress() as Address;
 
   await learna.connect(deployer).setClaimAddress(claimAddr);
-  await learna.connect(deployer).setToken(BrainTokenAddr);
+  await learna.connect(deployer).setToken(GrowTokenAddr);
 
   return {
-    BrainToken: Brain,
-    BrainTokenAddr,
+    GrowToken: Brain,
+    GrowTokenAddr,
     feeManager,
     feeManagerAddr,
     learna,

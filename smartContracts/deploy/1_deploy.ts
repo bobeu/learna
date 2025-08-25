@@ -5,11 +5,11 @@ import { buildQuizInput, CAMPAIGNS  } from "../hashes";
 import { toBigInt } from 'ethers';
 import { formatUnits, parseEther, parseUnits, zeroAddress } from 'viem';
 import { DifficultyLevel, ReadData } from '../types';
-import { recordPoints, setUpCampaign, sortWeeklyPayment, verifyAndClaim } from "../runContract";
+import { recordPoints, setUpCampaign, sortWeeklyPayment, verifyAndClaim } from "../test";
 
 dotconfig();
 enum Mode { LOCAL, LIVE }
-const NAME = "Brain Token";
+const NAME = "Grow Token";
 const SYMBOL = "BRAIN";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -51,7 +51,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const minimumToken = parseUnits('0.001', 18);
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = networkName === 'alfajores'? BigInt('780733959340115523248404327445683630476218274700566083485950248473431427057') : BigInt('9814987096856683231362570687498102183043591697285922809633829382869992369505');
+	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('21066968068228220708800585400251801447099124139752394539591878288552555651774') : BigInt('16065792362742278689896118108099986981531801023753410692625915813097165766684');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2, farc];
@@ -106,25 +106,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	/**
 	 * Deploy Ownership Manager
 	 */
-	const knowToken = await deploy("BrainToken", {
+	const GrowToken = await deploy("GrowToken", {
 		from: deployer,
 		args: [reserve, learna.address, NAME, SYMBOL],
 		log: true,
 	});
-	console.log(`BrainToken deployed to: ${knowToken.address}`);
+	console.log(`GrowToken deployed to: ${GrowToken.address}`);
 	// await execute('Claim', {from: deployer}, 'toggleUseWalletVerification');
-
-	const campaignSelector = 0;
-	const difficultySelector = 1;
-	await recordPoints({campaignSelector, difficultySelector, networkName, run: true , recordPoints: false, runDelegate: true});
-	await setUpCampaign({networkName, run: false});
-	await sortWeeklyPayment({networkName, run: false});
-	await verifyAndClaim({networkName, run: false});
 	
 	try {
+		// await execute('Claim', {from: deployer}, 'withdraw', deployer, parseEther('11'), GrowToken.address, 0n);
 		// await execute('Learna', {from: deployer}, 'setPermission', claim.address);
 		// await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
-		// await execute('Learna', {from: deployer}, 'setToken', knowToken.address);
+		// await execute('Learna', {from: deployer}, 'setToken', GrowToken.address);
 		// await execute('Learna', {from: deployer}, 'setMinimumToken', minimumToken);
 		// await execute('Claim', {from: deployer}, 'setLearna', learna.address);
 		// await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
@@ -137,8 +131,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		console.error("Error executing post-deployment setup:", error);
 	}
 	///////////////////////// Withdraw from the fee manager ///////////////////////////////////////
-	// const amount = parseUnits('0.342', 18)
+	// const amount = parseUnits('0.161', 18)
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
+
+	const campaignSelector = 0;
+	const difficultySelector = 2;
+	// await recordPoints({campaignSelector, difficultySelector, networkName, run: true , recordPoints: true, runDelegate: true});
+	await setUpCampaign({networkName, run: true});
+	// await sortWeeklyPayment({networkName, run: true});
+	// await verifyAndClaim({networkName, run: true});
 
 	/////////////////// Set up and fund campaign /////////////////////////////////////
 	// for(let i = 0; i < selectedCategories.length; i++) {
@@ -172,9 +173,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// }
 	
 	// Sort weekly reward
-	// const amountInBrainToken = parseEther('50'); // 10 KNOW tokens
+	// const amountInGrowToken = parseEther('50'); // 10 KNOW tokens
 	// const newIntervalInMin = networkName === 'alfajores'? 25 : 1440; // 25 mins for testnet : 1 day for mainnet
-	// await execute('Learna', {from: deployer}, 'sortWeeklyReward', amountInBrainToken, newIntervalInMin);
+	// await execute('Learna', {from: deployer}, 'sortWeeklyReward', amountInGrowToken, newIntervalInMin);
 
 	/////////////////////////// Verify identity and claim reward ////////////////////////////
 	// const verificationStatuses : {account: string, isVerified: boolean, isBlacklisted: boolean}[] = [];
@@ -217,10 +218,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 export default func;
 
-func.tags = ['Learna', 'BrainToken', 'FeeManager', 'Claim'];
+func.tags = ['Learna', 'GrowToken', 'FeeManager', 'Claim'];
 func.dependencies = [
 	'1_deploy_learna',
 	'2_deploy_feeManager',
 	'3_deploy_claim',
-	'4_deploy_knowToken'
+	'4_deploy_GrowToken'
 ];

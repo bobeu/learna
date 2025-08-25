@@ -16,25 +16,11 @@ import { Admins } from "./Admins.sol";
 contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    enum Type { UNCLAIM, CLAIMED }
-
     // Errors
     error NativeClaimUnsuccessful();
-    error TokenIsZeroAddress();
-    error WeekNotReady();
-    error NoClaimable();
-    error ClaimUnsuccessful();
-    error NationalityRequired();
-    error EligibilityCheckDenied();
-    error InvalidProof();
-    error InvalidUserIdentifier();
-    error NotVerified();
-    error AlreadyClaimed();
-    error UserIdentifierAlreadyVerified();
 
     // Events
     event UserVerified(address indexed registeredUserIdentifier);
-    event MerkleRootUpdated(bytes32 newMerkleRoot);
 
     // Learna contract
     ILearna public learna;
@@ -69,9 +55,9 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     receive() external payable {}
 
     function getConfigId(
-        bytes32 destinationChainId,
-        bytes32 userIdentifier, 
-        bytes memory userDefinedData // Custom data from the qr code configuration
+        bytes32 /**unused-param */,
+        bytes32 /**unused-param */, 
+        bytes memory /**unused-param */ 
     ) public view override returns (bytes32) {
         // Return your app's configuration ID
         return configId;
@@ -201,7 +187,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory userData 
+        bytes memory /**unused-param */
     ) internal override {
         address user = address(uint160(output.userIdentifier));
         require(output.userIdentifier > 0, "InvalidUserIdentifier");
