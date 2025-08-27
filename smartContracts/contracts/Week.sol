@@ -2,6 +2,8 @@
 
 pragma solidity 0.8.28;
 
+import { IVerifier } from "./Claim.sol";
+
 import { ILearna } from "./interfaces/ILearna.sol";
 import { Admins } from "./Admins.sol";
 import { IGrowToken } from "./interfaces/IGrowToken.sol";
@@ -12,10 +14,11 @@ abstract contract Week is ILearna, Admins {
     State private state;
 
     ///@notice Platform token 
-    IGrowToken internal token;
+    IGrowToken public token;
 
     ///@notice Claim address
-    address public claim;
+    
+    IVerifier public verifier;
 
     /// @dev Claim deadlines
     mapping(uint => uint96) private claimDeadlines;
@@ -40,7 +43,7 @@ abstract contract Week is ILearna, Admins {
         * @param weekId : Week Id
         * @return bool : True if user has claimed reward for the week, false otherwise
      */
-    function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool) {
+    function _hasClaimed(address user, uint weekId, bytes32 hash_) internal view returns(bool) {
         return isClaimed[user][weekId][hash_];
     }
 
@@ -67,10 +70,10 @@ abstract contract Week is ILearna, Admins {
 
     /**
      * @dev Set approval for target
-     * @param newClaim : Account to set approval for
+     * @param _verifier : Account to set approval for
      */
-    function setClaimAddress(address newClaim) public onlyOwner returns(bool) {
-        claim = newClaim;
+    function setVerifierAddress(address _verifier) public onlyOwner returns(bool) {
+        verifier = IVerifier(_verifier);
         return true;
     }
 
@@ -130,11 +133,6 @@ abstract contract Week is ILearna, Admins {
         require(_token != address(0), "Token is zero");
         token = IGrowToken(_token);
         return true;
-    }
-
-    /// @dev Get platform token
-    function getPlatformToken() external view returns(address) {
-        return address(token);
     }
 
     // Return the current unix time stamp on the network

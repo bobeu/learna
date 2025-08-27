@@ -36,7 +36,7 @@ describe("Learna", function () {
       } = await sortWeeklyEarning({amountInERC20, deployer, GrowToken, learna});
 
       expect(balanceInGrowReserveAfterAllocation < balanceInGrowReserveB4Allocation).to.be.true;
-      expect(balanceOfLearnaAfterAllocation === balanceOfLearnaB4Allocation).to.be.true;
+      expect(balanceOfLearnaAfterAllocation > balanceOfLearnaB4Allocation).to.be.true;
     });
   })
 })
