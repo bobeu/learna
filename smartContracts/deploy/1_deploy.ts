@@ -135,7 +135,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 
 	await setUpCampaign({networkName, run: true});
-	// await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
+	await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
 	// await sortWeeklyPayment({networkName, run: true});
 	// await verifyAndClaim({networkName, run: true});
 
