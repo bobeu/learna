@@ -106,7 +106,7 @@ abstract contract Week is ILearna, Admins {
     */
     function setTransitionInterval(uint32 interval) public onlyOwner {
         unchecked {
-            if(interval > 0) state.transitionInterval = interval * 1 minutes;
+            if(interval > 0) state.transitionInterval = uint64(interval * 1 minutes);
         }
     }
 

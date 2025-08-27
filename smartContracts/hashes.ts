@@ -104,33 +104,30 @@ export function buildQuizInput(selectedCategory: string, selectedDifficulty: Dif
     .quizData?.filter(
       ({category, difficulty}) => category.toLowerCase() === selectedCategory.toLowerCase() && difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
     ).map((quiz) => {
-    
-    const answers : AnswerInput[] = [];
-    let score = 0;
-    quiz.questions.forEach(
-      ({correctAnswer, points, hash}, i) => {
-        const userAnswer = i === correctAnswerCount? correctAnswer < 3? correctAnswer + 1 : correctAnswer - 1 : correctAnswer;
-        if(userAnswer === correctAnswer) score += points;
-        answers.push(
+      const answers : AnswerInput[] = [];
+      let score = 0;
+      quiz.questions.forEach(
+        ({correctAnswer, points, hash}, i) => {
+          const userAnswer = i === correctAnswerCount? correctAnswer < 3? correctAnswer + 1 : correctAnswer - 1 : correctAnswer;
+          if(userAnswer === correctAnswer) score += points;
+          answers.push(
             {
-            isUserSelected: true,
-            questionHash: hash,
-            selected: userAnswer
-          }
-        );
-      }
-    );
-    // console.log("Answers", answers);
-    // console.log("Score", score);
-
+              questionHash: hash as string,
+              isUserSelected: true,
+              selected: userAnswer
+            }
+          );
+        }
+      );
     return {
       other: {
+        id: Date.now().toString(),
+        quizId: quiz.id,
         score: Math.ceil(score),
         totalPoints: quiz.totalPoints,
         percentage: Math.round((score / quiz.totalPoints) * 100),
         timeSpent: Math.round((Date.now() - startTime) / 1000),
         completedAt: new Date().toString(),
-        quizId: quiz.id,
         title: quiz.title,
       },
       answers
@@ -139,14 +136,14 @@ export function buildQuizInput(selectedCategory: string, selectedDifficulty: Dif
 
   assert(quizResult !== undefined && quizResult?.length > 0)
   const result = quizResult[0];
-  const resultOtherInput : QuizResultOtherInput = {
-    ...result.other,
-    id: Date.now().toString()
-  }
+  // const resultOtherInput : QuizResultOtherInput = {
+  //   ...result.other,
+  //   id: Date.now().toString()
+  // }
   
   const newResult: QuizResultInput= {
     answers: result.answers,
-    other: resultOtherInput
+    other: result.other
   };
   // console.log("New result", newResult);
 

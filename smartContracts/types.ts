@@ -30,22 +30,22 @@ export interface Quiz {
 
 export interface QuizResultInput {
   answers: AnswerInput[];
-  other: Omit<QuizResultOtherInput, 'id'> ;
+  other: QuizResultOtherInput ;
 }
 
 export interface QuizResultOtherInput {
   id: string;
   quizId: string;
   score: number;
+  title: string;
   totalPoints: number;
   percentage: number;
   timeSpent: number;
   completedAt: string;
-  title: string;
 }
 
 export interface AnswerInput {
-  questionHash: Address;
+  questionHash: string;
   selected: number;
   isUserSelected: boolean;
 }

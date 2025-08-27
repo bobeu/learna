@@ -16,8 +16,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
 	const {deploy, read, execute} = deployments;
 	let {
-		t1, t2, t3, t4, t5, t6, t7, t8, t9,
-		recorder,
+		// t1, t2, t3, t4, t5, t6, t7, t8, t9,
+		// recorder,
 		farc,
 		deployer, 
 		reserve, 
@@ -29,29 +29,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	let mode = Mode.LOCAL;
 	const answerCount = [3, 2, 3, 1, 3, 3, 2, 1, 3, 2, 3];
-	const selectedCategories = ['celo', 'reactjs', 'wagmi', 'solidity', 'wagmi', 'reactjs', 'reactjs', 'celo', 'solidity', 'celo', 'self-protocol-sdk'];
+	// const selectedCategories = ['celo', 'reactjs', 'wagmi', 'solidity', 'wagmi', 'reactjs', 'reactjs', 'celo', 'solidity', 'celo', 'self-protocol-sdk'];
 	// const selectedCategories = ['reactjs', 'wagmi', 'solidity', 'wagmi', 'celo', 'solidity', 'celo', 'solidity', 'celo', 'self-protocol-sdk', 'celo'];
 	// const selectedCategories = ['celo', 'reactjs', 'wagmi', 'solidity', 'divvi', 'self-protocol-sdk', 'wagmi', 'wagmi', 'reactjs', 'wagmi', 'solidity'];
 	// const selectedCategories = ['self-protocol-sdk', 'solidity', 'reactjs', 'self-protocol-sdk', 'solidity', 'celo', 'wagmi', 'wagmi', 'celo', 'wagmi', 'solidity'];
 	// const selectedCategories = ['solidity', 'wagmi', 'solidity', 'self-protocol-sdk', 'celo', 'solidity', 'celo', 'reactjs', 'divvi', 'solidity', 'self-protocol-sdk'];
 
-	const selectedDifficulties : DifficultyLevel[] = ['medium', 'easy', 'medium', 'hard', 'easy', 'easy', 'hard', 'easy', 'hard', 'hard', 'hard'];
+	// const selectedDifficulties : DifficultyLevel[] = ['medium', 'easy', 'medium', 'hard', 'easy', 'easy', 'hard', 'easy', 'hard', 'hard', 'hard'];
 	// const selectedDifficulties : DifficultyLevel[] = ['easy', 'medium', 'hard', 'easy', 'medium', 'hard', 'medium', 'hard', 'medium', 'easy', 'medium'];
 	// const selectedDifficulties : DifficultyLevel[] = ['hard', 'hard', 'easy', 'medium', 'hard', 'medium', 'easy', 'medium', 'easy', 'medium', 'easy'];
 
-	const testers = [t1, t2, t3, t4, t5, t6, t7, t8, t9, deployer, routeTo].map((account, i) => {
-		return{
-			account,
-			correctAnswerCount: answerCount[i],
-			selectedCategory: selectedCategories[i],
-			selectedDifficulty: selectedDifficulties[i]
-		}
-	});
+	// const testers = [t1, t2, t3, t4, t5, t6, t7, t8, t9, deployer, routeTo].map((account, i) => {
+	// 	return{
+	// 		account,
+	// 		correctAnswerCount: answerCount[i],
+	// 		selectedCategory: selectedCategories[i],
+	// 		selectedDifficulty: selectedDifficulties[i]
+	// 	}
+	// });
 	// const minimumToken = parseUnits('15', 15);
-	const minimumToken = parseUnits('0.001', 18);
+	const minimumToken = parseUnits('0.0001', 18);
 	const networkName = network.name;
-	const transitionInterval = networkName === 'alfajores'? 6 : 60; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('21066968068228220708800585400251801447099124139752394539591878288552555651774') : BigInt('16065792362742278689896118108099986981531801023753410692625915813097165766684');
+	const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
+	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('15066487529295648619048629270432394626782316450471234892484109001450318879865');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const accounts = [admin, admin2, farc];
@@ -134,10 +134,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// const amount = parseUnits('0.161', 18)
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 
-	const campaignSelector = 0;
-	const difficultySelector = 2;
-	// await recordPoints({campaignSelector, difficultySelector, networkName, run: true , recordPoints: true, runDelegate: true});
 	await setUpCampaign({networkName, run: true});
+	// await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
 	// await sortWeeklyPayment({networkName, run: true});
 	// await verifyAndClaim({networkName, run: true});
 

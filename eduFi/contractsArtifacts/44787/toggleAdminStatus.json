@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xed495601C63aDD409Afcb17Af7F9B7db4DAA1Bc7",
+  "contractAddress": "0x8923e6CdBC94B84DdeDBfBFAd83b62D93C2Fb91E",
   "functionName": "toggleAdminStatus",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -1548,7 +1548,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "fundsErc20",
+          "name": "fundsERC20",
           "type": "uint256"
         },
         {
