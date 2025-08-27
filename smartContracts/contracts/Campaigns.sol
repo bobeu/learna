@@ -3,7 +3,7 @@
 pragma solidity 0.8.28;
 
 import { Week } from "./Week.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @title Campaigns. 
@@ -11,6 +11,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @notice Non-deployable parent contract that perform CRUD operation on campaigns
 */ 
 abstract contract Campaigns is Week {
+    using SafeERC20 for IERC20;
+
     ///@dev 
     CampaignData[] private campaignList;   
 
@@ -32,6 +34,21 @@ abstract contract Campaigns is Week {
 
     // Mapping of campaigns to identifiers
     mapping(uint campaignIndex => bytes32 campaingHashValue) private indexer;
+
+    /**
+     * @dev Claim ero20 token
+     * @param recipient : Recipient
+     * @param amount : Amount to transfer
+     * @param token : token contract
+     */
+    function _sendErc20(address recipient, uint amount, IERC20 token) internal {
+        if(address(token) != address(0)) {
+            uint balance = token.balanceOf(address(this));
+            if(balance > 0 && balance >= amount) {
+                token.safeTransfer(recipient, amount);
+            }
+        }
+    }
 
     ///@dev Registers a new campaign
     function _initializeCampaign(
@@ -83,7 +100,7 @@ abstract contract Campaigns is Week {
                 }
                 uint allowance = IERC20(cmp.data.token).allowance(_msgSender(), address(this));
                 require(allowance > 0, "No allowance detected");
-                IERC20(cmp.data.token).transferFrom(_msgSender(), claim, allowance);
+                IERC20(cmp.data.token).transferFrom(_msgSender(), address(this), allowance);
                 cmp.data.fundsERC20 += fundsERC20;
             }
             
@@ -190,7 +207,7 @@ abstract contract Campaigns is Week {
      * @param newIntervalInMin : New interval to update
      * @param _platformToken : Amount to fund in platform token
     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory campaignData) {
+    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function (CData memory, uint) internal returns(CData memory) _callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory campaignData) {
         State memory st = _getState();
         require(st.transitionDate < _now(), "Transition is in future");
         pastWeek = st.weekId;
@@ -205,7 +222,7 @@ abstract contract Campaigns is Week {
             unchecked {
                 cmp.cp.data.platformToken += _platformToken;
             }
-            _setCampaign(cmp.slot, pastWeek, cmp.cp.data); 
+            _setCampaign(cmp.slot, pastWeek, _callback(cmp.cp.data, _platformToken)); 
         }
     }
 

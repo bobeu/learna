@@ -160,7 +160,7 @@ const config: HardhatUserConfig = {
       11142220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`,
       42220: `privatekey://${process.env.PRIVATE_KEY_CROSS_0xD7c as string}`
     },
-    farc: {
+    t10: {
       default: 6,
       44787: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`,
       11142220: `privatekey://${process.env.PRIVATE_KEY_TESTER_farca as string}`,

@@ -11,17 +11,17 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
     const config = useConfig();
     const account = formatAddr(address);
 
-    const { claim, GrowToken, readTxObject } = React.useMemo(() => {
+    const { verifier, GrowToken, readTxObject } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['balanceOf', 'balanceOf']
         });
         // const abi = filtered.transactionData[0].abi;
-        const claim = filtered.contractAddresses.Claim as Address;
+        const verifier = filtered.contractAddresses.Verifier as Address;
         const GrowToken = filtered.contractAddresses.GrowToken as Address;
         const contractAddresses = [erc20InContract, GrowToken];
-        const args = [[claim], [claim]];
+        const args = [[verifier], [verifier]];
         const readTxObject = filtered.transactionData.map((item, i) => {
             return{
                 abi: item.abi,
@@ -30,11 +30,11 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
                 args: args[i]
             }
         });
-        return { claim, GrowToken, readTxObject }
+        return { verifier, GrowToken, readTxObject }
     }, [chainId, erc20InContract]);
 
     const { data, isFetching, isLoading } = useBalance({
-        address: claim,
+        address: verifier,
         chainId,
         config
     });
@@ -66,7 +66,7 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
                                     <Wallet className="w-4 h-4 text-purple-600" />
                                 </div>
                                 <div className="font-semibold text-gray-800 mb-1">
-                                    <AddressWrapper account={claim} size={4} display/> 
+                                    <AddressWrapper account={verifier} size={4} display/> 
                                 </div>
                                 <div className="text-xs text-gray-600">Claim CA</div>
                             </div>

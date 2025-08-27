@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x5894cab8EEd154726A0c14Fb7eCf042E43Bf2C44",
+  "contractAddress": "0x099c6775019843E42D36c877Ae302162aBAF9A8d",
   "functionName": "sortWeeklyReward",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -42,65 +42,12 @@
     },
     {
       "inputs": [],
-      "name": "CampaignClaimNotActivated",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ClaimAddressNotSet",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint64",
-          "name": "",
-          "type": "uint64"
-        }
-      ],
-      "name": "ClaimEnded",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "EnforcedPause",
       "type": "error"
     },
     {
       "inputs": [],
       "name": "ExpectedPause",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "InsufficientAllowance",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "InvalidAddress",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotEligible",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotInitialized",
       "type": "error"
     },
     {
@@ -131,13 +78,19 @@
       "type": "error"
     },
     {
-      "inputs": [],
-      "name": "ToIsAddressZero",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "SafeERC20FailedOperation",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "UserBlacklisted",
+      "name": "ToIsAddressZero",
       "type": "error"
     },
     {
@@ -669,84 +622,16 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "checkEligibility",
-      "outputs": [
-        {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "bool",
-                  "name": "isEligible",
-                  "type": "bool"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "erc20Amount",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "nativeAmount",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "platform",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "hash_",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "weekId",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct ILearna.Eligibility[]",
-              "name": "elgs",
-              "type": "tuple[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "weekId",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct ILearna.Eligibilities",
-          "name": "result",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "claim",
+      "name": "claimReward",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "bool",
           "name": "",
-          "type": "address"
+          "type": "bool"
         }
       ],
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1211,48 +1096,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getPlatformToken",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "hash_",
-          "type": "bytes32"
-        }
-      ],
-      "name": "hasClaimed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -1269,44 +1112,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "weekId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "hash_",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fundsNative",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fundsERC20",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "platformToken",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "onCampaignValueChanged",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1465,25 +1270,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "newClaim",
-          "type": "address"
-        }
-      ],
-      "name": "setClaimAddress",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "minToken",
           "type": "uint256"
@@ -1571,6 +1357,25 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_verifier",
+          "type": "address"
+        }
+      ],
+      "name": "setVerifierAddress",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "amountInGrowToken",
           "type": "uint256"
@@ -1638,6 +1443,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "token",
+      "outputs": [
+        {
+          "internalType": "contract IGrowToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1678,6 +1496,19 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "verifier",
+      "outputs": [
+        {
+          "internalType": "contract IVerifier",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",

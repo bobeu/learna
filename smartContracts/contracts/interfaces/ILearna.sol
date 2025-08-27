@@ -7,14 +7,14 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 interface ILearna {
     enum Mode { LOCAL, LIVE }
 
-    error UserBlacklisted();
-    error NotEligible();
-    error ClaimEnded(uint64);
-    error InvalidAddress(address);
-    error CampaignClaimNotActivated();
-    error InsufficientAllowance(uint256);
-    error ClaimAddressNotSet();
-    error NotInitialized();
+    // error UserBlacklisted();
+    // error NotEligible();
+    // error ClaimEnded(uint64);
+    // error InvalidAddress(address);
+    // error CampaignClaimNotActivated();
+    // error InsufficientAllowance(uint256);
+    // error ClaimAddressNotSet();
+    // error NotInitialized();
 
     event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
@@ -164,17 +164,4 @@ interface ILearna {
         uint weekId;
         bytes32[] campaigns;
     }
-
-    function checkEligibility(address user) external view returns (Eligibilities memory);
-    // function setIsClaimed(address user, uint weekId, bytes32 hash_) external;
-    function hasClaimed(address user, uint weekId, bytes32 hash_) external view returns(bool);
-    function getPlatformToken() external view returns(address);
-    function onCampaignValueChanged(
-        uint weekId, 
-        bytes32 hash_, 
-        uint256 fundsNative, 
-        uint256 fundsERC20,
-        uint256 platformToken,
-        address user
-    ) external;
 }

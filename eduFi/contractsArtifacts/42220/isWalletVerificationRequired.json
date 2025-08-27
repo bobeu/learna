@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xa0d1a5D61dA27D65Ee83Ae92dA53B75817142b15",
+  "contractAddress": "0xc119d63060d29CFB720518Fe82661E3803C60c66",
   "functionName": "isWalletVerificationRequired",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -36,11 +36,6 @@
       "type": "error"
     },
     {
-      "inputs": [],
-      "name": "NativeClaimUnsuccessful",
-      "type": "error"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -65,17 +60,6 @@
     {
       "inputs": [],
       "name": "ReentrancyGuardReentrantCall",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "SafeERC20FailedOperation",
       "type": "error"
     },
     {
@@ -220,19 +204,6 @@
     },
     {
       "inputs": [],
-      "name": "claimReward",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "configId",
       "outputs": [
         {
@@ -355,19 +326,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "learna",
-      "outputs": [
-        {
-          "internalType": "contract ILearna",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -453,19 +411,6 @@
         }
       ],
       "name": "setConfigId",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_learna",
-          "type": "address"
-        }
-      ],
-      "name": "setLearna",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

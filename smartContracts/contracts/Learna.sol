@@ -115,10 +115,12 @@ contract Learna is Campaigns, ReentrancyGuard {
      */
     function _sendValue(uint amount, address to) internal {
         if(amount > 0) {
-            require(address(this).balance >= amount, "Insufficient bal");
-            if(to == address(0)) revert ToIsAddressZero();
-            (bool s,) = to.call{value: amount}('');
-            require(s, "Failed");
+            if(address(this).balance >= amount){
+                if(to != address(0)){
+                    (bool s,) = to.call{value: amount}('');
+                    require(s, "Failed");
+                }
+            }
         }
     }
 
@@ -141,7 +143,6 @@ contract Learna is Campaigns, ReentrancyGuard {
         address token
     ) public payable returns(bool) {
         require(bytes(_campaign).length > 0, "Invalid campaign");
-        _sendValue(msg.value, claim);
         _setUpCampaign(_getHash(_campaign), msg.value, fundsERC20, token);
         return true;
     }
@@ -168,8 +169,8 @@ contract Learna is Campaigns, ReentrancyGuard {
         _validateCampaign(hash_, weekId);
         GetCampaign memory res = _getCampaign(weekId, hash_);
         require(res.cp.data.token != address(0), "Token is zero");
-        require(IERC20(res.cp.data.token).balanceOf(claim) >= erc20Value, "ERC20Bal inconsistent");
-        require(claim.balance >= nativeValue, "New value exceeds balance");
+        require(IERC20(res.cp.data.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
+        require(address(this).balance >= nativeValue, "New value exceeds balance");
         res.cp.data.fundsERC20 = erc20Value;
         res.cp.data.fundsNative = nativeValue;
         res.cp.data.lastUpdated = _now();
@@ -261,11 +262,11 @@ contract Learna is Campaigns, ReentrancyGuard {
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken);
         if(amountInGrowToken > 0) {
             require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
+            require(token.allocate(amountInGrowToken, address(this)), 'Allocation failed');
         }
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
 
         emit Sorted(currentWk, newWk, cData);  
  
@@ -348,15 +349,14 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param fundsERC20 : Amount in ERC20 currency e.g $GROW, $G. etc
      * @param platformToken : Amount in platform token e.g GROW token
     */
-    function onCampaignValueChanged(
+    function _onCampaignValueChanged(
         uint weekId, 
         bytes32 hash_, 
         uint256 fundsNative, 
         uint256 fundsERC20,
         uint256 platformToken,
         address user
-    ) external onlyApproved {
-        // _validateCampaign(hash_, weekId);
+    ) internal {
         _setIsClaimed(user, weekId, hash_);
         GetCampaign memory res = _getCampaign(weekId, hash_);
         if(res.cp.data.fundsERC20 >= fundsERC20){
@@ -370,6 +370,15 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
         res.cp.data.lastUpdated = _now();
         _setCampaign(res.slot, weekId, res.cp.data);
+    }
+
+    function _callback(CData memory _cp, uint platformToken) internal returns(CData memory cp) {
+        cp = _cp;
+        (uint native, uint256 erc20, uint platform) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20, platformToken);
+        cp.fundsNative = native;
+        cp.platformToken = platform;
+        cp.fundsERC20 = erc20;
+        cp.lastUpdated = _now();
     }
     
     /**
@@ -432,33 +441,40 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
     }
 
-    // /**
-    //  * @dev Assign 2% of payouts to the dev
-    //  * @param token : ERC20 token to be used for payout
-    //  * @return nativeBalance : Celo balance of this contract after dev share 
-    //  * @return erc20Balance : ERC20 balance of this contract after dev share
-    //  */
-    // function _rebalance(address token, uint256 native, uint256 erc20) internal returns(uint256 nativeBalance, uint256 erc20Balance) {
-    //     uint8 devRate = 2;
-    //     nativeBalance = native;
-    //     erc20Balance = erc20;
-    //     uint devShare;
-    //     unchecked {
-    //         if(nativeBalance > 0 && (address(this).balance >= nativeBalance)) {
-    //             devShare = (nativeBalance * devRate) / 100;
-    //             (bool done,) = dev.call{value: devShare}('');
-    //             require(done, 'T.Failed');
-    //             nativeBalance -= devShare;
-    //         }
-    //         if(erc20Balance > 0 && (IERC20(token).balanceOf(address(this)) >= erc20Balance)) {
-    //             devShare = (erc20Balance * devRate) / 100;
-    //             if(token != address(0)){
-    //                 require(IERC20(token).transfer(dev, devShare), 'ERC20 TFailed');
-    //             }
-    //             erc20Balance -= devShare; 
-    //         }
-    //     }
-    // }
+    /**
+     * @dev Assign 2% of payouts to the dev
+     * @param _token : ERC20 token to be used for payout
+     * @param platform : Platform token to be used for payout
+     * @param erc20 : ERC20 token to be used for payout
+     * @param native : Native token to be used for payout
+     * @return nativeBalance : Celo balance of this contract after dev share
+     * @return erc20Balance : ERC20 balance of this contract after dev share
+     * @return platformBalance : Platform balance of this contract after dev share
+     */
+    function _rebalance(address _token, uint256 native, uint256 erc20, uint256 platform) internal returns(uint256 nativeBalance, uint256 erc20Balance, uint256 platformBalance) {
+        uint8 devRate = 2;
+        nativeBalance = native;
+        erc20Balance = erc20;
+        platformBalance = platform;
+        uint devShare;
+        unchecked {
+            if(nativeBalance > 0 && (address(this).balance >= nativeBalance)) {
+                devShare = (nativeBalance * devRate) / 100;
+                _sendValue(devShare, dev);
+                nativeBalance -= devShare;
+            }
+            if(erc20Balance > 0 && (IERC20(_token).balanceOf(address(this)) >= erc20Balance)) {
+                devShare = (erc20Balance * devRate) / 100;
+                _sendErc20(dev, devShare, IERC20(_token));
+                erc20Balance -= devShare; 
+            }
+            if(platformBalance > 0 && (token.balanceOf(address(this)) >= platformBalance)) {
+                devShare = (platformBalance * devRate) / 100;
+                _sendErc20(dev, devShare, token);
+                platformBalance -= devShare; 
+            }
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
     //                          READ-ONLY FUNCTIONS                                //
@@ -466,31 +482,40 @@ contract Learna is Campaigns, ReentrancyGuard {
 
     /**
      * Get users eligibility for all the campaigns for the previous weeks ended
-     * @param user : User
-     * @notice Claim will always be for the concluded 3 weeks back. The position must match and can be extracted directly from 
-     * the frontend when reading the user's campaigns. Learner can only claim from the past three weeks campaign pool; 
+     * @notice Claim will always be for the concluded week only.
      */
-    function checkEligibility(address user) 
-        external 
-        view
-        returns(Eligibilities memory result) 
-    {
+    function claimReward() public returns(bool){
         uint weekId = _getState().weekId;
+        address sender = _msgSender();
+        (bool isVerified, bool isBlacklisted) = verifier.getVerificationStatus(sender);
+        require(isVerified && !isBlacklisted, "Not verified or blacklisted");
         if(weekId > 0) weekId -= 1;
         Campaign[] memory cps = _getCampaings(weekId);
         uint cSize = cps.length;
-        result.elgs = new Eligibility[](cSize);
-        result.weekId = weekId;
         for(uint j = 0; j < cSize; j++){
             bool nullifier = false;
             // If useKey is enabled, data must have created a key for all the campaigns they subscribed to
             if(useKey){
-                if(!_getProfile(weekId, cps[j].data.data.hash_, user).other.haskey) nullifier = true;
+                if(!_getProfile(weekId, cps[j].data.data.hash_, sender).other.haskey) nullifier = true;
             }
-            result.elgs[j] = _getEligibility(user, cps[j].data.data.hash_, weekId, nullifier, false);
+            Eligibility memory elg = _getEligibility(sender, cps[j].data.data.hash_, weekId, nullifier, false);
+            if(!_hasClaimed(sender, weekId, elg.hash_)) {
+                if(elg.isEligible){
+                    _onCampaignValueChanged(weekId, elg.hash_, elg.nativeAmount, elg.erc20Amount, elg.platform, sender);
+                    if(elg.nativeAmount > 0) {
+                        _sendValue(elg.nativeAmount, sender);
+                    }
+                    if(elg.erc20Amount > 0) {
+                        _sendErc20(sender, elg.erc20Amount, IERC20(elg.token));
+                    } 
+                    if(elg.platform > 0) {
+                        _sendErc20(sender, elg.platform, token);
+                    }
+                }
+            }
         }
 
-        return result;
+        return true;
     } 
 
     // Fetch past claims

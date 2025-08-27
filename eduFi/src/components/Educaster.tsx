@@ -219,7 +219,7 @@ export default function Educaster() {
         let owner_ : Address = zeroAddress;
         let admins_ : Admin[] = [mockAdmins];
 
-        console.log('result', result);
+        // console.log('result', result);
         let verificationStatus_ : [boolean, boolean] = [false, false];
         if(result && result[0].status === 'success' && result[0].result !== undefined) {
             owner_ = result[0].result as Address;
@@ -270,6 +270,8 @@ export default function Educaster() {
         const campaignStrings = allCampaign.map(({campaign}) => campaign);
         
         const weekData = [...storage.wd];
+        console.log("weekProfileData", weekProfileData)
+        console.log("verificationStatus", verificationStatus)
         const formattedData = formatData(
             {weekProfileData, verificationStatus},
             weekData,

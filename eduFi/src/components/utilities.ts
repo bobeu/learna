@@ -392,7 +392,9 @@ export function formatData(stateData: StateData, weekData: WeekData[], requested
   const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
   const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
   const statData = filterWeekData(weekData, requestedWkId, requestedHash);
-  // console.log("eligibilit", eligibility.isEligible)
+  console.log("eligibilit", eligibility.isEligible)
+  console.log("isClaimed", isClaimed)
+  console.log("isVerified", isVerified)
   return {
     statData,
     isClaimed,

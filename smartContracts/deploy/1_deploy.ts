@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let {
 		// t1, t2, t3, t4, t5, t6, t7, t8, t9,
 		// recorder,
-		farc,
+		t10,
 		deployer, 
 		reserve, 
 		routeTo, 
@@ -51,10 +51,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const minimumToken = parseUnits('0.0001', 18);
 	const networkName = network.name;
 	const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('15066487529295648619048629270432394626782316450471234892484109001450318879865');
+	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('8526642646275752306877819506814919028594783120156594744948169605204397623642');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
-	const accounts = [admin, admin2, farc];
+	const accounts = [admin, admin2, t10];
 	const newAdmins: string[] = [];
 	accounts.forEach((account) => {
 		if(account.toLowerCase() !== deployer.toLowerCase()){
@@ -96,12 +96,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	/**
 	 * Deploy Learna contract
 	*/
-	const claim = await deploy("Claim", {
+	const verifier = await deploy("Verifier", {
 		from: deployer,
 		args: [identityVerificationHub],
 		log: true,
 	});
-	console.log(`Claim contract deployed to: ${claim.address}`);
+	console.log(`Verifier contract deployed to: ${verifier.address}`);
 
 	/**
 	 * Deploy Ownership Manager
@@ -112,29 +112,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		log: true,
 	});
 	console.log(`GrowToken deployed to: ${GrowToken.address}`);
-	// await execute('Claim', {from: deployer}, 'toggleUseWalletVerification');
+	// await execute('Verifier', {from: deployer}, 'toggleUseWalletVerification');
 	
 	try {
-		// await execute('Claim', {from: deployer}, 'withdraw', deployer, parseEther('11'), GrowToken.address, 0n);
-		// await execute('Learna', {from: deployer}, 'setPermission', claim.address);
-		// await execute('Learna', {from: deployer}, 'setClaimAddress', claim.address);
+		// await execute('Verifier', {from: deployer}, 'withdraw', deployer, parseEther('11'), GrowToken.address, 0n);
+		// await execute('Learna', {from: deployer}, 'setPermission', verifier.address);
+		// await execute('Learna', {from: deployer}, 'setVerifierAddress', verifier.address);
 		// await execute('Learna', {from: deployer}, 'setToken', GrowToken.address);
 		// await execute('Learna', {from: deployer}, 'setMinimumToken', minimumToken);
-		// await execute('Claim', {from: deployer}, 'setLearna', learna.address);
-		// await execute('Claim', {from: deployer}, 'setConfigId', verificationConfig);
-		// await execute('Claim', {from: deployer}, 'setScope', scopeValue);
+		// await execute('Verifier', {from: deployer}, 'setPermission', learna.address);
+		// await execute('Verifier', {from: deployer}, 'setConfigId', verificationConfig);
+		// await execute('Verifier', {from: deployer}, 'setScope', scopeValue);
 
 		// for(let i = 0; i < newAdmins.length; i++) {
-		// 	await execute('Claim', {from: deployer}, 'setPermission', newAdmins[i]);
+		// 	await execute('Verifier', {from: deployer}, 'setPermission', newAdmins[i]);
 		// }
 	} catch (error) {
 		console.error("Error executing post-deployment setup:", error);
 	}
 	///////////////////////// Withdraw from the fee manager ///////////////////////////////////////
-	// const amount = parseUnits('0.161', 18)
+	// const amount = parseUnits('0.0479', 18)
+	// const tokenAmount = parseUnits('50', 18)
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
+	// await execute('Verifier', {from: deployer}, 'withdraw', deployer, amount, GrowToken.address, tokenAmount);
 
-	await setUpCampaign({networkName, run: true});
+	// await setUpCampaign({networkName, run: true});
 	await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
 	// await sortWeeklyPayment({networkName, run: true});
 	// await verifyAndClaim({networkName, run: true});
@@ -175,7 +177,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// const newIntervalInMin = networkName === 'alfajores'? 25 : 1440; // 25 mins for testnet : 1 day for mainnet
 	// await execute('Learna', {from: deployer}, 'sortWeeklyReward', amountInGrowToken, newIntervalInMin);
 
-	/////////////////////////// Verify identity and claim reward ////////////////////////////
+	/////////////////////////// Verify identity and verifier reward ////////////////////////////
 	// const verificationStatuses : {account: string, isVerified: boolean, isBlacklisted: boolean}[] = [];
 	// const users = testers.slice(0, testers.length/2);
 	// // const users = testers.slice(testers.length/2);
@@ -192,7 +194,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 			await execute('Claim', {from: user.account}, 'verify');
 	//			console.log("Verification sucsess from:", user.account);
 	// 		}
-	// 		await execute('Claim', {from: user.account}, 'claimReward');
+	// 		await execute('Claim', {from: user.account}, 'verifierReward');
 	// 	} catch (error) {
 	// 		console.log("Error executing transactions for user:", user.account, error?.message || error?.reason || error?.data?.message || error?.data?.reason);
 	// 	}
@@ -201,9 +203,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	// Read actions
 	const admins = await read("Learna", "getAdmins");
-	const isWalletVerificationRequired = await read('Claim', 'isWalletVerificationRequired');
-	const config = await read('Claim', 'configId');
-	const scope = await read('Claim', 'scope');
+	const isWalletVerificationRequired = await read('Verifier', 'isWalletVerificationRequired');
+	const config = await read('Verifier', 'configId');
+	const scope = await read('Verifier', 'scope');
 	const stateData = await read('Learna', 'getData', deployer) as ReadData;
 
 	console.log("scope", toBigInt(scope.toString()));
@@ -216,10 +218,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 export default func;
 
-func.tags = ['Learna', 'GrowToken', 'FeeManager', 'Claim'];
+func.tags = ['Learna', 'GrowToken', 'FeeManager', 'Verifier'];
 func.dependencies = [
 	'1_deploy_learna',
 	'2_deploy_feeManager',
-	'3_deploy_claim',
+	'3_deploy_verifier',
 	'4_deploy_GrowToken'
 ];

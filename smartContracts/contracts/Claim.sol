@@ -9,21 +9,18 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
 import { ILearna } from "./interfaces/ILearna.sol";
 import { Admins } from "./Admins.sol";
 
+interface IVerifier {
+    function getVerificationStatus(address user) external view returns(bool _isVerified, bool _isBlacklisted);
+}
 /**
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
+contract Verifier is SelfVerificationRoot, IVerifier, Admins, ReentrancyGuard {
     using SafeERC20 for IERC20;
-
-    // Errors
-    error NativeClaimUnsuccessful();
 
     // Events
     event UserVerified(address indexed registeredUserIdentifier);
-
-    // Learna contract
-    ILearna public learna;
 
     /// @notice Verification config ID for identity verification
     bytes32 public configId;
@@ -32,7 +29,7 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     bool public isWalletVerificationRequired; // default is true in the constructor, meaning user must verify before claiming
 
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
-    mapping(address user => bool) internal isVerified;
+    mapping(address user => bool) internal verificationStatus;
 
     // Blacklist
     mapping(address => bool) internal blacklisted;
@@ -66,8 +63,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     /**@dev Return user's verification status
         * @param user : User's account
      */
-    function getVerificationStatus(address user) public view returns(bool _isVerified, bool _isBlacklisted) {
-        return (isVerified[user], blacklisted[user]);
+    function getVerificationStatus(address user) external view returns(bool _isVerified, bool _isBlacklisted) {
+        return (verificationStatus[user], blacklisted[user]);
     }
 
     // Set verification config ID
@@ -83,65 +80,6 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     function setScope(uint256 newScope) external onlyOwner {
         _setScope(newScope);
     }
-    
-    /**
-     * @dev Claim ero20 token
-     * @param recipient : Recipient
-     * @param amount : Amount to transfer
-     * @param token : token contract
-     */
-    function _claimErc20(address recipient, uint amount, IERC20 token) internal {
-        if(address(token) != address(0)) {
-            uint balance = token.balanceOf(address(this));
-            if(balance > 0 && balance >= amount) {
-                token.safeTransfer(recipient, amount);
-            }
-        }
-    }
-
-    /**
-     * @dev Claim ero20 token
-     * @param recipient : Recipient
-     * @param amount : Amount to transfer
-     */
-    function _claimNativeToken(address recipient, uint amount) internal {
-        uint balance = address(this).balance;
-        if(balance > 0 && balance >= amount) {
-            (bool done,) = recipient.call{value: amount}('');
-            if(!done) revert NativeClaimUnsuccessful();
-        }
-    }
-
-    /**
-     * @dev claim reward
-     * @notice Users cannot claim for the current week. They can only claim for the week that has ended
-     */
-    function claimReward() external nonReentrant returns(bool) {
-        address user = _msgSender();
-        ILearna.Eligibilities memory unclaims = learna.checkEligibility(user);
-        require(isVerified[user] && !blacklisted[user], "Not verified or blacklisted");
-        require(unclaims.elgs.length > 0, "Nothing to claim");
-        uint weekId = unclaims.weekId;
-        for(uint j = 0; j < unclaims.elgs.length; j++) {
-            ILearna.Eligibility memory claim = unclaims.elgs[j];
-            if(!learna.hasClaimed(user, weekId, claim.hash_)) {
-                if(claim.isEligible){
-                    learna.onCampaignValueChanged(weekId, claim.hash_, claim.nativeAmount, claim.erc20Amount, claim.platform, user);
-                    if(claim.nativeAmount > 0) {
-                        _claimNativeToken(user, claim.nativeAmount);
-                    }
-                    if(claim.erc20Amount > 0) {
-                        _claimErc20(user, claim.erc20Amount, IERC20(claim.token));
-                    } 
-                    if(claim.platform > 0) {
-                        _claimErc20(user, claim.platform, IERC20(learna.getPlatformToken()));
-                    }
-                }
-            }
-        }
-
-        return true; 
-    }
 
     /**
      * @dev Verify and register users for unclaim rewards. 
@@ -153,8 +91,8 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
     function _verify(address user) internal {
         require(user != address(0), "Zero address");
         require(!blacklisted[user], "Blacklisted user");
-        require(!isVerified[user], "Already verified");
-        isVerified[user] = true;
+        require(!verificationStatus[user], "Already verified");
+        verificationStatus[user] = true;
     }
 
     /**
@@ -200,14 +138,6 @@ contract Claim is SelfVerificationRoot, Admins, ReentrancyGuard {
         _verify(user);
 
         emit UserVerified(user);
-    }
-
-    /**
-     * @dev Update learna contract instance address
-     */
-    function setLearna(address _learna) public onlyOwner {
-        require(_learna != address(learna) && _learna != address(0), "Address is the same or empty");
-        learna = ILearna(_learna);
     }
 
     /**
