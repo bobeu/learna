@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xC6f50e2E63a1b12Fb2A4340DD7ccdebE687a026b",
+  "contractAddress": "0x5894cab8EEd154726A0c14Fb7eCf042E43Bf2C44",
   "functionName": "checkEligibility",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -1548,7 +1548,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "fundsErc20",
+          "name": "fundsERC20",
           "type": "uint256"
         },
         {

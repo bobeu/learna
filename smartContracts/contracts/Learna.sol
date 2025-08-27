@@ -70,7 +70,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         } 
 
         for(uint i = 0; i < _campaigns.length; i++) {
-            _tryInitializeCampaign(_getState().weekId, _getHash(_campaigns[i]), _msgSender(), 0, 0, 0, address(0));
+            _setUpCampaign( _getHash(_campaigns[i]), 0, 0, address(0));
         }
     }
 
@@ -128,30 +128,21 @@ contract Learna is Campaigns, ReentrancyGuard {
     /**
      * @dev Add new campaign to the current week and fund it. Also, can be used to increase the funds in existing campaign for the week.
      * @param _campaign : Campaign string
-     * @param token : ERC20 contract address if fundsErc20 is greater than 0
-     * @param fundsErc20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
+     * @param token : ERC20 contract address if fundsERC20 is greater than 0
+     * @param fundsERC20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
      * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
-     * - ERC20. If the amount in fundsErc20 is greater than 0, it is suppose that the sender intends to also fund the campaign
+     * - ERC20. If the amount in fundsERC20 is greater than 0, it is suppose that the sender intends to also fund the campaign
      *    in ERC20-based asset hence the 'token' parameter must not be zero.
      * - Native such as CELO.
      */
     function setUpCampaign(
         string memory _campaign, 
-        uint256 fundsErc20,
+        uint256 fundsERC20,
         address token
     ) public payable returns(bool) {
         require(bytes(_campaign).length > 0, "Invalid campaign");
         _sendValue(msg.value, claim);
-        _tryInitializeCampaign(
-            _getState().weekId,
-            _getHash(_campaign),
-            _msgSender(),
-            msg.value,
-            fundsErc20,
-            0,
-            token
-        );
-
+        _setUpCampaign(_getHash(_campaign), msg.value, fundsERC20, token);
         return true;
     }
 
@@ -270,7 +261,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         onlyAdmin
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
+        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken);
         if(amountInGrowToken > 0) {
             require(address(token) != address(0), "Tk empty");
             require(token.allocate(amountInGrowToken, claim), 'Allocation failed');
@@ -380,17 +371,6 @@ contract Learna is Campaigns, ReentrancyGuard {
         res.cp.data.lastUpdated = _now();
         _setCampaign(res.slot, weekId, res.cp.data);
     }
-
-    function _callback(CData memory _cp, uint platformToken) internal returns(CData memory cp) {
-        cp = _cp;
-        (uint native, uint256 erc20) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20);
-        cp.fundsNative = native;
-        cp.fundsERC20 = erc20;
-        unchecked {
-            cp.platformToken += platformToken;
-        }
-        cp.lastUpdated = _now();
-    }
     
     /**
      * @dev Calculates user's share of the weekly payout
@@ -452,33 +432,33 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
     }
 
-    /**
-     * @dev Assign 2% of payouts to the dev
-     * @param token : ERC20 token to be used for payout
-     * @return nativeBalance : Celo balance of this contract after dev share 
-     * @return erc20Balance : ERC20 balance of this contract after dev share
-     */
-    function _rebalance(address token, uint256 native, uint256 erc20) internal returns(uint256 nativeBalance, uint256 erc20Balance) {
-        uint8 devRate = 2;
-        nativeBalance = native;
-        erc20Balance = erc20;
-        uint devShare;
-        unchecked {
-            if(nativeBalance > 0 && (address(this).balance >= nativeBalance)) {
-                devShare = (nativeBalance * devRate) / 100;
-                (bool done,) = dev.call{value: devShare}('');
-                require(done, 'T.Failed');
-                nativeBalance -= devShare;
-            }
-            if(erc20Balance > 0 && (IERC20(token).balanceOf(address(this)) >= erc20Balance)) {
-                devShare = (erc20Balance * devRate) / 100;
-                if(token != address(0)){
-                    require(IERC20(token).transfer(dev, devShare), 'ERC20 TFailed');
-                }
-                erc20Balance -= devShare; 
-            }
-        }
-    }
+    // /**
+    //  * @dev Assign 2% of payouts to the dev
+    //  * @param token : ERC20 token to be used for payout
+    //  * @return nativeBalance : Celo balance of this contract after dev share 
+    //  * @return erc20Balance : ERC20 balance of this contract after dev share
+    //  */
+    // function _rebalance(address token, uint256 native, uint256 erc20) internal returns(uint256 nativeBalance, uint256 erc20Balance) {
+    //     uint8 devRate = 2;
+    //     nativeBalance = native;
+    //     erc20Balance = erc20;
+    //     uint devShare;
+    //     unchecked {
+    //         if(nativeBalance > 0 && (address(this).balance >= nativeBalance)) {
+    //             devShare = (nativeBalance * devRate) / 100;
+    //             (bool done,) = dev.call{value: devShare}('');
+    //             require(done, 'T.Failed');
+    //             nativeBalance -= devShare;
+    //         }
+    //         if(erc20Balance > 0 && (IERC20(token).balanceOf(address(this)) >= erc20Balance)) {
+    //             devShare = (erc20Balance * devRate) / 100;
+    //             if(token != address(0)){
+    //                 require(IERC20(token).transfer(dev, devShare), 'ERC20 TFailed');
+    //             }
+    //             erc20Balance -= devShare; 
+    //         }
+    //     }
+    // }
 
     /////////////////////////////////////////////////////////////////////////////////
     //                          READ-ONLY FUNCTIONS                                //

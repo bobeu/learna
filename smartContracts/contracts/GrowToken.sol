@@ -50,7 +50,7 @@ contract GrowToken is IGrowToken, ERC20, Ownable {
      * @param amount : Amount to allocate
      */
     function allocate(uint amount, address to) external onlyMain returns(bool) {
-        _transfer(address(this), to == address(0)? mainContract : to, amount);
+        _transfer(address(this), to, amount);
         return true;
     }
 
