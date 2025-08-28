@@ -102,15 +102,16 @@ export default function Educaster() {
     }, []);
 
     const handleQuizSelect = (quiz: Quiz) => {
-        const admin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_IDENTIFIER).toLowerCase();
-        const divviAdmin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_ADMIN).toLowerCase();
-        if(quiz.title === 'divvi'){
-            if(account.toLowerCase() === divviAdmin || account.toLowerCase() === admin){
-                setSelectedQuiz(quiz);
-            }
-        } else {
-            setSelectedQuiz(quiz);
-        }
+        // const admin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_IDENTIFIER).toLowerCase();
+        // const divviAdmin = formatAddr(process.env.NEXT_PUBLIC_DIVVI_ADMIN).toLowerCase();
+        // if(quiz.title === 'divvi'){
+        //     if(account.toLowerCase() === divviAdmin || account.toLowerCase() === admin){
+        //         setSelectedQuiz(quiz);
+        //     }
+        // } else {
+        //     setSelectedQuiz(quiz);
+        // }
+        setSelectedQuiz(quiz);
         setPath('quiz');
     };
 
@@ -270,8 +271,8 @@ export default function Educaster() {
         const campaignStrings = allCampaign.map(({campaign}) => campaign);
         
         const weekData = [...storage.wd];
-        console.log("weekProfileData", weekProfileData)
-        console.log("verificationStatus", verificationStatus)
+        // console.log("weekProfileData", weekProfileData)
+        // console.log("verificationStatus", verificationStatus)
         const formattedData = formatData(
             {weekProfileData, verificationStatus},
             weekData,
