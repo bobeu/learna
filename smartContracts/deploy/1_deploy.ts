@@ -243,7 +243,7 @@ import { recordPoints, setUpCampaign, sortWeeklyPayment, verifyAndClaim } from "
 dotconfig();
 enum Mode { LOCAL, LIVE }
 const NAME = "Learn, Assimilate & Integrate Token";
-const SYMBOL = "POLAI";
+const SYMBOL = "POLE";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
@@ -350,31 +350,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	// try {
 	// 	for(let i = 0; i < newAdmins.length; i++) {
-	// 		await execute('VerifierV2', {from: deployer}, 'setPermission', newAdmins[i]);
-	// 		await execute('PlatformToken', {from: deployer}, 'setPermission', newAdmins[i]);
+	// 		// await execute('VerifierV2', {from: deployer}, 'setPermission', newAdmins[i]);
+	// 		// await execute('LearnaV2', {from: deployer}, 'setPermission', newAdmins[i]);
 	// 	} 
 	// } catch (error) {
 	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 	// 	console.error("Error executing setPermission:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 	
-	// try {
-	// 	if(tokenv2 === undefined) throw new Error("TokenV2 is not deployed");
-	// 	if(learna === undefined) throw new Error("Learna is not deployed");
-	// 	await execute('LearnaV2', {from: deployer}, 'setToken', tokenv2.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setToken:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		if(tokenv2 === undefined) throw new Error("TokenV2 is not deployed");
+		if(learna === undefined) throw new Error("Learna is not deployed");
+		await execute('LearnaV2', {from: deployer}, 'setToken', tokenv2.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setToken:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
-	// try {
-	// 	if(tokenv2 === undefined) throw new Error("TokenV2 is not deployed");
-	// 	if(learna === undefined) throw new Error("Learna is not deployed");
-	// 	await execute('PlatformToken', {from: deployer}, 'setMain', learna.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setMain:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		if(tokenv2 === undefined) throw new Error("TokenV2 is not deployed");
+		if(learna === undefined) throw new Error("Learna is not deployed");
+		await execute('PlatformToken', {from: deployer}, 'setMain', learna.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setMain:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
 	// try {
 	// 	if(learna === undefined) throw new Error("Learna is not deployed");
@@ -414,14 +414,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 	console.error("Error executing setScope:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
-	// try {
-	// 	if(verifier === undefined) throw new Error("Verifier is not deployed");
-	// 	if(learna === undefined) throw new Error("Learna is not deployed");
-	// 	await execute('LearnaV2', {from: deployer}, 'setPermission', verifier.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setPermission on Learna for Verifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		if(verifier === undefined) throw new Error("Verifier is not deployed");
+		if(learna === undefined) throw new Error("Learna is not deployed");
+		await execute('LearnaV2', {from: deployer}, 'setPermission', verifier.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setPermission on Learna for Verifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
 	// try {
 	// 	if(verifier === undefined) throw new Error("Verifier is not deployed");

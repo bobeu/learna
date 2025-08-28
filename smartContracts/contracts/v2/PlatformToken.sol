@@ -3,10 +3,10 @@
 pragma solidity 0.8.28;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { Approved } from "../Approved.sol";
 import { IGrowToken } from '../interfaces/IGrowToken.sol';
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PlatformToken is IGrowToken, ERC20, Approved {
+contract PlatformToken is IGrowToken, ERC20, Ownable {
     // Contract allowed to send allocation request
     address internal learna;
 
@@ -22,7 +22,7 @@ contract PlatformToken is IGrowToken, ERC20, Approved {
      * 
      * @param reserve : Address where other apportionments other than the dev's will be sent to. 
      */
-    constructor(address reserve, string memory name_, string memory symbol_) ERC20(name_, symbol_) {
+    constructor(address reserve, string memory name_, string memory symbol_) ERC20(name_, symbol_) Ownable(_msgSender()) {
         unchecked {
             uint tSupply = 21_000_000 * (10**decimals());
             uint dev = 630000 * (10**decimals());
@@ -43,7 +43,8 @@ contract PlatformToken is IGrowToken, ERC20, Approved {
      * @dev Allocate token to the learna contract
      * @param amount : Amount to allocate
      */
-    function allocate(uint amount, address to) external onlyApproved() returns(bool) {
+    function allocate(uint amount, address to) external returns(bool) {
+        require(_msgSender() == learna || _msgSender() == owner(), "Not authorized");
         _transfer(address(this), to, amount);
         return true;
     }
@@ -53,7 +54,7 @@ contract PlatformToken is IGrowToken, ERC20, Approved {
      * @param newMain : New learna address
      * @notice : If the previous address is valid and has some balances, they're moved to this contract.
      */
-    function setMain(address newMain) external onlyApproved() returns(bool) {
+    function setMain(address newMain) external onlyOwner returns(bool) {
         require(newMain != learna, "Address already exist");
         uint bal = balanceOf(learna);
         if(learna != address(0) && bal > 0){
