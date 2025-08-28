@@ -26,7 +26,8 @@ const config: HardhatUserConfig = {
     celo: {
       accounts: [`${PRIVATE_KEY_MAINNET}`],
       url: 'https://forno.celo.org',
-    },
+      chainId: 42220,
+    }
   },
   etherscan: {
     apiKey: {

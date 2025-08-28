@@ -118,8 +118,7 @@ export async function claimReward(x: ClaimReward) {
   const erc20balanceOfSignerB4Claim = await GrowToken.balanceOf(signerAddr);
   const erc20balanceInLearnaB4Claim = await GrowToken.balanceOf(learnaAddr);
   const nativeBalOfSignerB4Claim = await signer.provider?.getBalance(signerAddr) as bigint;
-  const eligibility = await learna.checkEligibility(signerAddr);
-
+  await learna.connect(signer).claimReward(signerAddr);
   const erc20balanceOfSignerAfterClaim = await GrowToken.balanceOf(signerAddr);
   const nativeBalOfSignerAfterClaim = await signer.provider?.getBalance(signerAddr) as bigint;
   const erc20balanceInLearnaAfterClaim = await GrowToken.balanceOf(learnaAddr);
@@ -134,7 +133,7 @@ export async function claimReward(x: ClaimReward) {
     erc20balanceOfSignerAfterClaim,
     nativeBalOfSignerAfterClaim,
     erc20balanceInLearnaAfterClaim,
-    eligibility,
+    eligibility: profile.campaigns.filter(({hash_}) => hash_.toLowerCase() === campaignHash.toLowerCase())?.[0].eligibility,
     profile
   };
 }

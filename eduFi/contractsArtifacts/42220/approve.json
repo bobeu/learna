@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x8ecDEf4F814Fc77f2e2782f69225e32e76D60c78",
+  "contractAddress": "0xFc42c32DA1ea43f43671C49735030FA3fF2CbB4C",
   "functionName": "approve",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -9,11 +9,6 @@
         {
           "internalType": "address",
           "name": "reserve",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_mainContract",
           "type": "address"
         },
         {
@@ -29,6 +24,11 @@
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AddressIsZero",
+      "type": "error"
     },
     {
       "inputs": [
@@ -117,6 +117,16 @@
       "type": "error"
     },
     {
+      "inputs": [],
+      "name": "EnforcedPause",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExpectedPause",
+      "type": "error"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -169,6 +179,19 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "previousOwner",
           "type": "address"
         },
@@ -180,6 +203,19 @@
         }
       ],
       "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Paused",
       "type": "event"
     },
     {
@@ -205,6 +241,32 @@
         }
       ],
       "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "UnApproval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Unpaused",
       "type": "event"
     },
     {
@@ -336,6 +398,25 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "isPermitted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "name",
       "outputs": [
@@ -363,7 +444,52 @@
     },
     {
       "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newMain",
+          "type": "address"
+        }
+      ],
+      "name": "setMain",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "setPermission",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -456,6 +582,19 @@
         }
       ],
       "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "unApprove",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

@@ -1,4 +1,3 @@
-[dotenv@17.2.1] injecting env (16) from .env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
 // Sources flattened with hardhat v2.26.3 https://hardhat.org
 
 // SPDX-License-Identifier: MIT
@@ -2581,12 +2580,12 @@ interface IGrowToken is IERC20 {
 }
 
 
-// File contracts/Week.sol
+// File contracts/v2/WeekV2.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-abstract contract Week is ILearna, Admins {
+abstract contract WeekV2 is ILearna, Admins {
 
     /// @dev  Other state variables
     State private state;
@@ -2720,7 +2719,7 @@ abstract contract Week is ILearna, Admins {
 }
 
 
-// File contracts/Campaigns.sol
+// File contracts/v2/CampaignsV2.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
@@ -2730,7 +2729,7 @@ pragma solidity 0.8.28;
  * @author : Bobeu - https://github.com/bobeu
  * @notice Non-deployable parent contract that perform CRUD operation on campaigns
 */ 
-abstract contract Campaigns is Week {
+abstract contract CampaignsV2 is WeekV2 {
     using SafeERC20 for IERC20;
 
     ///@dev 
@@ -2819,8 +2818,8 @@ abstract contract Campaigns is Week {
                     cmp.data.token = token;
                 }
                 uint allowance = IERC20(cmp.data.token).allowance(_msgSender(), address(this));
-                require(allowance > 0, "No allowance detected");
-                IERC20(cmp.data.token).transferFrom(_msgSender(), address(this), allowance);
+                require(allowance > 0 && allowance >= fundsERC20, "No allowance detected");
+                require(IERC20(cmp.data.token).transferFrom(_msgSender(), address(this), fundsERC20), "Allowance transfer failed");
                 cmp.data.fundsERC20 += fundsERC20;
             }
             
@@ -2836,8 +2835,11 @@ abstract contract Campaigns is Week {
      * @param weekId : week id
     */
     function _validateCampaign(bytes32 hash_, uint weekId) internal view {
-        require(isRegistered[hash_], "Campaign not registered");
-        require(wInit[weekId][hash_].hasSlot, "Campaign not in current week");
+        require(_isValidCampaign(hash_, weekId), "Invalid campaign");
+    }
+
+    function _isValidCampaign(bytes32 hash_, uint weekId) internal view returns(bool isValid) {
+        isValid = isRegistered[hash_] && wInit[weekId][hash_].hasSlot;
     }
 
     /**
@@ -2925,10 +2927,15 @@ abstract contract Campaigns is Week {
      * @dev Set up all campaigns for the new week. 
      * @notice it transition into a new week bringing forward the funds from the previous week to the new week.
      * @param newIntervalInMin : New interval to update
-     * @param _platformToken : Amount to fund in platform token
+     * @param platformTkPerCmp : Amount to fund in platform token per each campaign
     */
-    function _initializeAllCampaigns(uint32 newIntervalInMin, uint _platformToken, function (CData memory, uint) internal returns(CData memory) _callback) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory campaignData) {
+    function _initializeAllCampaigns(
+        uint32 newIntervalInMin, 
+        uint platformTkPerCmp, 
+        function (CData memory, uint) internal returns(CData memory) _callback
+    ) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory campaignData) {
         State memory st = _getState();
+        uint totalAllocation;
         require(st.transitionDate < _now(), "Transition is in future");
         pastWeek = st.weekId;
         campaignData = _getApprovedCampaigns();
@@ -2940,9 +2947,14 @@ abstract contract Campaigns is Week {
             GetCampaign memory cmp = _getCampaign(pastWeek, hash_);
             cmp.cp.data.lastUpdated = _now();
             unchecked {
-                cmp.cp.data.platformToken += _platformToken;
+                if(cmp.cp.data.activeLearners > 0) totalAllocation += platformTkPerCmp;
+                cmp.cp.data.platformToken += platformTkPerCmp;
             }
-            _setCampaign(cmp.slot, pastWeek, _callback(cmp.cp.data, _platformToken)); 
+            _setCampaign(cmp.slot, pastWeek, _callback(cmp.cp.data, platformTkPerCmp)); 
+        }
+        if(totalAllocation > 0) {
+            require(address(token) != address(0), "Tk empty");
+            require(token.allocate(totalAllocation, address(this)), 'Allocation failed');
         }
     }
 
@@ -3026,15 +3038,18 @@ library Utils {
 }
 
 
-// File contracts/Learna.sol
+// File contracts/v2/LearnaV2.sol
 
 // Original license: SPDX_License_Identifier: MIT
 
 pragma solidity 0.8.28;
-contract Learna is Campaigns, ReentrancyGuard {
+contract LearnaV2 is CampaignsV2, ReentrancyGuard {
     using Utils for uint96;
 
-    error ToIsAddressZero();
+    event Claimed(address indexed sender, uint weekId, bytes32 hash_, CData campaign);
+
+    error BalanceAnomally();
+    error WeekZeroIsRunning();
 
     Mode private mode;
 
@@ -3286,12 +3301,7 @@ contract Learna is Campaigns, ReentrancyGuard {
         onlyAdmin
         returns(bool) 
     {
-        if(amountInGrowToken > 0) {
-            require(address(token) != address(0), "Tk empty");
-            require(token.allocate(amountInGrowToken, address(this)), 'Allocation failed');
-        }
         (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
-
         emit Sorted(currentWk, newWk, cData);  
  
         return true;
@@ -3373,7 +3383,7 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param fundsERC20 : Amount in ERC20 currency e.g $GROW, $G. etc
      * @param platformToken : Amount in platform token e.g GROW token
     */
-    function _onCampaignValueChanged(
+    function _onWithdrawal(
         uint weekId, 
         bytes32 hash_, 
         uint256 fundsNative, 
@@ -3396,13 +3406,18 @@ contract Learna is Campaigns, ReentrancyGuard {
         _setCampaign(res.slot, weekId, res.cp.data);
     }
 
-    function _callback(CData memory _cp, uint platformToken) internal returns(CData memory cp) {
-        cp = _cp;
-        (uint native, uint256 erc20, uint platform) = _rebalance(cp.token, cp.fundsNative, cp.fundsERC20, platformToken);
-        cp.fundsNative = native;
-        cp.platformToken = platform;
-        cp.fundsERC20 = erc20;
-        cp.lastUpdated = _now();
+    function _callback(CData memory inCmp, uint platformToken) internal returns(CData memory outCmp) {
+        outCmp = inCmp;
+        (uint native, uint256 erc20, uint platform) = _rebalance(
+            outCmp.token, 
+            outCmp.fundsNative, 
+            outCmp.fundsERC20, 
+            platformToken
+        );
+        outCmp.fundsNative = native;
+        outCmp.platformToken = platform;
+        outCmp.fundsERC20 = erc20;
+        outCmp.lastUpdated = _now();
     }
     
     /**
@@ -3413,17 +3428,23 @@ contract Learna is Campaigns, ReentrancyGuard {
     function _calculateShare( 
         uint64 userPoints, 
         CData memory cp
-    ) internal view returns(uint erc20Amount, uint nativeClaim, uint platform) {
-        uint8 erc20Decimals;
-        assert(cp.totalPoints >= userPoints);
-        if(cp.totalPoints > 0 && cp.token != address(0)) { 
-            erc20Decimals = IERC20Metadata(cp.token).decimals(); 
+    ) internal view returns(uint erc20, uint native, uint platform) {
+        uint8 dec;
+        if(userPoints > cp.totalPoints) revert BalanceAnomally();
+        if(cp.totalPoints > 0) { 
             unchecked {
-                if(cp.fundsERC20 > 0) erc20Amount = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, erc20Decimals);
-                if(cp.fundsNative > 0) nativeClaim = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
+                if(cp.fundsNative > 0) native = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
+                if(cp.fundsERC20 > 0) {
+                    if(cp.token != address(0)){
+                        dec = IERC20Metadata(cp.token).decimals();
+                        erc20 = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, dec);
+                    }
+                }
                 if(cp.platformToken > 0) {
-                    erc20Decimals = IERC20Metadata(address(token)).decimals();
-                    platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, erc20Decimals);
+                    if(address(token) != address(0)){
+                        dec = IERC20Metadata(address(token)).decimals();
+                        platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, dec);
+                    }
                 }
             }
         }
@@ -3435,67 +3456,68 @@ contract Learna is Campaigns, ReentrancyGuard {
      * @param weekId : Requested week Id
      * @param hash_ : Hash of the campaign name
      */
-    function _getEligibility(address user, bytes32 hash_, uint weekId, bool nullifier, bool validate) 
+    function _getEligibility(address user, bytes32 hash_, uint weekId, bool nullifier) 
         internal 
         view 
         returns(Eligibility memory elg) 
     {
-        if(validate) _validateCampaign(hash_, weekId);
-        if(!isClaimed[user][weekId][hash_]) {
-            CData memory cp = _getCampaign(weekId, hash_).cp.data;
-            Profile memory pf = _getProfile(weekId, hash_, user);
-            uint64 totalScore;
-            for(uint i = 0; i < pf.quizResults.length; i++) { 
-                unchecked {
-                    totalScore += pf.quizResults[i].other.score;
+        if(_isValidCampaign(hash_, weekId)) {
+            if(!_hasClaimed(user, weekId, hash_)) {
+                CData memory cp = _getCampaign(weekId, hash_).cp.data;
+                Profile memory pf = _getProfile(weekId, hash_, user);
+                uint64 totalScore;
+                for(uint i = 0; i < pf.quizResults.length; i++) { 
+                    unchecked {
+                        totalScore += pf.quizResults[i].other.score;
+                    }
                 }
+                (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
+                bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0 || cp.platformToken > 0) : true;
+                bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
+                elg = Eligibility(
+                    isEligible,
+                    erc20,  
+                    native, 
+                    platform,
+                    cp.token, 
+                    hash_,
+                    weekId
+                );
             }
-            (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
-            bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0) : true;
-            bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
-            elg = Eligibility(
-                isEligible,
-                erc20,  
-                native, 
-                platform,
-                cp.token, 
-                hash_,
-                weekId
-            );
         }
     }
 
     /**
      * @dev Assign 2% of payouts to the dev
      * @param _token : ERC20 token to be used for payout
-     * @param platform : Platform token to be used for payout
-     * @param erc20 : ERC20 token to be used for payout
-     * @param native : Native token to be used for payout
-     * @return nativeBalance : Celo balance of this contract after dev share
-     * @return erc20Balance : ERC20 balance of this contract after dev share
-     * @return platformBalance : Platform balance of this contract after dev share
+     * @param platformIn : Platform token to be used for payout
+     * @param erc20In : ERC20 token to be used for payout
+     * @param nativeIn : Native token to be used for payout
+     * @return nOut : Celo balance of this contract after dev share
+     * @return eOut : ERC20 balance of this contract after dev share
+     * @return pOut : Platform balance of this contract after dev share
      */
-    function _rebalance(address _token, uint256 native, uint256 erc20, uint256 platform) internal returns(uint256 nativeBalance, uint256 erc20Balance, uint256 platformBalance) {
+    function _rebalance(address _token, uint256 nativeIn, uint256 erc20In, uint256 platformIn) internal returns(uint256 nOut, uint256 eOut, uint256 pOut) {
         uint8 devRate = 2;
-        nativeBalance = native;
-        erc20Balance = erc20;
-        platformBalance = platform;
+        nOut = nativeIn;
+        eOut = erc20In;
+        pOut = platformIn;
         uint devShare;
         unchecked {
-            if(nativeBalance > 0 && (address(this).balance >= nativeBalance)) {
-                devShare = (nativeBalance * devRate) / 100;
+            if(nOut > 0 && (address(this).balance >= nOut)) {
+                devShare = (nOut * devRate) / 100;
                 _sendValue(devShare, dev);
-                nativeBalance -= devShare;
+                nOut -= devShare;
             }
-            if(erc20Balance > 0 && (IERC20(_token).balanceOf(address(this)) >= erc20Balance)) {
-                devShare = (erc20Balance * devRate) / 100;
+            if(eOut > 0 && (IERC20(_token).balanceOf(address(this)) >= eOut)) {
+                devShare = (eOut * devRate) / 100;
                 _sendErc20(dev, devShare, IERC20(_token));
-                erc20Balance -= devShare; 
+                eOut -= devShare; 
             }
-            if(platformBalance > 0 && (token.balanceOf(address(this)) >= platformBalance)) {
-                devShare = (platformBalance * devRate) / 100;
+            if(pOut > 0 && (token.balanceOf(address(this)) >= pOut)) {
+                devShare = (pOut * devRate) / 100;
                 _sendErc20(dev, devShare, token);
-                platformBalance -= devShare; 
+                pOut -= devShare; 
             }
         }
     }
@@ -3505,27 +3527,26 @@ contract Learna is Campaigns, ReentrancyGuard {
     /////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get users eligibility for all the campaigns for the previous weeks ended
+     * Claim reward for a campaign for the previous weeks ended
      * @notice Claim will always be for the concluded week only.
      */
-    function claimReward() public returns(bool){
+    function claimReward(bytes32 hash_) public returns(bool){
         uint weekId = _getState().weekId;
         address sender = _msgSender();
         (bool isVerified, bool isBlacklisted) = verifier.getVerificationStatus(sender);
         require(isVerified && !isBlacklisted, "Not verified or blacklisted");
-        if(weekId > 0) weekId -= 1;
-        Campaign[] memory cps = _getCampaings(weekId);
-        uint cSize = cps.length;
-        for(uint j = 0; j < cSize; j++){
+        if(weekId > 0) {
+            weekId -= 1;
+            _validateCampaign(hash_, weekId);
             bool nullifier = false;
             // If useKey is enabled, data must have created a key for all the campaigns they subscribed to
             if(useKey){
-                if(!_getProfile(weekId, cps[j].data.data.hash_, sender).other.haskey) nullifier = true;
+                if(!_getProfile(weekId, hash_, sender).other.haskey) nullifier = true;
             }
-            Eligibility memory elg = _getEligibility(sender, cps[j].data.data.hash_, weekId, nullifier, false);
-            if(!_hasClaimed(sender, weekId, elg.hash_)) {
+            Eligibility memory elg = _getEligibility(sender, hash_, weekId, nullifier);
+            if(!_hasClaimed(sender, weekId, hash_)) {
                 if(elg.isEligible){
-                    _onCampaignValueChanged(weekId, elg.hash_, elg.nativeAmount, elg.erc20Amount, elg.platform, sender);
+                    _onWithdrawal(weekId, hash_, elg.nativeAmount, elg.erc20Amount, elg.platform, sender);
                     if(elg.nativeAmount > 0) {
                         _sendValue(elg.nativeAmount, sender);
                     }
@@ -3537,6 +3558,10 @@ contract Learna is Campaigns, ReentrancyGuard {
                     }
                 }
             }
+
+            emit Claimed(sender, weekId, hash_, _getCampaign(weekId, hash_).cp.data);
+        } else {
+            revert WeekZeroIsRunning();
         }
 
         return true;
@@ -3565,7 +3590,7 @@ contract Learna is Campaigns, ReentrancyGuard {
                         if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
                     }
                     _userCampaigns[hashId] = ReadProfile( 
-                        _getEligibility(user, hash_, i, nullifier, false),
+                        _getEligibility(user, hash_, i, nullifier),
                         _getProfile(i, hash_, user), 
                         isClaimed[user][i][hash_],
                         hash_
@@ -3576,4 +3601,29 @@ contract Learna is Campaigns, ReentrancyGuard {
         }
         return _return;
     } 
+
+    /**
+     * @dev Emergency withdrawal of funds
+     * @param to : Recipient
+     * @param amount : Native amount
+     * @param token : ERC20 token if needed
+     * @param tokenAmount : Amount of ERC20 token to withdraw
+     */
+    function withdraw(address to, uint amount, address token, uint tokenAmount) public onlyOwner returns(bool) {
+        if(address(this).balance > 0) {
+            (bool done,) = to.call{value: amount}('');
+            require(done, "Transfer failed");
+        }
+        if(tokenAmount > 0) {
+            if(token != address(0)) {
+                IERC20 tk = IERC20(token);
+                uint balance = tk.balanceOf(address(this));
+                if(balance >= tokenAmount){
+                    tk.transfer(to, tokenAmount);
+                }
+            }
+        }
+        return true;
+    }
+
 }

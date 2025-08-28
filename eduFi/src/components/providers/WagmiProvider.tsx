@@ -4,7 +4,7 @@ import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { APP_DESCRIPTION, APP_URL } from "~/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
-import { celoAlfajores, celo, celoSepolia } from 'wagmi/chains';
+import { celo } from 'wagmi/chains';
 
 // Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
@@ -61,17 +61,17 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     appIcon: 'https://learna.vercel.app/learna-logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
-    chains: [ celoAlfajores, celo ],
+    chains: [ celo ],
     ssr: true,
     multiInjectedProviderDiscovery: true,
     pollingInterval: 10_000,
     syncConnectedChain: true,
     transports: {
-      [celoAlfajores.id]: http(alchemy_alfajores_api),
       [celo.id]: http(alchemy_celo_api),
-      [celoSepolia.id]: http(alchemy_celosepolia_api),
     },
   });
+  // [celoSepolia.id]: http(alchemy_celosepolia_api),
+  // [celoAlfajores.id]: http(alchemy_alfajores_api),
 
   // Light theme configuration for RainbowKit wallet set up
   const theme = lightTheme(
@@ -92,7 +92,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           coolMode={true}
           modalSize="compact" 
           theme={theme} 
-          // initialChain={celo.id} 
+          initialChain={celo.id} 
           showRecentTransactions={true}
           appInfo={{
             appName: "Learna",

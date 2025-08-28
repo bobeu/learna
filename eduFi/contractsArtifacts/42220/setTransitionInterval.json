@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x099c6775019843E42D36c877Ae302162aBAF9A8d",
+  "contractAddress": "0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca",
   "functionName": "setTransitionInterval",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -38,6 +38,11 @@
     {
       "inputs": [],
       "name": "AddressIsZero",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BalanceAnomally",
       "type": "error"
     },
     {
@@ -90,7 +95,7 @@
     },
     {
       "inputs": [],
-      "name": "ToIsAddressZero",
+      "name": "WeekZeroIsRunning",
       "type": "error"
     },
     {
@@ -290,6 +295,96 @@
         }
       ],
       "name": "CampaignUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "weekId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "hash_",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "platformToken",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "fundsNative",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "fundsERC20",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint96",
+              "name": "totalPoints",
+              "type": "uint96"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastUpdated",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint256",
+              "name": "activeLearners",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "hash_",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "encoded",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct ILearna.CampaignData",
+              "name": "data",
+              "type": "tuple"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct ILearna.CData",
+          "name": "campaign",
+          "type": "tuple"
+        }
+      ],
+      "name": "Claimed",
       "type": "event"
     },
     {
@@ -622,7 +717,13 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "hash_",
+          "type": "bytes32"
+        }
+      ],
       "name": "claimReward",
       "outputs": [
         {
@@ -1512,6 +1613,40 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

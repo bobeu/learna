@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xc119d63060d29CFB720518Fe82661E3803C60c66",
+  "contractAddress": "0x880cD2d07E512B083Efc8136493f948895D2C6fB",
   "functionName": "isWalletVerificationRequired",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -534,40 +534,6 @@
       ],
       "name": "verifySelfProof",
       "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tokenAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "withdraw",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

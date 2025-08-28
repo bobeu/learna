@@ -6,7 +6,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Approved } from "../Approved.sol";
 import { IGrowToken } from '../interfaces/IGrowToken.sol';
 
-contract GrowTokenV2 is IGrowToken, ERC20, Approved {
+contract PlatformToken is IGrowToken, ERC20, Approved {
     // Contract allowed to send allocation request
     address internal learna;
 

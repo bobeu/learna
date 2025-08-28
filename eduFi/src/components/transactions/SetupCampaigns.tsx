@@ -21,7 +21,7 @@ export default function SetUpCampaign({nativeValue, openDrawer, fundsErc20, toke
         });
 
         const setupArgs = [campaignString, fundsErc20, token];
-        const learna = mutate.contractAddresses.Learna as Address;
+        const learna = mutate.contractAddresses.LearnaV2 as Address;
         const approveArgs = [learna, fundsErc20];
 
         return { mutate, setupArgs, approveArgs, learna };

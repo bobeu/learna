@@ -18,8 +18,8 @@ export default function ClaimContract({erc20InContract}: {erc20InContract: Addre
             functionNames: ['balanceOf', 'balanceOf']
         });
         // const abi = filtered.transactionData[0].abi;
-        const verifier = filtered.contractAddresses.Verifier as Address;
-        const GrowToken = filtered.contractAddresses.GrowToken as Address;
+        const verifier = filtered.contractAddresses.VerifierV2 as Address;
+        const GrowToken = filtered.contractAddresses.PlatformToken as Address;
         const contractAddresses = [erc20InContract, GrowToken];
         const args = [[verifier], [verifier]];
         const readTxObject = filtered.transactionData.map((item, i) => {
