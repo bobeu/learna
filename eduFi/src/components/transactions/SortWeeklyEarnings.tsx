@@ -17,7 +17,7 @@ export default function SortWeeklyReward({growTokenAmount, newInterval, openDraw
             callback
         });
 
-        const contractAddress = filtered.contractAddresses.Learna as Address;
+        const contractAddress = filtered.contractAddresses.LearnaV2 as Address;
         const args = [growTokenAmount, newInterval];
 
         return { ...filtered, args, contractAddress };

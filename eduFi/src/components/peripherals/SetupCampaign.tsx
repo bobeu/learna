@@ -97,7 +97,7 @@ export default function SetupCampaign() {
             // return {fundsErc20: 0n, fundsNative: 0n, sortContent: [], contractAddresses: []};
         }
         const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
-        const contractAddresses = [{name: 'None', address: zeroAddress}, {name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.GrowToken as Address}];
+        const contractAddresses = [{name: 'None', address: zeroAddress}, {name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.PlatformToken as Address}];
         const sortContent : ContentType[] = [
             {
                 tag: 'campaignhash',

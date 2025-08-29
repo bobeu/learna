@@ -28,11 +28,9 @@
     "delegateTransaction"
   ],
   "chainName": {
-    "42220": "celo",
-    "44787": "alfajores"
+    "42220": "celo"
   },
   "chainIds": [
-    44787,
     42220
   ],
   "paths": {
@@ -41,20 +39,9 @@
       "deployments\\celo\\LearnaV2.json",
       "deployments\\celo\\PlatformToken.json",
       "deployments\\celo\\VerifierV2.json"
-    ],
-    "44787": [
-      "deployments\\alfajores\\FeeManager.json",
-      "deployments\\alfajores\\GrowToken.json",
-      "deployments\\alfajores\\Learna.json"
     ]
   },
   "contractAddresses": [
-    {
-      "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "FeeManager": "0x320E5C73Dbb928763b6047A87e801549854FC035",
-      "GrowToken": "0x9F2a1BA4447B6195db3Ad6a70853C64c25aE1371",
-      "Learna": "0x8923e6CdBC94B84DdeDBfBFAd83b62D93C2Fb91E"
-    },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
       "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",

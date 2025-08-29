@@ -265,19 +265,18 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @returns object containing array of transaction data and approved functions
  */
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
-  const { approvedFunctions, chainIds, contractAddresses } = globalContractData;
+  const { approvedFunctions, contractAddresses } = globalContractData;
   const transactionData : TransactionData[] = [];
-  const index = chainIds.indexOf(chainId || chainIds[1]);
+  // const index = chainIds.indexOf(chainId || chainIds[1]);
   if(filter) {
     functionNames.forEach((functionName) => {
       transactionData.push(getFunctionData(functionName, chainId));
     })
   }
-
   return {
     transactionData,
     approvedFunctions,
-    contractAddresses: contractAddresses[index],
+    contractAddresses: contractAddresses[0],
   }
 }
 
@@ -392,9 +391,7 @@ export function formatData(stateData: StateData, weekData: WeekData[], requested
   const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
   const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
   const statData = filterWeekData(weekData, requestedWkId, requestedHash);
-  console.log("eligibilit", eligibility.isEligible)
-  console.log("isClaimed", isClaimed)
-  console.log("isVerified", isVerified)
+
   return {
     statData,
     isClaimed,

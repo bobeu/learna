@@ -27,7 +27,7 @@ describe("Learna", function () {
         campaigns: cp
       } = await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20, token: GrowToken, value});
 
-      expect(cp.campaigns.length === 1).to.be.true;
+      expect(cp.campaigns.length === 13).to.be.true;
       expect(cp.campaigns[0].data.activeLearners).to.be.eq(0n);
       expect(cp.campaigns[0].data.fundsERC20).to.be.eq(fundERC20);
       expect(cp.campaigns[0].data.fundsNative).to.be.eq(value);

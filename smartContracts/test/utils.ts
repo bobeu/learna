@@ -3,8 +3,23 @@ import type { Address, GrowToken, Learna, Null, Signer } from "./types";
 import { ILearna } from "../typechain-types";
 import { toNumber } from "ethers";
 
-export const campaigns = ['solidity'];
-  
+// export const campaigns = ['solidity'];
+export const campaigns = [
+  'solidity',
+  'wagmi',
+  'reactjs',
+  'ethersjs',
+  'javascript',
+  'typescript',
+  'hardhat',
+  'farcaster',
+  'sdk',
+  'defi',
+  'celo',
+  'self-protocol-sdk',
+  'cryptocurrency'
+];
+
 interface SortEarnings {
   learna: Learna; 
   GrowToken: GrowToken;

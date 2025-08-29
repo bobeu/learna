@@ -4,27 +4,29 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
+import { Hex } from 'viem';
 
-export default function ClaimReward({openDrawer, toggleDrawer }: claimProps) {
+export default function ClaimReward({openDrawer, toggleDrawer, campaignHash }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
-    const { transactionData: td } = React.useMemo(() => {
+    const { transactionData: td, args } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['claimReward'],
             callback
         });
+        const args = [[campaignHash]];
 
-        return { ...filtered };
-    }, [chainId, callback]);
+        return { ...filtered,args };
+    }, [chainId, callback, campaignHash]);
 
     const getTransactions = React.useCallback(() => {
-        const transactions = td.map((txObject) => {
+        const transactions = td.map((txObject, index) => {
             const transaction : Transaction = {
                 abi: txObject.abi,
-                args: [],
+                args: args[index],
                 contractAddress: txObject.contractAddress as Address,
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate
@@ -33,7 +35,7 @@ export default function ClaimReward({openDrawer, toggleDrawer }: claimProps) {
         })
         return transactions;
     
-   }, [td]);
+   }, [td, args]);
 
     return(
         <Confirmation 
@@ -48,4 +50,5 @@ export default function ClaimReward({openDrawer, toggleDrawer }: claimProps) {
 type claimProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
+    campaignHash: Hex;
 };

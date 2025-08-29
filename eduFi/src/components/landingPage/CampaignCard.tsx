@@ -17,7 +17,7 @@ export const CampaignCard: React.FC<QuizCardProps> = ({campaignName, campaign, o
     const { activeLearners, lastUpdated, totalPoints, operator, token, fundsERC20, fundsNative } = campaign.data;
     const chainId = useChainId();
     const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
-    const GrowToken = ca.GrowToken as Address;
+    const GrowToken = ca.PlatformToken as Address;
 
     const getDifficultyColor = (difficulty: string) => {
         switch (difficulty) {
