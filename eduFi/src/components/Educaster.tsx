@@ -182,7 +182,7 @@ export default function Educaster() {
     };
     
     // Build read transactions data
-    const { transactionData: td } = filterTransactionData({
+    const { transactionData: td, contractAddresses: ca } = filterTransactionData({
         chainId,
         filter: true,
         functionNames: ['owner', 'getData', 'getAdmins', 'getVerificationStatus'],
@@ -192,11 +192,17 @@ export default function Educaster() {
         }
     });
     const readArgs = [[], [currentPath === 'stats'? statUser : account], [], [account]];
+    const contractAddresses = [
+        ca.LearnaV2 as Address,
+        ca.LearnaV2 as Address,
+        ca.LearnaV2 as Address,
+        ca.VerifierV2 as Address,
+    ];
     const readTxObject = td.map((item, i) => {
         return{
             abi: item.abi,
             functionName: item.functionName,
-            address: item.contractAddress as Address,
+            address: contractAddresses[i],
             args: readArgs[i]
         }
     });
@@ -220,7 +226,6 @@ export default function Educaster() {
         let owner_ : Address = zeroAddress;
         let admins_ : Admin[] = [mockAdmins];
 
-        // console.log('result', result);
         let verificationStatus_ : [boolean, boolean] = [false, false];
         if(result && result[0].status === 'success' && result[0].result !== undefined) {
             owner_ = result[0].result as Address;
@@ -271,8 +276,6 @@ export default function Educaster() {
         const campaignStrings = allCampaign.map(({campaign}) => campaign);
         
         const weekData = [...storage.wd];
-        // console.log("weekProfileData", weekProfileData)
-        // console.log("verificationStatus", verificationStatus)
         const formattedData = formatData(
             {weekProfileData, verificationStatus},
             weekData,
@@ -346,7 +349,6 @@ export default function Educaster() {
     }, []);
 
     const setstatUser = React.useCallback((arg: string) => {
-        // console.log("Arg", arg)
         setStatUser(arg as Address);
     }, []);
 

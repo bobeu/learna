@@ -15,7 +15,6 @@ export default function FeeManager() {
             chainId,
             filter: false,
         });
-
         return filtered.contractAddresses.FeeManager as Address;
     }, [chainId]);
 

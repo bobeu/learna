@@ -14,13 +14,8 @@ async function deployFeeManager(deployer: Signer, routeTo: Address) : Promise<Fe
   return (await LearnaContract.connect(deployer).deploy(routeTo)).waitForDeployment();
 }
 
-/**
- * Deploys and return an instance of the Learna contract.
- * @param deployer : Deployer address
- * @returns Contract instance
- */
 async function deployLearna(deployer: Signer, admin2: Address, feeManager: Address) : Promise<Learna> {
-  const LearnaContract = await ethers.getContractFactory("Learna");
+  const LearnaContract = await ethers.getContractFactory("LearnaV2"); // V2 
   const deployerAddr = await deployer.getAddress();
   return (await LearnaContract.connect(deployer).deploy([deployerAddr, admin2], 0, Mode.LOCAL, feeManager, campaigns)).waitForDeployment();
 }
@@ -32,9 +27,9 @@ async function deployLearna(deployer: Signer, admin2: Address, feeManager: Addre
  * @param learna : Learna contract address
  * @returns Contract instance
  */
-async function deployGrowToken(reserve: Address, learna: Address, deployer: Signer) : Promise<GrowToken> {
-  const Brain = await ethers.getContractFactory("GrowToken");
-  return (await Brain.connect(deployer).deploy(reserve, learna, "GrowToken", "GROW")).waitForDeployment();
+async function deployGrowToken(reserve: Address, deployer: Signer) : Promise<GrowToken> {
+  const token = await ethers.getContractFactory("PlatformToken"); // Token V2
+  return (await token.connect(deployer).deploy(reserve, "GrowToken", "GROW")).waitForDeployment();
 }
 
 export async function deployContracts(getSigners_: () => Signers) {
@@ -54,14 +49,15 @@ export async function deployContracts(getSigners_: () => Signers) {
   const learna = await deployLearna(deployer, admin2Addr, feeManagerAddr);
   const learnaAddr = await learna.getAddress() as Address;
 
-  const Brain = await deployGrowToken(reserveAddr, learnaAddr, deployer);
-  const GrowTokenAddr = await Brain.getAddress() as Address;
+  const Token = await deployGrowToken(reserveAddr, deployer);
+  const GrowTokenAddr = await Token.getAddress() as Address;
+  await Token.connect(deployer).setMain(learnaAddr);
 
   await learna.connect(deployer).setVerifierAddress(claimAddr);
   await learna.connect(deployer).setToken(GrowTokenAddr);
 
   return {
-    GrowToken: Brain,
+    GrowToken: Token,
     GrowTokenAddr,
     feeManager,
     feeManagerAddr,

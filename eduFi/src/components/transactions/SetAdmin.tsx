@@ -9,7 +9,7 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
-    const { mutate, setupArgs } = React.useMemo(() => {
+    const { mutate, setupArgs, contractAddresses } = React.useMemo(() => {
         const mutate = filterTransactionData({
             chainId,
             filter: true,
@@ -18,24 +18,25 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
         });
         
         const setupArgs = [admin];
+        const contractAddresses = [mutate.contractAddresses.LearnaV2 as Address];
 
-        return { mutate, setupArgs, };
+        return { mutate, setupArgs, contractAddresses };
 
     }, [chainId, admin, callback]);
 
     const getTransactions = React.useCallback(() => {
-        const transactions = mutate.transactionData.map((txObject) => {
+        const transactions = mutate.transactionData.map((txObject, index) => {
             return {
                 abi: txObject.abi,
                 args: setupArgs,
-                contractAddress: txObject.contractAddress as Address,
+                contractAddress: contractAddresses[index],
                 functionName: txObject.functionName as FunctionName,
                 requireArgUpdate: txObject.requireArgUpdate,
             };
         })
         return transactions;
     
-   }, [setupArgs, mutate]);
+   }, [setupArgs, mutate, contractAddresses]);
 
     return(
         <Confirmation 

@@ -5,6 +5,7 @@ import { expect } from "chai";
 import { getCampaigns, setUpCampaign, getQuizResult, sortWeeklyEarning, campaigns, recordPoints } from "../utils";
 import { parseEther } from "viem";
 import { Address } from "../types";
+import { parseUnits } from "ethers";
 
 describe("Learna", function () {
   async function deployContractsFixcture() {
@@ -17,6 +18,7 @@ describe("Learna", function () {
       const amountInERC20 = parseEther('10');
 
       let fundERC20 = parseEther('55');
+      // let fundERC20 = parseEther('0');
       const value = parseEther('13');
       const { allCampaign } = await getCampaigns(learna);
       const campaignHash = allCampaign[0].hash_ as Address;
@@ -25,7 +27,8 @@ describe("Learna", function () {
       await GrowToken.connect(signer1).approve(learnaAddr, erc20Amount);
       const quizResult = getQuizResult(campaignHash, 60);
       await recordPoints({deployer, learna, quizResult, campaignHash, user: signer1Addr, token: GrowTokenAddr});
-      await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20, token: GrowToken, value});
+      await setUpCampaign({learna, signer: signer1, campaign: campaigns[0], fundERC20: 0n, token: GrowToken, value: 0n});
+      await setUpCampaign({learna, signer: signer1, campaign: 'divvi', fundERC20: 0n, token: GrowToken, value: parseUnits('0.001', 18)});
       
       const { 
         balanceInGrowReserveAfterAllocation,

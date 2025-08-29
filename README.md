@@ -62,7 +62,9 @@ Learna is a mobile-first, React-based application built for the web3 and web2 au
 ## Latest Smart contracts information (Celo mainnet)
 - Token smart contract deployed at __[0x4DaC0671376712689ce790f567bf508948A8eff3](https://celoscan.io/address/0x4DaC0671376712689ce790f567bf508948A8eff3#code)__ __
 - Claim contract deployed at __[0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d](https://celoscan.io/address/0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d#code)__ 
+- ClaimV2 contract deployed at __[0x880cD2d07E512B083Efc8136493f948895D2C6fB](https://celoscan.io/address/0x880cD2d07E512B083Efc8136493f948895D2C6fB#code)__ 
 - Learna Factory contract (main) deployed at __[0xC6f50e2E63a1b12Fb2A4340DD7ccdebE687a026b](https://celoscan.io/address/0x5894cab8EEd154726A0c14Fb7eCf042E43Bf2C44]b#code)__ 
+- LearnaV2 Factory contract (main) deployed at __[0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca](https://celoscan.io/address/0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca#code)__ 
 
 ## Site
 - [Interact with Learna here](https://learna.vercel.app)

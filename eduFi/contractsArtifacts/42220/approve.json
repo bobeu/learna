@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x8ecDEf4F814Fc77f2e2782f69225e32e76D60c78",
+  "contractAddress": "0xE80A1a25D8aA9b3Baa5aA188603198689D943aE6",
   "functionName": "approve",
   "inputCount": 2,
   "requireArgUpdate": true,
@@ -9,11 +9,6 @@
         {
           "internalType": "address",
           "name": "reserve",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_mainContract",
           "type": "address"
         },
         {
@@ -365,6 +360,25 @@
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newMain",
+          "type": "address"
+        }
+      ],
+      "name": "setMain",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

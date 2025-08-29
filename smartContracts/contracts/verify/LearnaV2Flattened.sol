@@ -1,4 +1,3 @@
-// [dotenv@17.2.1] injecting env (16) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
 // // Sources flattened with hardhat v2.26.3 https://hardhat.org
 
 // // SPDX-License-Identifier: MIT
@@ -2566,5 +2565,1065 @@
 //         emit ILearna.UserStatusChanged(users, statuses);
 //         return true;
 //     } 
+
+// }
+
+
+// // File contracts/interfaces/IGrowToken.sol
+
+// // Original license: SPDX_License_Identifier: MIT
+
+// pragma solidity 0.8.28;
+// interface IGrowToken is IERC20 {
+//     function allocate(uint amount, address to) external returns(bool);
+//     function burn(address holder, uint amount) external returns(bool);
+// }
+
+
+// // File contracts/v2/WeekV2.sol
+
+// // Original license: SPDX_License_Identifier: MIT
+
+// pragma solidity 0.8.28;
+// abstract contract WeekV2 is ILearna, Admins {
+
+//     /// @dev  Other state variables
+//     State private state;
+
+//     ///@notice Platform token 
+//     IGrowToken public token;
+
+//     ///@notice Claim address
+    
+//     IVerifier public verifier;
+
+//     /// @dev Claim deadlines
+//     mapping(uint => uint96) private claimDeadlines;
+
+//     ///@dev Mapping that shows whether user has claimed reward for a specific week or not
+//     mapping(address user => mapping(uint week => mapping(bytes32 => bool))) internal isClaimed;
+
+//     /**@dev Set claimed status for a user
+//      * @param user : User address
+//      * @param weekId : Week Id
+//      * @param hash_ : Hash of the claim
+//      */
+//     // function _setIsClaimed(address user, uint weekId, bytes32 hash_) internal whenNotPaused onlyApproved() {
+//     function _setIsClaimed(address user, uint weekId, bytes32 hash_) internal {
+//         if(!isClaimed[user][weekId][hash_]) isClaimed[user][weekId][hash_] = true;
+//     }
+
+//     /**
+//         * @notice This function checks if a user has claimed their reward for a specific week.
+//         * @dev It returns true if the user has claimed the reward, false otherwise.
+//         * @param user : User address
+//         * @param weekId : Week Id
+//         * @return bool : True if user has claimed reward for the week, false otherwise
+//      */
+//     function _hasClaimed(address user, uint weekId, bytes32 hash_) internal view returns(bool) {
+//         return isClaimed[user][weekId][hash_];
+//     }
+
+//     function _getDeadline(uint weekId) internal view returns(uint96 deadline) {
+//         deadline = claimDeadlines[weekId];
+//     }
+    
+//     /**
+//      * @dev Set claim deadline
+//      * @param weekId : Week Id
+//      * @param deadline : New deadline
+//      */
+//     function _setClaimDeadline(uint weekId, uint96 deadline) internal {
+//         claimDeadlines[weekId] = deadline;
+//     }
+
+//     /** 
+//      * @dev Update minimum token
+//      * @param minToken : New minimum payable token
+//      */
+//     function _setMinimumToken(uint minToken) internal {
+//         state.minimumToken = minToken;
+//     }
+
+//     /**
+//      * @dev Set approval for target
+//      * @param _verifier : Account to set approval for
+//      */
+//     function setVerifierAddress(address _verifier) public onlyOwner returns(bool) {
+//         verifier = IVerifier(_verifier);
+//         return true;
+//     }
+
+//     /**
+//      * @dev Update minimum token - onlyOwner
+//      * @param minToken : New minimum payable token
+//      */
+//     function setMinimumToken(uint minToken) public onlyOwner {
+//         _setMinimumToken(minToken);
+//     }
+
+//     /**
+//      * @dev Update transition interval
+//      * @param intervalInMin : New interval
+//      * @param pastWeek : Week Id
+//      */
+//     function _setTransitionInterval(uint32 intervalInMin, uint pastWeek) internal {
+//         if(intervalInMin > 0) {
+//             unchecked {
+//                 uint64 newInterval = intervalInMin * 1 minutes;
+//                 uint64 transitionDate = _now() + newInterval;
+//                 state.transitionInterval = newInterval;
+//                 state.transitionDate = transitionDate;
+//                 _setClaimDeadline(pastWeek, transitionDate);
+//             }
+//         } 
+//     }
+
+//     /**
+//      * @dev Update transition interval
+//      * @param interval : New interval
+//      * @notice Transition interval will always reset the transition date 
+//     */
+//     function setTransitionInterval(uint32 interval) public onlyOwner {
+//         unchecked {
+//             if(interval > 0) state.transitionInterval = uint64(interval * 1 minutes);
+//         }
+//     }
+
+//     /**
+//      * @dev Transition to a new week and return the new week Id
+//      */
+//     function _transitionToNewWeek() internal returns(uint newWeekId) {
+//         unchecked {
+//             state.weekId ++;
+//         }
+//         newWeekId = state.weekId;
+//     }
+
+//     /// @dev Return the state variable object
+//     function _getState() internal view returns(State memory st) {
+//         st = state;
+//     }
+
+//     /// @dev Update the token variable. Only-owner function
+//     function setToken(address _token) public onlyOwner returns(bool) {
+//         require(_token != address(0), "Token is zero");
+//         token = IGrowToken(_token);
+//         return true;
+//     }
+
+//     // Return the current unix time stamp on the network
+//     function _now() internal view returns(uint64 time) {
+//         time = uint64(block.timestamp);
+//     } 
+// }
+
+
+// // File contracts/v2/CampaignsV2.sol
+
+// // Original license: SPDX_License_Identifier: MIT
+
+// pragma solidity 0.8.28;
+// /**
+//  * @title Campaigns. 
+//  * @author : Bobeu - https://github.com/bobeu
+//  * @notice Non-deployable parent contract that perform CRUD operation on campaigns
+// */ 
+// abstract contract CampaignsV2 is WeekV2 {
+//     using SafeERC20 for IERC20;
+
+//     ///@dev 
+//     CampaignData[] private campaignList;   
+
+//     ///@dev All registered campaign
+//     mapping(bytes32 => bool) private isRegistered;
+
+//     // Campaigns
+//     // mapping(bytes32 campaignHash => Initializer) private initializer;
+
+//     ///@dev Week inititializer
+//     mapping(uint weekId => mapping(bytes32 => WeekInitializer)) private wInit;
+
+//     //week data for all campaigns
+//     mapping(uint weekId => Campaign[]) private campaigns;
+
+
+//     // Total campaigns
+//     uint private allCampaigns;
+
+//     // Mapping of campaigns to identifiers
+//     mapping(uint campaignIndex => bytes32 campaingHashValue) private indexer;
+
+//     /**
+//      * @dev Claim ero20 token
+//      * @param recipient : Recipient
+//      * @param amount : Amount to transfer
+//      * @param token : token contract
+//      */
+//     function _sendErc20(address recipient, uint amount, IERC20 token) internal {
+//         if(address(token) != address(0)) {
+//             uint balance = token.balanceOf(address(this));
+//             if(balance > 0 && balance >= amount) {
+//                 token.safeTransfer(recipient, amount);
+//             }
+//         }
+//     }
+
+//     ///@dev Registers a new campaign
+//     function _initializeCampaign(
+//         CampaignData memory data, 
+//         uint weekId,
+//         address operator,
+//         uint256 fundsNative,
+//         uint256 fundsERC20,
+//         uint256 platformToken,
+//         address token
+//     ) internal {
+//         if(!isRegistered[data.hash_]){
+//             isRegistered[data.hash_] = true;
+//             campaignList.push(data);
+//         }
+//         WeekInitializer memory wi = wInit[weekId][data.hash_];
+//         if(!wi.hasSlot) {
+//             wi.hasSlot = true;
+//             wi.slot = uint32(campaigns[weekId].length);
+//             campaigns[weekId].push();
+//             wInit[weekId][data.hash_] = wi;
+//             campaigns[weekId][wi.slot].data = CData(platformToken, fundsNative, fundsERC20, 0, _now(), 0, operator, token, data);
+//             emit NewCampaign(_getCampaign(weekId, data.hash_).cp);
+//         }
+//     }
+
+//     /**
+//      * @dev Adds a campaign to a new week
+//      * @param data : Campaign data struct
+//      * @param fundsNative : Amount to fund in native asset
+//      * @param fundsERC20 : Amount to fund in erc20 asset
+//      * @param token : ERC20 token address
+//     */
+//     function _setUpCampaign(
+//         CampaignData memory data,
+//         uint fundsNative,
+//         uint fundsERC20,
+//         address token
+//     ) internal {
+//         uint weekId = _getState().weekId;
+//         _initializeCampaign(data,  weekId, _msgSender(), fundsNative, fundsERC20, 0, token);
+//         Campaign memory cmp = _getCampaign(weekId, data.hash_).cp;
+//         unchecked {
+//             if(fundsNative > 0) cmp.data.fundsNative += fundsNative;
+//             if(fundsERC20 > 0) {
+//                 if(cmp.data.token == address(0)){
+//                     require(token != address(0));
+//                     cmp.data.token = token;
+//                 }
+//                 uint allowance = IERC20(cmp.data.token).allowance(_msgSender(), address(this));
+//                 require(allowance > 0 && allowance >= fundsERC20, "No allowance detected");
+//                 require(IERC20(cmp.data.token).transferFrom(_msgSender(), address(this), fundsERC20), "Allowance transfer failed");
+//                 cmp.data.fundsERC20 += fundsERC20;
+//             }
+            
+//         }
+//         cmp.data.operator = _msgSender();
+//         cmp.data.lastUpdated = _now();
+//         _setCampaign(wInit[weekId][data.hash_].slot, weekId, cmp.data);
+//     }
+
+//     /**
+//      * @dev Only approved campaign can pass
+//      * @param hash_ : Campaign Hash : Hash of the campaign string e.g keccack256("Solidity")
+//      * @param weekId : week id
+//     */
+//     function _validateCampaign(bytes32 hash_, uint weekId) internal view {
+//         require(_isValidCampaign(hash_, weekId), "Invalid campaign");
+//     }
+
+//     function _isValidCampaign(bytes32 hash_, uint weekId) internal view returns(bool isValid) {
+//         isValid = isRegistered[hash_] && wInit[weekId][hash_].hasSlot;
+//     }
+
+//     /**
+//      * @dev Return the hashed result of a campaign string
+//      * @param campaign : Campaign string
+//      */
+//     function _getHash(string memory campaign) internal pure returns(CampaignData memory data) {
+//         data.encoded = bytes(campaign);
+//         data.hash_ = keccak256(data.encoded);
+//     }
+
+//     ///@dev Activates or deactivates campaigns
+//     function toggleCampaignStatus(string[] memory _campaigns) public returns(bool) {
+//         for(uint i = 0; i < _campaigns.length; i++) {
+//             bytes32 hash_ = _getHash(_campaigns[i]).hash_;
+//             bool status = isRegistered[hash_];
+//             isRegistered[hash_] = !status;
+//         }
+//         return true;
+//     }
+
+//     /**
+//      * Fetches the campaign for the particular week
+//      * @param weekId : Week id
+//      * @return data : Campaigns
+//      */
+//     function _getCampaings(uint weekId) internal view returns(Campaign[] memory data) {
+//         data = campaigns[weekId];
+//     }
+
+//     /**
+//      * Update campaign data in storage
+//      * @param weekId : Week id
+//      * @param _campaign : Other data
+//      * @param slot : Campaign Id
+//      */
+//     function _setCampaign(
+//         uint32 slot,
+//         uint weekId, 
+//         CData memory _campaign
+//     ) internal  {
+//         campaigns[weekId][slot].data = _campaign;
+//     }
+
+//     /**
+//      * Update campaign data in storage
+//      * @param weekId : Week id
+//      * @param slot : Campaign Id
+//      * @param user : Target user
+//      */
+//     function _updateCampaignUsersList(
+//         uint32 slot,
+//         uint weekId, 
+//         address user
+//     ) internal  {
+//         campaigns[weekId][slot].users.push(user);
+//     }
+
+//     /**
+//      * Update other campaign data
+//      * @param weekId : Week id
+//      * @param hash_ : Campaign Id
+//      * @notice Fetch a campaign only if there is a slot for such campaign for the requested week
+//      */
+//     function _getCampaign(uint weekId, bytes32 hash_) internal view returns(GetCampaign memory res) {
+//         _validateCampaign(hash_, weekId);
+//         WeekInitializer memory wi = wInit[weekId][hash_];
+//         res.slot = wi.slot;
+//         res.cp = campaigns[weekId][wi.slot];
+//     }
+
+//     ///@dev Return approved campaigns
+//     function _getApprovedCampaigns() internal view returns(CampaignData[] memory result) {
+//         result = campaignList;
+//     }
+
+//     ///@dev Return campaigns for the previous week. This will be used to determine the amount claimables by learners
+//     function getCampaignsForThePastWeek() external view returns(Campaign[] memory result) {
+//         uint pastWeek = _getState().weekId;
+//         if(pastWeek == 0) return result;
+//         return _getCampaings(pastWeek - 1);
+//     }
+
+//     /**
+//      * @dev Set up all campaigns for the new week. 
+//      * @notice it transition into a new week bringing forward the funds from the previous week to the new week.
+//      * @param newIntervalInMin : New interval to update
+//      * @param platformTkPerCmp : Amount to fund in platform token per each campaign
+//     */
+//     function _initializeAllCampaigns(
+//         uint32 newIntervalInMin, 
+//         uint platformTkPerCmp, 
+//         function (CData memory, uint) internal returns(CData memory) _callback
+//     ) internal returns(uint pastWeek, uint newWeek, CampaignData[] memory campaignData) {
+//         State memory st = _getState();
+//         uint totalAllocation;
+//         require(st.transitionDate < _now(), "Transition is in future");
+//         pastWeek = st.weekId;
+//         campaignData = _getApprovedCampaigns();
+//         newWeek = _transitionToNewWeek();
+//         _setTransitionInterval(newIntervalInMin, pastWeek);
+//         for(uint i = 0; i < campaignData.length; i++) {
+//             bytes32 hash_ = campaignData[i].hash_;
+//             _bringForward(pastWeek, newWeek, hash_);
+//             GetCampaign memory cmp = _getCampaign(pastWeek, hash_);
+//             cmp.cp.data.lastUpdated = _now();
+//             unchecked {
+//                 if(cmp.cp.data.activeLearners > 0) totalAllocation += platformTkPerCmp;
+//                 cmp.cp.data.platformToken += platformTkPerCmp;
+//             }
+//             _setCampaign(cmp.slot, pastWeek, _callback(cmp.cp.data, platformTkPerCmp)); 
+//         }
+//         if(totalAllocation > 0) {
+//             require(address(token) != address(0), "Tk empty");
+//             require(token.allocate(totalAllocation, address(this)), 'Allocation failed');
+//         }
+//     }
+
+//     /**
+//      * @dev Bring forward the campaign balances from the previous week to a new week
+//      * @param weekEnded : Current week
+//      * @param newWeek : New week
+//      * @param hash_ : Campaign hash
+//      */
+//     function _bringForward(uint weekEnded, uint newWeek, bytes32 hash_) internal {
+//         GetCampaign memory prevWk;
+//         unchecked {
+//             if(weekEnded > 0){
+//                 uint prevWkId = weekEnded - 1;
+//                 // If the week ended is greater than 0, then we can bring forward the funds
+//                 prevWk = _getCampaign(prevWkId, hash_);
+//                 _initializeCampaign(
+//                     prevWk.cp.data.data, 
+//                     newWeek,
+//                     prevWk.cp.data.operator,
+//                     prevWk.cp.data.fundsNative,
+//                     prevWk.cp.data.fundsERC20,
+//                     prevWk.cp.data.platformToken,
+//                     prevWk.cp.data.token
+//                 );
+//                 // Reset the funds for the previous week
+//                 prevWk.cp.data.fundsERC20 = 0;
+//                 prevWk.cp.data.fundsNative = 0;
+//                 prevWk.cp.data.platformToken = 0;
+//                 prevWk.cp.data.lastUpdated = _now();
+//                 _setCampaign(prevWk.slot, prevWkId, prevWk.cp.data);
+//             } else {
+//                 prevWk = _getCampaign(weekEnded, hash_);
+//                 _initializeCampaign(
+//                     prevWk.cp.data.data, 
+//                     newWeek,
+//                     prevWk.cp.data.operator,
+//                     0,
+//                     0,
+//                     0,
+//                     prevWk.cp.data.token
+//                 );
+//             }
+//         }
+//     }
+// }
+
+
+// // File contracts/libraries/Utils.sol
+
+// // Original license: SPDX_License_Identifier: MIT
+
+// pragma solidity 0.8.28;
+
+// library Utils {
+//     /**@dev Calculate the rate
+//      * @param fullPoints : Full or aggregate share/points
+//      * @param unitPoint : Point her user
+//      * @param principal : Principal amount
+//      * @param decimals : Number of leading zeros on which the principal is based ex. Celo is based in 18 zeros
+//      * @notice Rate is returned in %, and we use 1 ether i.e 1e18 as the full percentage i.e 100%
+//     */
+//     function calculateShare(
+//         uint96 fullPoints, 
+//         uint64 unitPoint,
+//         uint principal,
+//         uint8 decimals
+//     )
+//         internal
+//         pure 
+//         returns (uint share) 
+//     {
+//         if(fullPoints == 0 || unitPoint == 0 || principal == 0) return 0;
+//         require(fullPoints >= unitPoint, 'Invalid principal');
+//         unchecked {
+//             uint base = 10 ** decimals;
+//             share = (((unitPoint * base) / fullPoints) * principal) /base;
+//         } 
+//     }
+    
+// }
+
+
+// // File contracts/v2/LearnaV2.sol
+
+// // Original license: SPDX_License_Identifier: MIT
+
+// pragma solidity 0.8.28;
+// contract LearnaV2 is CampaignsV2, ReentrancyGuard {
+//     using Utils for uint96;
+
+//     event Claimed(address indexed sender, uint weekId, bytes32 hash_, CData campaign);
+
+//     error BalanceAnomally();
+//     error WeekZeroIsRunning();
+
+//     Mode private mode;
+
+//     ///@notice Flag that controls whether to use key mechanism for data or not
+//     bool public useKey;
+
+//     // Dev Address
+//     address private dev;
+
+//     // Campaign fee receiver
+//     address private immutable feeTo;
+
+//     // Profiles for each campaign in week id
+//     mapping(uint weekId => mapping(bytes32 hash_ => mapping(address => Profile))) private data;
+
+//     /// @dev All campaigns user subscribed to for all the weeks.
+//     mapping(uint => mapping(address => bytes32[])) private userCampaigns;
+
+//     /// @dev Mapping showing whether users have registred for a campaign for given week or not
+//     mapping(address => mapping(bytes32 => mapping(uint => bool))) registered;
+
+//     modifier validateAddress(address target) {
+//         require(target != address(0), "Token is zero");
+//         _;
+//     }
+
+//     /**
+//      * @dev Constructor
+//      * @param _admins : Addresses to be added as admin
+//      * @param transitionInterval : Interval in time with which a week can be sorted. Ex. If its 7 days, this mean an admin
+//      *                              cannot perform the sort function until its 7 days from the last sorted time. 
+//      * @param _mode : Deployment mode - LOCAL or LIVE
+//      * @notice We instanitate the admins array with an empty content. This is to ensure that anyone with slot 0 will always be
+//      * false otherwise anyone with 0 slot will automatically inherits the attributes of an admin in slot 0. If such as admin is active,
+//      * anyone could perform an admin role.
+//      */
+//     constructor(
+//         address[] memory _admins, 
+//         uint32 transitionInterval, 
+//         Mode _mode, 
+//         address _feeTo,
+//         string[] memory _campaigns
+//     ) {
+//         _setMinimumToken(1e16);
+//         mode = _mode;
+//         dev = _msgSender();
+//         require(_feeTo != address(0), "Fee manager is zero");
+//         feeTo = _feeTo;
+//         if(mode == Mode.LIVE){
+//             _setTransitionInterval(transitionInterval, _getState().weekId);
+//             useKey = false;
+//         } else {
+//             useKey = true;
+//         }
+//         for(uint i = 0; i < _admins.length; i++) {
+//             if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
+//         } 
+
+//         for(uint i = 0; i < _campaigns.length; i++) {
+//             _setUpCampaign( _getHash(_campaigns[i]), 0, 0, address(0));
+//         }
+//     }
+
+//     receive() external payable {}
+
+//     /**
+//      * Fetch profile
+//      * @param weekId : Week id
+//      * @param hash_ : Campaign hash
+//      * @param user : Target user
+//      * @return profile : Profile data
+//     */
+//     function _getProfile(uint weekId, bytes32 hash_, address user) internal view returns(Profile memory profile) {
+//         profile = data[weekId][hash_][user];
+//     }
+
+//     /**
+//      * Toggle useKey status. 
+//      @notice Toggling the function will continously alter the state of the useKey variable by negating the current status 
+//     */
+//     function toggleUseKey() public onlyOwner returns(bool) {
+//         bool status = useKey;
+//         useKey = !status;
+//         return true;
+//     }
+
+//     /**
+//      * Update profile
+//      * @param weekId : Week id
+//      * @param hash_ : Campaign hash
+//      * @param user : Target user
+//      * @param profile : Profile data
+//     */
+//     function _setProfile(uint weekId, bytes32 hash_, address user, ProfileOther memory profile) internal {
+//         data[weekId][hash_][user].other = profile;
+//     }
+
+//     /**
+//      * Forward value to a specific address
+//      * @param amount : Amount to forward
+//      * @param to : Address to forward the fee to
+//      */
+//     function _sendValue(uint amount, address to) internal {
+//         if(amount > 0) {
+//             if(address(this).balance >= amount){
+//                 if(to != address(0)){
+//                     (bool s,) = to.call{value: amount}('');
+//                     require(s, "Failed");
+//                 }
+//             }
+//         }
+//     }
+
+//     ///////////////////////////////////////////////////////////
+//     //     PUBLIC FUNCTION : SET UP A CAMPAIGN               //
+//     ///////////////////////////////////////////////////////////
+//     /**
+//      * @dev Add new campaign to the current week and fund it. Also, can be used to increase the funds in existing campaign for the week.
+//      * @param _campaign : Campaign string
+//      * @param token : ERC20 contract address if fundsERC20 is greater than 0
+//      * @param fundsERC20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
+//      * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
+//      * - ERC20. If the amount in fundsERC20 is greater than 0, it is suppose that the sender intends to also fund the campaign
+//      *    in ERC20-based asset hence the 'token' parameter must not be zero.
+//      * - Native such as CELO.
+//      */
+//     function setUpCampaign(
+//         string memory _campaign, 
+//         uint256 fundsERC20,
+//         address token
+//     ) public payable returns(bool) {
+//         require(bytes(_campaign).length > 0, "Invalid campaign");
+//         _setUpCampaign(_getHash(_campaign), msg.value, fundsERC20, token);
+//         return true;
+//     }
+
+
+//     /////////////////////////////////////////////////////////////////////////
+//     //     PUBLIC FUNCTION :  ADJUST THE FUNDS IN A CAMPAING              //
+//     ////////////////////////////////////////////////////////////////////////
+    
+//     /**
+//      * @dev Adjust funds in campaigns. Only admin function
+//      * @param hash_ : Campaign hashes
+//      * @param erc20Value : ERC20 values.
+//      * @param nativeValue : Values in native coin e.g CELO
+//      * @notice The function can increase or decrease the values in a campaign. Just parse desired values.
+//      *         - Value cannot be adjusted beyond the balances in this contract.
+//      */
+//     function adjustCampaignValues(
+//         bytes32 hash_, 
+//         uint erc20Value,
+//         uint nativeValue
+//     ) public onlyAdmin returns(bool) {
+//         uint weekId = _getState().weekId;
+//         _validateCampaign(hash_, weekId);
+//         GetCampaign memory res = _getCampaign(weekId, hash_);
+//         require(res.cp.data.token != address(0), "Token is zero");
+//         require(IERC20(res.cp.data.token).balanceOf(address(this)) >= erc20Value, "ERC20Bal inconsistent");
+//         require(address(this).balance >= nativeValue, "New value exceeds balance");
+//         res.cp.data.fundsERC20 = erc20Value;
+//         res.cp.data.fundsNative = nativeValue;
+//         res.cp.data.lastUpdated = _now();
+//         _setCampaign(res.slot, weekId, res.cp.data);
+
+//         return true;
+//     }
+
+//     ////////////////////////////////////////////////////////////////////////////////////////
+//     //    PUBLIC FUNCTION : KEEP TRACK OF POINTS EARNED FROM PARTICIPATING IN QUIZZES     //
+//     ////////////////////////////////////////////////////////////////////////////////////////
+
+//     /**
+//      * @dev Delegate transaction to the Admin account also generate user key for all the campaigns.
+//      */
+//     function delegateTransaction() external payable returns(bool) {
+//        return _generateKey(msg.value);
+//     }
+
+//     /**
+//      * @dev Register users for weekly reward
+//      * @param user : User 
+//      * @param hash_ : Campaign hash 
+//      * @param quizResult : Array of quiz result for a campaign
+//      * @notice Only owner function
+//     */
+//     function recordPoints(address user, QuizResultInput memory quizResult, bytes32 hash_) 
+//         public 
+//         payable
+//         onlyAdmin
+//         whenNotPaused 
+//         returns(bool) 
+//     { 
+//         uint weekId = _getState().weekId;
+//         _sendValue(msg.value, feeTo);
+//         require(user != address(0), "Invalid user"); 
+//         _validateCampaign(hash_, weekId);
+//         GetCampaign memory res = _getCampaign(weekId, hash_);
+//         Profile memory pf = _getProfile(weekId, hash_, user);
+//         if(!_checkRegistration(weekId, hash_, user)) {
+//             _updateCampaignUsersList(res.slot, weekId, user);
+//             unchecked {
+//                 res.cp.data.activeLearners += 1;
+//             }
+//         }
+//         // require(pf.other.totalQuizPerWeek <= 120, 'Storage limit exceeded');
+    
+//         unchecked {
+//             pf.other.totalQuizPerWeek += 1;
+//             res.cp.data.totalPoints += quizResult.other.score; 
+//         }
+//         _setProfile(weekId,  hash_, user, pf.other);
+//         uint index = data[weekId][hash_][user].quizResults.length;
+//         data[weekId][hash_][user].quizResults.push();
+//         data[weekId][hash_][user].quizResults[index].other.id = bytes(quizResult.other.id);
+//         data[weekId][hash_][user].quizResults[index].other.quizId = bytes(quizResult.other.quizId);
+//         data[weekId][hash_][user].quizResults[index].other.completedAt = bytes(quizResult.other.completedAt);
+//         data[weekId][hash_][user].quizResults[index].other.title = bytes(quizResult.other.title);
+//         data[weekId][hash_][user].quizResults[index].other.score = quizResult.other.score;
+//         data[weekId][hash_][user].quizResults[index].other.totalPoints = quizResult.other.totalPoints;
+//         data[weekId][hash_][user].quizResults[index].other.percentage = quizResult.other.percentage;
+//         data[weekId][hash_][user].quizResults[index].other.timeSpent = quizResult.other.timeSpent;
+
+//         for(uint i = 0; i < quizResult.answers.length; i++){
+//             AnswerInput memory answer = quizResult.answers[i]; 
+//             data[weekId][hash_][user].quizResults[index].answers.push();
+//             data[weekId][hash_][user].quizResults[index].answers[i] = Answer(bytes(answer.questionHash), answer.selected, answer.isUserSelected); 
+//         }
+//         _setCampaign(res.slot, weekId, res.cp.data); 
+
+//         emit PointRecorded(user, weekId, hash_, quizResult);
+//         return true;
+//     }
+
+//     ///////////////////////////////////////////////////////////////////////////////////////////////
+//     //                                       PUBLIC FUNCTIONS                                    //
+//     ///////////////////////////////////////////////////////////////////////////////////////////////
+
+//      /**
+//      * @dev Allocate weekly earnings
+//      * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
+//      * @param amountInGrowToken : Amount to allocate in GROW token
+//      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
+//      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
+//     */
+//     function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
+//         public 
+//         whenNotPaused 
+//         onlyAdmin
+//         returns(bool) 
+//     {
+//         (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
+//         emit Sorted(currentWk, newWk, cData);  
+ 
+//         return true;
+//     }
+
+//     /**
+//      * @dev Triggers stopped state.
+//     */
+//     function pause() public onlyOwner {
+//         _pause();
+//     }
+
+//     /**
+//      * @dev Returns to normal state.
+//      */
+//     function unpause() public onlyOwner {
+//         _unpause();
+//     }
+
+//     ///////////////////////////////////
+//     //        INTERNAL FUNCTIONS     //
+//     ///////////////////////////////////
+
+//     /**@dev If activated, generate new key for the user, and allocate some amount of GROW token to them based on the 
+//         amount of value they have sent along with the call. 
+//     */
+//     function _createKey(address user, uint value, uint weekId, bytes32 hash_) internal returns(Profile memory pf) {
+//         pf = _getProfile(weekId, hash_, user);
+//         if(value > 0) {
+//             token.allocate(value, user);
+//         }
+//         if(!pf.other.haskey) {
+//             pf.other.haskey = true;
+//             pf.other.passkey = keccak256(abi.encodePacked(user, weekId, value));
+//         }
+//     }
+
+//     /**
+//      * @dev Generate user key for all campaigns in the current week.
+//      * @param value : Amount sent as minimum token
+//      */
+//     function _generateKey(uint256 value) internal returns(bool) {
+//         uint weekId = _getState().weekId;
+//         uint minimumToken = _getState().minimumToken;
+//         Campaign[] memory cps = _getCampaings(weekId);
+//         if(minimumToken > 0) {
+//             require(value >= minimumToken, "Insufficient token");
+//         }
+//         _sendValue(value, feeTo);
+//         uint valuePerCampaign;
+//         if(value > 0 && value >= cps.length) {
+//             unchecked {
+//                 valuePerCampaign = value / cps.length;
+//             }
+//         }
+//         address user = _msgSender();
+//         for(uint i = 0; i < cps.length; i++) {
+//             bytes32 hash_ = cps[i].data.data.hash_;
+//             Profile memory pf = _createKey(user, valuePerCampaign, weekId, hash_);
+//             _setProfile(weekId,  hash_, user, pf.other);
+//         }
+//         return true;
+//     }
+
+//     function _checkRegistration(uint weekId, bytes32 hash_, address user) internal returns(bool isReg) {
+//         if(!registered[user][hash_][weekId]){
+//             registered[user][hash_][weekId] = true;
+//             userCampaigns[weekId][user].push(hash_);
+//         } else {
+//             isReg = true;
+//         }
+//     }
+
+//     /**
+//      * @dev Callback function to update campaign values
+//      * @param weekId : Week Id
+//      * @param hash_ : Campaign hash
+//      * @param fundsNative : Amount in native currency e.g CELO
+//      * @param fundsERC20 : Amount in ERC20 currency e.g $GROW, $G. etc
+//      * @param platformToken : Amount in platform token e.g GROW token
+//     */
+//     function _onWithdrawal(
+//         uint weekId, 
+//         bytes32 hash_, 
+//         uint256 fundsNative, 
+//         uint256 fundsERC20,
+//         uint256 platformToken,
+//         address user
+//     ) internal {
+//         _setIsClaimed(user, weekId, hash_);
+//         GetCampaign memory res = _getCampaign(weekId, hash_);
+//         if(res.cp.data.fundsERC20 >= fundsERC20){
+//             res.cp.data.fundsERC20 -= fundsERC20;
+//         }
+//         if(res.cp.data.fundsNative >= fundsNative){
+//             res.cp.data.fundsNative -= fundsNative;
+//         }
+//         if(res.cp.data.platformToken >= platformToken){
+//             res.cp.data.platformToken -= platformToken;
+//         }
+//         res.cp.data.lastUpdated = _now();
+//         _setCampaign(res.slot, weekId, res.cp.data);
+//     }
+
+//     function _callback(CData memory inCmp, uint platformToken) internal returns(CData memory outCmp) {
+//         outCmp = inCmp;
+//         (uint native, uint256 erc20, uint platform) = _rebalance(
+//             outCmp.token, 
+//             outCmp.fundsNative, 
+//             outCmp.fundsERC20, 
+//             platformToken
+//         );
+//         outCmp.fundsNative = native;
+//         outCmp.platformToken = platform;
+//         outCmp.fundsERC20 = erc20;
+//         outCmp.lastUpdated = _now();
+//     }
+    
+//     /**
+//      * @dev Calculates user's share of the weekly payout
+//      * @param userPoints : Total points accumulated by the user
+//      * @param cp : Campaign 
+//      */
+//     function _calculateShare( 
+//         uint64 userPoints, 
+//         CData memory cp
+//     ) internal view returns(uint erc20, uint native, uint platform) {
+//         uint8 dec;
+//         if(userPoints > cp.totalPoints) revert BalanceAnomally();
+//         if(cp.totalPoints > 0) { 
+//             unchecked {
+//                 if(cp.fundsNative > 0) native = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
+//                 if(cp.fundsERC20 > 0) {
+//                     if(cp.token != address(0)){
+//                         dec = IERC20Metadata(cp.token).decimals();
+//                         erc20 = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, dec);
+//                     }
+//                 }
+//                 if(cp.platformToken > 0) {
+//                     if(address(token) != address(0)){
+//                         dec = IERC20Metadata(address(token)).decimals();
+//                         platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, dec);
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     /**
+//      * Check reward eligibility for the requested week
+//      * @param user : Target user
+//      * @param weekId : Requested week Id
+//      * @param hash_ : Hash of the campaign name
+//      */
+//     function _getEligibility(address user, bytes32 hash_, uint weekId, bool nullifier) 
+//         internal 
+//         view 
+//         returns(Eligibility memory elg) 
+//     {
+//         if(_isValidCampaign(hash_, weekId)) {
+//             if(!_hasClaimed(user, weekId, hash_)) {
+//                 CData memory cp = _getCampaign(weekId, hash_).cp.data;
+//                 Profile memory pf = _getProfile(weekId, hash_, user);
+//                 uint64 totalScore;
+//                 for(uint i = 0; i < pf.quizResults.length; i++) { 
+//                     unchecked {
+//                         totalScore += pf.quizResults[i].other.score;
+//                     }
+//                 }
+//                 (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
+//                 bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0 || cp.platformToken > 0) : true;
+//                 bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
+//                 elg = Eligibility(
+//                     isEligible,
+//                     erc20,  
+//                     native, 
+//                     platform,
+//                     cp.token, 
+//                     hash_,
+//                     weekId
+//                 );
+//             }
+//         }
+//     }
+
+//     /**
+//      * @dev Assign 2% of payouts to the dev
+//      * @param _token : ERC20 token to be used for payout
+//      * @param platformIn : Platform token to be used for payout
+//      * @param erc20In : ERC20 token to be used for payout
+//      * @param nativeIn : Native token to be used for payout
+//      * @return nOut : Celo balance of this contract after dev share
+//      * @return eOut : ERC20 balance of this contract after dev share
+//      * @return pOut : Platform balance of this contract after dev share
+//      */
+//     function _rebalance(address _token, uint256 nativeIn, uint256 erc20In, uint256 platformIn) internal returns(uint256 nOut, uint256 eOut, uint256 pOut) {
+//         uint8 devRate = 2;
+//         nOut = nativeIn;
+//         eOut = erc20In;
+//         pOut = platformIn;
+//         uint devShare;
+//         unchecked {
+//             if(nOut > 0 && (address(this).balance >= nOut)) {
+//                 devShare = (nOut * devRate) / 100;
+//                 _sendValue(devShare, dev);
+//                 nOut -= devShare;
+//             }
+//             if(eOut > 0 && (IERC20(_token).balanceOf(address(this)) >= eOut)) {
+//                 devShare = (eOut * devRate) / 100;
+//                 _sendErc20(dev, devShare, IERC20(_token));
+//                 eOut -= devShare; 
+//             }
+//             if(pOut > 0 && (token.balanceOf(address(this)) >= pOut)) {
+//                 devShare = (pOut * devRate) / 100;
+//                 _sendErc20(dev, devShare, token);
+//                 pOut -= devShare; 
+//             }
+//         }
+//     }
+
+//     /////////////////////////////////////////////////////////////////////////////////
+//     //                          READ-ONLY FUNCTIONS                                //
+//     /////////////////////////////////////////////////////////////////////////////////
+
+//     /**
+//      * Claim reward for a campaign for the previous weeks ended
+//      * @notice Claim will always be for the concluded week only.
+//      */
+//     function claimReward(bytes32 hash_) public returns(bool){
+//         uint weekId = _getState().weekId;
+//         address sender = _msgSender();
+//         (bool isVerified, bool isBlacklisted) = verifier.getVerificationStatus(sender);
+//         require(isVerified && !isBlacklisted, "Not verified or blacklisted");
+//         if(weekId > 0) {
+//             weekId -= 1;
+//             _validateCampaign(hash_, weekId);
+//             bool nullifier = false;
+//             // If useKey is enabled, data must have created a key for all the campaigns they subscribed to
+//             if(useKey){
+//                 if(!_getProfile(weekId, hash_, sender).other.haskey) nullifier = true;
+//             }
+//             Eligibility memory elg = _getEligibility(sender, hash_, weekId, nullifier);
+//             if(!_hasClaimed(sender, weekId, hash_)) {
+//                 if(elg.isEligible){
+//                     _onWithdrawal(weekId, hash_, elg.nativeAmount, elg.erc20Amount, elg.platform, sender);
+//                     if(elg.nativeAmount > 0) {
+//                         _sendValue(elg.nativeAmount, sender);
+//                     }
+//                     if(elg.erc20Amount > 0) {
+//                         _sendErc20(sender, elg.erc20Amount, IERC20(elg.token));
+//                     } 
+//                     if(elg.platform > 0) {
+//                         _sendErc20(sender, elg.platform, token);
+//                     }
+//                 }
+//             }
+
+//             emit Claimed(sender, weekId, hash_, _getCampaign(weekId, hash_).cp.data);
+//         } else {
+//             revert WeekZeroIsRunning();
+//         }
+
+//         return true;
+//     } 
+
+//     // Fetch past claims
+//     function getData(address user) public view returns(ReadData memory _return) {
+//         _return.state = _getState();
+//         _return.approved = _getApprovedCampaigns();
+//         uint weekIds = _return.state.weekId;
+//         weekIds ++;
+//         _return.wd = new WeekData[](weekIds);
+//         _return.profileData = new WeekProfileData[](weekIds);
+//         uint hashSize = _return.approved.length; 
+//         for(uint i = 0; i < weekIds; i++) {
+//             _return.wd[i].campaigns = _getCampaings(i);
+//             _return.wd[i].claimDeadline = _getDeadline(i);
+//             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
+//             if(user != address(0)) {
+//                 _return.profileData[i].weekId = i;
+//                 for(uint hashId = 0; hashId < hashSize; hashId++) { 
+//                     bytes32 hash_ = _return.approved[hashId].hash_;
+//                     bool nullifier = false;
+//                     // If useKey is enabled, _return must have created a key for all the first campaign they joined
+//                     if(useKey){
+//                         if(!_getProfile(i, hash_, user).other.haskey) nullifier = true;
+//                     }
+//                     _userCampaigns[hashId] = ReadProfile( 
+//                         _getEligibility(user, hash_, i, nullifier),
+//                         _getProfile(i, hash_, user), 
+//                         isClaimed[user][i][hash_],
+//                         hash_
+//                     );
+//                 }
+//                 _return.profileData[i].campaigns = _userCampaigns;
+//             }
+//         }
+//         return _return;
+//     } 
+
+//     /**
+//      * @dev Emergency withdrawal of funds
+//      * @param to : Recipient
+//      * @param amount : Native amount
+//      * @param token : ERC20 token if needed
+//      * @param tokenAmount : Amount of ERC20 token to withdraw
+//      */
+//     function withdraw(address to, uint amount, address token, uint tokenAmount) public onlyOwner returns(bool) {
+//         if(address(this).balance > 0) {
+//             (bool done,) = to.call{value: amount}('');
+//             require(done, "Transfer failed");
+//         }
+//         if(tokenAmount > 0) {
+//             if(token != address(0)) {
+//                 IERC20 tk = IERC20(token);
+//                 uint balance = tk.balanceOf(address(this));
+//                 if(balance >= tokenAmount){
+//                     tk.transfer(to, tokenAmount);
+//                 }
+//             }
+//         }
+//         return true;
+//     }
 
 // }

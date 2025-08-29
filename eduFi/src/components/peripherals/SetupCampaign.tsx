@@ -82,7 +82,8 @@ export default function SetupCampaign() {
 
     const backToDashboard = () => setpath('dashboard');
     const chainId = useChainId();
-    const argsReady = token.address !== zeroAddress && (erc20Amount !== '0' || celoAmount !== '0') && selectedCampaign !== '';
+    // const argsReady = token.address !== zeroAddress && (erc20Amount !== '0' || celoAmount !== '0') && selectedCampaign !== '';
+    const argsReady = (erc20Amount != '0' || celoAmount != '0') && selectedCampaign !== '';
 
     // Memoize and update the argments
     const {fundsErc20, fundsNative, sortContent, contractAddresses} = React.useMemo(() => {
@@ -96,7 +97,7 @@ export default function SetupCampaign() {
             // return {fundsErc20: 0n, fundsNative: 0n, sortContent: [], contractAddresses: []};
         }
         const { contractAddresses: ca} = filterTransactionData({chainId, filter: false});
-        const contractAddresses = [{name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.GrowToken as Address}];
+        const contractAddresses = [{name: 'None', address: zeroAddress}, {name: 'CUSD', address: ca.stablecoin as Address}, {name: 'GROW', address: ca.PlatformToken as Address}];
         const sortContent : ContentType[] = [
             {
                 tag: 'campaignhash',
@@ -192,12 +193,6 @@ export default function SetupCampaign() {
                         <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 text-white text-center shadow-xl animate-bounce-gentle">
                             <Award className="w-8 h-8 m-auto" />
                         </div>
-                        {/* <Image 
-                            src={'/support.svg'}
-                            alt="support image"
-                            width={150}
-                            height={150}
-                        /> */}
                     </div>
 
                     <MotionDisplayWrapper>
@@ -244,8 +239,6 @@ export default function SetupCampaign() {
                     </MotionDisplayWrapper>
 
                     <div className="space-y-2">
-                        
-                        {/* <Button disabled={showSendCelo} onClick={() => setShowSendCelo(true)} variant={'outline'} className="w-full bg-cyan-500/80">Send Celo</Button> */}
                         <CustomButton
                             onClick={backToDashboard}
                             disabled={false}

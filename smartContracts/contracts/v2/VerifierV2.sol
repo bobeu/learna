@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
-import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ILearna } from "../interfaces/ILearna.sol";
 import { Admins } from "../Admins.sol";
@@ -17,8 +16,6 @@ interface IVerifierV2 {
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
 contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Admins, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-
     // Events
     event UserVerified(address indexed registeredUserIdentifier);
 

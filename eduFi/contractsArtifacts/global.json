@@ -1,6 +1,5 @@
 {
   "approvedFunctions": [
-    "checkEligibility",
     "recordPoints",
     "toggleAdminStatus",
     "setAdmin",
@@ -29,39 +28,26 @@
     "delegateTransaction"
   ],
   "chainName": {
-    "42220": "celo",
-    "44787": "alfajores"
+    "42220": "celo"
   },
   "chainIds": [
-    44787,
     42220
   ],
   "paths": {
     "42220": [
       "deployments\\celo\\FeeManager.json",
-      "deployments\\celo\\GrowToken.json",
-      "deployments\\celo\\Learna.json",
-      "deployments\\celo\\Verifier.json"
-    ],
-    "44787": [
-      "deployments\\alfajores\\FeeManager.json",
-      "deployments\\alfajores\\GrowToken.json",
-      "deployments\\alfajores\\Learna.json"
+      "deployments\\celo\\LearnaV2.json",
+      "deployments\\celo\\PlatformToken.json",
+      "deployments\\celo\\VerifierV2.json"
     ]
   },
   "contractAddresses": [
     {
-      "stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-      "FeeManager": "0x320E5C73Dbb928763b6047A87e801549854FC035",
-      "GrowToken": "0x9F2a1BA4447B6195db3Ad6a70853C64c25aE1371",
-      "Learna": "0x8923e6CdBC94B84DdeDBfBFAd83b62D93C2Fb91E"
-    },
-    {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
       "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",
-      "GrowToken": "0x8ecDEf4F814Fc77f2e2782f69225e32e76D60c78",
-      "Learna": "0x099c6775019843E42D36c877Ae302162aBAF9A8d",
-      "Verifier": "0xc119d63060d29CFB720518Fe82661E3803C60c66"
+      "LearnaV2": "0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca",
+      "PlatformToken": "0xE80A1a25D8aA9b3Baa5aA188603198689D943aE6",
+      "VerifierV2": "0x880cD2d07E512B083Efc8136493f948895D2C6fB"
     }
   ]
 }

@@ -49,7 +49,7 @@ function ProfileComponent(
     const [verifiyMethod, setVerificationMethod] = React.useState<VerificationMethod>('self');
     
     const { isEligible, erc20Amount, nativeAmount, platform } = eligibility;
-    const { state: { transitionDate } } = useStorage();
+    const { state: { transitionDate }, requestedHash } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const toggleWalletDrawer = (arg:number) => setWalletMethodDrawer(arg);
     const back = () => {
@@ -218,6 +218,7 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
+                campaignHash={requestedHash}
             />
             <VerifyByWallet 
                 openDrawer={openWalletMethod}
