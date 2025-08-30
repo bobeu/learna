@@ -64,15 +64,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`TokenV2 deployed to: ${tokenv2.address}`);
 
-	try {
-		for(const admin of newAdmins) {
-			console.log(`Setting admin: ${admin}`);
-			// await execute('LearnaV2', {from: deployer}, 'setAdmin', admin);
-		}
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setAdmin:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	for(const admin of newAdmins) {
+	// 		console.log(`Setting admin: ${admin}`);
+	// 		// await execute('LearnaV2', {from: deployer}, 'setAdmin', admin);
+	// 	}
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setAdmin:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	// try {
 	// 	await execute('VerifierV2', {from: deployer}, 'setPermission', learna.address);
@@ -141,24 +141,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// await execute('FeeManager', {from: deployer}, 'withdraw', amount, deployer);
 	// await execute('Verifier', {from: deployer}, 'withdraw', deployer, amount, GrowToken.address, tokenAmount);
 
-	// await setUpCampaign({networkName, run: true});
-	// await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
+	await setUpCampaign({networkName, run: true});
+	await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
 	// await sortWeeklyPayment({networkName, run: true});
-	// await verifyAndClaim({networkName, run: true});
+	await verifyAndClaim({networkName, run: true});
 
 	// Read actions
-	const admins = await read("LearnaV2", "getAdmins");
-	const isWalletVerificationRequired = await read('VerifierV2', 'isWalletVerificationRequired');
-	const config = await read('VerifierV2', 'configId');
-	const scope = await read('VerifierV2', 'scope');
-	const stateData = await read('LearnaV2', 'getData', deployer) as ReadData;
+	// const admins = await read("LearnaV2", "getAdmins");
+	// const isWalletVerificationRequired = await read('VerifierV2', 'isWalletVerificationRequired');
+	// const config = await read('VerifierV2', 'configId');
+	// const scope = await read('VerifierV2', 'scope');
+	// const stateData = await read('LearnaV2', 'getData', deployer) as ReadData;
 
-	console.log("scope", toBigInt(scope.toString()));
-	console.log("isWalletVerificationRequired", isWalletVerificationRequired);
-	console.log("config", config);
-	console.log("isAdmin1", admins?.[0].active);
-	console.log("isAdmin2", admins?.[1].active);
-	console.log("Minimum token", formatUnits(BigInt(stateData?.state?.minimumToken?.toString()), 18));
+	// console.log("scope", toBigInt(scope.toString()));
+	// console.log("isWalletVerificationRequired", isWalletVerificationRequired);
+	// console.log("config", config);
+	// console.log("isAdmin1", admins?.[0].active);
+	// console.log("isAdmin2", admins?.[1].active);
+	// console.log("Minimum token", formatUnits(BigInt(stateData?.state?.minimumToken?.toString()), 18));
 	
 }
 export default func;
