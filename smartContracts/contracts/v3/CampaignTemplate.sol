@@ -10,11 +10,16 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { IApprovalFactory } from "./ApprovalFactory.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
+import { Utils } from "../libraries/Utils.sol";
+import { Common } from "../interfaces/Common.sol";
 
 interface ICampaignTemplate {
-    error OnlyOperator();
     error NotVerified();
+    error InvalidEpoch();
+    error ClaimNotReady();
+    error CannotShareZeroValue();
 
+    event Claimed(address indexed sender, ICommon.ShareOut);
     event Proof(ProofOfAssimilation poa, address indexed sender);
     event ERC20FundAdded(bytes32 indexed hash_, address indexed _token, uint amount);
 
@@ -29,9 +34,9 @@ interface ICampaignTemplate {
 
     struct ProofOfIntegration {
         bytes link; // Can be any link to learner's portfolio e.g Githuh, figma etc
-        bool ok; // Flag showing that the learner's link has be curated and approved by an admin or any designated 
         uint64 submittedAt; 
         uint64 approvedAt; 
+        uint64 score;
     }
 
     struct Rating {
@@ -89,6 +94,7 @@ interface ICampaignTemplate {
     struct Funds {
         ERC20Token[] erc20;
         uint256 native;
+        uint256 point; // Proof of integration reward
     } 
 
     struct EpochSetting {
@@ -124,18 +130,20 @@ interface ICampaignTemplate {
         bool isEditing;
         uint64 activatedAt;
         uint24 endInHr;
+        uint256 pointReward; // Proof of integration reward
         address[] tokens;
     }
 }
 
 contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
+    using Utils for *;
+
     /**@dev Stage of this campaign
         @notice Campaign can be configured to have names for each epoch
      */
     uint internal epoches;
 
-    // Account operating the campaign
-    address internal operator;
+    address immutable dev;
 
     // Verifier contract
     IVerifier public immutable verifier;
@@ -161,6 +169,12 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
     ///@notice Mapping of epoch to learners' points based on proof of assimilation result
     // mapping(uint epoch => Learner[]) internal learners;
 
+    /**@dev Mapping showing whether user has claimed reward for an epoch or not
+        @notice We use address(this) to represent 3rd key in the mapping for the native coin e.g Celo. Since there can be more than one reward token in a campign,
+        we use the address for each token as 3rd key in the mapping.
+     */
+    mapping(uint epoch => mapping(address user => mapping(address token => bool))) public isClaimed;
+
     ///@notice Frequencies at which learners save proof of assimilation in every 24 hours 
     mapping(address => Frequency) internal frequencies;
 
@@ -172,11 +186,18 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
 
     ///@notice Total prooved points for each epoch
     mapping(uint epoch => EpochData) internal epochData;
-    
+
+    ///@notice Funds assigned to learners with proof of integration
+    // mapping(uint epoch => mapping(address => uint256)) public integrationReward;
 
     ///@dev Only operator function
     modifier onlyOperator {
         if(_msgSender() != operator) revert OnlyOperator();
+        _;
+    }
+
+    modifier validateEpochInput(uint epoch) {
+        if(epoch > epoches) revert InvalidEpoch();
         _;
     }
 
@@ -187,49 +208,89 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
     }
 
     ///@dev Only operator function
-    modifier onlyOperatorOrApproved {
-        if(_msgSender() != operator) {
-            require(approvalFactory.hasApproval(_msgSender()), "No approval");
-        } else {
-            revert OnlyOperator();
-        }
+    modifier onlyOwnerOrApproved {
+        require(_msgSender() == owner || approvalFactory.hasApproval(_msgSender()), "No approval");
         _;
     }
 
     ///@notice Constructor
-    constructor(address initialOperator, IApprovalFactory _approvalFactory, IVerifier _verifier) Ownable(_msgSender()) {
+    constructor(
+        address initialOperator, 
+        address _dev, 
+        IApprovalFactory _approvalFactory, 
+        IVerifier _verifier
+    ) Ownable(_msgSender()) {
         _setOperator(initialOperator);
         assert(address(_verifier) != address(0));
+        assert(_dev != address(0));
         assert(address(_approvalFactory) != address(0));
         approvalFactory = _approvalFactory;
         verifier = _verifier;
+        dev = _dev;
     }
 
-    receive() external payable {}
+    receive() external payable {
+        unchecked {
+            epochData[epoch].setting.funds.native += msg.value;
+        }
+    }
 
     /**
-     * @dev Calculates user's share of the weekly payout
-     * @param userPoints : Total points accumulated by the user
-     * @param cp : Campaign 
+     * @dev Calculates user's share of the payout
+     * @param userProofs : Total proved points accumulated by the learner over the campaign preiod 
+     * @param totalProofs : Total assimilation proved for the period/epoch;
+     * @param fundIndex : The position of the ERC20 fund to claim in the fund array if any. This should be correctly parsed from the frontend, otherwis it fails.
+     * @param epoch : Current epoch
+     * @param target : Target account
      */
-    function _calculateShare(uint64 userProofs, uint64 totalProofs) internal view returns(uint erc20, uint native, uint platform) {
+    function _calculateShare(uint64 userProofs, uint64 totalProofs, uint8 fundIndex, uint epoch, address target) internal view returns(Common.ShareOut memory sh) {
         uint8 dec;
         if(userProofs > totalProofs) revert BalanceAnomally();
-        if(totalProofs > 0) { 
+        if(totalProofs > 0 && userProof > 0) { 
+            Funds memory fund = epochData[epoch].setting.funds;
             unchecked {
-                if(cp.fundsNative > 0) native = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
-                if(cp.fundsERC20 > 0) {
-                    if(cp.token != address(0)){
-                        dec = IERC20Metadata(cp.token).decimals();
-                        erc20 = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, dec);
+                if(!isClaimed[epoch][target][address(this)]){
+                    if(fund.native > 0) sh.native = totalProofs.calculateShare(userProofs, fund.native, 18);
+                }
+                if(fund.erc20.length > 0) {
+                    require(fundIndex < fund.erc20.length, "Invalid fund index");
+                    ERC20Token memory erc = fund.erc20[fundIndex];
+                    if(erc.amount > 0) {
+                        if(erc.token != address(0)){
+                            out.token = erc.token;
+                            if(!isClaimed[epoch][target][erc.token]) {
+                                dec = IERC20Metadata(erc.token).decimals();
+                                sh.erc20 = totalProofs.calculateShare(userProofs, erc.amount, dec);
+                            }
+                        }
                     }
                 }
-                if(cp.platformToken > 0) {
-                    if(address(token) != address(0)){
-                        dec = IERC20Metadata(address(token)).decimals();
-                        platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, dec);
-                    }
-                }
+            }
+        }
+    }
+
+    /**@dev Aggregate all proofs for the current learner
+        @param epoch: Epoch Id
+        @param userIndex : Position of the learner in the Learners' array
+     */
+    function _calculateProofs(uint epoch, uint userIndex) internal view returns(uint64 userProofs) {
+        ProofOfAssimilation[] memory poass = epochData[epoch].learners[index].poass;
+        for(uint i = 0; i < poass.length; i++) {
+            unchecked {
+                userProofs += poass[i].score;
+            }
+        }
+    }
+
+    /**@dev Aggregate all proof of integration
+        @param epoch: Epoch Id
+        @param userIndex : Position of the learner in the Learners' array
+     */
+    function _calculateProofsOfInt(uint epoch, uint userIndex) internal view returns(uint64 userProofs) {
+        Learners[] memory lnr = epochData[epoch].learners;
+        for(uint i = 0; i < lnr.length; i++) {/////////////////////////////////////
+            unchecked {
+                userProofs += poass[i].score;
             }
         }
     }
@@ -238,13 +299,17 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
         @param arg : Setting of type EpochSettingInput
         @param operator: New operator account address
      */
-    function epochSetting(EpochSettingInput memory arg, address operator) public payable onlyOperatorOrApproved returns(bool) {
+    function epochSetting(EpochSettingInput memory arg, address operator) public payable onlyOwnerOrApproved returns(bool) {
         uint epoch = epoches;
         EpochSetting memory eps = epochData[epoch].setting;
         if(arg.maxProof != eps.maxProof) eps.maxProof = arg.maxProof;
         unchecked {
+            if(arg.pointReward > 0) {
+                require(msg.value >= arg.pointReward, "Value not tally");
+                epochData[epoch].setting.funds.point += arg.pointReward;
+            }
             if(arg.endInHr > 0) eps.endDate = (_now() + arg.endInHr * 1 hours);
-            epochData[epoch].setting.funds.native += msg.value;
+            epochData[epoch].setting.funds.native += (msg.value - arg.pointReward);
         }
         if(!arg.isEditing) {
             eps.createdAt = _now();
@@ -286,7 +351,7 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
     /**@dev Record points based on learning outcome
         @param poa : Proof of assimilation object
      */
-    function proofAssimilation(ProofOfAssimilation memory poa) public whenNotPaused returns(bool) {
+    function proveAssimilation(ProofOfAssimilation memory poa) public whenNotPaused returns(bool) {
         uint epoch = epoches;
         address sender = _msgSender();
         Spot memory spot = spots[user][epoch];
@@ -317,14 +382,84 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
         emit Proof(poa, sender);
     }
 
-    function claimReward() public whenNotPaused returns(bool) {
+    /**@dev Claim proof of integration reward
+        @param epoch : Epoch to claim from
+    */
+    function claimProofOfIntegration(uint epoch) public whenNotPaused validateEpochInput(epoch) returns(bool) {
         address sender = _msgSender();
-        uint epoch = epoches;
+        uint share = integrationReward[epoch][sender];
+        Spot memory spot = spots[sender][epoch];
+        require(share > 0, "No reward found");
+        integrationReward[epoch][sender] = 0;
+        Common.ShareOut memory sh = dev._rebalance(
+            _calculateShare(
+                epochData[epoch].learners[spot.value].point,
+                _calculateProofs(epoch, spot.value), 
+                epochData[epoch].totalProofs, 
+                fundIndex, 
+                epoch, 
+                _msgSender()
+            )
+            // ShareOut(0, share, address(0))
+        );
+        if(sh.native > 0) {
+            sender._sendValue(sh.native);
+            emit Claimed(sender, sh);
+        }
+
+        return true;
+    }
+
+    // function rewardProofOfIntegraton(
+    //     address[] memory learners
+    // ) 
+    //     public 
+    //     payable
+    //     whenNotPaused 
+    //     onlyOwnerOrApproved
+    //     validateEpochInput(epoch)
+    //     returns(bool) 
+    // {
+    //     if(msg.value == 0) revert CannotShareZeroValue();
+    //     for(uint i = 0; i < learners.length; i++) {
+    //         total
+    //     }
+    // }
+
+    /**@dev Learners claim reward
+        @param fundIndex : The position of the erc20 token in the list of erc20 funds.
+        @param epoch : Epoch to claim from .
+        @notice Learners can only claim from an epoch if the epoch deadline has passed.
+     */
+    function claimReward(uint8 fundIndex, uint epoch) public whenNotPaused validateEpochInput(epoch) returns(bool) {
+        address sender = _msgSender();
+        if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
         if(isClaimed[epoch][sender]) revert RewardClaimed();
         isClaimed[epoch][sender] = true;
         if(!verifier.isVerified(sender)) revert NotVerified();
-        uint64 totalPoints = epochData[epoch].totalProofs;
-        (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
+        Spot memory spot = spots[sender][epoch];
+        Common.ShareOut memory sh = dev._rebalance(
+            _calculateShare(
+                _calculateProofs(epoch, spot.value), 
+                epochData[epoch].totalProofs, 
+                fundIndex, 
+                epoch, 
+                _msgSender()
+            )
+        );
+        unchecked {
+            if(sh.erc20 > 0) {
+                isClaimed[epoch][sender][sh.token] = true;
+                epochData[epoch].setting.funds.erc20[fundIndex].amount -= sh.erc20;
+                sender._sendErc20(sh.erc20, sh.token);
+            }
+            if(sh.native > 0) {
+                isClaimed[epoch][sender][address(this)] = true;
+                epochData[epoch].setting.funds.native -= sh.native;
+                sender._sendValue(sh.native);
+            }
+        }
+        emit Claimed(sender, sh);
     }
 
     /**@dev Add erc20 funds to this campaign
@@ -351,56 +486,28 @@ contract CampaignTemplate is ICampaignTemplate, Ownable, Pausable {
         }
     }
 
-    // /**@dev Set metadata
-    //     @param _token: Token address
-    //  */
-    // function addFund(address _token) external payable onlyOperator whenNoPaused returns(bool) {
-    //     _setUpERC20Funds(_token, _msgSender());
-    //     return true;
-    // }
+    /**@dev Set metadata
+        @param _token: Token address
+     */
+    function addFund(address _token) external payable onlyOwnerOrApproved whenNoPaused returns(bool) {
+        _setUpERC20Funds(_token, _msgSender());
+        return true;
+    }
 
     /**@dev Set metadata
         @param _meta: New metadata
      */
-    function editMetaData(Metadata memory _meta) public onlyOperatorOrApproved returns(bool) {
+    function editMetaData(Metadata memory _meta) public onlyOwnerOrApproved returns(bool) {
         _metadataSetting(_meta);
         return true;
     }
 
-    /**
-     * @dev Calculates user's share of the weekly payout
-     * @param userPoints : Total points accumulated by the user
-     * @param cp : Campaign 
-     */
-    function _calculateShare( 
-        uint64 userPoints, 
-        CData memory cp
-    ) internal view returns(uint erc20, uint native, uint platform) {
-        uint8 dec;
-        if(userPoints > cp.totalPoints) revert BalanceAnomally();
-        if(cp.totalPoints > 0) { 
-            unchecked {
-                if(cp.fundsNative > 0) native = cp.totalPoints.calculateShare(userPoints, cp.fundsNative, 18);
-                if(cp.fundsERC20 > 0) {
-                    if(cp.token != address(0)){
-                        dec = IERC20Metadata(cp.token).decimals();
-                        erc20 = cp.totalPoints.calculateShare(userPoints, cp.fundsERC20, dec);
-                    }
-                }
-                if(cp.platformToken > 0) {
-                    if(address(token) != address(0)){
-                        dec = IERC20Metadata(address(token)).decimals();
-                        platform =  cp.totalPoints.calculateShare(userPoints, cp.platformToken, dec);
-                    }
-                }
-            }
-        }
-    }
-
+    ///@dev Only approved account can pause execution
     function pause() public onlyApproved {
         _pause();
     }
 
+    ///@dev Only approved account can continue execution
     function unpause() public onlyApproved {
         _pause();
     }
