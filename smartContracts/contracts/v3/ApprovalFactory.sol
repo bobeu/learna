@@ -14,7 +14,7 @@ interface IApprovalFactory {
     function hasApproval(address target) external view returns(bool);
 }
 
-contract ApprovalFactory is IApproval, Ownable {
+contract ApprovalFactory is IApprovalFactory, Ownable {
     // Mapping of account to approvals
     mapping (address => bool) private approval;
 
@@ -25,7 +25,6 @@ contract ApprovalFactory is IApproval, Ownable {
     /**
      * @dev Set approval for
      * @param target : Account to set approval for
-     * @param value : Approval state - true or false
      */
     function _setApprovalFor(address target) internal {
         if(target == address(0)) revert AddressIsZero();
@@ -36,7 +35,6 @@ contract ApprovalFactory is IApproval, Ownable {
     /**
      * @dev Remove approval for
      * @param target : Account to set approval for
-     * @param value : Approval state - true or false
      */
     function _removeApprovalFor(address target) internal {
         if(!_isApproved(target)) revert AddressHasNoApproval();
@@ -45,10 +43,10 @@ contract ApprovalFactory is IApproval, Ownable {
 
     /**
      * @dev Set approval for target
-     * @param target : Account to set approval for
+     * @param targets : Accounts to set approval for
      */
     function setApproval(address[] memory targets) public onlyOwner {
-        for(uinti = 0; i < targets.length; i++) {
+        for(uint i = 0; i < targets.length; i++) {
             _setApprovalFor(targets[i]);
         }
         emit Approval(targets);
@@ -56,10 +54,10 @@ contract ApprovalFactory is IApproval, Ownable {
 
     /**
      * @dev Set approval for target
-     * @param target : Account to set approval for
+     * @param targets : Accounts to set approval for
      */
     function removeApproval(address[] memory targets) public onlyOwner {
-        for(uinti = 0; i < targets.length; i++) {
+        for(uint i = 0; i < targets.length; i++) {
             _removeApprovalFor(targets[i]);
         }
         emit ApprovalRemoved(targets);

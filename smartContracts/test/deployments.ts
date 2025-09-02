@@ -20,6 +20,12 @@ async function deployLearna(deployer: Signer, admin2: Address, feeManager: Addre
   return (await LearnaContract.connect(deployer).deploy([deployerAddr, admin2], 0, Mode.LOCAL, feeManager, campaigns)).waitForDeployment();
 }
 
+async function deployCampaignFactory(deployer: Signer, admin2: Address, feeManager: Address) : Promise<Learna> {
+  const LearnaContract = await ethers.getContractFactory("CampaignFactory"); // V3
+  const deployerAddr = await deployer.getAddress();
+  return (await LearnaContract.connect(deployer).deploy([deployerAddr, admin2], 0, Mode.LOCAL, feeManager, campaigns)).waitForDeployment();
+}
+
 /**
  * Deploys and return an instance of the GrowToken contract.
  * @param deployer : Deployer address

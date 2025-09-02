@@ -34,41 +34,6 @@ library UtilsV3 {
     }
 
     /**
-     * @dev Assign 2% of payouts to the dev
-     * @param _token : ERC20 token to be used for payout
-     * @param platformIn : Platform token to be used for payout
-     * @param erc20In : ERC20 token to be used for payout
-     * @param nativeIn : Native token to be used for payout
-     * @return nOut : Celo balance of this contract after dev share
-     * @return eOut : ERC20 balance of this contract after dev share
-     * @return pOut : Platform balance of this contract after dev share
-     */
-    function _rebalance(address _token, uint256 nativeIn, uint256 erc20In, uint256 platformIn) internal returns(uint256 nOut, uint256 eOut, uint256 pOut) {
-        uint8 devRate = 2;
-        nOut = nativeIn;
-        eOut = erc20In;
-        pOut = platformIn;
-        uint devShare;
-        unchecked {
-            if(nOut > 0 && (address(this).balance >= nOut)) {
-                devShare = (nOut * devRate) / 100;
-                _sendValue(devShare, dev);
-                nOut -= devShare;
-            }
-            if(eOut > 0 && (IERC20(_token).balanceOf(address(this)) >= eOut)) {
-                devShare = (eOut * devRate) / 100;
-                _sendErc20(dev, devShare, IERC20(_token));
-                eOut -= devShare; 
-            }
-            if(pOut > 0 && (token.balanceOf(address(this)) >= pOut)) {
-                devShare = (pOut * devRate) / 100;
-                _sendErc20(dev, devShare, token);
-                pOut -= devShare; 
-            }
-        }
-    }
-
-    /**
      * @dev Claim ero20 token
      * @param recipient : Recipient
      * @param amount : Amount to transfer
@@ -102,17 +67,12 @@ library UtilsV3 {
     
     /**
      * @dev Assign 5% of payouts to the dev
-     * @param _token : ERC20 token to be used for payout
-     * @param platformIn : Platform token to be used for payout
-     * @param erc20In : ERC20 token to be used for payout
-     * @param nativeIn : Native token to be used for payout
-     * @return nOut : Celo balance of this contract after dev share
-     * @return eOut : ERC20 balance of this contract after dev share
-     * @return pOut : Platform balance of this contract after dev share
+     * @param dev : Dev address
+     * @param _in : Share data of type Common.ShareOut
      */
-    function _rebalance(address dev, Common.ShareOut memory in) internal returns(Common.ShareOut memory out) {
+    function _rebalance(address dev, Common.ShareOut memory _in) internal returns(Common.ShareOut memory out) {
         uint8 devRate = 5;
-        out = in;
+        out = _in;
         uint devShare;
         unchecked {
             if(out.native > 0 && (address(this).balance >= out.native)) {
@@ -120,7 +80,7 @@ library UtilsV3 {
                 _sendValue(dev, devShare);
                 out.native -= devShare;
             }
-            if(out.erc20 > 0 && (IERC20(out._token).balanceOf(address(this)) >= out.erc20)) {
+            if(out.erc20 > 0 && (IERC20(out.token).balanceOf(address(this)) >= out.erc20)) {
                 devShare = (out.erc20 * devRate) / 100;
                 _sendErc20(dev, devShare, out.token);
                 out.erc20 -= devShare; 

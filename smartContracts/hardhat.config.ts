@@ -22,16 +22,17 @@ const config: HardhatUserConfig = {
     },
     base: {
       url: "https://mainnet.base.org",
-      accounts: [`${process.env.PRIVATE_0xa1f}`],
+      accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
       chainId: 8453,
     },
     baseSepolia: {
       url: "https://sepolia.base.org",
-      accounts: [`${process.env.PRIVATE_0xa1f}`],
+      accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
       chainId: 84532,
     },
     celo: {
       accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
+      // url: 'https://celo.drpc.org',
       url: 'https://forno.celo.org',
       chainId: 42220,
     }
