@@ -18,7 +18,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let { reserve, deployer: dep, routeTo,  admin,  admin2, admin3,  admin4, identityVerificationHub } = await getNamedAccounts();
 
 	let mode = Mode.LOCAL;
-	const minimumToken = parseUnits('0.00001', 18);
+	const minimumToken = 0n;
+	// const minimumToken = parseUnits('0.00001', 18);
 	const networkName = network.name;
 	const deployer = networkName === 'sepolia'? admin2 : dep;
 	const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
@@ -95,12 +96,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 	console.error("Error executing setMain:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
-	try {
-		await execute('LearnaV2', {from: deployer}, 'setMinimumToken', minimumToken);
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setMinimumToken:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	await execute('LearnaV2', {from: deployer}, 'setMinimumToken', minimumToken);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setMinimumToken:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	// try {
 	// 	// await execute('Verifier', {from: deployer}, 'toggleUseWalletVerification');
@@ -142,23 +143,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// await execute('Verifier', {from: deployer}, 'withdraw', deployer, amount, GrowToken.address, tokenAmount);
 
 	// await setUpCampaign({networkName, run: true});
-	// await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
+	await recordPoints({networkName, run: true , recordPoints: true, runDelegate: true});
 	// await sortWeeklyPayment({networkName, run: true});
 	// await verifyAndClaim({networkName, run: true});
 
 	// Read actions
-	// const admins = await read("LearnaV2", "getAdmins");
-	// const isWalletVerificationRequired = await read('VerifierV2', 'isWalletVerificationRequired');
-	// const config = await read('VerifierV2', 'configId');
-	// const scope = await read('VerifierV2', 'scope');
-	// const stateData = await read('LearnaV2', 'getData', deployer) as ReadData;
+	const admins = await read("LearnaV2", "getAdmins");
+	const isWalletVerificationRequired = await read('VerifierV2', 'isWalletVerificationRequired');
+	const config = await read('VerifierV2', 'configId');
+	const scope = await read('VerifierV2', 'scope');
+	const stateData = await read('LearnaV2', 'getData', deployer) as ReadData;
 
-	// console.log("scope", toBigInt(scope.toString()));
-	// console.log("isWalletVerificationRequired", isWalletVerificationRequired);
-	// console.log("config", config);
-	// console.log("isAdmin1", admins?.[0].active);
-	// console.log("isAdmin2", admins?.[1].active);
-	// console.log("Minimum token", formatUnits(BigInt(stateData?.state?.minimumToken?.toString()), 18));
+	console.log("scope", toBigInt(scope.toString()));
+	console.log("isWalletVerificationRequired", isWalletVerificationRequired);
+	console.log("config", config);
+	console.log("isAdmin1", admins?.[0].active);
+	console.log("isAdmin2", admins?.[1].active);
+	console.log("Minimum token", formatUnits(BigInt(stateData?.state?.minimumToken?.toString()), 18));
 	
 }
 export default func;

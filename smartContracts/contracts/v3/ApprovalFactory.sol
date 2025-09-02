@@ -19,7 +19,7 @@ contract ApprovalFactory is IApprovalFactory, Ownable {
     mapping (address => bool) private approval;
 
     constructor() Ownable(_msgSender()) {
-       _isApproved(_msgSender());
+        _setApprovalFor(_msgSender());
     }
 
     /**

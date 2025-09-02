@@ -1,6 +1,13 @@
 import { ContractTransactionResponse, ethers } from "ethers";
 import { Hex, Address as ContractAddress } from "viem";
-import type {PlatformToken as Platform, LearnaV2 as Learn, FeeManager as Fm} from "../typechain-types";
+import type {
+  PlatformToken as Platform, 
+  LearnaV2 as Learn, 
+  FeeManager as Fm,
+  CampaignFactory as CmpFactory,
+  ApprovalFactory as AppFactory,
+  VerifierV2 as Vv2
+} from "../typechain-types";
 
 export type BigNumber = ethers.BigNumberish
 export type AddressReturn = Promise<Address>;
@@ -21,6 +28,14 @@ export interface SignersObj {
   signer2:Signer; 
 };
 
+export interface Metadata {
+  name: string;
+  link: string;
+  description: string;
+  imageUrl: string;
+  endDateInHr: number;
+}
+
 export type SignersArr = Signer[];
 
 export type Learna = Learn & {
@@ -31,15 +46,35 @@ export type GrowToken = Platform & {
   deploymentTransaction(): ContractTransactionResponse;
 };
 
-// export type PlatformToken = Platform & {
-//   deploymentTransaction(): ContractTransactionResponse;
-// };
+export type CampaignFactory = CmpFactory & {
+  deploymentTransaction(): ContractTransactionResponse;
+};
 
 export type FeeManager = Fm & {
   deploymentTransaction(): ContractTransactionResponse;
 };
  
-// export type Claim = clm & {
-//   deploymentTransaction(): ContractTransactionResponse;
-// };
+export type ApprovalFactory = AppFactory & {
+  deploymentTransaction(): ContractTransactionResponse;
+};
+
+export type Verifier = Vv2 & {
+  deploymentTransaction(): ContractTransactionResponse;
+};
  
+export const NAME = 'Divvi';
+export const LINK = 'https://divvi.xyz';
+export const DESCRIPTION = "Welcome to the Divvi ecosystem quiz! The following articles will provide you with deep insights into the Divvi project, its mission to realign web3 incentives, and its powerful SDK. By reading the materials and successfully completing the quiz levels, you will gain a strong understanding of how Divvi empowers both builders and protocols. This knowledge will not only make you a more informed member of the web3 community but will also qualify you to earn token rewards based on your performance. Dive in, learn about the future of permissionless value creation, and get ready to test your knowledge!";
+export const IMAGE_URI = "https://divvi.xyz/divvi-logo";
+export const END_DATE = 24; // 24 hours
+console.log("END_DATE", END_DATE);
+
+export const metadata : Metadata = {
+  name: NAME,
+  link: LINK,
+  description: DESCRIPTION,
+  imageUrl: IMAGE_URI,
+  endDateInHr: END_DATE
+}
+
+console.log("metadata", metadata);
