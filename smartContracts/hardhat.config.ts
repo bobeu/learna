@@ -20,8 +20,19 @@ const config: HardhatUserConfig = {
       accounts: [`${process.env.PRIVATE_0xD7c}`],
       chainId: 11_142220,
     },
+    base: {
+      url: "https://mainnet.base.org",
+      accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
+      chainId: 8453,
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
+      chainId: 84532,
+    },
     celo: {
       accounts: [`${process.env.PRIVATE_MAIN_0xa1f}`],
+      // url: 'https://celo.drpc.org',
       url: 'https://forno.celo.org',
       chainId: 42220,
     }
@@ -105,6 +116,12 @@ const config: HardhatUserConfig = {
       42220: `privatekey://${process.env.PRIVATE_farc as string}`
     },
     admin4: {
+      default: 3,
+      44787: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
+      11142220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
+      42220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`
+    },
+    dev: {
       default: 3,
       44787: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
       11142220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,

@@ -14,11 +14,12 @@ const SYMBOL = "POLE";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
-	const {deploy, read, execute} = deployments;
-	let { reserve, deployer: dep, routeTo,  admin,  admin2, admin3,  admin4, identityVerificationHub } = await getNamedAccounts();
+	const {deploy, read, execute, getDeploymentsFromAddress} = deployments;
+	let { reserve, deployer: dep, routeTo, dev,  admin,  admin2,  admin4, identityVerificationHub } = await getNamedAccounts();
 
 	let mode = Mode.LOCAL;
-	const minimumToken = parseUnits('0.0001', 18);
+	const minimumToken = 0n;
+	// const minimumToken = parseUnits('0.00001', 18);
 	const networkName = network.name;
 	const deployer = networkName === 'sepolia'? admin2 : dep;
 	const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
@@ -43,12 +44,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`Fee Manager contract deployed to: ${feeManager.address}`);
 
-	const learna = await deploy("LearnaV2", {
-		from: deployer,
-		args: [newAdmins, transitionInterval, mode, feeManager.address, CAMPAIGNS],
-		log: true,
-	});
-	console.log(`Learna contract deployed to: ${learna.address}`);
+	// const learna = await deploy("LearnaV2", {
+	// 	from: deployer,
+	// 	args: [newAdmins, transitionInterval, mode, feeManager.address, CAMPAIGNS],
+	// 	log: true,
+	// });
+	// console.log(`Learna contract deployed to: ${learna.address}`);
 
 	const verifier = await deploy("VerifierV2", {
 		from: deployer,
@@ -57,22 +58,54 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`Verifier contract deployed to: ${verifier.address}`);
 
-	const tokenv2 = await deploy("PlatformToken", {
+	// const tokenv2 = await deploy("PlatformToken", {
+	// 	from: deployer,
+	// 	args: [reserve, NAME, SYMBOL],
+	// 	log: true,
+	// });
+	// console.log(`TokenV2 deployed to: ${tokenv2.address}`);
+	
+	const approvalFactory = await deploy("ApprovalFactory", {
 		from: deployer,
-		args: [reserve, NAME, SYMBOL],
+		args: [],
 		log: true,
 	});
-	console.log(`TokenV2 deployed to: ${tokenv2.address}`);
+	console.log(`ApprovalFactory deployed to: ${approvalFactory.address}`);
+	
+	const CREATION_FEE = parseUnits('0.001',18);
+
+	const campapaignFactory = await deploy("CampaignFactory", {
+		from: deployer,
+		args: [dev, CREATION_FEE, approvalFactory.address],
+		log: true,
+	});
+	console.log(`campapaignFactory deployed to: ${campapaignFactory.address}`);
 
 	try {
-		for(const admin of newAdmins) {
-			console.log(`Setting admin: ${admin}`);
-			// await execute('LearnaV2', {from: deployer}, 'setAdmin', admin);
-		}
+		console.log(`Setting fee receiver on CampaignFactory`);
+		await execute('CampaignFactory', {from: deployer}, 'setFeeTo', feeManager.address);
 	} catch (error) {
 		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setAdmin:", errorMessage?.stack || errorMessage?.slice(0, 100));
+		console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	}
+
+	try {
+		console.log(`Setting verifier on CampaignFactory`);
+		await execute('CampaignFactory', {from: deployer}, 'setVerifier', verifier.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
+
+	// try {
+	// 	for(const admin of newAdmins) {
+	// 		console.log(`Setting admin: ${admin}`);
+	// 		// await execute('LearnaV2', {from: deployer}, 'setAdmin', admin);
+	// 	}
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setAdmin:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	// try {
 	// 	await execute('VerifierV2', {from: deployer}, 'setPermission', learna.address);
