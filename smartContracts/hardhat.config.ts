@@ -121,6 +121,12 @@ const config: HardhatUserConfig = {
       11142220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
       42220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`
     },
+    dev: {
+      default: 3,
+      44787: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
+      11142220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`,
+      42220: `privatekey://${process.env.PRIVATE_MAIN_0xa1f as string}`
+    },
     routeTo: {
       default: 3,
       44787: `privatekey://${process.env.PRIVATE_0x84F as string}`,

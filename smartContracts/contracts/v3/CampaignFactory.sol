@@ -129,6 +129,8 @@ contract CampaignFactory {
                     emit NewCampaign(sender, campaign);
                 }
             }
+        } else {
+            revert InsufficientValue();
         }
 
         return true;

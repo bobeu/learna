@@ -14,11 +14,10 @@ describe("CampaignFactory", function () {
   
   describe("Setup campaigns", function () { 
     it("Should create a campaign successfully", async function () {
-      const { campaignFactory, approvalFactory, approvalFactoryAddr, feeManagerAddr, devAddr, signers : { signer1, deployerAddr, signer1Addr: operatorAddr, deployer }} = await loadFixture(deployContractsFixcture);
-      let createtionFee = parseUnits('0.001', 18);
+      const { campaignFactory, approvalFactory, createtionFee, approvalFactoryAddr, feeManagerAddr, devAddr, signers : { signer1, deployerAddr, signer1Addr: operatorAddr, deployer }} = await loadFixture(deployContractsFixcture);
       const operator = signer1;
       await campaignFactory.connect(deployer).setApprovalFactory(approvalFactoryAddr);
-      await campaignFactory.connect(operator).createCampaign(metadata);
+      await campaignFactory.connect(operator).createCampaign(metadata, {value: createtionFee});
       const data = await campaignFactory.getData();
       const hasApproval = await approvalFactory.hasApproval(deployerAddr);
     

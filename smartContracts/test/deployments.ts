@@ -98,6 +98,7 @@ export async function deployContracts(getSigners_: () => Signers) {
     feeManagerAddr,
     learna,
     devAddr,
+    createtionFee,
     dev,
     learnaAddr,
     signers: { deployer, signer1, signer2, admin2,admin2Addr, reserveAddr, reserve, deployerAddr, signer1Addr, signer2Addr }

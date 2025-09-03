@@ -43,7 +43,7 @@ interface ICampaignTemplate {
     ///@dev Expected to be rated by AI after quiz or test completion
     struct Performance {
         uint64 value; 
-        uint64 ratedAt; // Date rated
+        bytes ratedAt; // Date rated
     }
         // ProofOfIntegration poi; // Link to proof of integration if user has taken SDK test
         // ProofOfAssimilation poa;

@@ -1,5 +1,5 @@
 import { ContractTransactionResponse, ethers } from "ethers";
-import { Hex, Address as ContractAddress } from "viem";
+import { Hex, Address as ContractAddress, stringToBytes, bytesToHex, stringToHex } from "viem";
 import type {
   PlatformToken as Platform, 
   LearnaV2 as Learn, 
@@ -67,7 +67,6 @@ export const LINK = 'https://divvi.xyz';
 export const DESCRIPTION = "Welcome to the Divvi ecosystem quiz! The following articles will provide you with deep insights into the Divvi project, its mission to realign web3 incentives, and its powerful SDK. By reading the materials and successfully completing the quiz levels, you will gain a strong understanding of how Divvi empowers both builders and protocols. This knowledge will not only make you a more informed member of the web3 community but will also qualify you to earn token rewards based on your performance. Dive in, learn about the future of permissionless value creation, and get ready to test your knowledge!";
 export const IMAGE_URI = "https://divvi.xyz/divvi-logo";
 export const END_DATE = 24; // 24 hours
-console.log("END_DATE", END_DATE);
 
 export const metadata : Metadata = {
   name: NAME,
@@ -77,4 +76,31 @@ export const metadata : Metadata = {
   endDateInHr: END_DATE
 }
 
-console.log("metadata", metadata);
+export interface ProofOfAssimilation {
+  questionSize: number;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  timeSpent: number;
+  completedAt: string;
+}
+
+export const proofAssimilation :ProofOfAssimilation = {
+  questionSize: 10,
+  score: 80,
+  totalPoints: 100,
+  percentage: 80,
+  timeSpent: 3,
+  completedAt: stringToHex(new Date().toString())
+} 
+console.log("proofAssimilation", proofAssimilation);
+
+export interface Performance {
+  value: number;
+  ratedAt: string;
+}
+
+export const performanceRating : Performance = {
+  value: 8,
+  ratedAt: bytesToHex(stringToBytes(new Date().toString()))
+}
