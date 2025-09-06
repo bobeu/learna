@@ -22,12 +22,60 @@ import verify42220 from "./contractsArtifacts/42220/verify.json";
 import balanceOf42220 from "./contractsArtifacts/42220/balanceOf.json";
 import delegateTransaction42220 from "./contractsArtifacts/42220/delegateTransaction.json";
 
+// Celo Sepolia contract configs
+import claimReward11142220 from "./contractsArtifacts/11142220/claimReward.json";
+import getVerificationStatus11142220 from "./contractsArtifacts/11142220/getVerificationStatus.json";
+import getData11142220 from "./contractsArtifacts/11142220/getData.json";
+import recordPoints11142220 from "./contractsArtifacts/11142220/recordPoints.json";
+import sortWeeklyReward11142220 from "./contractsArtifacts/11142220/sortWeeklyReward.json";
+import setUpCampaign11142220 from "./contractsArtifacts/11142220/setUpCampaign.json";
+import setPermission11142220 from "./contractsArtifacts/11142220/setPermission.json";
+import owner11142220 from "./contractsArtifacts/11142220/owner.json";
+import setMinimumToken11142220 from "./contractsArtifacts/11142220/setMinimumToken.json";
+import approve11142220 from "./contractsArtifacts/11142220/approve.json";
+import pause11142220 from "./contractsArtifacts/11142220/pause.json";
+import unpause11142220 from "./contractsArtifacts/11142220/unpause.json";
+import allowance11142220 from "./contractsArtifacts/11142220/allowance.json";
+import adjustCampaignValues11142220 from "./contractsArtifacts/11142220/adjustCampaignValues.json";
+import isPermitted11142220 from "./contractsArtifacts/11142220/isPermitted.json";
+import banOrUnbanUser11142220 from "./contractsArtifacts/11142220/banOrUnbanUser.json";
+import configId11142220 from "./contractsArtifacts/11142220/configId.json";
+import setConfigId11142220 from "./contractsArtifacts/11142220/setConfigId.json";
+import setScope11142220 from "./contractsArtifacts/11142220/setScope.json";
+import verify11142220 from "./contractsArtifacts/11142220/verify.json";
+import balanceOf11142220 from "./contractsArtifacts/11142220/balanceOf.json";
+import delegateTransaction11142220 from "./contractsArtifacts/11142220/delegateTransaction.json";
+
 // Global data import
 import globalData from "./contractsArtifacts/global.json";
 
 const { chainIds, approvedFunctions } = globalData;
 
 const functionData = [
+    [
+        { key: 'banOrUnbanUser', value: { ...banOrUnbanUser11142220} },
+        { key: 'owner', value: { ...owner11142220} },
+        { key: 'pause', value: { ...pause11142220} },
+        { key: 'unpause', value: { ...unpause11142220} },
+        { key: 'allowance', value: { ...allowance11142220} },
+        { key: 'approve', value: { ...approve11142220} },
+        { key: 'setUpCampaign', value: { ...setUpCampaign11142220} },
+        { key: 'sortWeeklyReward', value: { ...sortWeeklyReward11142220} },
+        { key: 'recordPoints', value: { ...recordPoints11142220} },
+        { key: 'getData', value: { ...getData11142220} },
+        { key: 'setMinimumToken', value: { ...setMinimumToken11142220} },
+        { key: 'claimReward', value: { ...claimReward11142220} },
+        { key: 'setPermission', value: { ...setPermission11142220} },
+        { key: 'adjustCampaignValues', value: { ...adjustCampaignValues11142220} },
+        { key: 'isPermitted', value: { ...isPermitted11142220} },
+        { key: 'configId', value: { ...configId11142220} },
+        { key: 'setConfigId', value: { ...setConfigId11142220} },
+        { key: 'setScope', value: { ...setScope11142220} },
+        { key: 'getVerificationStatus', value: { ...getVerificationStatus11142220} },
+        { key: 'verify', value: { ...verify11142220} },
+        { key: 'balanceOf', value: { ...balanceOf11142220} },
+        { key: 'delegateTransaction', value: { ...delegateTransaction11142220} },
+    ],
     [
         { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
         { key: 'owner', value: { ...owner42220} },
@@ -51,7 +99,7 @@ const functionData = [
         { key: 'verify', value: { ...verify42220} },
         { key: 'balanceOf', value: { ...balanceOf42220} },
         { key: 'delegateTransaction', value: { ...delegateTransaction42220} },
-    ]
+    ],
 ];
 
 /**
@@ -61,11 +109,12 @@ const functionData = [
  * @param chainId : Connected chainId
  * @returns Contract data
  */
-export const getFunctionData = (functionName: string, chainId: number = chainIds[1]) => {
+export const getFunctionData = (functionName: string, chainId: number = chainIds[0]) => {
     if(!approvedFunctions.includes(functionName)) {
         throw new Error(`${functionName} not supported`);
     }
-    // const chainIndex = chainIds.indexOf(chainId);
-    const found = functionData[0].filter(q => q.key.toLowerCase() === functionName.toLowerCase());
+    const chainIndex = chainIds.indexOf(chainId);
+    // const found = functionData[0].filter(q => q.key.toLowerCase() === functionName.toLowerCase());
+    const found = functionData[chainIndex].filter(q => q.key.toLowerCase() === functionName.toLowerCase());
     return found?.[0].value; 
 }

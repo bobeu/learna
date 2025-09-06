@@ -1,0 +1,21 @@
+{
+  "contractAddress": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3",
+  "functionName": "owner",
+  "inputCount": 0,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

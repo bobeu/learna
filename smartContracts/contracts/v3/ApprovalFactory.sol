@@ -12,14 +12,28 @@ interface IApprovalFactory {
     event ApprovalRemoved(address[]);
 
     function hasApproval(address target) external view returns(bool);
+    function getFactory() external view returns(address);
 }
 
 contract ApprovalFactory is IApprovalFactory, Ownable {
+    address public factory;
+
     // Mapping of account to approvals
     mapping (address => bool) private approval;
 
     constructor() Ownable(_msgSender()) {
         _setApprovalFor(_msgSender());
+    }
+
+    function getFactory() external view returns(address){
+        require(factory != address(0),"Factory is zero");
+        return factory;
+    }
+
+    function setFactory(address newFactory) public onlyOwner returns(bool) {
+        require(newFactory != address(0), "New factory is zero");
+        factory = newFactory;
+        return true;
     }
 
     /**

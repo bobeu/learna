@@ -4,13 +4,14 @@ import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { APP_DESCRIPTION, APP_URL } from "~/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
-import { celo } from 'wagmi/chains';
+import { celo, celoSepolia } from 'wagmi/chains';
+import { createPublicClient, createWalletClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 // Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
-const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
-const alchemy_alfajores_api = process.env.NEXT_PUBLIC_ALCHEMY_CELOALFAJORES_API as string;
-const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
+// const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
+// const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
 
 if (!projectId) throw new Error('Project ID is undefined');
 
@@ -53,6 +54,20 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
   return <>{children}</>;
 }
 
+/**
+ * @dev Get wallet client for signing transactions
+ * @param networkName : Connected chain name
+ * @param pkey : Private key. Note: Protect your private key at all cost. Use environment variables where necessary
+ * @returns : Wallet client for signing transactions
+ */
+export function getDefaultPublicClient(networkName: string) {
+  return createPublicClient({
+    chain: networkName === 'sepolia'? celoSepolia : celo,
+    transport: http(),
+    // transport: http('https://celo.drpc.org')
+  });
+}
+
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the default config from RainbowKit
   const config = getDefaultConfig({
@@ -61,13 +76,14 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     appIcon: 'https://learna.vercel.app/learna-logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
-    chains: [ celo ],
+    chains: [celoSepolia, celo ],
     ssr: true,
     multiInjectedProviderDiscovery: true,
     pollingInterval: 10_000,
     syncConnectedChain: true,
     transports: {
-      [celo.id]: http(alchemy_celo_api),
+      [celoSepolia.id]: http(),
+      [celo.id]: http(),
     },
   });
   // [celoSepolia.id]: http(alchemy_celosepolia_api),

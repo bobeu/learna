@@ -1,0 +1,21 @@
+{
+  "contractAddress": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3",
+  "functionName": "configId",
+  "inputCount": 0,
+  "requireArgUpdate": true,
+  "abi": [
+    {
+      "inputs": [],
+      "name": "configId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

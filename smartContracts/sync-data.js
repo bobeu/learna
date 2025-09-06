@@ -10,9 +10,10 @@ const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
 const approvedFunctions = ['recordPoints', 'toggleAdminStatus', 'setPermission', 'isPermitted', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'verify', 'isWalletVerificationRequired', 'balanceOf', 'delegateTransaction'];
 const readFunctions = ['getData', 'owner', 'allowance', 'configId', 'getVerificationStatus', '', 'balanceOf', 'isPermitted'];
 const functionsRequireArgUpdate = approvedFunctions;
-const chainName = {42220: 'celo'};
-const chainIds = [42220]
+const chainName = {11142220: 'sepolia', 42220: 'celo'};
+const chainIds = [11142220, 42220]
 let workBuild = {
+    11142220: [],
     42220: [],
 };
 
@@ -21,7 +22,18 @@ let globalOutput = {
     chainName: chainName,
     chainIds: chainIds,
     paths: workBuild,
-    contractAddresses: [{"stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a'}],
+    contractAddresses: [
+        {
+            "stablecoin": '',
+            "ApprovalFactory": "",
+            "CampaignFactory": ""
+        },
+        {
+            "stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a',
+            "ApprovalFactory": "",
+            "CampaignFactory": ""
+        }
+    ],
 };
 // {"stablecoin": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"}, 
 

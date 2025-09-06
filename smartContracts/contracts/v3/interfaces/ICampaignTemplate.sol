@@ -6,6 +6,10 @@ import { Common } from "../../interfaces/Common.sol";
 import { IVerifier } from "../../interfaces/IVerifier.sol";
 import { IApprovalFactory } from "../ApprovalFactory.sol";
 
+interface ICampaignFactory { 
+    function updatedUserCampaign(address user) external;
+}
+
 interface ICampaignTemplate {
     error NotVerified();
     error InvalidEpoch();
