@@ -5,16 +5,15 @@ import getData42220 from "./contractsArtifacts/42220/getData.json";
 import recordPoints42220 from "./contractsArtifacts/42220/recordPoints.json";
 import sortWeeklyReward42220 from "./contractsArtifacts/42220/sortWeeklyReward.json";
 import setUpCampaign42220 from "./contractsArtifacts/42220/setUpCampaign.json";
-import setAdmin42220 from "./contractsArtifacts/42220/setAdmin.json";
+import setPermission42220 from "./contractsArtifacts/42220/setPermission.json";
 import owner42220 from "./contractsArtifacts/42220/owner.json";
 import setMinimumToken42220 from "./contractsArtifacts/42220/setMinimumToken.json";
 import approve42220 from "./contractsArtifacts/42220/approve.json";
 import pause42220 from "./contractsArtifacts/42220/pause.json";
 import unpause42220 from "./contractsArtifacts/42220/unpause.json";
 import allowance42220 from "./contractsArtifacts/42220/allowance.json";
-import setTransitionInterval42220 from "./contractsArtifacts/42220/setTransitionInterval.json";
 import adjustCampaignValues42220 from "./contractsArtifacts/42220/adjustCampaignValues.json";
-import getAdmins42220 from "./contractsArtifacts/42220/getAdmins.json";
+import isPermitted42220 from "./contractsArtifacts/42220/isPermitted.json";
 import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
 import configId42220 from "./contractsArtifacts/42220/configId.json";
 import setConfigId42220 from "./contractsArtifacts/42220/setConfigId.json";
@@ -42,10 +41,9 @@ const functionData = [
         { key: 'getData', value: { ...getData42220} },
         { key: 'setMinimumToken', value: { ...setMinimumToken42220} },
         { key: 'claimReward', value: { ...claimReward42220} },
-        { key: 'setAdmin', value: { ...setAdmin42220} },
-        { key: 'setTransitionInterval', value: { ...setTransitionInterval42220} },
+        { key: 'setPermission', value: { ...setPermission42220} },
         { key: 'adjustCampaignValues', value: { ...adjustCampaignValues42220} },
-        { key: 'getAdmins', value: { ...getAdmins42220} },
+        { key: 'isPermitted', value: { ...isPermitted42220} },
         { key: 'configId', value: { ...configId42220} },
         { key: 'setConfigId', value: { ...setConfigId42220} },
         { key: 'setScope', value: { ...setScope42220} },

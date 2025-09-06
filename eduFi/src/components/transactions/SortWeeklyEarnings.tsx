@@ -5,7 +5,7 @@ import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
 
-export default function SortWeeklyReward({growTokenAmount, newInterval, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
+export default function SortWeeklyReward({growTokenAmount, openDrawer, toggleDrawer }: SortWeeklyRewardProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -18,10 +18,10 @@ export default function SortWeeklyReward({growTokenAmount, newInterval, openDraw
         });
 
         const contractAddress = filtered.contractAddresses.LearnaV2 as Address;
-        const args = [growTokenAmount, newInterval];
+        const args = [growTokenAmount];
 
         return { ...filtered, args, contractAddress };
-    }, [chainId, callback, growTokenAmount, newInterval]);
+    }, [chainId, callback, growTokenAmount]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject) => {
@@ -52,5 +52,4 @@ type SortWeeklyRewardProps = {
     growTokenAmount: bigint;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    newInterval: number;
 };

@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0xf1531222bc9D158d6c2e52A2b3f5fEBCfA9aB808",
+  "contractAddress": "0xb0e9B198CC0DC4ceBaaA425F272E6661e35B5203",
   "functionName": "sortWeeklyReward",
-  "inputCount": 2,
+  "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
     {
@@ -10,11 +10,6 @@
           "internalType": "address[]",
           "name": "_admins",
           "type": "address[]"
-        },
-        {
-          "internalType": "uint32",
-          "name": "transitionInterval",
-          "type": "uint32"
         },
         {
           "internalType": "enum ILearna.Mode",
@@ -391,90 +386,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "components": [
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "platformToken",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "fundsNative",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "fundsERC20",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint96",
-                  "name": "totalPoints",
-                  "type": "uint96"
-                },
-                {
-                  "internalType": "uint64",
-                  "name": "lastUpdated",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "activeLearners",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "operator",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "bytes32",
-                      "name": "hash_",
-                      "type": "bytes32"
-                    },
-                    {
-                      "internalType": "bytes",
-                      "name": "encoded",
-                      "type": "bytes"
-                    }
-                  ],
-                  "internalType": "struct ILearna.CampaignData",
-                  "name": "data",
-                  "type": "tuple"
-                }
-              ],
-              "internalType": "struct ILearna.CData",
-              "name": "data",
-              "type": "tuple"
-            },
-            {
-              "internalType": "address[]",
-              "name": "users",
-              "type": "address[]"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct ILearna.Campaign",
-          "name": "campaign",
-          "type": "tuple"
-        }
-      ],
-      "name": "NewCampaign",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "previousOwner",
@@ -609,43 +520,6 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "_weekId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "newWeekId",
-          "type": "uint256"
-        },
-        {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "hash_",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bytes",
-              "name": "encoded",
-              "type": "bytes"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct ILearna.CampaignData[]",
-          "name": "campaigns",
-          "type": "tuple[]"
-        }
-      ],
-      "name": "Sorted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "",
@@ -719,9 +593,9 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "hash_",
-          "type": "bytes32"
+          "internalType": "string",
+          "name": "campaignName",
+          "type": "string"
         }
       ],
       "name": "claimReward",
@@ -746,31 +620,6 @@
         }
       ],
       "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getAdmins",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "id",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "active",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct Admins.Admin[]",
-          "name": "_admins",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -877,14 +726,14 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint256",
                   "name": "transitionInterval",
-                  "type": "uint64"
+                  "type": "uint256"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint256",
                   "name": "transitionDate",
-                  "type": "uint64"
+                  "type": "uint256"
                 },
                 {
                   "internalType": "uint256",
@@ -1358,19 +1207,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "setAdmin",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "minToken",
           "type": "uint256"
@@ -1416,27 +1252,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "interval",
-          "type": "uint32"
-        }
-      ],
-      "name": "setTransitionInterval",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "string",
           "name": "_campaign",
           "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "fundsERC20",
-          "type": "uint256"
         },
         {
           "internalType": "address",
@@ -1475,16 +1293,24 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "skipVerification",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
           "name": "amountInGrowToken",
           "type": "uint256"
-        },
-        {
-          "internalType": "uint32",
-          "name": "newIntervalInMin",
-          "type": "uint32"
         }
       ],
       "name": "sortWeeklyReward",
@@ -1501,25 +1327,25 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "toggleAdminStatus",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "string[]",
           "name": "_campaigns",
           "type": "string[]"
         }
       ],
       "name": "toggleCampaignStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "toggleSkipVerification",
       "outputs": [
         {
           "internalType": "bool",
@@ -1607,7 +1433,7 @@
       "name": "verifier",
       "outputs": [
         {
-          "internalType": "contract IVerifier",
+          "internalType": "contract IVerifierV2",
           "name": "",
           "type": "address"
         }

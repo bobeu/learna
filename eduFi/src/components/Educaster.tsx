@@ -60,9 +60,9 @@ export default function Educaster() {
     const [requestedWkId, setWeekId] = React.useState<number>(0);
     const [requestedHash, setHash] = React.useState<Hex>(mockHash);
     const [storage, setStorage] = React.useState<ReadData>(mockReadData);
-    const [admins, setAdmins] = React.useState<Admin[]>([mockAdmins]);
+    const [isPermitted, setPermission] = React.useState<boolean>(false);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
-    const [verificationStatus, setVerificationStatus] = React.useState<[boolean, boolean]>([false, false]);
+    const [verificationStatus, setVerificationStatus] = React.useState<boolean>(false);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -185,13 +185,13 @@ export default function Educaster() {
     const { transactionData: td, contractAddresses: ca } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'getAdmins', 'getVerificationStatus'],
+        functionNames: ['owner', 'getData', 'isPermitted', 'getVerificationStatus'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-    const readArgs = [[], [currentPath === 'stats'? statUser : account], [], [account]];
+    const readArgs = [[], [currentPath === 'stats'? statUser : account], [account], [account]];
     const contractAddresses = [
         ca.LearnaV2 as Address,
         ca.LearnaV2 as Address,
@@ -224,9 +224,9 @@ export default function Educaster() {
     React.useEffect(() => {
         let data : ReadData = mockReadData;
         let owner_ : Address = zeroAddress;
-        let admins_ : Admin[] = [mockAdmins];
+        let isPermitted_ : boolean = false;
+        let verificationStatus_ : boolean = false;
 
-        let verificationStatus_ : [boolean, boolean] = [false, false];
         if(result && result[0].status === 'success' && result[0].result !== undefined) {
             owner_ = result[0].result as Address;
         }
@@ -234,27 +234,29 @@ export default function Educaster() {
             data = result[1].result as ReadData;
         }
         if(result && result[2].status === 'success' && result[2].result !== undefined) {
-            admins_ = result[2].result as Admin[];
+            isPermitted_ = result[2].result as boolean;
         }
         if(result && result[3].status === 'success' && result[3].result !== undefined) {
-            verificationStatus_ = result[3].result as [boolean, boolean];
+            verificationStatus_ = result[3].result as boolean;
         }
-
+        
         setOwner(owner_);
         setStorage(data);
         setVerificationStatus(verificationStatus_);
-        setAdmins(admins_);
+        setPermission(isPermitted_);
     }, [result]);
 
+    // console.log("tD", result)
     const stateData = React.useMemo(() => {
         // const data = stateData;
         const weekId = storage.state.weekId; // Current week Id
         const state = storage.state;
         const weekProfileData = storage.profileData;
+        // console.log("storage", storage)
 
-        let userAdminStatus = false;
-        const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
-        if(found && found.length > 0) userAdminStatus = found[0].active;
+        // let userAdminStatus = false;
+        // const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
+        // if(found && found.length > 0) userAdminStatus = found[0].active;
 
         // Return all approved campaigns
         const allCampaign : CampaignHashFormatted[] = storage.approved.map(({hash_, encoded}) => {
@@ -292,9 +294,9 @@ export default function Educaster() {
             campaignStrings,
             allCampaign,
             formattedData,
-            userAdminStatus,
+            userAdminStatus: isPermitted,
         }
-    }, [storage, verificationStatus, admins, requestedWkId, requestedHash, account]);
+    }, [storage, verificationStatus, isPermitted, requestedWkId, requestedHash, account]);
 
     const app = React.useMemo(() => {
         let app = <></>;
@@ -339,9 +341,11 @@ export default function Educaster() {
         const filtered = stateData.allCampaign.filter(({campaign}) => arg.toLowerCase() === campaign.toLowerCase());
         if(filtered.length > 0){
             setHash(filtered[0]?.hash_);
-        } else {
-            setHash(mockHash);
         }
+        
+        // else {
+        //     setHash(mockHash);
+        // }
     }, [stateData.allCampaign]);
 
     const setweekId = React.useCallback((arg: string) => {
@@ -361,7 +365,6 @@ export default function Educaster() {
                 currentPath,
                 messages,
                 owner,
-                admins,
                 ...stateData,
                 refetch,
                 recordPoints,

@@ -377,7 +377,7 @@ export function filterWeekData(weekData: WeekData[], requestedWkId: number, requ
 }
 
 export function formatData(stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex): FormattedData {
-  const [isVerified, isBlacklisted] = stateData.verificationStatus;
+  const isVerified = stateData.verificationStatus;
   const weekProfileData = stateData.weekProfileData;
   const filteredWPD = weekProfileData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
   const wpd = filteredWPD?.[0] || mockWeekProfileData;
@@ -388,10 +388,14 @@ export function formatData(stateData: StateData, weekData: WeekData[], requested
   const profileOther = userCampaign.profile.other;
   const profileQuizzes = userCampaign.profile.quizResults;
   const showVerificationButton = !isVerified && !isClaimed && eligibility.isEligible;
-  const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed && !isBlacklisted;
+  const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed;
   const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
+  // console.log("weekData", weekData)
   const statData = filterWeekData(weekData, requestedWkId, requestedHash);
-
+  // console.log("statData", statData)
+  // console.log("IsVerified:", isVerified);
+  // console.log("eligibility:", eligibility);
+  // console.log("isClaimed:", isClaimed);
   return {
     statData,
     isClaimed,

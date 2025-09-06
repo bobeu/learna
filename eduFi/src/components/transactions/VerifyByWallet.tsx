@@ -16,7 +16,7 @@ export default function VerifyByWallet({openDrawer, toggleDrawer }: SetClaimProp
             functionNames: ['verify'],
             callback
         });
-
+        // console.log("filtered", filtered);
         return { ...filtered };
     }, [chainId, callback]);
 

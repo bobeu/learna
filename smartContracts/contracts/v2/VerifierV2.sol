@@ -6,16 +6,17 @@ import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/I
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ILearna } from "../interfaces/ILearna.sol";
-import { Admins } from "../Admins.sol";
+import { Approved } from "../Approved.sol";
 
 interface IVerifierV2 {
-    function getVerificationStatus(address user) external view returns(bool _isVerified, bool _isBlacklisted);
+    function getVerificationStatus(address user) external view returns(bool);
 }
+
 /**
  * @title Claim
  *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
  */
-contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Admins, ReentrancyGuard {
+contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGuard {
     // Events
     event UserVerified(address indexed registeredUserIdentifier);
 
@@ -26,7 +27,7 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Admins, ReentrancyGuar
     bool public isWalletVerificationRequired; // default is true in the constructor, meaning user must verify before claiming
 
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
-    mapping(address user => bool) internal verificationStatus;
+    mapping(address => bool) internal verificationStatus;
 
     // Blacklist
     mapping(address => bool) internal blacklisted;
@@ -60,8 +61,8 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Admins, ReentrancyGuar
     /**@dev Return user's verification status
         * @param user : User's account
      */
-    function getVerificationStatus(address user) external view returns(bool _isVerified, bool _isBlacklisted) {
-        return (verificationStatus[user], blacklisted[user]);
+    function getVerificationStatus(address user) external view returns(bool) {
+        return verificationStatus[user];
     }
 
     // Set verification config ID
@@ -149,7 +150,7 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Admins, ReentrancyGuar
      * @param users : List of users 
      * @notice Only owner function
     */
-    function banOrUnbanUser(address[] memory users) public onlyAdmin whenNotPaused  returns(bool) {
+    function banOrUnbanUser(address[] memory users) public onlyApproved whenNotPaused  returns(bool) {
         uint size = users.length;
         bool[] memory statuses = new bool[](size);
         for(uint i = 0; i < size; i++) {

@@ -20,9 +20,6 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
     ///@notice Flag that controls whether to use key mechanism for data or not
     bool public useKey;
 
-    // Dev Address
-    address private dev;
-
     // Campaign fee receiver
     address private immutable feeTo;
 
@@ -43,8 +40,6 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
     /**
      * @dev Constructor
      * @param _admins : Addresses to be added as admin
-     * @param transitionInterval : Interval in time with which a week can be sorted. Ex. If its 7 days, this mean an admin
-     *                              cannot perform the sort function until its 7 days from the last sorted time. 
      * @param _mode : Deployment mode - LOCAL or LIVE
      * @notice We instanitate the admins array with an empty content. This is to ensure that anyone with slot 0 will always be
      * false otherwise anyone with 0 slot will automatically inherits the attributes of an admin in slot 0. If such as admin is active,
@@ -52,28 +47,27 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
      */
     constructor(
         address[] memory _admins, 
-        uint32 transitionInterval, 
         Mode _mode, 
         address _feeTo,
         string[] memory _campaigns
-    ) {
+    ) CampaignsV2(_msgSender()) {
         _setMinimumToken(1e16);
         mode = _mode;
-        dev = _msgSender();
         require(_feeTo != address(0), "Fee manager is zero");
         feeTo = _feeTo;
+        skipVerification = false;
         if(mode == Mode.LIVE){
-            _setTransitionInterval(transitionInterval, _getState().weekId);
+            _setTransitionInterval();
             useKey = false;
         } else {
             useKey = true;
         }
         for(uint i = 0; i < _admins.length; i++) {
-            if(_admins[i] != address(0)) _addAdmin(_admins[i]); 
+            if(_admins[i] != address(0)) _setPermission(_admins[i], true) ; 
         } 
 
         for(uint i = 0; i < _campaigns.length; i++) {
-            _setUpCampaign( _getHash(_campaigns[i]), 0, 0, address(0));
+            _setUpCampaign( _getHash(_campaigns[i]), 0, address(0));
         }
     }
 
@@ -111,22 +105,6 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
         data[weekId][hash_][user].other = profile;
     }
 
-    /**
-     * Forward value to a specific address
-     * @param amount : Amount to forward
-     * @param to : Address to forward the fee to
-     */
-    function _sendValue(uint amount, address to) internal {
-        if(amount > 0) {
-            if(address(this).balance >= amount){
-                if(to != address(0)){
-                    (bool s,) = to.call{value: amount}('');
-                    require(s, "Failed");
-                }
-            }
-        }
-    }
-
     ///////////////////////////////////////////////////////////
     //     PUBLIC FUNCTION : SET UP A CAMPAIGN               //
     ///////////////////////////////////////////////////////////
@@ -134,19 +112,14 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
      * @dev Add new campaign to the current week and fund it. Also, can be used to increase the funds in existing campaign for the week.
      * @param _campaign : Campaign string
      * @param token : ERC20 contract address if fundsERC20 is greater than 0
-     * @param fundsERC20 : Amount to fund the campaign in ERC20 currency e.g $GROW, $G. etc
      * @notice Anyone can setUp or add campaign provided they have enough to fund it. Campaign can be funded in two ways:
      * - ERC20. If the amount in fundsERC20 is greater than 0, it is suppose that the sender intends to also fund the campaign
      *    in ERC20-based asset hence the 'token' parameter must not be zero.
      * - Native such as CELO.
      */
-    function setUpCampaign(
-        string memory _campaign, 
-        uint256 fundsERC20,
-        address token
-    ) public payable returns(bool) {
+    function setUpCampaign(string memory _campaign, address token) public payable returns(bool) {
         require(bytes(_campaign).length > 0, "Invalid campaign");
-        _setUpCampaign(_getHash(_campaign), msg.value, fundsERC20, token);
+        _setUpCampaign(_getHash(_campaign), msg.value, token);
         return true;
     }
 
@@ -167,7 +140,7 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
         bytes32 hash_, 
         uint erc20Value,
         uint nativeValue
-    ) public onlyAdmin returns(bool) {
+    ) public onlyApproved returns(bool) {
         uint weekId = _getState().weekId;
         _validateCampaign(hash_, weekId);
         GetCampaign memory res = _getCampaign(weekId, hash_);
@@ -203,7 +176,7 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
     function recordPoints(address user, QuizResultInput memory quizResult, bytes32 hash_) 
         public 
         payable
-        onlyAdmin
+        onlyApproved
         whenNotPaused 
         returns(bool) 
     { 
@@ -254,19 +227,17 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
 
      /**
      * @dev Allocate weekly earnings
-     * @param newIntervalInMin : New transition interval for the new week. The interval is used to determined the claim deadline.
      * @param amountInGrowToken : Amount to allocate in GROW token
      * @notice We first for allowance of owner to this contract. If allowance is zero, we assume allocation should come from
      * the GROW Token. Also, previous week payout will be closed. Learners must withdraw from past week before the current week ends
     */
-    function sortWeeklyReward(uint amountInGrowToken, uint32 newIntervalInMin) 
+    function sortWeeklyReward(uint amountInGrowToken) 
         public 
         whenNotPaused 
-        onlyAdmin
+        onlyApproved
         returns(bool) 
     {
-        (uint currentWk, uint newWk, CampaignData[] memory cData) = _initializeAllCampaigns(newIntervalInMin, amountInGrowToken, _callback);
-        emit Sorted(currentWk, newWk, cData);  
+        _initializeAllCampaigns(amountInGrowToken);
  
         return true;
     }
@@ -370,20 +341,6 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
         _setCampaign(res.slot, weekId, res.cp.data);
     }
 
-    function _callback(CData memory inCmp, uint platformToken) internal returns(CData memory outCmp) {
-        outCmp = inCmp;
-        (uint native, uint256 erc20, uint platform) = _rebalance(
-            outCmp.token, 
-            outCmp.fundsNative, 
-            outCmp.fundsERC20, 
-            platformToken
-        );
-        outCmp.fundsNative = native;
-        outCmp.platformToken = platform;
-        outCmp.fundsERC20 = erc20;
-        outCmp.lastUpdated = _now();
-    }
-    
     /**
      * @dev Calculates user's share of the weekly payout
      * @param userPoints : Total points accumulated by the user
@@ -436,7 +393,7 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
                     }
                 }
                 (uint erc20, uint native, uint platform) = _calculateShare(nullifier? 0 : totalScore, cp);
-                bool protocolVerified = mode == Mode.LIVE? _now() <= _getDeadline(weekId) && (cp.fundsNative > 0 || cp.fundsERC20 > 0 || cp.platformToken > 0) : true;
+                bool protocolVerified = mode == Mode.LIVE? (cp.fundsNative > 0 || cp.fundsERC20 > 0 || cp.platformToken > 0) : true;
                 bool isEligible = protocolVerified && (native > 0 || erc20 > 0 || platform > 0);
                 elg = Eligibility(
                     isEligible,
@@ -451,41 +408,6 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
         }
     }
 
-    /**
-     * @dev Assign 2% of payouts to the dev
-     * @param _token : ERC20 token to be used for payout
-     * @param platformIn : Platform token to be used for payout
-     * @param erc20In : ERC20 token to be used for payout
-     * @param nativeIn : Native token to be used for payout
-     * @return nOut : Celo balance of this contract after dev share
-     * @return eOut : ERC20 balance of this contract after dev share
-     * @return pOut : Platform balance of this contract after dev share
-     */
-    function _rebalance(address _token, uint256 nativeIn, uint256 erc20In, uint256 platformIn) internal returns(uint256 nOut, uint256 eOut, uint256 pOut) {
-        uint8 devRate = 2;
-        nOut = nativeIn;
-        eOut = erc20In;
-        pOut = platformIn;
-        uint devShare;
-        unchecked {
-            if(nOut > 0 && (address(this).balance >= nOut)) {
-                devShare = (nOut * devRate) / 100;
-                _sendValue(devShare, dev);
-                nOut -= devShare;
-            }
-            if(eOut > 0 && (IERC20(_token).balanceOf(address(this)) >= eOut)) {
-                devShare = (eOut * devRate) / 100;
-                _sendErc20(dev, devShare, IERC20(_token));
-                eOut -= devShare; 
-            }
-            if(pOut > 0 && (token.balanceOf(address(this)) >= pOut)) {
-                devShare = (pOut * devRate) / 100;
-                _sendErc20(dev, devShare, token);
-                pOut -= devShare; 
-            }
-        }
-    }
-
     /////////////////////////////////////////////////////////////////////////////////
     //                          READ-ONLY FUNCTIONS                                //
     /////////////////////////////////////////////////////////////////////////////////
@@ -494,11 +416,13 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
      * Claim reward for a campaign for the previous weeks ended
      * @notice Claim will always be for the concluded week only.
      */
-    function claimReward(bytes32 hash_) public returns(bool){
+    function claimReward(string memory campaignName) public returns(bool){
         uint weekId = _getState().weekId;
         address sender = _msgSender();
-        (bool isVerified, bool isBlacklisted) = verifier.getVerificationStatus(sender);
-        require(isVerified && !isBlacklisted, "Not verified or blacklisted");
+        bytes32 hash_ = _getHash(campaignName).hash_;
+        if(!skipVerification) {
+            require(verifier.getVerificationStatus(sender), "Not verified or blacklisted");
+        }
         if(weekId > 0) {
             weekId -= 1;
             _validateCampaign(hash_, weekId);
@@ -542,7 +466,7 @@ contract LearnaV2 is CampaignsV2, ReentrancyGuard {
         uint hashSize = _return.approved.length; 
         for(uint i = 0; i < weekIds; i++) {
             _return.wd[i].campaigns = _getCampaings(i);
-            _return.wd[i].claimDeadline = _getDeadline(i);
+            // _return.wd[i].claimDeadline = _getDeadline(i);
             ReadProfile[] memory _userCampaigns = new ReadProfile[](hashSize);
             if(user != address(0)) {
                 _return.profileData[i].weekId = i;

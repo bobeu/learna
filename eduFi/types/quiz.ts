@@ -7,8 +7,7 @@ export type FunctionName =
   'runall' | 
   "checkEligibility"|
   'recordPoints'|
-  'setAdmin'|
-  'getAdmins'|
+  'setPermission'|
   'hasPassKey'|
   'setTransitionInterval'|
   'claimReward'|
@@ -33,6 +32,7 @@ export type FunctionName =
   'getCampaingData' |
   'getVerificationStatus' |
   'balanceOf' |
+  'isPermitted' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
@@ -317,7 +317,7 @@ export interface QuizData {
   categoryData: CategoryData[];
 }
 
-export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: [boolean, boolean];}
+export type StateData = { weekProfileData: WeekProfileData[]; verificationStatus: boolean;}
 export interface UseProfileType { inHash?: Hex, wkId?: number }
 export interface FormattedData {
   statData: {

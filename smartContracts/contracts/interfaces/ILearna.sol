@@ -16,10 +16,10 @@ interface ILearna {
     // error ClaimAddressNotSet();
     // error NotInitialized();
 
-    event NewCampaign(Campaign campaign);
+    // event NewCampaign(Campaign campaign);
     event CampaignUpdated(Campaign campaign);
     event PointRecorded(address indexed user, uint weekId, bytes32 campainHash, QuizResultInput quizResult);
-    event Sorted(uint _weekId, uint newWeekId, CampaignData[] campaigns);
+    // event Sorted(uint _weekId, uint newWeekId, CampaignData[] campaigns);
     event CampaignCreated(uint weekId, address indexed tipper, Campaign data, bytes32[] campainHashes);
     event UserStatusChanged(address[] users, bool[] newStatus);
 
@@ -42,7 +42,7 @@ interface ILearna {
 
     struct GetCampaign {
         Campaign cp;
-        uint32 slot;
+        uint slot;
     }
 
     struct CampaignData {
@@ -52,7 +52,7 @@ interface ILearna {
 
     struct WeekInitializer {
         bool hasSlot;
-        uint32 slot;
+        uint slot;
     }
 
     struct WeekProfileData {
@@ -139,8 +139,8 @@ interface ILearna {
 
     struct State {
         uint minimumToken;
-        uint64 transitionInterval;
-        uint64 transitionDate;
+        uint transitionInterval;
+        uint transitionDate;
         uint weekId;
     }
 

@@ -4,9 +4,8 @@ import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
 import { Address, FunctionName } from '../../../types/quiz';
-import { Hex } from 'viem';
 
-export default function ClaimReward({openDrawer, toggleDrawer, campaignHash }: claimProps) {
+export default function ClaimReward({openDrawer, toggleDrawer, campaignName }: claimProps) {
     const { chainId } = useAccount();
     const { callback } = useStorage();
 
@@ -17,10 +16,10 @@ export default function ClaimReward({openDrawer, toggleDrawer, campaignHash }: c
             functionNames: ['claimReward'],
             callback
         });
-        const args = [[campaignHash]];
+        const args = [[campaignName]];
 
         return { ...filtered,args };
-    }, [chainId, callback, campaignHash]);
+    }, [chainId, callback, campaignName]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject, index) => {
@@ -50,5 +49,5 @@ export default function ClaimReward({openDrawer, toggleDrawer, campaignHash }: c
 type claimProps = {
     toggleDrawer: (arg:number) => void;
     openDrawer: number;
-    campaignHash: Hex;
+    campaignName: string;
 };

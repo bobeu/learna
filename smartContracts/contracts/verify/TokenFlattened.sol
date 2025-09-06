@@ -719,192 +719,6 @@
 // }
 
 
-// // File @openzeppelin/contracts/utils/Pausable.sol@v5.4.0
-
-// // Original license: SPDX_License_Identifier: MIT
-// // OpenZeppelin Contracts (last updated v5.3.0) (utils/Pausable.sol)
-
-// pragma solidity ^0.8.20;
-
-// /**
-//  * @dev Contract module which allows children to implement an emergency stop
-//  * mechanism that can be triggered by an authorized account.
-//  *
-//  * This module is used through inheritance. It will make available the
-//  * modifiers `whenNotPaused` and `whenPaused`, which can be applied to
-//  * the functions of your contract. Note that they will not be pausable by
-//  * simply including this module, only once the modifiers are put in place.
-//  */
-// abstract contract Pausable is Context {
-//     bool private _paused;
-
-//     /**
-//      * @dev Emitted when the pause is triggered by `account`.
-//      */
-//     event Paused(address account);
-
-//     /**
-//      * @dev Emitted when the pause is lifted by `account`.
-//      */
-//     event Unpaused(address account);
-
-//     /**
-//      * @dev The operation failed because the contract is paused.
-//      */
-//     error EnforcedPause();
-
-//     /**
-//      * @dev The operation failed because the contract is not paused.
-//      */
-//     error ExpectedPause();
-
-//     /**
-//      * @dev Modifier to make a function callable only when the contract is not paused.
-//      *
-//      * Requirements:
-//      *
-//      * - The contract must not be paused.
-//      */
-//     modifier whenNotPaused() {
-//         _requireNotPaused();
-//         _;
-//     }
-
-//     /**
-//      * @dev Modifier to make a function callable only when the contract is paused.
-//      *
-//      * Requirements:
-//      *
-//      * - The contract must be paused.
-//      */
-//     modifier whenPaused() {
-//         _requirePaused();
-//         _;
-//     }
-
-//     /**
-//      * @dev Returns true if the contract is paused, and false otherwise.
-//      */
-//     function paused() public view virtual returns (bool) {
-//         return _paused;
-//     }
-
-//     /**
-//      * @dev Throws if the contract is paused.
-//      */
-//     function _requireNotPaused() internal view virtual {
-//         if (paused()) {
-//             revert EnforcedPause();
-//         }
-//     }
-
-//     /**
-//      * @dev Throws if the contract is not paused.
-//      */
-//     function _requirePaused() internal view virtual {
-//         if (!paused()) {
-//             revert ExpectedPause();
-//         }
-//     }
-
-//     /**
-//      * @dev Triggers stopped state.
-//      *
-//      * Requirements:
-//      *
-//      * - The contract must not be paused.
-//      */
-//     function _pause() internal virtual whenNotPaused {
-//         _paused = true;
-//         emit Paused(_msgSender());
-//     }
-
-//     /**
-//      * @dev Returns to normal state.
-//      *
-//      * Requirements:
-//      *
-//      * - The contract must be paused.
-//      */
-//     function _unpause() internal virtual whenPaused {
-//         _paused = false;
-//         emit Unpaused(_msgSender());
-//     }
-// }
-
-
-// // File contracts/Approved.sol
-
-// // Original license: SPDX_License_Identifier: MIT
-// pragma solidity 0.8.28;
-// abstract contract Approved is Ownable, Pausable {
-//     error AddressIsZero();
-    
-//     event Approval(address indexed);
-//     event UnApproval(address indexed);
-
-//     // Mapping of account to approvals
-//     mapping (address => bool) private approval;
-
-//     // Only approved account is allowed
-//     modifier onlyApproved {
-//         require(_isApproved(_msgSender()), "Not approved account");
-//         _;
-//     }
-
-//     constructor() Ownable(_msgSender()) {
-//        _setPermission(_msgSender(), true);
-         
-//     }
-//     //    _approve(toApprove, true);
-
-//     /**
-//      * @dev Set approval for
-//      * @param target : Account to set approval for
-//      * @param value : Approval state - true or false
-//      */
-//     function _setPermission(address target, bool value) internal {
-//         if(target == address(0)) revert AddressIsZero();
-//         approval[target] = value;
-//     }
-
-//     /**
-//      * @dev Set approval for target
-//      * @param target : Account to set approval for
-//      */
-//     function setPermission(address target) public onlyOwner {
-//         _setPermission(target, true);
-//         emit Approval(target);
-//     }
-
-//     /**
-//      * @dev Set approval for target
-//      * @param target : Account to set approval for
-//      */
-//     function _isApproved(address target) internal view returns(bool result) {
-//         result = approval[target];
-//     }
-
-//     /**
-//      * @dev Set approval for target
-//      * @param target : Account to set approval for
-//      */
-//     function isPermitted(address target) public view returns(bool) {
-//         return _isApproved(target);
-//     }
-
-//     /**
-//      * @dev Set approval for target
-//      * @param target : Account to set approval for
-//      */
-//     function unApprove(address target) public onlyOwner {
-//         _setPermission(target, false);
-//         emit UnApproval(target);
-//     }
-
-// }
-
-
 // // File contracts/interfaces/IGrowToken.sol
 
 // // Original license: SPDX_License_Identifier: MIT
@@ -921,7 +735,7 @@
 // // Original license: SPDX_License_Identifier: MIT
 
 // pragma solidity 0.8.28;
-// contract PlatformToken is IGrowToken, ERC20, Approved {
+// contract PlatformToken is IGrowToken, ERC20, Ownable {
 //     // Contract allowed to send allocation request
 //     address internal learna;
 
@@ -937,7 +751,7 @@
 //      * 
 //      * @param reserve : Address where other apportionments other than the dev's will be sent to. 
 //      */
-//     constructor(address reserve, string memory name_, string memory symbol_) ERC20(name_, symbol_) {
+//     constructor(address reserve, string memory name_, string memory symbol_) ERC20(name_, symbol_) Ownable(_msgSender()) {
 //         unchecked {
 //             uint tSupply = 21_000_000 * (10**decimals());
 //             uint dev = 630000 * (10**decimals());
@@ -958,7 +772,8 @@
 //      * @dev Allocate token to the learna contract
 //      * @param amount : Amount to allocate
 //      */
-//     function allocate(uint amount, address to) external onlyApproved() returns(bool) {
+//     function allocate(uint amount, address to) external returns(bool) {
+//         require(_msgSender() == learna || _msgSender() == owner(), "Not authorized");
 //         _transfer(address(this), to, amount);
 //         return true;
 //     }
@@ -968,12 +783,15 @@
 //      * @param newMain : New learna address
 //      * @notice : If the previous address is valid and has some balances, they're moved to this contract.
 //      */
-//     function setMain(address newMain) external onlyApproved() returns(bool) {
-//         require(newMain != learna, "Address already exist");
-//         uint bal = balanceOf(learna);
-//         if(learna != address(0) && bal > 0){
-//             _transfer(learna, address(this), bal);
+//     function setMain(address newMain) external onlyOwner returns(bool) {
+//         require(newMain != address(0), "Address is zero");
+//         if(learna != address(0)){
+//             uint bal = balanceOf(learna);
+//             if(bal > 0){
+//                 _transfer(learna, address(this), bal);
+//             }
 //         }
+
 //         learna = newMain;
 //         return true;
 //     }
