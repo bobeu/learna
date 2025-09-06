@@ -267,7 +267,6 @@ export const formatAddr = (x: string | undefined) : Address => {
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
   const { approvedFunctions, contractAddresses } = globalContractData;
   const transactionData : TransactionData[] = [];
-  // const index = chainIds.indexOf(chainId || chainIds[1]);
   if(filter) {
     functionNames.forEach((functionName) => {
       transactionData.push(getFunctionData(functionName, chainId));

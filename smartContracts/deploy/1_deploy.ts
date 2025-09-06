@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment, } from 'hardhat/types';
 import { DeployFunction, DeployResult } from 'hardhat-deploy/types';
 import { config as dotconfig } from "dotenv";
-import { ANSWER_COUNT, buildQuizInput, CAMPAIGNs, CAMPAIGNS, DIFFICULTIES  } from "../hashes";
+import { ANSWER_COUNT, buildQuizInput, campaignHashes, CAMPAIGNs, CAMPAIGNS, DIFFICULTIES  } from "../hashes";
 import { toBigInt } from 'ethers';
 import { formatUnits, parseEther, parseUnits, zeroAddress } from 'viem';
 import { DifficultyLevel, ReadData } from '../types';
@@ -89,6 +89,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`TokenV2 deployed to: ${tokenv2.address}`);
 	
+	//////////////////////////////////////////////// V3 ////////////////////////////////////////////////////////////////////
+	
 	// const approvalFactory = await deploy("ApprovalFactory", {
 	// 	from: deployer,
 	// 	args: [],
@@ -119,6 +121,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// } catch (error) {
 	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 	// 	console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
+
+	// try {
+	// 	console.log(`Setting factory on ApprovalFactory`);
+	// 	await execute('ApprovalFactory', {from: deployer}, 'setFactory', campapaignFactory.address);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
 	// try {

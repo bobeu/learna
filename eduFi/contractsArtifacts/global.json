@@ -28,9 +28,11 @@
     "delegateTransaction"
   ],
   "chainName": {
-    "42220": "celo"
+    "42220": "celo",
+    "11142220": "sepolia"
   },
   "chainIds": [
+    11142220,
     42220
   ],
   "paths": {
@@ -39,11 +41,30 @@
       "deployments\\celo\\LearnaV2.json",
       "deployments\\celo\\PlatformToken.json",
       "deployments\\celo\\VerifierV2.json"
+    ],
+    "11142220": [
+      "deployments\\sepolia\\ApprovalFactory.json",
+      "deployments\\sepolia\\CampaignFactory.json",
+      "deployments\\sepolia\\FeeManager.json",
+      "deployments\\sepolia\\LearnaV2.json",
+      "deployments\\sepolia\\PlatformToken.json",
+      "deployments\\sepolia\\VerifierV2.json"
     ]
   },
   "contractAddresses": [
     {
+      "stablecoin": "",
+      "ApprovalFactory": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
+      "CampaignFactory": "0x16884C8C6a494527f4541007A46239218e76F661",
+      "FeeManager": "0x2864bfA7896DA58B0c1E4da982d2747A3de5D2D6",
+      "LearnaV2": "0x97867791A9635BA0b82AaEd9D2b722c44f93C86E",
+      "PlatformToken": "0x626Bafa462125FC16978D3bb9304483430576863",
+      "VerifierV2": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3"
+    },
+    {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
+      "ApprovalFactory": "",
+      "CampaignFactory": "",
       "FeeManager": "0xa3C385ED8DF6A7B71CA79f24c6e51C5E1a2fadd0",
       "LearnaV2": "0xb0e9B198CC0DC4ceBaaA425F272E6661e35B5203",
       "PlatformToken": "0x18673C0bFA8d56864F09DbEBF0C3C97BEe20078d",

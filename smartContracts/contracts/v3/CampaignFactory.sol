@@ -22,6 +22,12 @@ contract CampaignFactory {
         address identifier;
     }
 
+    struct UserCampaign {
+        address user;
+        address campaign;
+        bool isCreator;
+    }
+
     struct ReadData {
         address dev;
         address feeTo;
@@ -49,6 +55,12 @@ contract CampaignFactory {
     ///@notice Approval factory contract
     IApprovalFactory private approvalFactory;
 
+    ///@notice User campaigns
+    mapping(address => UserCampaign[]) private userCampaigns;
+
+    ///@notice Users' registered campaign
+    mapping(address => mapping(address => bool)) private isRegisteredCampaign;
+
     // Only approved account is allowed
     modifier onlyApproved {
         if(!approvalFactory.hasApproval(msg.sender)) revert NoApproval();
@@ -67,6 +79,12 @@ contract CampaignFactory {
         _setCreationFee(_creationFee);
     }
 
+    ///@dev Get message sender
+    function _msgSender() internal view returns(address _sender) {
+        _sender = msg.sender;
+    }
+
+    ///@dev Set new creation fee
     function _setCreationFee(uint newFee) internal {
         creationFee = newFee;
     }
@@ -126,6 +144,7 @@ contract CampaignFactory {
                 unchecked {
                     address campaign = address(new CampaignTemplate{value: msg.value - creationFee}(dev, sender, approvalFactory, verifier, metadata));
                     campaigns.push(Campaign(sender, campaign));
+                    isRegisteredCampaign[address(this)][campaign] = true;
                     emit NewCampaign(sender, campaign);
                 }
             }
@@ -136,6 +155,21 @@ contract CampaignFactory {
         return true;
     }
 
+    function updatedUserCampaign(address user) external {
+        address _sender = _msgSender();
+        if(isRegisteredCampaign[address(this)][_sender]) {
+            if(!isRegisteredCampaign[user][_sender]) {
+                isRegisteredCampaign[user][_sender] = true;
+                userCampaigns[user].push(UserCampaign(user, _sender, false));
+            }
+        }
+    }
+
+    function getUserCampaigns(address target) external view returns(UserCampaign[] memory) {
+        return userCampaigns[target];
+    }
+
+    ///@dev Get campaign data
     function getData() public view returns(ReadData memory data) {
         data = ReadData(
             dev,

@@ -8,7 +8,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { UtilsV3 } from "./UtilsV3.sol";
 import { Common } from "../interfaces/Common.sol";
-import { ICampaignTemplate } from "./interfaces/ICampaignTemplate.sol";
+import { ICampaignTemplate, ICampaignFactory } from "./interfaces/ICampaignTemplate.sol";
 import { CampaignMetadata, IApprovalFactory } from "./CampaignMetadata.sol";
 
 contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuard {
@@ -222,6 +222,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         }
         epochData[epoch].learners[spot.value].poass.push(poa);
         epochData[epoch].learners[spot.value].ratings.push(rating);
+        ICampaignFactory(approvalFactory.getFactory()).updatedUserCampaign(sender);
 
         emit Proof(poa, sender);
         return true;
