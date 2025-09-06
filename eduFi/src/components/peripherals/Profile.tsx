@@ -49,12 +49,18 @@ function ProfileComponent(
     const [verifiyMethod, setVerificationMethod] = React.useState<VerificationMethod>('self');
     
     const { isEligible, erc20Amount, nativeAmount, platform } = eligibility;
-    const { state: { transitionDate }, requestedHash } = useStorage();
+    const { state: { transitionDate }, requestedHash, campaignData } = useStorage();
     const toggleDrawer = (arg:number) => setDrawer(arg);
     const toggleWalletDrawer = (arg:number) => setWalletMethodDrawer(arg);
     const back = () => {
         setShowQRCode(false);
     }
+
+    const campaignName = React.useMemo(() => {
+        const found = campaignData.filter((c) => c.hash_.toLowerCase() === requestedHash.toLowerCase());
+        if(found.length === 0) alert("Campaign not found");
+        return found[0].campaign; 
+    }, [requestedHash, campaignData]);
 
     const handleClaim = () => {
         if(!showVerificationButton && !showWithdrawalButton) return null;
@@ -218,7 +224,7 @@ function ProfileComponent(
             <ClaimReward 
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                campaignHash={requestedHash}
+                campaignName={campaignName}
             />
             <VerifyByWallet 
                 openDrawer={openWalletMethod}

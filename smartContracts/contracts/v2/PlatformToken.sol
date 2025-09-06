@@ -55,11 +55,14 @@ contract PlatformToken is IGrowToken, ERC20, Ownable {
      * @notice : If the previous address is valid and has some balances, they're moved to this contract.
      */
     function setMain(address newMain) external onlyOwner returns(bool) {
-        require(newMain != learna, "Address already exist");
-        uint bal = balanceOf(learna);
-        if(learna != address(0) && bal > 0){
-            _transfer(learna, address(this), bal);
+        require(newMain != address(0), "Address is zero");
+        if(learna != address(0)){
+            uint bal = balanceOf(learna);
+            if(bal > 0){
+                _transfer(learna, address(this), bal);
+            }
         }
+
         learna = newMain;
         return true;
     }

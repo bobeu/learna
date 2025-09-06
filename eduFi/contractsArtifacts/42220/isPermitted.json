@@ -1,17 +1,23 @@
 {
   "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
-  "functionName": "owner",
-  "inputCount": 0,
+  "functionName": "isPermitted",
+  "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
     {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
+      "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "target",
           "type": "address"
+        }
+      ],
+      "name": "isPermitted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

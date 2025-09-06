@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.28;
 
-import { IVerifier } from "../Claim.sol";
+import { IVerifierV2 } from "./VerifierV2.sol";
 import { ILearna } from "../interfaces/ILearna.sol";
-import { Admins } from "../Admins.sol";
 import { IGrowToken } from "../interfaces/IGrowToken.sol";
+import { Approved } from "../Approved.sol";
 
-abstract contract WeekV2 is ILearna, Admins {
+abstract contract WeekV2 is ILearna, Approved {
 
     /// @dev  Other state variables
     State private state;
@@ -17,13 +17,16 @@ abstract contract WeekV2 is ILearna, Admins {
 
     ///@notice Claim address
     
-    IVerifier public verifier;
+    IVerifierV2 public verifier;
+
+    bool public skipVerification;
 
     /// @dev Claim deadlines
-    mapping(uint => uint96) private claimDeadlines;
+    // mapping(uint => uint96) private claimDeadlines;
 
     ///@dev Mapping that shows whether user has claimed reward for a specific week or not
     mapping(address user => mapping(uint week => mapping(bytes32 => bool))) internal isClaimed;
+
 
     /**@dev Set claimed status for a user
      * @param user : User address
@@ -46,18 +49,18 @@ abstract contract WeekV2 is ILearna, Admins {
         return isClaimed[user][weekId][hash_];
     }
 
-    function _getDeadline(uint weekId) internal view returns(uint96 deadline) {
-        deadline = claimDeadlines[weekId];
-    }
+    // function _getDeadline(uint weekId) internal view returns(uint96 deadline) {
+    //     deadline = claimDeadlines[weekId];
+    // }
     
-    /**
-     * @dev Set claim deadline
-     * @param weekId : Week Id
-     * @param deadline : New deadline
-     */
-    function _setClaimDeadline(uint weekId, uint96 deadline) internal {
-        claimDeadlines[weekId] = deadline;
-    }
+    // /**
+    //  * @dev Set claim deadline
+    //  * @param weekId : Week Id
+    //  * @param deadline : New deadline
+    //  */
+    // function _setClaimDeadline(uint weekId, uint96 deadline) internal {
+    //     claimDeadlines[weekId] = deadline;
+    // }
 
     /** 
      * @dev Update minimum token
@@ -72,7 +75,7 @@ abstract contract WeekV2 is ILearna, Admins {
      * @param _verifier : Account to set approval for
      */
     function setVerifierAddress(address _verifier) public onlyOwner returns(bool) {
-        verifier = IVerifier(_verifier);
+        verifier = IVerifierV2(_verifier);
         return true;
     }
 
@@ -86,40 +89,21 @@ abstract contract WeekV2 is ILearna, Admins {
 
     /**
      * @dev Update transition interval
-     * @param intervalInMin : New interval
-     * @param pastWeek : Week Id
      */
-    function _setTransitionInterval(uint32 intervalInMin, uint pastWeek) internal {
-        if(intervalInMin > 0) {
-            unchecked {
-                uint64 newInterval = intervalInMin * 1 minutes;
-                uint64 transitionDate = _now() + newInterval;
-                state.transitionInterval = newInterval;
-                state.transitionDate = transitionDate;
-                _setClaimDeadline(pastWeek, transitionDate);
-            }
-        } 
-    }
-
-    /**
-     * @dev Update transition interval
-     * @param interval : New interval
-     * @notice Transition interval will always reset the transition date 
-    */
-    function setTransitionInterval(uint32 interval) public onlyOwner {
+    function _setTransitionInterval() internal {
         unchecked {
-            if(interval > 0) state.transitionInterval = uint64(interval * 1 minutes);
+            state.transitionInterval = _now() - state.transitionDate;
+            state.transitionDate = _now();
         }
     }
 
     /**
      * @dev Transition to a new week and return the new week Id
      */
-    function _transitionToNewWeek() internal returns(uint newWeekId) {
+    function _transitionToNewWeek() internal {
         unchecked {
             state.weekId ++;
         }
-        newWeekId = state.weekId;
     }
 
     /// @dev Return the state variable object
@@ -138,4 +122,10 @@ abstract contract WeekV2 is ILearna, Admins {
     function _now() internal view returns(uint64 time) {
         time = uint64(block.timestamp);
     } 
+
+    function toggleSkipVerification() public onlyApproved returns(bool) {
+        bool status = skipVerification;
+        skipVerification = !status;
+        return true;
+    }
 }

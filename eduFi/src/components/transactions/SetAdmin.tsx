@@ -13,7 +13,7 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
         const mutate = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['setAdmin'],
+            functionNames: ['setPermission'],
             callback
         });
         
@@ -43,7 +43,7 @@ export default function SetAdmin({openDrawer, admin, toggleDrawer }: SetAdminPro
             openDrawer={openDrawer}
             toggleDrawer={toggleDrawer}
             getTransactions={getTransactions}
-            lastStepInList='setAdmin'
+            lastStepInList='setPermission'
         />
     )
 }

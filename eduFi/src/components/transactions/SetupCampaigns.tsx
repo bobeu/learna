@@ -20,7 +20,7 @@ export default function SetUpCampaign({nativeValue, openDrawer, fundsErc20, toke
             callback
         });
 
-        const setupArgs = [campaignString, fundsErc20, token];
+        const setupArgs = [campaignString, token];
         const learna = mutate.contractAddresses.LearnaV2 as Address;
         const approveArgs = [learna, fundsErc20];
 
@@ -32,12 +32,13 @@ export default function SetUpCampaign({nativeValue, openDrawer, fundsErc20, toke
         const getArgs = (functionName: FunctionName) => {
             let args : any[] = [];
             let contractAddress = zeroAddress as Address;
-            let value  : bigint | undefined = nativeValue;
+            let value  : bigint | undefined = undefined;
 
             switch (functionName) {
                 case 'setUpCampaign':
                     args = setupArgs;
                     contractAddress = learna;
+                    value = nativeValue;
                     break;
 
                 case 'approve':

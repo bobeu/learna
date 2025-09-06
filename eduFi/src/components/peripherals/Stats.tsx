@@ -12,7 +12,6 @@ import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle,
 import CustomButton from "./CustomButton";
 import { SelectComponent } from "./SelectComponent";
 import MinimumToken from "./inputs/MinimumToken";
-import TransitionInterval from "./inputs/TransitionInterval";
 import Admins from "./inputs/Admins";
 import Pause from "../transactions/Pause";
 import UnPause from "../transactions/UnPause";
@@ -31,6 +30,7 @@ function Stat({campaign, claimDeadline, transitionDate, protocolVerified} : {cam
         lastUpdated,
         token
     } = campaign.data;
+    console.log("Data", campaign.data);
 
     return(
         <MotionDisplayWrapper>
@@ -334,7 +334,6 @@ export default function Stats() {
                         <ClaimContract erc20InContract={campaign.data.token} />
                         <SortWeeklyPayout /> 
                         <MinimumToken />
-                        <TransitionInterval />
                     </div>
             }
 

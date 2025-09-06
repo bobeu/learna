@@ -2,8 +2,8 @@
   "approvedFunctions": [
     "recordPoints",
     "toggleAdminStatus",
-    "setAdmin",
-    "getAdmins",
+    "setPermission",
+    "isPermitted",
     "setTransitionInterval",
     "sortWeeklyReward",
     "adjustCampaignValues",
@@ -44,10 +44,10 @@
   "contractAddresses": [
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "FeeManager": "0x378bc6636445Edf805cc7730cD7b8953037e3F81",
-      "LearnaV2": "0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca",
-      "PlatformToken": "0xE80A1a25D8aA9b3Baa5aA188603198689D943aE6",
-      "VerifierV2": "0x880cD2d07E512B083Efc8136493f948895D2C6fB"
+      "FeeManager": "0xa3C385ED8DF6A7B71CA79f24c6e51C5E1a2fadd0",
+      "LearnaV2": "0xb0e9B198CC0DC4ceBaaA425F272E6661e35B5203",
+      "PlatformToken": "0x18673C0bFA8d56864F09DbEBF0C3C97BEe20078d",
+      "VerifierV2": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32"
     }
   ]
 }

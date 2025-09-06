@@ -4,12 +4,10 @@ import { parseUnits } from 'viem';
 import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
 import useStorage from '~/components/hooks/useStorage';
 import CustomButton from '../CustomButton';
-import { toBN } from '~/components/utilities';
 
 export default function SortWeeklyPayout() {
     const [ growTokenAmount, setGrowTokenAmount ] = React.useState<string>('0');
     const [ openDrawer, setDrawer ] = React.useState<number>(0);
-    const [ newInterval, setNewInterval ] = React.useState<number>(0);
 
     const { weekId } = useStorage();
     const toggleDrawer = (arg: number) => setDrawer(arg);
@@ -21,7 +19,7 @@ export default function SortWeeklyPayout() {
                 setGrowTokenAmount(value);
                 break;
             default:
-                setNewInterval(toBN(value).toNumber());
+                // setNewInterval(toBN(value).toNumber());
                 break;
         }
     } 
@@ -39,14 +37,14 @@ export default function SortWeeklyPayout() {
                 type: 'text',
                 required: true
             },
-            {
-                tag: 'erc20amount',
-                id: 'GrowTokenAmount',
-                label: 'New transition interval (In hrs)',
-                placeHolder: 'Deadline',
-                type: 'number',
-                required: false
-            }
+            // {
+            //     tag: 'erc20amount',
+            //     id: 'GrowTokenAmount',
+            //     label: 'New transition interval (In hrs)',
+            //     placeHolder: 'Deadline',
+            //     type: 'number',
+            //     required: false
+            // }
         ];
         return {argsReady, amount, sortContent}
     }, [growTokenAmount]);
@@ -91,7 +89,6 @@ export default function SortWeeklyPayout() {
                 growTokenAmount={amount}
                 openDrawer={openDrawer}
                 toggleDrawer={toggleDrawer}
-                newInterval={newInterval}
             />
         </div>
     );

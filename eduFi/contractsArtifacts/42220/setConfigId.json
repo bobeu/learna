@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x880cD2d07E512B083Efc8136493f948895D2C6fB",
+  "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
   "functionName": "setConfigId",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -216,31 +216,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getAdmins",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "id",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "active",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct Admins.Admin[]",
-          "name": "_admins",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes32",
@@ -281,12 +256,7 @@
       "outputs": [
         {
           "internalType": "bool",
-          "name": "_isVerified",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isBlacklisted",
+          "name": "",
           "type": "bool"
         }
       ],
@@ -392,19 +362,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "setAdmin",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "bytes32",
           "name": "_configId",
           "type": "bytes32"
@@ -437,19 +394,6 @@
         }
       ],
       "name": "setScope",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "toggleAdminStatus",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

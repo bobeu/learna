@@ -21,8 +21,14 @@ export const campaignHashes = [
   '0xcadd78318b85a28f2345a8559022d48031a1284da0d85635036169cc29465562',
   '0xc162469c13e9be46edb3d505b604b45100194a04c826d2f4a55f3ab391fb8267'
 ] as Hex[];
-
+export const ANSWER_COUNT = [3, 2, 3, 1, 3, 3, 2, 1, 3, 2, 1, 3, 2];
+export const CAMPAIGNs = ['celo', 'solidity', 'wagmi', 'reactjs', 'reactjs', 'self-protocol-sdk', 'self-protocol-sdk', 'solidity', 'celo', 'solidity'];
+export const DIFFICULTIES = ['medium', 'easy', 'medium', 'medium', 'easy','medium', 'hard', 'medium', 'hard', 'easy'];
 export const CAMPAIGNS = [
+  'celo',
+  'self-protocol',
+  'cryptocurrency',
+  'divvi',
   'solidity',
   'wagmi',
   'reactjs',
@@ -31,11 +37,7 @@ export const CAMPAIGNS = [
   'typescript',
   'hardhat',
   'farcaster',
-  'sdk',
   'defi',
-  'celo',
-  'self-protocol-sdk',
-  'cryptocurrency'
 ];
 
 /**

@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xf1531222bc9D158d6c2e52A2b3f5fEBCfA9aB808",
+  "contractAddress": "0xb0e9B198CC0DC4ceBaaA425F272E6661e35B5203",
   "functionName": "getData",
   "inputCount": 1,
   "requireArgUpdate": true,
@@ -24,14 +24,14 @@
                   "type": "uint256"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint256",
                   "name": "transitionInterval",
-                  "type": "uint64"
+                  "type": "uint256"
                 },
                 {
-                  "internalType": "uint64",
+                  "internalType": "uint256",
                   "name": "transitionDate",
-                  "type": "uint64"
+                  "type": "uint256"
                 },
                 {
                   "internalType": "uint256",

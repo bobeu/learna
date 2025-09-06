@@ -1,4 +1,4 @@
-import type { Address, State, TransactionCallback, WeekData, Path, VoidFunc, Quiz, Campaign, QuizResultInput, Admin, CategoryType, FormattedData, CampaignHashFormatted } from "../../../types/quiz";
+import type { Address, State, TransactionCallback, WeekData, Path, VoidFunc, Quiz, Campaign, QuizResultInput, CategoryType, FormattedData, CampaignHashFormatted } from "../../../types/quiz";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { Hex } from "viem";
 import { ReadContractsErrorType } from "wagmi/actions";
@@ -14,7 +14,7 @@ export interface DataContextProps {
     errorMessage: string;
     currentPath: Path;
     isMenuOpen: boolean;
-    admins: Admin[];
+    // admins: Admin[];
     toggleOpen: (arg: boolean) => void;
     handleStart: VoidFunc;
     setselectedCampaign: (arg: Campaign) => void;
