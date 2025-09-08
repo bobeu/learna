@@ -106,8 +106,12 @@ This document contains all the changes, implementations, and responses made duri
 ### 1. New Files Created
 ```
 src/components/landingPage/NewLandingPage.tsx
+src/app/learn/page.tsx
+src/app/campaigns/new/page.tsx
 src/app/api/generate-article/route.ts
 src/app/api/generate-quizzes/route.ts
+src/app/api/upload-to-ipfs/route.ts
+src/app/api/generate-image/route.ts
 src/components/ui/badge.tsx
 src/components/ui/tabs.tsx
 src/components/ui/progress.tsx
@@ -127,6 +131,10 @@ src/components/ui/button.tsx - Updated imports
 src/components/ui/card.tsx - Updated imports
 tailwind.config.ts - Updated theme configuration
 package.json - Added missing dependencies
+src/components/landingPage/Hero.tsx - Wired buttons (learn, create campaign) and optimized nav
+src/components/landingPage/NewLandingPage.tsx - Prefetch routes for faster navigation
+src/app/providers.tsx - Added global ThemeProvider wrapper (dark by default)
+src/app/app.tsx - Removed inner ThemeProvider; rebuilt dynamic loader UI
 ```
 
 ### 3. Key Components
@@ -139,6 +147,39 @@ package.json - Added missing dependencies
 - Learners and Creators sections
 - Theme management
 - Responsive design
+ - Prefetches `/learn` and `/campaigns/new` for faster navigation
+
+#### App Wrapper and Loading (`/app.tsx`)
+- Dynamic import of landing page retains SSR disabled
+- Replaced old loading state with a modern theme-aware spinner and status text
+- Loader respects dark/light backgrounds and primary accent
+
+#### Global Providers (`/providers.tsx`)
+- Wraps app with ThemeProvider (attribute="class", defaultTheme="dark") so all routes respond to theme toggles
+- Keeps Wagmi, RainbowKit, and MiniApp providers intact
+
+#### Learn Page (`/learn`)
+- Profile stats with RainbowKit ConnectButton and initials avatar
+- CampaignTabs with configurable header (hidden on this page) and compact spacing
+- Search (by name/funding) and date filtering
+- Dark-mode toggle in header
+- Clicking a campaign opens AI Tutor
+
+#### Creator Console (`/campaigns/new`)
+- Creator dashboard with expandable list of your campaigns and analytics modal
+- Theme toggle in header
+- Creation form:
+  - Fields: name, docs link, description, start/end dates (auto hours), image
+  - Image: upload to IPFS (mock endpoint) or AI-generate (mock endpoint)
+  - Inline preview for uploaded or generated image
+  - Funding: native CELO amount and multiple ERC20 tokens
+  - Auto-fill ERC20 symbol/decimals via wagmi public client
+  - Approve ERC20 totals to `CAMPAIGN_FACTORY_ADDRESS`
+  - ERC20 address validation using viem `isAddress` with inline error messaging
+  - Approval flow constraints: must approve a validated token before adding another
+  - Improved spacing between "Add ERC20" and "Approve ERC20 Funding" buttons
+  - Description field limited to 500 words with live counter
+  - Image preview now supports `ipfs://` via gateway mapping for display; delete control added
 
 #### AITutor Component
 - Topic selection interface
@@ -210,6 +251,14 @@ NEXT_PUBLIC_USE_WALLET=true
 
 # Contract Addresses
 NEXT_PUBLIC_CAMPAIGN_FACTORY_ADDRESS=0x16884C8C6a494527f4541007A46239218e76F661
+
+# WalletConnect / RainbowKit
+NEXT_PUBLIC_PROJECT_ID=your_walletconnect_project_id
+
+# Image Generation / Storage (mock values)
+NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY=mock_google_ai_studio_key
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=mock_thirdweb_client_id
+THIRDWEB_SECRET=mock_thirdweb_secret
 ```
 
 ### 4. Run Development Server
@@ -227,6 +276,19 @@ npm run dev
 - **Fallback**: Mock content for development
 
 ### 2. Generate Quizzes API
+### 3. Upload to IPFS (mock)
+**File**: `src/app/api/upload-to-ipfs/route.ts`
+- **Purpose**: Accepts image file uploads and returns a mock `ipfs://` URI
+- **Implementation**: Edge runtime, `FormData` file input; replace with thirdweb/storage, Pinata, or web3.storage
+
+### 4. Generate Image (mock)
+**File**: `src/app/api/generate-image/route.ts`
+- **Purpose**: Generates a campaign image and returns a mock `ipfs://` URI
+- **Implementation**: Replace with Google AI Studio / OpenAI images; store keys in env
+
+### 5. IPFS Image Preview
+- On the client, `ipfs://` URIs are mapped to a public gateway (e.g., `https://ipfs.io/ipfs/`) for previews in the creator console. You may change the gateway if preferred.
+
 **File**: `src/app/api/generate-quizzes/route.ts`
 - **Purpose**: Generate quiz questions using Google Gemini AI
 - **Input**: Topic and question count
@@ -441,6 +503,8 @@ The Tailwind palette now uses a neon-lime on deep-black theme matching the attac
 ### 3. State Management
 - **Local State**: React hooks for component state
 - **Minimal Re-renders**: Optimized state updates
+ - **Route Prefetch**: Landing page prefetches `/learn` and `/campaigns/new` to reduce navigation latency
+ - **Lightweight Loader**: Dynamic loader shows minimal, theme-aware UI during initial hydration
 
 ## Error Handling
 

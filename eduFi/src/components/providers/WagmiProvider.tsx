@@ -93,7 +93,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   const theme = lightTheme(
     {
       ...lightTheme.accentColors.purple,
-      accentColorForeground: '#6eaa14',
+      accentColorForeground: '#0f1113',
       borderRadius: 'large',
       fontStack: 'system',
       overlayBlur: 'small',

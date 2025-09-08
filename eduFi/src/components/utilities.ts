@@ -14,21 +14,8 @@ export const TOTAL_WEIGHT = 100;
 export const mockHash = keccak256(stringToBytes('solidity'), 'hex');
 export const mockEncoded = stringToHex("solidity");
 export const mockCampaign : Campaign = {
-  users: [zeroAddress],
-  data: {
-    platformToken: 0n,
-    fundsNative: 0n,
-    fundsERC20: 0n,
-    totalPoints: 0n, 
-    lastUpdated: 0,
-    activeLearners: 0n,
-    operator: zeroAddress,
-    token: zeroAddress,
-    data: {
-      hash_: mockHash,
-      encoded: mockEncoded
-    }
-  }
+  creator: zeroAddress;
+  identifier: zeroAddress;
 }
 
 export const mockCData : CampaignHash[] = [
@@ -92,15 +79,15 @@ export const mockWeekProfileData : WeekProfileData = {
 
 export const mockWeekData : WeekData[] = [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}];
 export const mockReadData : ReadData = {
-  state: {
-    minimumToken: 0n,
-    weekId: 0n,
-    transitionInterval: 0,
-    transitionDate: 0
-  },
-  wd: mockWeekData,
-  approved: mockCData,
-  profileData: [mockWeekProfileData]
+  approvalFactory: zeroAddress,
+  creationFee: 0n,
+  dev: zeroAddress,
+  verifier: zeroAddress,
+  feeTo: zeroAddress,
+  campaigns: [{
+    creator: zeroAddress,
+    identifier: zeroAddress
+  }]
 }
 
 export const mockAdmins : Admin = {

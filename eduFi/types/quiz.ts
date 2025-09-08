@@ -32,7 +32,7 @@ export type FunctionName =
   'getCampaingData' |
   'getVerificationStatus' |
   'balanceOf' |
-  'isPermitted' |
+  'hasApproval' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
@@ -155,10 +155,10 @@ export interface CampaignHash {
   encoded: Hex;
 }
 
-export interface Campaign {
-  data: CampaignData;
-  users: Address[];
-}
+// export interface Campaign {
+//   data: CampaignData;
+//   users: Address[];
+// }
 
 export interface CampaignData {
   platformToken: bigint;
@@ -190,12 +190,12 @@ export interface WeekData {
   claimDeadline: bigint;
 } 
 
-export interface ReadData {
-  state: State;
-  wd: Readonly<WeekData[]>;
-  approved: CampaignHash[];
-  profileData: WeekProfileData[];
-}
+// export interface ReadData {
+//   state: State;
+//   wd: Readonly<WeekData[]>;
+//   approved: CampaignHash[];
+//   profileData: WeekProfileData[];
+// }
 
 export type TransactionCallback = (arg: TrxState) => void;
 export type TransactionData = {
@@ -333,4 +333,20 @@ export interface FormattedData {
   showWithdrawalButton: boolean;
   showVerificationButton: boolean;
   totalPointsForACampaign: number;
+}
+
+///////////////////////////// V3 ///////////////////////////////
+
+export interface Campaign {
+  creator: Address;
+  identifier: Address;
+}
+
+export interface ReadData {
+  dev: Address;
+  feeTo: Address;
+  creationFee: bigint;
+  verifier: Address;
+  approvalFactory: Address;
+  campaigns: Campaign[];
 }

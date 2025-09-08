@@ -40,11 +40,12 @@ import LandingPage from './landingPage';
 import Profile from './peripherals/Profile';
 import Stats from './peripherals/Stats';
 import SetupCampaign from './peripherals/SetupCampaign';
+import NewLandingPage from './landingPage/NewLandingPage';
 
 const TOTAL_POINTS = 100;
 const TIME_PER_QUESTION = 0.4;
 
-export default function Educaster() {
+export default function LearnaApp() {
     const [appData, setAppData] = React.useState<{categories: CategoryType[], quizData: Quiz[] | null}>({categories: [], quizData: null});
     const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
     const [quizResult, setQuizResult] = useState<QuizResultInput | null>(null);
@@ -60,7 +61,7 @@ export default function Educaster() {
     const [requestedWkId, setWeekId] = React.useState<number>(0);
     const [requestedHash, setHash] = React.useState<Hex>(mockHash);
     const [storage, setStorage] = React.useState<ReadData>(mockReadData);
-    const [isPermitted, setPermission] = React.useState<boolean>(false);
+    const [hasApproval, setHasApproval] = React.useState<boolean>(false);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
     const [verificationStatus, setVerificationStatus] = React.useState<boolean>(false);
 
@@ -185,17 +186,17 @@ export default function Educaster() {
     const { transactionData: td, contractAddresses: ca } = filterTransactionData({
         chainId,
         filter: true,
-        functionNames: ['owner', 'getData', 'isPermitted', 'getVerificationStatus'],
+        functionNames: ['owner', 'getData', 'hasApproval', 'getVerificationStatus'],
         callback: (arg: TrxState) => {
             if(arg.message) setMessage(arg.message);
             if(arg.errorMessage) setErrorMessage(arg.errorMessage);
         }
     });
-    const readArgs = [[], [currentPath === 'stats'? statUser : account], [account], [account]];
+    const readArgs = [[], [], [account], [account]];
     const contractAddresses = [
-        ca.LearnaV2 as Address,
-        ca.LearnaV2 as Address,
-        ca.LearnaV2 as Address,
+        td[0].contractAddress as Address,
+        ca.CampaignFactory as Address,
+        ca.ApprovalFactory as Address,
         ca.VerifierV2 as Address,
     ];
     const readTxObject = td.map((item, i) => {
@@ -224,7 +225,7 @@ export default function Educaster() {
     React.useEffect(() => {
         let data : ReadData = mockReadData;
         let owner_ : Address = zeroAddress;
-        let isPermitted_ : boolean = false;
+        let hasApproval_ : boolean = false;
         let verificationStatus_ : boolean = false;
 
         if(result && result[0].status === 'success' && result[0].result !== undefined) {
@@ -234,7 +235,7 @@ export default function Educaster() {
             data = result[1].result as ReadData;
         }
         if(result && result[2].status === 'success' && result[2].result !== undefined) {
-            isPermitted_ = result[2].result as boolean;
+            hasApproval_ = result[2].result as boolean;
         }
         if(result && result[3].status === 'success' && result[3].result !== undefined) {
             verificationStatus_ = result[3].result as boolean;
@@ -243,7 +244,7 @@ export default function Educaster() {
         setOwner(owner_);
         setStorage(data);
         setVerificationStatus(verificationStatus_);
-        setPermission(isPermitted_);
+        setPermission(hasApproval_);
     }, [result]);
 
     // console.log("tD", result)
@@ -394,7 +395,9 @@ export default function Educaster() {
                 selectedCampaign
             }}
         >
-            <LayoutContext> { app }</LayoutContext>
+            <LayoutContext> 
+                <NewLandingPage />
+            </LayoutContext>
         </StorageContextProvider>
     )
 }
