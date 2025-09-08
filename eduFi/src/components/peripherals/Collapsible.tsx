@@ -1,8 +1,8 @@
 "use client"
 import * as React from "react"
 import { ChevronsUpDown } from "lucide-react"
-// import { Button } from "~/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger,} from "~/components/ui/collapsible";
+// import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible";
 
 export default function CollapsibleComponent({ header, isOpen, triggerClassName, overrideClassName, toggleOpen, selected, children} : CollapsibleProps) {
   return (

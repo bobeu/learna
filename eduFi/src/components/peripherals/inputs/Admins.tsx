@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Input, InputTag } from './Input';
 import CustomButton from '../CustomButton';
-import { formatAddr } from '~/components/utilities';
-import SetAdmin from '~/components/transactions/SetAdmin';
+import { formatAddr } from '@/components/utilities';
+import SetAdmin from '@/components/transactions/SetAdmin';
 
 export default function Admins() {
     const [ admin, setAdmin ] = React.useState<string>('');

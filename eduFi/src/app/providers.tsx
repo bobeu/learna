@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { MiniAppProvider } from "@neynar/react";
-import NeynaAppContext from "~/components/StorageContextProvider/AppContext";
+import NeynaAppContext from "@/components/StorageContextProvider/AppContext";
 
 const WagmiProvider = dynamic(
-  () => import("~/components/providers/WagmiProvider"),
+  () => import("@/components/providers/WagmiProvider"),
   {
     ssr: false,
   }

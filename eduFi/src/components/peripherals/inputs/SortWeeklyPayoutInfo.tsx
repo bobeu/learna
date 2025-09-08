@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Input, InputTag } from './Input';
 import { parseUnits } from 'viem';
-import SortWeeklyReward from '~/components/transactions/SortWeeklyEarnings';
-import useStorage from '~/components/hooks/useStorage';
+import SortWeeklyReward from '@/components/transactions/SortWeeklyEarnings';
+import useStorage from '@/components/hooks/useStorage';
 import CustomButton from '../CustomButton';
 
 export default function SortWeeklyPayout() {

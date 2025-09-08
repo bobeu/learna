@@ -15,9 +15,9 @@ import type {
     TrxState 
 } from '../../types/quiz';
 
-import Dashboard from '~/components/quizComponents/Dashboard';
-import { QuizInterface } from '~/components/quizComponents/QuizInterface';
-import { QuizResults } from '~/components/quizComponents/QuizResults';
+import Dashboard from '@/components/quizComponents/Dashboard';
+import { QuizInterface } from '@/components/quizComponents/QuizInterface';
+import { QuizResults } from '@/components/quizComponents/QuizResults';
 import { useAccount, useChainId, useConfig, useConnect, useReadContracts } from 'wagmi';
 import { Hex, hexToString, zeroAddress } from 'viem';
 import { LayoutContext } from './LayoutContext';

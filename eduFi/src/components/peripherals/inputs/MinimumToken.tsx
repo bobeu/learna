@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Input, InputTag } from './Input';
 import { parseUnits } from 'viem';
 import CustomButton from '../CustomButton';
-import SetMinimumToken from '~/components/transactions/SetMinimumToken';
+import SetMinimumToken from '@/components/transactions/SetMinimumToken';
 
 export default function MinimumToken() {
     const [ minimumToken, setMinimumToken] = React.useState<string>('0');

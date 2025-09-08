@@ -1,6 +1,6 @@
 import React from "react";
-import { Input as InputComponent } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { Input as InputComponent } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export type InputTag = 'growtokenamount' | 'celoamount' | 'erc20amount' | 'token' | 'campaignhash';
 export interface InputCategoryProp {

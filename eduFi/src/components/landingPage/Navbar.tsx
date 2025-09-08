@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Menu, X } from 'lucide-react';
-import { Button } from '~/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import useStorage from '../hooks/useStorage';
 import Image from 'next/image';

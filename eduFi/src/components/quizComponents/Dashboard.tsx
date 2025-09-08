@@ -3,7 +3,7 @@ import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoun
 import { FormattedData, QuizResultOuput,UserStats } from '../../../types/quiz';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
-import { Button } from '~/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { useAccount } from "wagmi";
 import { Hex, hexToString } from 'viem';
 import { toBN } from '../utilities';

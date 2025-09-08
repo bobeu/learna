@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { getNeynarUser } from "~/lib/neynar";
+import { getNeynarUser } from "@/lib/neynar";
 
 export const dynamic = 'force-dynamic';
 

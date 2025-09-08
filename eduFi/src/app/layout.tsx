@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
-import "~/app/globals.css";
+import "@/app/globals.css";
 import "@neynar/react/dist/style.css";
 import '@rainbow-me/rainbowkit/styles.css';
-import { Providers } from "~/app/providers";
-import { APP_NAME, APP_DESCRIPTION } from "~/lib/constants";
+import { Providers } from "@/app/providers";
+import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: APP_NAME,

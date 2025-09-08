@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { APP_DESCRIPTION, APP_URL } from "~/lib/constants";
+import { APP_DESCRIPTION, APP_URL } from "@/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
 import { celo, celoSepolia } from 'wagmi/chains';
 import { createPublicClient, createWalletClient } from "viem";
@@ -93,14 +93,14 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   const theme = lightTheme(
     {
       ...lightTheme.accentColors.purple,
-      accentColorForeground: '#a855f7',
+      accentColorForeground: '#6eaa14',
       borderRadius: 'large',
       fontStack: 'system',
       overlayBlur: 'small',
       accentColor: '#fff'
     }
   );
-
+  
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={new QueryClient()}>

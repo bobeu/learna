@@ -1,4 +1,4 @@
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { VoidFunc } from "../../../../../types/quiz";
 import { X } from "lucide-react";
 

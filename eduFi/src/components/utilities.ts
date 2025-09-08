@@ -5,7 +5,7 @@ import globalContractData from "../../contractsArtifacts/global.json";
 import assert from "assert";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
-import { CAST_MESSAGES } from "~/lib/constants";
+import { CAST_MESSAGES } from "@/lib/constants";
 import _d_ from "../../_d_.json";
 import { Address, Admin, Campaign, CampaignHash, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FormattedData, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types/quiz";
 
