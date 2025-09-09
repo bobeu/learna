@@ -1,4 +1,4 @@
-import { Hex } from "viem";
+import { Hex, stringToHex, zeroAddress } from "viem";
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
@@ -349,4 +349,173 @@ export interface ReadData {
   verifier: Address;
   approvalFactory: Address;
   campaigns: Campaign[];
+}
+
+export interface FilterTransactionReturnType {
+  transactionData: TransactionData[];
+  approvedFunctions: string[];
+  contractAddresses: {
+    stablecoin: string;
+    ApprovalFactory: string;
+    CampaignFactory: string;
+    FeeManager: string;
+    VerifierV2: string;
+  };
+}
+
+export interface ProofOfAssimilation {
+  questionSize: number;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  timeSpent: number;
+  completedAt: number;
+}
+
+ export interface ProofOfIntegration {
+  link: string; // Can be any link to learner's portfolio e.g Githuh, figma etc
+  submittedAt: number; 
+  approvedAt: number; // Time the proof was approved
+  score: number;
+}
+
+export interface Performance {
+  value: number; 
+  ratedAt: string;
+}
+
+export interface Learner {
+  id: Address;
+  ratings: Performance[];
+  point: ProofOfIntegration;
+  poass: ProofOfAssimilation[];
+}
+    
+export interface ERC20Token {
+  token: Address;
+  tokenName: string;
+  tokenSymbol: string;
+  amount: bigint;
+}
+
+export interface Funds {
+  erc20Ass: ERC20Token[];
+  erc20Int: ERC20Token[];
+  nativeAss: bigint; 
+  nativeInt: bigint;
+}
+
+export interface EpochSetting {
+  maxProof: number; // Max number of assimilation that builders can prove in a day
+  createdAt: number;
+  activatedAt: number;
+  endDate: number;
+  funds: Funds;
+}
+
+export interface EpochData {
+  totalProofs: number;
+  setting: EpochSetting;
+  learners: Learner[];
+}
+
+export interface Metadata {
+  hash_: Hex; // Keccack256 value of the campaign name with the 
+  name: string; // Campaign name e.g Divvi
+  link: string; // Any other relevant link e.g link to documentation
+  description: string; // Max length is 300
+  imageUrl: string;
+  endDate: number;
+}
+
+export interface CampaignTemplateReadData {
+  epochData: EpochData[];
+  metadata: Metadata;
+  verifier: Address;
+  approvalFactory: Address;
+  epoches: bigint;
+  owner: Address;
+  isPoassClaimed: boolean[]; // Array that shows whether a builder has claimed ERC20 reward for proof of assimilation for a specified epoch
+  isPointClaimed: boolean[]; // Array that shows whether a builder has claimed ERC20 reward for proof of integration for a specified epoch
+}
+
+export const mockFilterTransactionData : FilterTransactionReturnType = {
+  transactionData: [{
+    contractAddress: zeroAddress,
+    inputCount: 0,
+    functionName: "",
+    abi: [],
+    requireArgUpdate: false
+  }],
+  approvedFunctions: [],
+  contractAddresses: {
+    stablecoin: zeroAddress,
+    ApprovalFactory: zeroAddress,
+    CampaignFactory: zeroAddress,
+    FeeManager: zeroAddress,
+    VerifierV2: zeroAddress
+  }
+}
+
+export const mockCampaignTemplateReadData : CampaignTemplateReadData = {
+  epochData: [{
+    totalProofs: 0,
+    setting: {
+      maxProof: 0,
+      createdAt: 0,
+      activatedAt: 0,
+      endDate: 0,
+      funds: {
+        erc20Ass: [{
+          token: zeroAddress,
+          tokenName: stringToHex("Celo Dollar"),
+          tokenSymbol: stringToHex("CUSD"),
+          amount: 0n
+        }],
+        erc20Int: [{
+          token: zeroAddress,
+          tokenName: stringToHex("Celo Dollar"),
+          tokenSymbol: stringToHex("CUSD"),
+          amount: 0n
+        }],
+        nativeAss: 0n,
+        nativeInt: 0n
+      }
+    },
+    learners: [{
+      id: zeroAddress,
+      ratings: [{
+        value: 0,
+        ratedAt: stringToHex(new Date().toString())
+      }],
+      point: {
+        link: stringToHex("https://github..com/bobeu"), 
+        submittedAt: 0,
+        approvedAt: 0,
+        score: 0
+      },
+      poass: [{
+        questionSize: 0,
+        score: 0,
+        totalPoints: 0,
+        percentage: 0,
+        timeSpent: 0,
+        completedAt: 0
+      }]
+    }]
+  }],
+  metadata: {
+    hash_: `0x`,
+    name: stringToHex("divvi"),
+    link: stringToHex("https://docs.divvi.xyz"),
+    description: stringToHex("Some description"),
+    imageUrl: stringToHex("https://divvi.xyz/someimage.png"),
+    endDate: 145590999
+  },
+  verifier: zeroAddress,
+  approvalFactory: zeroAddress,
+  epoches: 0n,
+  owner: zeroAddress,
+  isPoassClaimed: [false],
+  isPointClaimed: [false]
 }

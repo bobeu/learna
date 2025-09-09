@@ -6,7 +6,7 @@ import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import useStorage from "../hooks/useStorage";
 import AddressWrapper from "./AddressFormatter/AddressWrapper";
 import { filterWeekData, formatValue, getTimeFromEpoch, toBigInt, toBN } from "../utilities";
-import { Address, Campaign } from "../../../types/quiz";
+import { Address, Campaign } from "../../../types";
 import Wrapper2xl from "./Wrapper2xl";
 import { Timer, Fuel, Calendar, BaggageClaim, ArrowLeftCircle, ArrowRightCircle, Box} from "lucide-react";
 import CustomButton from "./CustomButton";

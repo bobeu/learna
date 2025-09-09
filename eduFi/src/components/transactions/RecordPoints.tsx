@@ -3,7 +3,7 @@ import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { filterTransactionData, formatAddr } from '../utilities';
-import { Address, FunctionName } from '../../../types/quiz';
+import { Address, FunctionName } from '../../../types';
 import { Hex } from 'viem';
 import useStorage from '../hooks/useStorage';
 

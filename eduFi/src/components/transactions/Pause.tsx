@@ -5,7 +5,7 @@ import { Confirmation } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { Address, FunctionName } from '../../../types/quiz';
+import { Address, FunctionName } from '../../../types';
 
 export default function Pause({openDrawer, toggleDrawer }: SetMiniTokenProps) {
     const { chainId } = useAccount();

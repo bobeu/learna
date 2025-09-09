@@ -1,7 +1,7 @@
 {
   "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
-  "functionName": "setScope",
-  "inputCount": 1,
+  "functionName": "toggleUseWalletVerification",
+  "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {

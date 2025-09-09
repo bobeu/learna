@@ -1,4 +1,4 @@
-import { Address, FunctionName } from "../../types/quiz";
+import { Address, FunctionName } from "../../types";
 
 export const RECEIVER = "0xa1f70ffA4322E3609dD905b41f17Bf3913366bC1" as Address;
 export const APP_URL = process.env.NEXT_PUBLIC_URL!;

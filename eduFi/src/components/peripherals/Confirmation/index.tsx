@@ -13,7 +13,7 @@ import { parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "@/lib/constants";
-import { Address, FunctionName } from "../../../../types/quiz";
+import { Address, FunctionName } from "../../../../types";
 
 const DELEGATE_VALUE = parseUnits('15', 15);
 

@@ -1,17 +1,17 @@
 {
-  "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
-  "functionName": "configId",
+  "contractAddress": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
+  "functionName": "getFactory",
   "inputCount": 0,
   "requireArgUpdate": true,
   "abi": [
     {
       "inputs": [],
-      "name": "configId",
+      "name": "getFactory",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "address",
           "name": "",
-          "type": "bytes32"
+          "type": "address"
         }
       ],
       "stateMutability": "view",

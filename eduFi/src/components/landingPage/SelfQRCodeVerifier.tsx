@@ -4,7 +4,7 @@ import { SelfQRcodeWrapper, SelfAppBuilder, type SelfApp } from "@selfxyz/qrcode
 import { APP_ICON_URL, APP_NAME } from "@/lib/constants";
 import { encodeUserData, filterTransactionData, formatAddr } from "../utilities";
 import { useAccount, useChainId } from "wagmi";
-import { Address } from "../../../types/quiz";
+import { Address } from "../../../types";
 import {  VerificationConfig, getUniversalLink } from "@selfxyz/core";
 import CustomButton from "../peripherals/CustomButton";
 import AddressWrapper from "../peripherals/AddressFormatter/AddressWrapper";

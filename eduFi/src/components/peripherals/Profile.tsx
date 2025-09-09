@@ -11,7 +11,7 @@ import Wrapper2xl from "./Wrapper2xl";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SelectComponent } from "./SelectComponent";
 import SelfQRCodeVerifier from "../landingPage/SelfQRCodeVerifier";
-import { FormattedData } from "../../../types/quiz";
+import { FormattedData } from "../../../types";
 import CountdownTimer from "./CountdownTimer";
 import VerifyByWallet from "../transactions/VerifyByWallet";
 

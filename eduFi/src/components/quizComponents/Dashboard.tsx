@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Trophy, Target, TrendingUp, Star, X, Menu, ChartBar, UserRoundCheck, UserRoundX, LucideBox} from 'lucide-react';
-import { FormattedData, QuizResultOuput,UserStats } from '../../../types/quiz';
+import { FormattedData, QuizResultOuput,UserStats } from '../../../types';
 import { QuizCard } from './QuizCard';
 import useStorage from '../hooks/useStorage';
 import { Button } from '@/components/ui/button';

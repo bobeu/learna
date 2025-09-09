@@ -3,7 +3,7 @@ import { Confirmation } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { Address, FunctionName } from '../../../types/quiz';
+import { Address, FunctionName } from '../../../types';
 import type { Hex } from "viem";
 
 export default function SetConfigId({openDrawer, configId, toggleDrawer }: SetConfigIdProps) {

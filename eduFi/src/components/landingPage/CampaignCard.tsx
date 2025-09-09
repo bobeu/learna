@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Clock, Award, ChevronRight, LucideUsers2, } from 'lucide-react';
-import { Campaign, Address } from '../../../types/quiz';
+import { Campaign, Address } from '../../../types';
 import { filterTransactionData, getTimeFromEpoch } from '../utilities';
 import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 import { useChainId } from 'wagmi';

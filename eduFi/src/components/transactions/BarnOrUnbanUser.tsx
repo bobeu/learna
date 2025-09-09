@@ -3,7 +3,7 @@ import { Confirmation, type Transaction } from '../peripherals/Confirmation';
 import { useAccount } from 'wagmi';
 import { filterTransactionData } from '../utilities';
 import useStorage from '../hooks/useStorage';
-import { Address, FunctionName } from '../../../types/quiz';
+import { Address, FunctionName } from '../../../types';
 import { Hex } from 'viem';
 
 export default function BanOrUnbanUser({user, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Drawer as MuiDrawer, } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import DrawerHeader from './DrawerHeader';
-import { ToggleDrawer, VoidFunc } from '../../../../../types/quiz';
+import { ToggleDrawer, VoidFunc } from '../../../../../types';
 
 const toggleDrawer : ToggleDrawer =
     (value: number, setState: (value: number) => void) =>

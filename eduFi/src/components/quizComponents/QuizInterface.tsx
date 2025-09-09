@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Award, ArrowRight, ArrowLeft } from 'lucide-react';
-import { Address, AnswerInput, Quiz, QuizResultInput } from '../../../types/quiz';
+import { Address, AnswerInput, Quiz, QuizResultInput } from '../../../types';
 import { Button } from '@/components/ui/button';
 import useStorage from '../hooks/useStorage';
 import { Hex, hexToString } from 'viem';

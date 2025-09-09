@@ -1,6 +1,6 @@
 {
-  "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
-  "functionName": "isPermitted",
+  "contractAddress": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
+  "functionName": "hasApproval",
   "inputCount": 1,
   "requireArgUpdate": true,
   "abi": [
@@ -12,7 +12,7 @@
           "type": "address"
         }
       ],
-      "name": "isPermitted",
+      "name": "hasApproval",
       "outputs": [
         {
           "internalType": "bool",

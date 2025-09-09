@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Clock, Award, ChevronRight, BookOpen } from 'lucide-react';
-import { Quiz } from '../../../types/quiz';
+import { Quiz } from '../../../types';
 import Image from 'next/image';
 
 interface QuizCardProps {

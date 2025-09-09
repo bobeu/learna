@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { VoidFunc } from "../../../../../types/quiz";
+import { VoidFunc } from "../../../../../types";
 import { X } from "lucide-react";
 
 export default function DrawerHeader({title, disableAction, onClickAction} : {title: string, onClickAction: VoidFunc, disableAction: boolean}) {

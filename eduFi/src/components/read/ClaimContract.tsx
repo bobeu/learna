@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAccount, useBalance, useConfig, useReadContracts } from 'wagmi';
 import { filterTransactionData, formatAddr, formatValue } from '../utilities';
-import { Address } from '../../../types/quiz';
+import { Address } from '../../../types';
 import { Coins, Wallet } from 'lucide-react';
 import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 import { Spinner } from '../peripherals/Spinner';

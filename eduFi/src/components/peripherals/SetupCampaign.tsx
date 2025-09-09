@@ -5,7 +5,7 @@ import useStorage from "../hooks/useStorage";
 import { useChainId, } from "wagmi";
 import { filterTransactionData, formatAddr } from "../utilities";
 import { parseUnits, zeroAddress } from "viem";
-import { Address, CampaignHashFormatted } from "../../../types/quiz";
+import { Address, CampaignHashFormatted } from "../../../types";
 import Wrapper2xl from "./Wrapper2xl";
 import CustomButton from "./CustomButton";
 import { Info, Award } from "lucide-react";
