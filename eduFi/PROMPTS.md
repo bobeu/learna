@@ -40,3 +40,14 @@ Example values:
 - {aspect_ratio}: 1200x1200
 - {text_font}: JetBrains Mono
 - {watermark_text}: Learna
+
+---
+
+Conversation Prompts Log
+------------------------
+
+1) Improve Hero text colors for better contrast in dark/light; do not alter project settings; then update PROJECT_REBUILD_DOCUMENTATION.md with status and changes.
+
+2) Connect campaigns UI to on-chain data using types in /types/index.ts and wagmi fetch in /components/LearnaApp.tsx; use mock campaigns only if required; extend UI for additional fields; create creator (protocol owner/manager) profile with ability to edit campaign metadata (link, imageURI, etc.), filter by connected address; display creator campaigns clickable/dynamic; apply similar for builders to show subscribed campaigns.
+
+3) Fix next/image error due to hex-encoded image URLs (0x...); decode on read (hexToString) and normalize ipfs:// to https gateway; ensure human-readable strings.

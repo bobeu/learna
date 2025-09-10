@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     CampaignTemplateReadData,
+    mockCampaigns,
     mockCampaignTemplateReadData,
     // mockFilterTransactionData,
     type Address, 
@@ -38,7 +39,8 @@ import {
     // mockAdmins,
     // mockHash,
     // formatData,
-    formatCampaignsTemplateReadData
+    formatCampaignsTemplateReadData,
+    formattedMockCampaignsTemplate
 } from './utilities';
 
 // import LandingPage from './landingPage';
@@ -284,7 +286,7 @@ export default function LearnaApp() {
 
     // Update the state with the result  of the read action
     React.useEffect(() => {
-        let campaignsData_ : CampaignTemplateReadData[] = [mockCampaignTemplateReadData];
+        let campaignsData_ = formattedMockCampaignsTemplate;
         if(campaignsReadData && campaignsReadData.length > 0) {
             campaignsData_ = campaignsReadData.map(({result, status}, i) => {
                 let campaignData_ : CampaignTemplateReadData = mockCampaignTemplateReadData;

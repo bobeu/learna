@@ -18,7 +18,8 @@
     "banOrUnbanUser",
     "getVerificationStatus",
     "panicWithdraw",
-    "withdraw"
+    "withdraw",
+    "owner"
   ],
   "approveTemplateFunctions": [
     "getData",
@@ -28,7 +29,8 @@
     "proveAssimilation",
     "epochSetting",
     "pause",
-    "unpause"
+    "unpause",
+    "owner"
   ],
   "chainName": {
     "42220": "celo",

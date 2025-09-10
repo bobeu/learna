@@ -7,7 +7,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedData, FunctionName, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
+import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedData, FunctionName, mockCampaigns, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -327,6 +327,8 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData) {
   }
 }
 
+export const formattedMockCampaignsTemplate = mockCampaigns.map((campaign) => formatCampaignsTemplateReadData(campaign));
+
 // /**
 //  * @dev Load and prepare data from the JSON API
 //  * @returns : Formatted data and categories
@@ -383,16 +385,16 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData) {
 //     quizData,
 //     categories
 //   };
-// }
+// } 
 
 // Encode multiple values in binary format
-export function encodeUserData(campaignSlot: number): string {
-  const buffer = Buffer.alloc(64);
-  buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
-  // console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
-  return "0x" + buffer.toString('hex');
+// export function encodeUserData(campaignSlot: number): string {
+//   const buffer = Buffer.alloc(64);
+//   buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
+//   // console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
+//   return "0x" + buffer.toString('hex');
   
-}
+// }
 
 // /**
 //  * @dev Search for a campaign with the corresponding weekId and campaign hash

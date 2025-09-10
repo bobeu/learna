@@ -535,6 +535,55 @@ The Tailwind palette now uses a neon-lime on deep-black theme matching the attac
 - Social features and leaderboards
 - Advanced quiz analytics
 
+## Recent Updates
+
+### Text Color Improvements (December 2024)
+
+#### Hero Section Text Visibility Enhancement
+- **Main Headline**: Updated from `text-black dark:text-gray-300 opacity-80` to `text-gray-900 dark:text-white` for better contrast
+- **Subtitle**: Changed from `text-black opacity-80 dark:text-gray-300` to `text-gray-700 dark:text-gray-200` for improved readability
+- **Section Headings**: Improved from `dark:text-white opacity-80` to `text-gray-900 dark:text-white` for better visibility
+- **Body Text**: Standardized to `text-gray-700 dark:text-gray-200` for consistent contrast across both themes
+- **List Items**: Updated to `text-gray-700 dark:text-gray-200` for better readability
+- **Badge Text**: Enhanced from `text-black` to `text-gray-900` for better contrast
+- **Button Text**: Improved outline button styling with `text-gray-900 dark:text-white dark:border-gray-600`
+
+#### Benefits of Changes
+- **Better Accessibility**: Improved contrast ratios meet WCAG guidelines
+- **Professional Appearance**: More polished and readable text in both light and dark themes
+- **Consistent Styling**: Standardized color scheme across all text elements
+- **Enhanced User Experience**: Better readability reduces eye strain and improves comprehension
+
+### On-chain Campaign Data Integration (September 2025)
+
+#### What changed
+- Landing page campaigns now source from live on-chain reads via storage context instead of mocks.
+- `src/components/landingPage/NewLandingPage.tsx` maps `campaignsData` into UI objects consumed by `Hero` and `CampaignTabs`.
+- Normalized metadata read from chain (hex → string) and image URIs.
+
+#### Technical notes
+- Decode strings with `hexToString` when values start with `0x`.
+- Image normalization: `ipfs://...` → `https://ipfs.io/ipfs/...`; allow `http(s)` or `/` paths; fallback to `/learna-image4.png`.
+- Funding derived from epoch funds via `formatEther`.
+
+### Profiles and Campaign Management (September 2025)
+
+#### Creator profile (protocol owners/managers)
+- New page: `src/app/profile/page.tsx` (Creator tab).
+- Filters campaigns by `owner === connected address`.
+- Edit Metadata modal: `src/components/profile/CampaignMetaEditor.tsx` for `name`, `link`, `imageUrl`, `description` (UI-only; ready to wire to contract writes).
+
+#### Builder profile
+- Same page (Builder tab).
+- Lists campaigns where connected user appears in any epoch `learners` list.
+
+#### Campaign detail view
+- New page: `src/app/profile/view/page.tsx` shows metadata, funds, and learners. Access via `/profile/view?i=<index>`.
+
+### Bug Fix: next/image hex URL parsing (September 2025)
+
+Resolved failure where `next/image` received hex-encoded URLs (e.g., `0x...`). Mapping layer now decodes hex and converts `ipfs://` URIs to an HTTPS gateway before rendering.
+
 ## Conclusion
 
 The Learna project has been successfully rebuilt with a modern, responsive landing page that includes:
@@ -549,14 +598,15 @@ The Learna project has been successfully rebuilt with a modern, responsive landi
 - ✅ Modern UI components
 - ✅ Responsive design
 - ✅ Performance optimizations
+- ✅ **Enhanced text visibility and accessibility**
 
 The project is now ready for development and can be easily extended with additional features as needed.
 
 ---
 
-**Last Updated**: December 2024
-**Version**: 1.0.0
-**Status**: Complete
+**Last Updated**: September 2025
+**Version**: 1.2.0
+**Status**: Live data integration, profiles, and rendering fixes complete
 ```
 
 This comprehensive documentation file contains all the responses, changes, and implementations made during the Learna project rebuild. It serves as a complete reference for the project structure, features, and technical implementation details.

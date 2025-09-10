@@ -15,8 +15,8 @@ import HowItWorksModal from './HowItWorksModal';
 {/* Hero Section with campaign slider */}
 export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campaigns: any, isLoading: boolean, handleJoinCampaign: (campaign: any) => void}) {
     const [learners, setLearners] = React.useState<number>(0);
-    const [rewards, setRewards] = React.useState<number>(0);
-    const [quizzes, setQuizzes] = React.useState<number>(0);
+    // const [rewards, setRewards] = React.useState<number>(0);
+    // const [quizzes, setQuizzes] = React.useState<number>(0);
 
     // const { theme } = useTheme();
     // const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -36,16 +36,16 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
     //     }
     // }
 
-    React.useEffect(() => {
-        if(learners < 50000 || rewards < 500000 || quizzes < 1000) {
-            const timer = setInterval(() => {
-                setLearners(prev => prev + 1);
-                setRewards(prev => prev + 2);
-                setQuizzes(prev => prev + 1);
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [learners, quizzes, rewards]);
+    // React.useEffect(() => {
+    //     if(learners < 50000 || rewards < 500000 || quizzes < 1000) {
+    //         const timer = setInterval(() => {
+    //             setLearners(prev => prev + 1);
+    //             setRewards(prev => prev + 2);
+    //             setQuizzes(prev => prev + 1);
+    //         }, 1000);
+    //         return () => clearInterval(timer);
+    //     }
+    // }, [learners, quizzes, rewards]);
 
     // bg-gradient-to-br from-gray-50 to-cyan-50
     return(
@@ -56,16 +56,16 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
             </div>
             <div className="max-w-7xl mx-auto">
                 <div className="text-center">
-                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-black text-sm font-medium mb-8">
+                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-gray-900 text-sm font-medium mb-8">
                     <Zap className="w-4 h-4 mr-2" />
                     AI-powered proof of learning and integration
                     </div>
 
-                    <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 text-black dark:text-gray-300 dark:font-mono opacity-80 font-black drop-shadow-lg drop-shadow-primary-500`}>
+                    <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 text-gray-900 dark:text-white dark:font-mono font-black drop-shadow-lg drop-shadow-primary-500`}>
                     Learn faster. Prove mastery. Ship integrations. Earn crypto rewards.
                     </h1>
 
-                    <p className={`text-base md:text-lg text-black opacity-80 dark:text-gray-300 mb-10 max-w-3xl mx-auto`}>
+                    <p className={`text-base md:text-lg text-gray-700 dark:text-gray-200 mb-10 max-w-3xl mx-auto`}>
                     For developers, designers, and any product minds exploring technologies like Celo, Farcaster, Next.js, Solidity, and Wagmi, etc.
                     </p>
 
@@ -73,9 +73,9 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
                     <div className="pt-4 pb-20 px-4 sm:px-6 lg:px-8 dark:font-mono">
                         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className={`rounded-2xl p-8 border border-neutral-800 dark:bg-surface`}>
-                                <h3 className={`text-3xl font-bold dark:text-white opacity-80 mb-3`}>For Builders</h3>
-                                <p className={`{isDark? 'text-gray-300' : ''} mb-6`}>Follow AI-crafted learning paths on technologies like Celo, Farcaster, Next.js, Solidity, Wagmi and more. Earn crypto for proofs of learning and shipped integrations.</p>
-                                <ul className={`space-y-2 dark:text-gray-300 mb-6`}>
+                                <h3 className={`text-3xl font-bold text-gray-900 dark:text-white mb-3`}>For Builders</h3>
+                                <p className={`text-gray-700 dark:text-gray-200 mb-6`}>Follow AI-crafted learning paths on technologies like Celo, Farcaster, Next.js, Solidity, Wagmi and more. Earn crypto for proofs of learning and shipped integrations.</p>
+                                <ul className={`space-y-2 text-gray-700 dark:text-gray-200 mb-6`}>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Short, challenging lessons</li>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Hands-on quizzes and scoring</li>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Track progress on-chain</li>
@@ -87,9 +87,9 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
                             </div>
 
                             <div className={`rounded-2xl p-8 border border-neutral-800 dark:bg-surface`}>
-                                <h3 className={`text-3xl font-bold dark:text-white opacity-80 mb-3`}>For Protocol Owners/Managers</h3>
-                                <p className={`{isDark? 'text-gray-300 mb-6`}>Launch funded learning campaigns to onboard developers to your SDK or protocol. Reward with up to 3 ERC20 tokens and native assets like Celo.</p>
-                                <ul className={`space-y-2 dark:text-gray-300 mb-6`}>
+                                <h3 className={`text-3xl font-bold text-gray-900 dark:text-white mb-3`}>For Protocol Owners/Managers</h3>
+                                <p className={`text-gray-700 dark:text-gray-200 mb-6`}>Launch funded learning campaigns to onboard developers to your SDK or protocol. Reward with up to 3 ERC20 tokens and native assets like Celo.</p>
+                                <ul className={`space-y-2 text-gray-700 dark:text-gray-200 mb-6`}>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Target web2/web3 devs, designers, PMs</li>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Proof of Learning and Integration</li>
                                     <li className="flex items-center gap-2"><Star className="w-5 h-5 text-primary-500"/>Analytics and impact tracking</li>
@@ -124,7 +124,7 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
                             Explore campaigns
                             <ArrowRight className="w-5 h-5 ml-2" />
                         </Button>
-                        <Button size="lg" variant="outline" className={`border-neutral-700 dark:text-white`} onClick={() => setShowHow(true)}>
+                        <Button size="lg" variant="outline" className={`border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600`} onClick={() => setShowHow(true)}>
                             <Play className="w-5 h-5 mr-2" />
                             How it works
                         </Button>
