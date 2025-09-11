@@ -109,12 +109,13 @@ const functionData = [
  * @param chainId : Connected chainId
  * @returns Contract data
  */
-export const getFunctionData = (functionName: string, chainId: number = chainIds[0]) => {
+export const getFunctionData = (functionName: string, chainId: number | undefined) => {
+    let _chainId = chainId || 42220;
     if(!approvedFunctions.includes(functionName)) {
         throw new Error(`${functionName} not supported`);
     }
-    const chainIndex = chainIds.indexOf(chainId);
+    const chainIndex = chainIds.indexOf(_chainId);
     // const found = functionData[0].filter(q => q.key.toLowerCase() === functionName.toLowerCase());
     const found = functionData[chainIndex].filter(q => q.key.toLowerCase() === functionName.toLowerCase());
-    return found?.[0].value; 
+    return found?.[0].value;
 }
