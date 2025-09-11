@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import type { 
     Address, 
-    Admin, 
     Campaign, 
     CampaignHashFormatted, 
     CategoryType, 
@@ -31,7 +30,6 @@ import {
     formatAddr, 
     mockCampaign, 
     toBN,
-    mockAdmins,
     mockHash,
     formatData
 } from './utilities';
@@ -219,7 +217,6 @@ export default function Educaster() {
             refetchInterval: 5000,
         }
     });
-
     // Update quiz data
     React.useEffect(() => {
         let data : ReadData = mockReadData;
@@ -246,17 +243,10 @@ export default function Educaster() {
         setPermission(isPermitted_);
     }, [result]);
 
-    // console.log("tD", result)
     const stateData = React.useMemo(() => {
-        // const data = stateData;
         const weekId = storage.state.weekId; // Current week Id
         const state = storage.state;
         const weekProfileData = storage.profileData;
-        // console.log("storage", storage)
-
-        // let userAdminStatus = false;
-        // const found = admins.filter(({id}) => id.toLowerCase() === account.toLowerCase());
-        // if(found && found.length > 0) userAdminStatus = found[0].active;
 
         // Return all approved campaigns
         const allCampaign : CampaignHashFormatted[] = storage.approved.map(({hash_, encoded}) => {

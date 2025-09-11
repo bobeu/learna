@@ -265,7 +265,8 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @returns object containing array of transaction data and approved functions
  */
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) {
-  const { approvedFunctions, contractAddresses } = globalContractData;
+  const { approvedFunctions, contractAddresses, chainIds } = globalContractData;
+  const chainIndex = chainIds.indexOf(chainId || 42220);
   const transactionData : TransactionData[] = [];
   if(filter) {
     functionNames.forEach((functionName) => {
@@ -275,7 +276,7 @@ export function filterTransactionData({chainId, filter, functionNames = []}: Fil
   return {
     transactionData,
     approvedFunctions,
-    contractAddresses: contractAddresses[0],
+    contractAddresses: contractAddresses[chainIndex],
   }
 }
 
