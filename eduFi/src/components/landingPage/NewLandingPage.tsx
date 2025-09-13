@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import Navbar from './Navbar';
-import AITutor from '../ai/AITutor';
+import ImprovedAITutor from '../ai/ImprovedAITutor';
 import Features from './Features';
 import Hero from './Hero';
 import CampaignTabs from '../campaigns/CampaignTabs';
@@ -100,30 +100,30 @@ export default function NewLandingPage() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white`}>
-      <Navbar />
-      <Hero 
-        handleJoinCampaign={handleJoinCampaign}
-        campaigns={campaigns}
-        isLoading={isLoading}
-      />
-      <CampaignTabs 
-        campaigns={campaigns}
-        handleJoinCampaign={handleJoinCampaign}
-        isLoading={isLoading}
-      />
-      <Features />
-
-      {/* AI Tutor Modal */}
-      {selectedCampaign && (
-        <AITutor
-          campaign={selectedCampaign}
-          onClose={() => setSelectedCampaign(null)}
+        <Navbar />
+        <Hero 
+            handleJoinCampaign={handleJoinCampaign}
+            campaigns={campaigns}
+            isLoading={isLoading}
         />
-      )}
-      <Footer />
+        <CampaignTabs 
+            campaigns={campaigns}
+            handleJoinCampaign={handleJoinCampaign}
+            isLoading={isLoading}
+        />
+        <Features />
 
-      {/* Scroll to top */}
-      <ScrollTopButton />
+        {/* AI Tutor Modal */}
+        {selectedCampaign && (
+            <ImprovedAITutor
+            campaign={selectedCampaign.__raw}
+            onClose={() => setSelectedCampaign(null)}
+            />
+        )}
+        <Footer />
+
+        {/* Scroll to top */}
+        <ScrollTopButton />
     </div>
   );
 }

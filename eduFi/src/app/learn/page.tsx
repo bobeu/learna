@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useContext, useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowLeft, Calendar, Search, Trophy, Target, BookOpenCheck, BarChart3, Sparkles, Moon, Sun } from "lucide-react";
@@ -9,20 +9,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CampaignTabs from "@/components/campaigns/CampaignTabs";
-import AITutor from "@/components/ai/AITutor";
-import { MOCK_CAMPAIGNS } from "@/components/landingPage/Hero";
+import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { DataContext } from "@/components/StorageContextProvider";
+import { formatEther, hexToString } from "viem";
+import { formattedMockLearners } from "../../../types";
+import { useAccount } from "wagmi";
+import { calculateStreak, formatAddr } from "@/components/utilities";
 
 export default function LearnPage(){
     const { theme, setTheme } = useTheme();
     const isDark = theme === "dark";
+    const data = useContext(DataContext);
+    const { address } = useAccount();
+    const userAddress = formatAddr(address).toLowerCase();
 
     const [search, setSearch] = React.useState("");
     const [startDate, setStartDate] = React.useState<string>("");
     const [endDate, setEndDate] = React.useState<string>("");
     const [selectedCampaign, setSelectedCampaign] = React.useState<any | null>(null);
 
-    const isLoading = false;
+    const campaignsData = data?.campaignsData || [];
+    const isLoading = data?.isLoading || false;
 
     const handleJoinCampaign = React.useCallback((campaign: any) => {
         setSelectedCampaign(campaign);
@@ -30,12 +38,50 @@ export default function LearnPage(){
 
     const closeTutor = React.useCallback(() => setSelectedCampaign(null), []);
 
+    // Normalize campaign data for UI
+    const normalizeString = (val: string) => {
+        if(!val) return '';
+        return val.startsWith('0x') ? hexToString(val as any) : val;
+    };
+
+    const normalizeImageSrc = (val: string) => {
+        const s = normalizeString(val);
+        if(!s) return '/learna-image4.png';
+        if(s.startsWith('ipfs://')) {
+            return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
+        }
+        if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
+        return '/learna-image4.png';
+    };
+
+    const mappedCampaigns = useMemo(() => {
+        return campaignsData.map((c, idx) => {
+            const latest = c.epochData?.[c.epochData.length - 1];
+            const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
+            const learners = latest?.learners || formattedMockLearners;
+            
+            return {
+                id: idx,
+                name: normalizeString(c.metadata.name),
+                description: normalizeString(c.metadata.description),
+                imageUrl: normalizeImageSrc(c.metadata.imageUrl),
+                link: normalizeString(c.metadata.link),
+                fundingAmount: Number(formatEther(nativeTotal)),
+                endDate: c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toISOString().split('T')[0] : null,
+                status: c.metadata.endDate && c.metadata.endDate * 1000 < Date.now() ? "completed" : "active",
+                learners: learners.length,
+                __raw: c
+            };
+        });
+    }, [campaignsData]);
+
     const filteredCampaigns = React.useMemo(() => {
         const q = search.trim().toLowerCase();
-        return MOCK_CAMPAIGNS.filter((c) => {
+        return mappedCampaigns.filter((c) => {
             const matchesQuery = q.length === 0 || c.name.toLowerCase().includes(q) || String(c.fundingAmount).toLowerCase().includes(q);
             const inDateRange = (() => {
                 if (!startDate && !endDate) return true;
+                if (!c.endDate) return true;
                 const end = new Date(c.endDate).getTime();
                 const startOk = startDate ? end >= new Date(startDate).getTime() : true;
                 const endOk = endDate ? end <= new Date(endDate).getTime() : true;
@@ -43,19 +89,56 @@ export default function LearnPage(){
             })();
             return matchesQuery && inDateRange;
         });
-    }, [search, startDate, endDate]);
+    }, [mappedCampaigns, search, startDate, endDate]);
 
     const statsContent = React.useMemo(() => {
-        const stats = {
-            pastCampaigns: MOCK_CAMPAIGNS.filter(c => c.status === "completed").length,
-            joinedCampaigns: 12,
-            quizzesTaken: 47,
-            avgScore: 88,
-            streakDays: 9,
-            badges: 6,
+        let quizzesTaken = 0;
+        let joinedCampaigns = 0;
+        let totalScore = 0;
+        let averageScore = 0;
+        let bestScore = 0;
+        let totalPoints = 0;
+        let streak = 0;
+        let badges = 0;
+        // const totalScore = profileQuizzes.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
+        // const totalPoints = profileQuizzes?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
+        // const averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
+        // const bestScore = Math.max(...profileQuizzes.map(result => result.other.percentage));
+
+        const builder = campaignsData.filter((c) => {
+            const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));
+            return anyLearner;
+        });
+        if(builder.length > 0) {
+            joinedCampaigns = builder.length;
+            builder.forEach((b) => {
+                b.epochData?.forEach((e) => {
+                    e.learners?.forEach((l) => {
+                        quizzesTaken += l.poass.length;
+                        totalScore += l.poass.reduce((sum, p) => sum + p.score, 0);
+                        totalPoints += l.poass.reduce((sum, p) => sum + p.totalPoints, 0);
+                        streak = calculateStreak(l.poass);
+                        badges = badges + l.ratings.reduce((sum, r) => sum + r.value, 0) % 5;
+                        if(l.poass.length > 0){
+                            const best = Math.max(...l.poass.map(p => p.percentage));
+                            if(best > bestScore) bestScore = best;
+                        }
+                    });
+                });
+            });
+            averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
         }
+
+        const stats = {
+            pastCampaigns: mappedCampaigns.filter(c => c.status === "completed").length,
+            joinedCampaigns,
+            quizzesTaken,
+            avgScore: averageScore,
+            streakDays: streak,
+            badges,
+        }                                                        
         return getStatsContent(stats);
-    }, []);
+    }, [mappedCampaigns]);
 
     return (
         <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-black dark:font-mono">
@@ -137,7 +220,7 @@ export default function LearnPage(){
             </div>
 
             {selectedCampaign && (
-                <AITutor campaign={selectedCampaign} onClose={closeTutor} />
+                <ImprovedAITutor campaign={selectedCampaign.__raw} onClose={closeTutor} />
             )}
         </main>
     );

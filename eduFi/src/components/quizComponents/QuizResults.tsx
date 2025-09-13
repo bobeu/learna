@@ -2,7 +2,7 @@
 import React from 'react';
 import { Trophy, RotateCcw, Home, Award, Clock, Target, CheckCircle, Share2 } from 'lucide-react';
 import useStorage from '../hooks/useStorage';
-import RecordPoints from '../transactions/RecordPoints';
+import RecordPoints from '../transactions/CreateCampaign';
 import { WarnBeforeClearScoresAndData } from './WarnBeforeClearScores';
 import { Hex } from 'viem';
 import { useAccount, useConnect } from 'wagmi';

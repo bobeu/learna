@@ -7,7 +7,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedData, FunctionName, mockCampaigns, Profile, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
+import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedData, FunctionName, mockCampaigns, Profile, ProofOfAssimilation, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -453,4 +453,17 @@ export const formatTime = (seconds: number) => {
   const hrs = Math.floor(mins / 60);
   const secs = secondsInNumber % 60;
   return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+export const calculateStreak = (results: ProofOfAssimilation[]): number => {
+  // Simple streak calculation - consecutive quizzes with 70%+ score
+  let streak = 0;
+  for (let i = results.length - 1; i >= 0; i--) {
+    if (results[i].percentage >= 70) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
 };

@@ -9,20 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, BarChart3, Users, Layers, Calendar, ImageIcon, WandSparkles, Plus, Trash2, Loader2, ArrowLeft, Moon, Sun } from "lucide-react";
-import { useAccount, useWriteContract, useChainId, usePublicClient } from "wagmi";
-import { erc20Abi, parseUnits, isAddress } from "viem";
+import { ChevronDown, ChevronUp, BarChart3, Users, Layers, Calendar, ImageIcon, WandSparkles, Loader2, ArrowLeft, Moon, Sun } from "lucide-react";
+import { useChainId } from "wagmi";
 import Link from "next/link";
-import { CAMPAIGN_FACTORY_ADDRESS } from "@/components/landingPage/Hero";
-
-type TokenInput = { address: string; symbol: string; decimals: number; amount: string; validated?: boolean; error?: string; approved?: boolean };
+// import { CAMPAIGN_FACTORY_ADDRESS } from "@/components/landingPage/Hero";
+import CreateCampaign from "@/components/transactions/CreateCampaign";
+import { CreateCampaignInput } from "../../../../types";
 
 export default function NewCampaignPage(){
     const { theme, setTheme } = useTheme();
     const isDark = theme === 'dark';
-    const { address: connectedAddress } = useAccount();
+    // const { address: connectedAddress } = useAccount();
     const chainId = useChainId();
-    const { writeContractAsync, isPending } = useWriteContract();
 
     const [showMyCampaigns, setShowMyCampaigns] = React.useState(false);
     const [selectedCampaign, setSelectedCampaign] = React.useState<any | null>(null);
@@ -39,8 +37,7 @@ export default function NewCampaignPage(){
     const [endInHours, setEndInHours] = React.useState<number | null>(null);
     const [useAiImage, setUseAiImage] = React.useState(false);
     const [imagePreview, setImagePreview] = React.useState<string>("");
-    const [tokens, setTokens] = React.useState<TokenInput[]>([]);
-    const [nativeAmount, setNativeAmount] = React.useState<string>("");
+    const [openDrawer, setOpenDrawer] = React.useState<number>(0);
 
     React.useEffect(() => {
         if (startDate && endDate) {
@@ -59,42 +56,24 @@ export default function NewCampaignPage(){
         ]
     ), []);
 
+    const { argReady, params } = React.useMemo(() => {
+        const argReady = description !== '' && (endInHours !== null && endInHours > 0) && imageUri !== '' && name !== '';
+        const params : CreateCampaignInput = {
+            description,
+            endDateInHr: Number(endInHours),
+            imageUrl: imageUri,
+            link: docUrl,
+            name
+        };
+        return { argReady, params }
+    }, [endInHours, imageUri, name, docUrl, description]);
+
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 
-    const addToken = () => setTokens((t) => [...t, { address: "", symbol: "", decimals: 18, amount: "", validated: false, approved: false }]);
-    const removeToken = (idx: number) => setTokens((t) => t.filter((_, i) => i !== idx));
-    const updateToken = (idx: number, patch: Partial<TokenInput>) => setTokens((t) => t.map((tk, i) => i === idx ? { ...tk, ...patch } : tk));
+    const toggleDrawer = (arg: number) => {
+        setOpenDrawer(arg);
+    }
 
-    const publicClient = usePublicClient();
-    const autofillTokenMeta = async (idx: number, tokenAddress: string) => {
-        try{
-            if (!publicClient || !tokenAddress) return;
-            const [symbol, decimals] = await Promise.all([
-                publicClient.readContract({ address: tokenAddress as `0x${string}`, abi: erc20Abi, functionName: 'symbol' }) as Promise<string>,
-                publicClient.readContract({ address: tokenAddress as `0x${string}`, abi: erc20Abi, functionName: 'decimals' }) as Promise<number>,
-            ]);
-            updateToken(idx, { symbol, decimals, validated: true, error: undefined });
-        } catch(e) {
-            updateToken(idx, { error: 'Failed to fetch token metadata. Please verify the address.', validated: false });
-        }
-    };
-
-    const approveAllTokens = async () => {
-        for (let i = 0; i < tokens.length; i++) {
-            const tk = tokens[i];
-            if (!tk.address || !tk.amount || !tk.validated || tk.approved) continue;
-            const amount = parseUnits(tk.amount || '0', tk.decimals);
-            await writeContractAsync({
-                address: tk.address as `0x${string}`,
-                abi: erc20Abi,
-                functionName: 'approve',
-                args: [CAMPAIGN_FACTORY_ADDRESS as `0x${string}`, amount],
-                chainId,
-            });
-            updateToken(i, { approved: true });
-        }
-        alert('Approvals submitted. Please confirm in your wallet.');
-    };
 
     const uploadToIpfs = async (file: File) => {
         setIpfsUploading(true);
@@ -128,9 +107,10 @@ export default function NewCampaignPage(){
     };
 
     const handleCreate = async () => {
-        // Placeholder: integrate with CampaignFactory later
-        console.log({ name, docUrl, description, imageUri, startDate, endDate, endInHours, tokens, nativeAmount });
-        alert('Draft created. Hook up factory write when ready.');
+        if(!argReady) return alert("Please provide relevant information");
+        setOpenDrawer(1);
+        // console.log({ name, docUrl, description, imageUri, startDate, endDate, endInHours, tokens, nativeAmount });
+        // alert('Draft created. Hook up factory write when ready.');
     };
 
     return (
@@ -233,8 +213,8 @@ export default function NewCampaignPage(){
                                 {!useAiImage ? (
                                     <div className="flex items-center gap-3">
                                         <Input type="file" accept="image/*" onChange={(e) => {
-                                            const f = e.target.files?.[0];
-                                            if (f) uploadToIpfs(f);
+                                            const file = e.target.files?.[0];
+                                            if (file) uploadToIpfs(file);
                                         }} />
                                         {ipfsUploading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     </div>
@@ -259,63 +239,14 @@ export default function NewCampaignPage(){
                                 )}
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="font-medium">Funding</div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <div className="md:col-span-1">
-                                        <Label>Native CELO Amount</Label>
-                                        <Input placeholder="0.0" value={nativeAmount} onChange={(e) => setNativeAmount(e.target.value)} />
-                                    </div>
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <div className="font-medium text-blue-900 dark:text-blue-100">Campaign Creation</div>
                                 </div>
-                                <div className="space-y-2">
-                                    {tokens.map((tk, idx) => (
-                                        <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
-                                            <div className="md:col-span-4">
-                                                <Label>Token Address</Label>
-                                                <Input placeholder="0x..." value={tk.address} onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    updateToken(idx, { address: val });
-                                                    if (!val) { updateToken(idx, { validated: false, error: undefined }); return; }
-                                                    if (isAddress(val)) {
-                                                        updateToken(idx, { validated: true, error: undefined });
-                                                        autofillTokenMeta(idx, val);
-                                                    } else {
-                                                        updateToken(idx, { validated: false, error: 'Invalid Ethereum address' });
-                                                    }
-                                                }} />
-                                                {tk.error && <div className="text-xs text-red-500 mt-1">{tk.error}</div>}
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <Label>Symbol</Label>
-                                                <Input placeholder="USDC" value={tk.symbol} onChange={(e) => updateToken(idx, { symbol: e.target.value })} />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <Label>Decimals</Label>
-                                                <Input type="number" placeholder="18" value={tk.decimals} onChange={(e) => updateToken(idx, { decimals: Number(e.target.value || 0) })} />
-                                            </div>
-                                            <div className="md:col-span-3">
-                                                <Label>Amount</Label>
-                                                <Input placeholder="1000" value={tk.amount} onChange={(e) => updateToken(idx, { amount: e.target.value })} />
-                                            </div>
-                                            <div className="md:col-span-1 flex justify-end">
-                                                <Button variant="destructive" size="icon" onClick={() => removeToken(idx)}>
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-between mt-2">
-                                        <Button variant="outline" className="gap-2 order-2 sm:order-1" onClick={addToken} disabled={tokens.some(t => (t.validated && !t.approved) || isPending)}>
-                                            <Plus className="w-4 h-4" /> Add ERC20
-                                        </Button>
-                                        {tokens.some(t => t.validated && !t.approved) && (
-                                            <Button className="order-1 sm:order-2" onClick={approveAllTokens} disabled={isPending}>Approve ERC20 Funding</Button>
-                                        )}
-                                    </div>
-                                    {tokens.some(t => t.validated && !t.approved) && (
-                                        <div className="text-xs text-neutral-500">Approve current ERC20 before adding more.</div>
-                                    )}
-                                </div>
+                                <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    Create your campaign first with basic information. You can add funding later from your profile.
+                                </p>
                             </div>
 
                             <div className="pt-2">
@@ -329,6 +260,11 @@ export default function NewCampaignPage(){
             {selectedCampaign && (
                 <CampaignStatsModal campaign={selectedCampaign} onClose={() => setSelectedCampaign(null)} />
             )}
+            <CreateCampaign 
+                openDrawer={openDrawer}
+                params={params}
+                toggleDrawer={toggleDrawer}
+            />
         </main>
     );
 }

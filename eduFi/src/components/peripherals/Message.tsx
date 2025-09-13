@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 import React from "react";
-import useStorage from "../hooks/useStorage";
 import { MotionDisplayWrapper } from "./MotionDisplayWrapper";
 import Image from "next/image";
 
@@ -15,8 +14,7 @@ const Error = () => {
     );
 }
 
-export default function Message() {
-    const { messages, errorMessage, loading, setmessage, setError } = useStorage();
+export default function Message({messages, errorMessage, loading, setmessage, setError} : {messages: string, errorMessage: string, loading: boolean, setmessage: (arg:string) => void, setError:(arg:string) => void}) {
     const isError = errorMessage.length > 0;
     const display = messages.length > 0 || errorMessage.length > 0;
     const isEnded = messages.includes('ended') || errorMessage.includes('ended');

@@ -1,29 +1,29 @@
-import { Hex, stringToHex, zeroAddress } from "viem";
+import { Hex, hexToString, stringToHex, zeroAddress } from "viem";
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
 export type FunctionName = 
   '' | 
-  'runall' | 
-  "checkEligibility"|
-  'recordPoints'|
-  'setPermission'|
-  'hasPassKey'|
-  'setTransitionInterval'|
   'claimReward'|
-  'sortWeeklyReward'|
-  'adjustCampaignValues'|
-  'setUpCampaign'|
-  'getProfile'|
   'getData'|
   'owner'|
   'allowance'|
   'approve'|
   'pause' | 
   'unpause' |
+  'getFactory' |
+  'getUserCampaigns' |
+  'panicWithdraw' |
+  'removeApproval' |
+  'setApproval' |
+  'setApprovalFactory' |
+  'setCreationFee' |
+  'setFactory' |
+  'setFeeTo' |
+  'toggleUseWalletVerification' |
+  'setVerifier' |
   'configId' |
   'setConfigId' |
-  'getClaimable' |
   'setScope' |
   'verify' |
   'verifyByApproved'|
@@ -31,8 +31,9 @@ export type FunctionName =
   'banOrUnbanUser'|
   'getCampaingData' |
   'getVerificationStatus' |
-  'balanceOf' |
+  'createCampaign' |
   'hasApproval' |
+  'withdraw' |
   'setMinimumToken';
 
 export type VoidFunc = () => void;
@@ -428,6 +429,14 @@ export interface Metadata {
   endDate: number;
 }
 
+export interface CreateCampaignInput {
+  name: string; 
+  link: string;
+  description: string;
+  imageUrl: string;
+  endDateInHr: number;
+}
+
 export interface CampaignTemplateReadData {
   epochData: EpochData[];
   metadata: Metadata;
@@ -457,6 +466,24 @@ export const mockFilterTransactionData : FilterTransactionReturnType = {
   }
 }
 
+export const mockLearners : Learner[] = ["https://github..com/bobeu", "https://github..com/oliseh", "https://github..com/jake"].map((link) => {
+  return {
+    id: zeroAddress,
+    ratings: [{value: 0, ratedAt: stringToHex(new Date().toString())}],
+    point: {link: stringToHex(link),  submittedAt: 0, approvedAt: 0, score: 0},
+    poass: [{questionSize: 0, score: 0, totalPoints: 0, percentage: 0, timeSpent: 0, completedAt: 0}]
+  }
+});
+
+export const formattedMockLearners : Learner[] = mockLearners.map((m) => {
+  return {
+    id: m.id,
+    poass: m.poass,
+    ratings: m.ratings.map((r) => { return {value: r.value, ratedAt: hexToString(r.ratedAt as Hex)}}),
+    point: { ...m.point, link: hexToString(m.point.link as Hex)}
+  }
+})
+
 export const mockCampaignTemplateReadData : CampaignTemplateReadData = {
   epochData: [{
     totalProofs: 0,
@@ -482,27 +509,7 @@ export const mockCampaignTemplateReadData : CampaignTemplateReadData = {
         nativeInt: 0n
       }
     },
-    learners: [{
-      id: zeroAddress,
-      ratings: [{
-        value: 0,
-        ratedAt: stringToHex(new Date().toString())
-      }],
-      point: {
-        link: stringToHex("https://github..com/bobeu"), 
-        submittedAt: 0,
-        approvedAt: 0,
-        score: 0
-      },
-      poass: [{
-        questionSize: 0,
-        score: 0,
-        totalPoints: 0,
-        percentage: 0,
-        timeSpent: 0,
-        completedAt: 0
-      }]
-    }]
+    learners: mockLearners
   }],
   metadata: {
     hash_: `0x`,

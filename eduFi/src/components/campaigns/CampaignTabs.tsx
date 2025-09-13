@@ -47,9 +47,9 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                     ) : (
                     currentCampaigns.map((campaign: any) => (
                         <CampaignSliderCard
-                        key={campaign.id}
-                        campaign={campaign}
-                        onJoin={handleJoinCampaign}
+                            key={campaign.id}
+                            campaign={campaign}
+                            onJoin={handleJoinCampaign}
                         />
                     ))
                     )}

@@ -584,6 +584,36 @@ The Tailwind palette now uses a neon-lime on deep-black theme matching the attac
 
 Resolved failure where `next/image` received hex-encoded URLs (e.g., `0x...`). Mapping layer now decodes hex and converts `ipfs://` URIs to an HTTPS gateway before rendering.
 
+### Major Feature Updates (September 2025)
+
+#### Theme and UI Improvements
+- **Default Theme**: Changed from dark to light mode as default
+- **Transaction Modal**: Built new `TransactionModal` component matching project style with step-by-step progress tracking, status indicators, and transaction hash links
+
+#### Campaign Creation Flow Redesign
+- **Two-Phase Creation**: Campaign creators now launch campaigns without funds first, then add funding later from their profile
+- **Simplified Creation**: Removed funding complexity from initial campaign creation form
+- **AddFund Component**: New component for campaign owners to add native and ERC20 funding with individual token approval flow
+
+#### Builder Reward System
+- **BuilderRewards Component**: Comprehensive reward tracking and claiming system
+- **Performance-Based Rewards**: Rewards calculated based on user performance scores and completion status
+- **Claim Functionality**: On-chain reward claiming with transaction modal integration
+- **Eligibility System**: Clear criteria for reward eligibility (completed proofs, performance ratings, score thresholds)
+
+#### Enhanced AI Tutor System
+- **ImprovedAITutor**: Complete redesign with multi-step learning flow
+- **Dynamic Topic Generation**: AI-generated topics based on campaign context
+- **Article Generation**: 700-word articles with reading time estimation
+- **Intelligent Quiz System**: AI-generated quizzes based on article content
+- **Performance Rating**: 5-point rating system based on quiz performance
+- **On-Chain Storage**: `proveAssimilation` function integration for storing proof of learning and performance data
+
+#### Profile System Enhancements
+- **Creator Profile**: Campaign management with metadata editing and funding capabilities
+- **Builder Profile**: Enhanced with reward tracking, performance metrics, and claim functionality
+- **Data Integration**: Full integration with `Learner` interface and on-chain data structures
+
 ## Conclusion
 
 The Learna project has been successfully rebuilt with a modern, responsive landing page that includes:
@@ -605,8 +635,8 @@ The project is now ready for development and can be easily extended with additio
 ---
 
 **Last Updated**: September 2025
-**Version**: 1.2.0
-**Status**: Live data integration, profiles, and rendering fixes complete
+**Version**: 2.0.0
+**Status**: Complete with Major Feature Updates - Theme, Transaction System, Campaign Flow, Rewards, and Enhanced AI Tutor
 ```
 
 This comprehensive documentation file contains all the responses, changes, and implementations made during the Learna project rebuild. It serves as a complete reference for the project structure, features, and technical implementation details.

@@ -9,13 +9,17 @@ import { Button } from "@/components/ui/button";
 import { formatEther } from "viem";
 import Link from "next/link";
 import CampaignMetaEditor from "@/components/profile/CampaignMetaEditor";
+import AddFund from "@/components/transactions/AddFund";
+import BuilderRewards from "@/components/profile/BuilderRewards";
+import { mockCampaignTemplateReadData } from "../../../types";
+import { formatAddr } from "@/components/utilities";
 
 export default function ProfilePage() {
   const { address } = useAccount();
   const data = useContext(DataContext);
 
-  const campaignsData = data?.campaignsData || [];
-  const userAddress = (address || "").toLowerCase();
+  const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
+  const userAddress = formatAddr(address).toLowerCase();
 
   const { creatorCampaigns, builderCampaigns } = useMemo(() => {
     const creator = campaignsData.filter((c) => c.owner.toLowerCase() === userAddress);
@@ -27,6 +31,7 @@ export default function ProfilePage() {
   }, [campaignsData, userAddress]);
 
   const [selectedForEdit, setSelectedForEdit] = useState<number | null>(null);
+  const [selectedForFund, setSelectedForFund] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white px-4 sm:px-6 lg:px-8 py-10">
@@ -65,6 +70,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForEdit(idx)}>Edit metadata</Button>
+                      <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForFund(idx)}>Add funds</Button>
                       <Link href={{ pathname: "/profile/view", query: { i: idx.toString() } }}>
                         <Button className="bg-primary-500 text-black hover:bg-primary-400">View</Button>
                       </Link>
@@ -80,6 +86,15 @@ export default function ProfilePage() {
                 onClose={() => setSelectedForEdit(null)}
               />
             )}
+
+            {selectedForFund !== null && creatorCampaigns[selectedForFund] && (
+              <AddFund
+                isOpen={true}
+                onClose={() => setSelectedForFund(null)}
+                campaignAddress={creatorCampaigns[selectedForFund].owner} // This should be the campaign identifier
+                campaignName={creatorCampaigns[selectedForFund].metadata.name}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="builder" className="space-y-6">
@@ -90,27 +105,38 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {builderCampaigns.map((c, idx) => {
                 const latest = c.epochData?.[c.epochData.length - 1];
                 const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
-                const learners = latest?.learners?.length || 0;
+                const learners = latest?.learners || [];
+                const userLearnerData = learners.find((l: any) => l.id.toLowerCase() === userAddress);
+                
                 return (
-                  <Card key={idx} className="bg-white dark:bg-surface">
-                    <CardHeader>
-                      <CardTitle className="truncate">{c.metadata.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="text-sm text-gray-700 dark:text-gray-200">
-                        <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
-                        <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
-                        <div className="truncate">Learners: {learners}</div>
-                      </div>
-                      <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
-                        <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">Open</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
+                  <div key={idx} className="space-y-4">
+                    <Card className="bg-white dark:bg-surface">
+                      <CardHeader>
+                        <CardTitle className="truncate">{c.metadata.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                          <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
+                          <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
+                          <div className="truncate">Total Learners: {learners.length}</div>
+                        </div>
+                        <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
+                          <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                    
+                    {userLearnerData && (
+                      <BuilderRewards 
+                        campaign={c} 
+                        learnerData={userLearnerData} 
+                      />
+                    )}
+                  </div>
                 );
               })}
             </div>

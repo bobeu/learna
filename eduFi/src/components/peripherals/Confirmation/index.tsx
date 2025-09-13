@@ -2,37 +2,37 @@
 
 import React from "react";
 import Drawer from './Drawer';
-import { useAccount, useConfig, useWriteContract, useSendTransaction, useChainId } from "wagmi";
+import { useAccount, useConfig, useWriteContract, useChainId } from "wagmi";
 import { WriteContractErrorType, waitForTransactionReceipt } from "wagmi/actions";
-import { filterTransactionData, getCastText, getDivviReferralUtilities, toBN } from "@/components/utilities";
-import useStorage from "@/components/hooks/useStorage";
+import { getCastText, getDivviReferralUtilities } from "@/components/utilities";
+// import useStorage from "@/components/hooks/useStorage";
 import Message from "@/components/peripherals/Message";
 import { Spinner } from "@/components/peripherals/Spinner";
-import { privateKeyToAccount } from 'viem/accounts';
-import { parseUnits } from "viem";
+// import { privateKeyToAccount } from 'viem/accounts';
+// import { parseUnits } from "viem";
 import { celo } from "viem/chains";
 import sdk from "@farcaster/frame-sdk";
 import { APP_URL } from "@/lib/constants";
 import { Address, FunctionName } from "../../../../types";
 
-const DELEGATE_VALUE = parseUnits('15', 15);
+// const DELEGATE_VALUE = parseUnits('15', 15);
 
 export const Confirmation : 
     React.FC<ConfirmationProps> = 
         ({ getTransactions, lastStepInList, openDrawer, toggleDrawer, displayMessage}) => 
 {   
-    const [ disableAction, setDisableAction ] = React.useState<boolean>(false);
-    const { weekId: wkId, result, loading, recordPoints, setError, toggleRecordPoints, callback, setpath, setmessage, toggleLoading, refetch } = useStorage();
-    const { address, isConnected } = useAccount();
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const [message, setMessage] = React.useState<string>('');
+    const [errorMessage, setErrorMessage] = React.useState<string>('');
+
+    const { address, isConnected } = useAccount()
+    const account = address as Address;
     const chainId = useChainId();
     const config = useConfig();
-    // const { refetch: fetchBalance } = useBalance({chainId, address: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Hex).address});
-    const account = address as Address;
-    const weekId = toBN(wkId.toString()).toNumber();
 
-    const publishCast = async (weekId: number, altText: string, task?: FunctionName) => {
+    const publishCast = async (altText: string, task?: FunctionName) => {
         let text = altText;
-        if(task) text = getCastText(task, weekId);
+        if(task) text = getCastText(task, 0);
         if(text !== '') {
             const response = await sdk.actions.composeCast({text, embeds: [APP_URL]})
             // const response = await axios.post<{ message: string }>("/api/cast", {
@@ -41,9 +41,9 @@ export const Confirmation :
             // });
             // console.log("Response: ", response);
             if(response?.cast?.hash) {
-                setmessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
+                setMessage('Your task was pubished with hash'.concat(response?.cast?.hash || ''));
             } else{
-                setmessage('Cast publish failed!');
+                setMessage('Cast publish failed!');
             }
         }
       };
@@ -52,28 +52,9 @@ export const Confirmation :
     const finalize = (functionName: FunctionName = '') => {
         if(functionName === lastStepInList || functionName === '') {
             setTimeout(() => {
-               toggleLoading(false);
-               setmessage('');
+               setLoading(false);
+               setMessage('');
                toggleDrawer(0);
-               switch (functionName) {
-                   case 'setUpCampaign':
-                       setpath('stats');
-                       break;
-                   case 'adjustCampaignValues':
-                       setpath('stats');
-                       break;
-                   case 'recordPoints':
-                       setpath('profile');
-                       break;
-                   case 'verify':
-                       setpath('profile');
-                       break;
-                   case 'sortWeeklyReward':
-                       setpath('stats');
-                       break;
-                   default:
-                       break;
-               } 
            }, 6000);
            clearTimeout(6000);
         }
@@ -83,47 +64,43 @@ export const Confirmation :
     const setCompletion = async(functionName: FunctionName, useDivvi: boolean, hash: Address) => {
         if(functionName === lastStepInList){
             const { submitReferralData } = getDivviReferralUtilities();
-            callback({message: `Transaction completed!`});
-            if(functionName === 'sortWeeklyReward'){
-                await publishCast(weekId - 1, '', functionName);
-            }
-    
+            setMessage("Transaction completed!");
             if(useDivvi) {
                 try {
                     const result = await submitReferralData(hash, chainId);
                     if(result.status === 200) {
-                        // setmessage('Divvi ref submission successful');
-                        callback({message: 'Publishing cast...'});
-                        await publishCast(weekId, `Got a new referral. Thanks to @letsdivvi`);
+                        // setMessage('Divvi ref submission successful');
+                        setMessage('Publishing cast...');
+                        await publishCast(`Got a new referral. Thanks to @letsdivvi. This is an automated message from @LearnaBot`);
                     } else {
-                        setmessage('Failed to submit Divvi ref');
+                        setMessage('Failed to submit Divvi ref');
                     }
                 } catch (error) {
-                    setmessage('Failed to submit Divvi ref');
+                    setMessage('Failed to submit Divvi ref');
                     console.error("Error submitting Divvi ref:", error);
                 }
             }
     
-            await refetch();
-            switch (functionName) {
-                case 'setUpCampaign':
-                    setmessage('Your campaign was successfully set up!');
-                break;
-                default:
-                    setmessage('Yay! transaction was successful ended');
-                break;
-            }
+            // await refetch();
+            // switch (functionName) {
+            //     case 'setUpCampaign':
+            //         setMessage('Your campaign was successfully set up!');
+            //     break;
+            //     default:
+            //         setMessage('Yay! transaction was successful ended');
+            //     break;
+            // }
            finalize(functionName);
         }
     };
 
     // When error occurred, run this function
     const onError = async(error: WriteContractErrorType) => {
-        callback({errorMessage: error.message});
+        setErrorMessage(error.message);
         setTimeout(
             () => {
-                setError('');
-                toggleLoading(false);
+                setErrorMessage('');
+                setLoading(false);
             }, 
             3000
         );
@@ -137,24 +114,23 @@ export const Confirmation :
         }
     });
 
-    // Prepare send transaction
-    const { sendTransactionAsync } = useSendTransaction({
-        config,
-        mutation: { 
-            onSuccess: (hash) => {
-                callback({message: `Delegation completed with hash: ${hash.substring(0, 8)}...`});
-            },
-            onError(error) {
-                callback({errorMessage: error.message});
-                toggleLoading(false);
-            },
-        }
-    });
+    // // Prepare send transaction
+    // const { sendTransactionAsync } = useSendTransaction({
+    //     config,
+    //     mutation: { 
+    //         onSuccess: (hash) => {
+    //             callback({message: `Delegation completed with hash: ${hash.substring(0, 8)}...`});
+    //         },
+    //         onError(error) {
+    //             callback({errorMessage: error.message});
+    //             toggleLoading(false);
+    //         },
+    //     }
+    // });
 
     const waitForConfirmation = async(hash: `0x${string}`, functionName: FunctionName | string) => {
         const receipt = await waitForTransactionReceipt(config, {hash, confirmations: 2});
-
-        callback({message: `Completed in ${functionName} task!`});
+        setMessage(`Completed in ${functionName} task!`);
         return receipt.transactionHash;
     } 
 
@@ -207,14 +183,8 @@ export const Confirmation :
             case 'banOrUnbanUser':
                 message = 'Setting user status';
                 break;
-            case 'sortWeeklyReward':
-                message = 'Sorting weekly reward';
-                break;
-            case 'recordPoints':
-                message = 'Saving your points onchain...';
-                break;
-            case 'setUpCampaign':
-                message = 'Setting up your campaign...';
+            case 'createCampaign':
+                message = 'Creating a new campaign';
                 break;
             case 'verify':
                 message = 'Setting up your claim...';
@@ -224,113 +194,59 @@ export const Confirmation :
                 message = "Please wait..."
                 break;
         }
-        callback({message});
+        setMessage(message);
         try {
-            if(functionName === 'recordPoints') {
-                if(!useAdmin || useAdmin === 0)  {
-                        hash = await writeContractAsync({
-                        abi,
-                        functionName: 'delegateTransaction',
-                        address: contractAddress,
-                        account,
-                        args: [],
-                        value: DELEGATE_VALUE,
-                        dataSuffix
-                    });
-                    callback({message: 'Waiting for confirmation'});
-                    await waitForConfirmation(hash, 'delegation'); 
-                }
-                callback({message: 'Saving your scores onchain...'});
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account: privateKeyToAccount(process.env.NEXT_PUBLIC_ADMIN_0xC0F as Address),
-                    args,
-                    value: 0n,
-                    dataSuffix
-                });
-                callback({message: 'Confirming transaction...'});
-                hash = await waitForConfirmation(hash, '');
-                // await forwardBalances();         
-                await setCompletion(functionName, useDivvi, hash);
-            } else {
-                callback({message})
-                hash = await writeContractAsync({
-                    abi,
-                    functionName,
-                    address: contractAddress,
-                    account,
-                    args,
-                    dataSuffix,
-                    value
-                });
-                hash = await waitForConfirmation(hash, '');
-                await setCompletion(functionName, useDivvi, hash);
-            }
+            setMessage(message)
+            hash = await writeContractAsync({
+                abi,
+                functionName,
+                address: contractAddress,
+                account,
+                args,
+                dataSuffix,
+                value
+            });
+            hash = await waitForConfirmation(hash, '');
+            await setCompletion(functionName, useDivvi, hash);
         } catch (error) {
             console.log("ErrorOccured: ", error);
-            setmessage("Oops! We are unable to complete your transaction. Please send us feedback on Telegram @cryptopreach");
+            setMessage("Oops! We are unable to complete your transaction. Please send us feedback on Telegram @cryptopreach");
             finalize();
         }
     }
 
     /**
      * @dev Broadcast transaction to the blockchain and wait for confirmation up to 2 confirmation blocks
-     */
+    */ 
     const handleSendTransaction = async() => {
-        if(!isConnected) return callback({errorMessage: 'Please connect wallet'});
-        toggleLoading(true);
+        if(!isConnected) return setErrorMessage('Please connect wallet');
+        setLoading(true);
+        // console.log("transactions")
         const transactions = getTransactions();
-        for( let i = 0; i < transactions.length; i++) {
-            const {abi, value, functionName, contractAddress, args, useAdmin} = transactions[i];
-            callback({message: 'Sending transaction to the network...'});
+        // console.log("transactions", transactions)
+        for( const transaction of transactions) {
+            const {abi, value, functionName, contractAddress, args, useAdmin} = transaction;
+            setMessage('Sending transaction to the network...');
             await runTransaction({abi, contractAddress, args, functionName, value, requireArgUpdate: false, useAdmin});
         }
     }
-
-    // Record points silently
-    React.useEffect(() => {
-        if(recordPoints && result.other.score > 0) {
-            const { transactionData } = filterTransactionData({chainId, filter: true, functionNames: ['recordPoints']});
-            const td = transactionData[0];
-            const sendScore = async() => {
-                try {
-                    callback({message: "We're saving your score"});
-                    toggleDrawer(1);
-                    toggleLoading(true);
-                    setDisableAction(true);
-                    const args : any[] = [account, result, result.other.quizId];
-                    await runTransaction({abi: td.abi, contractAddress: td.contractAddress as Address, args, functionName: td.functionName as FunctionName, value: 0n, requireArgUpdate: false, useAdmin: 1});
-                    callback({message: "Your scores was successfully updated"})
-                } catch (error: any) {
-                    console.log("Record Error", error?.message || error?.data?.message);
-                    callback({errorMessage: "Something went wrong. We could not update your scores automatically. Please save it manually using the save button"})
-                }
-                finalize();
-                toggleRecordPoints(false);
-            }
-            sendScore();
-        } else {
-            toggleRecordPoints(false);
-            toggleDrawer(0);
-            toggleLoading(false);
-            callback({message: '', errorMessage: ''});
-            setDisableAction(false);
-        }
-    }, [recordPoints]);
 
     return (
         <Drawer 
             title={ !loading? (displayMessage || 'Transaction request') : 'Transaction sent' }
             openDrawer={openDrawer} 
-            disableAction={disableAction}
             setDrawerState={toggleDrawer}
             onClickAction={() => toggleDrawer(0)}
             styles={{padding:'22px', borderLeft: '1px solid #2e3231', height: "100%", background: '#F9F4F4'}}
         >
             <div className="space-y-4">
-                <Message />
+                <Message 
+                    messages={message}
+                    errorMessage={errorMessage}
+                    loading={loading}
+                    setmessage={(arg: string) => setMessage(arg)}
+                    setError={(arg: string) => setErrorMessage(arg)}
+                />
                 <button 
                     disabled={loading} 
                     className="w-full flex-1 btn-primary flex items-center justify-center space-x-2" 
