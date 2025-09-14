@@ -76,11 +76,11 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     appIcon: 'https://learna.vercel.app/learna-logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
-    chains: [celoSepolia, celo ],
+    chains: [celoSepolia, celo],
     ssr: true,
     multiInjectedProviderDiscovery: true,
-    pollingInterval: 10_000,
-    syncConnectedChain: true,
+    // pollingInterval: 10_000,
+    // syncConnectedChain: true,
     transports: {
       [celoSepolia.id]: http(),
       [celo.id]: http(),
@@ -108,7 +108,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           coolMode={true}
           modalSize="compact" 
           theme={theme} 
-          initialChain={celo.id} 
+          initialChain={celoSepolia.id} 
           showRecentTransactions={true}
           appInfo={{
             appName: "Learna",

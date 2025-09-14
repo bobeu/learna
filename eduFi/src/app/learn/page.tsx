@@ -12,10 +12,10 @@ import CampaignTabs from "@/components/campaigns/CampaignTabs";
 import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { DataContext } from "@/components/StorageContextProvider";
-import { formatEther, hexToString } from "viem";
-import { formattedMockLearners } from "../../../types";
+import { formatEther } from "viem";
+import { CampaignStateProps, formattedMockLearners, mockCampaignState, mockCampaignTemplateReadData } from "../../../types";
 import { useAccount } from "wagmi";
-import { calculateStreak, formatAddr } from "@/components/utilities";
+import { calculateStreak, formatAddr, normalizeImageSrc, normalizeString } from "@/components/utilities";
 
 export default function LearnPage(){
     const { theme, setTheme } = useTheme();
@@ -27,32 +27,16 @@ export default function LearnPage(){
     const [search, setSearch] = React.useState("");
     const [startDate, setStartDate] = React.useState<string>("");
     const [endDate, setEndDate] = React.useState<string>("");
-    const [selectedCampaign, setSelectedCampaign] = React.useState<any | null>(null);
+    const [selectedCampaign, setSelectedCampaign] = React.useState<CampaignStateProps>(mockCampaignState);
 
-    const campaignsData = data?.campaignsData || [];
+    const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
     const isLoading = data?.isLoading || false;
 
     const handleJoinCampaign = React.useCallback((campaign: any) => {
         setSelectedCampaign(campaign);
     }, []);
 
-    const closeTutor = React.useCallback(() => setSelectedCampaign(null), []);
-
-    // Normalize campaign data for UI
-    const normalizeString = (val: string) => {
-        if(!val) return '';
-        return val.startsWith('0x') ? hexToString(val as any) : val;
-    };
-
-    const normalizeImageSrc = (val: string) => {
-        const s = normalizeString(val);
-        if(!s) return '/learna-image4.png';
-        if(s.startsWith('ipfs://')) {
-            return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
-        }
-        if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
-        return '/learna-image4.png';
-    };
+    const closeTutor = React.useCallback(() => setSelectedCampaign(mockCampaignState), []);
 
     const mappedCampaigns = useMemo(() => {
         return campaignsData.map((c, idx) => {
@@ -100,10 +84,6 @@ export default function LearnPage(){
         let totalPoints = 0;
         let streak = 0;
         let badges = 0;
-        // const totalScore = profileQuizzes.reduce((sum, result) => sum + toBN(BigInt(result?.other?.score).toString()).toNumber(), 0);
-        // const totalPoints = profileQuizzes?.reduce((sum, result) => sum + toBN(BigInt(result?.other?.totalPoints).toString()).toNumber(), 0);
-        // const averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
-        // const bestScore = Math.max(...profileQuizzes.map(result => result.other.percentage));
 
         const builder = campaignsData.filter((c) => {
             const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));

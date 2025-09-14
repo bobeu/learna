@@ -1,4 +1,4 @@
-import type { Address, VoidFunc, CampaignTemplateReadData } from "../../../types";
+import type { Address, VoidFunc, FormattedCampaignTemplate } from "../../../types";
 
 export interface NeynaDataContextProps {
     isAuthenticated: boolean;
@@ -8,7 +8,7 @@ export interface NeynaDataContextProps {
 export interface DataContextProps {
     isLoading: boolean;
     owner: Address;
-    campaignsData: CampaignTemplateReadData[];
+    campaignsData: FormattedCampaignTemplate[];
     verificationStatus: boolean;
     hasApproval: boolean;
     dev: Address;

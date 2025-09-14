@@ -25,7 +25,7 @@ export interface TransactionModalProps {
   onClose: () => void;
   title: string;
   description?: string;
-  steps: TransactionStep[];
+  getSteps: () => TransactionStep[];
   onSuccess?: (txHash: string) => void;
   onError?: (error: Error) => void;
 }
@@ -35,7 +35,7 @@ export default function TransactionModal({
   onClose,
   title,
   description,
-  steps,
+  getSteps,
   onSuccess,
   onError,
 }: TransactionModalProps) {
@@ -47,6 +47,7 @@ export default function TransactionModal({
 
   const { writeContractAsync } = useWriteContract();
 
+  const steps = getSteps();
   const currentStep = steps[currentStepIndex];
   const isCompleted = completedSteps.has(currentStep.id);
   const isFailed = failedSteps.has(currentStep.id);

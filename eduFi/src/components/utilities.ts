@@ -7,7 +7,7 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
 import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, CategoryType, DifficultyLevel, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedData, FunctionName, mockCampaigns, Profile, ProofOfAssimilation, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
+import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FormattedData, FunctionName, mockCampaigns, Profile, ProofOfAssimilation, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -277,30 +277,49 @@ export function getCastText(task: FunctionName, weekId: number) {
   return filtered?.[0]?.handler(weekId) || '';
 }
 
+ // Normalize campaign data for UI
+export const normalizeString = (val: string) => {
+  if(!val) return '';
+  return val.startsWith('0x') ? hexToString(val as Hex) : val;
+};
+
+export function normalizeImageSrc(val: string) {
+  const s = normalizeString(val);
+  if(!s) return '/learna-image4.png';
+  if(s.startsWith('ipfs://')) {
+      return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
+  }
+  if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
+  return '/learna-image4.png';
+};
+
 /**
  * @dev Accepts blockchain data and format to convert the encoded data to readable formats
  * @param arg : Data to format
  * @returns Formatted data
  */
-export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData) {
+export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, contractAddress: Address) : FormattedCampaignTemplate {
   const { epochData, metadata: mt, ...rest } = arg;
   return {
+    contractAddress,
     epochData: epochData.map(({learners, setting, totalProofs}) => {
       return {
         totalProofs,
         setting: {
           ...setting,
           funds: {
-            ...setting.funds,
+            nativeAss: setting.funds.nativeAss,
+            nativeInt: setting.funds.nativeInt,
             erc20Ass: setting.funds.erc20Ass.map((erc20Ass) => ({
-              ...erc20Ass,
-              tokenName: hexToString(erc20Ass.tokenName as Hex),
-              tokenSymbol: hexToString(erc20Ass.tokenSymbol as Hex),
+              tokenName: normalizeString(erc20Ass.tokenName as Hex),
+              tokenSymbol: normalizeString(erc20Ass.tokenSymbol as Hex),
+              amount:erc20Ass.amount,
+              token:erc20Ass.token  
             })),
             erc20Int: setting.funds.erc20Ass.map((erc20Int) => ({
               ...erc20Int,
-              tokenName: hexToString(erc20Int.tokenName as Hex),
-              tokenSymbol: hexToString(erc20Int.tokenSymbol as Hex),
+              tokenName: normalizeString(erc20Int.tokenName as Hex),
+              tokenSymbol: normalizeString(erc20Int.tokenSymbol as Hex),
             })),
           }
         },
@@ -309,143 +328,25 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData) {
           poass,
           ratings: ratings.map(({ratedAt, value}) => ({
             value,
-            ratedAt: hexToString(ratedAt as Hex)
+            ratedAt: normalizeString(ratedAt as Hex)
           })),
-          point: { approvedAt, score, submittedAt, link: hexToString(link as Hex)}
+          point: { approvedAt, score, submittedAt, link: normalizeString(link as Hex)}
         }))
       }
     }),
     metadata: {
       hash_: mt.hash_,
-      name: hexToString(mt.name as Hex),
-      link: hexToString(mt.link as Hex),
-      description: hexToString(mt.description as Hex),
-      imageUrl: hexToString(mt.imageUrl as Hex),
+      name: normalizeString(mt.name as Hex),
+      link: normalizeString(mt.link as Hex),
+      description: normalizeString(mt.description as Hex),
+      imageUrl: normalizeImageSrc(mt.imageUrl as Hex),
       endDate: mt.endDate
     },
     ...rest
   }
 }
 
-export const formattedMockCampaignsTemplate = mockCampaigns.map((campaign) => formatCampaignsTemplateReadData(campaign));
-
-// /**
-//  * @dev Load and prepare data from the JSON API
-//  * @returns : Formatted data and categories
-//  */
-// export function load_d_({totalPoints, timePerQuestion}: {totalPoints: number, timePerQuestion: number}) : {categories: CategoryType[], quizData: Quiz[] | null} {
-//   const d : QuizData = { categories: _d_.categories, difficulties: _d_.difficulties, categoryData: _d_.categoryData } ;
-//   const categories : CategoryType[] = d.categories.split(',') as CategoryType[];
-//   const quizData : Quiz[] = [];
-
-//   // Loop through the categories
-//   d.categoryData.forEach(({category, levels, description}) => {
-//     // Loop through the levels
-//     levels.forEach(({questions, difficulty,}) => {
-//       const qs : Question[] = [];
-//       const questionSize = questions.length;
-//       assert(totalPoints >= questionSize, "Totalpoints is invalid");
-//       const points = totalPoints / questionSize;
-//       const timeLimit = Math.ceil(timePerQuestion * questionSize);
-
-//       // Run through the questions
-//       questions.forEach(({answer, options, hash, question, explanation}, id) => {
-//         const correctAnswer = 0;
-//         qs.push({
-//           id,
-//           question,
-//           options,
-//           hash: `0x${hash}`,
-//           correctAnswer: typeof answer === "number"? answer : options.indexOf(answer),
-//           difficulty: difficulty as DifficultyLevel,
-//           category,
-//           points,
-//           explanation:explanation === ""? `The answer to ${question} is ${options[correctAnswer]}` : explanation
-//         })
-//       });
-
-//       quizData.push(
-//         {
-//           category,
-//           description,
-//           difficulty: difficulty as DifficultyLevel,
-//           id: keccak256(stringToBytes(category)),
-//           createdAt: new Date(),
-//           questions:qs,
-//           title: category,
-//           totalPoints,
-//           imageUrl: `/assets/${category}-${difficulty}.png`,
-//           timeLimit
-//         }
-//       );
-
-//     });
-//   });
-//   return {
-//     quizData,
-//     categories
-//   };
-// } 
-
-// Encode multiple values in binary format
-// export function encodeUserData(campaignSlot: number): string {
-//   const buffer = Buffer.alloc(64);
-//   buffer.writeUInt8(campaignSlot, 0);        // 1 byte for action
-//   // console.log("'0x' + buffer.toString('hex')", "0x" + buffer.toString('hex'));
-//   return "0x" + buffer.toString('hex');
-  
-// }
-
-// /**
-//  * @dev Search for a campaign with the corresponding weekId and campaign hash
-//  * @param weekData : Week data list i.e Data from the backend or blockchain data
-//  * @param requestedWkId : Week Id.
-//  * @param requestedHash : Requested campaign hash
-//  * @returns Found campaign
-//  */
-// export function filterWeekData(weekData: WeekData[], requestedWkId: number, requestedHash: Hex) {
-//   const wcp = weekData[requestedWkId] || mockWeekData; 
-//   const filteredCampaign = wcp?.campaigns?.filter(({data: { data: { hash_ } }}) => hash_.toLowerCase() === requestedHash.toLowerCase());
-//   const found = filteredCampaign?.[0] || mockCampaign;
-//   return {
-//     campaign: found,
-//     claimDeadline: toBN(wcp?.claimDeadline?.toString()).toNumber(),
-//     totalPoints: toBN(found?.data.totalPoints?.toString()).toNumber()
-//   }
-// }
-
-// export function formatData(stateData: StateData, weekData: WeekData[], requestedWkId: number, requestedHash: Hex): FormattedData {
-//   const isVerified = stateData.verificationStatus;
-//   const weekProfileData = stateData.weekProfileData;
-//   const filteredWPD = weekProfileData.filter(({weekId}) => toBN(weekId).toNumber() === requestedWkId);
-//   const wpd = filteredWPD?.[0] || mockWeekProfileData;
-//   const userCampaigns = wpd.campaigns.filter(({hash_, }) => hash_.toLowerCase() == requestedHash.toLowerCase());
-//   const userCampaign = userCampaigns?.[0] || mockReadProfile;
-//   const isClaimed = userCampaign.isClaimed;
-//   const eligibility = userCampaign.eligibility;
-//   const profileOther = userCampaign.profile.other;
-//   const profileQuizzes = userCampaign.profile.quizResults;
-//   const showVerificationButton = !isVerified && !isClaimed && eligibility.isEligible;
-//   const showWithdrawalButton = isVerified && eligibility.isEligible && !isClaimed;
-//   const totalUserPointsForACampaign = profileQuizzes.reduce((total, quizResult) => total + quizResult.other.score, 0);
-//   // console.log("weekData", weekData)
-//   const statData = filterWeekData(weekData, requestedWkId, requestedHash);
-//   // console.log("statData", statData)
-//   // console.log("IsVerified:", isVerified);
-//   // console.log("eligibility:", eligibility);
-//   // console.log("isClaimed:", isClaimed);
-//   return {
-//     statData,
-//     isClaimed,
-//     profile: profileOther,
-//     eligibility,
-//     profileQuizzes,
-//     requestedWeekId: BigInt(requestedWkId),
-//     showWithdrawalButton,
-//     showVerificationButton,
-//     totalPointsForACampaign: totalUserPointsForACampaign
-//   };
-// };
+export const formattedMockCampaignsTemplate = mockCampaigns.map((campaign) => formatCampaignsTemplateReadData(campaign, zeroAddress));
 
 export const formatTime = (seconds: number) => {
   const secondsInNumber = toBN(seconds).toNumber();
@@ -467,3 +368,4 @@ export const calculateStreak = (results: ProofOfAssimilation[]): number => {
   }
   return streak;
 };
+

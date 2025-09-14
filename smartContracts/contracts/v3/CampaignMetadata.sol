@@ -29,18 +29,18 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
     ) payable {
         approvalFactory = _approvalFactory;
         operator = _operator;
-        _metadataSetting(meta);
+        _setMetadata(meta);
     }
 
     ///@dev Set proofMeta information
-    function _metadataSetting(MetadataInput memory _meta) internal {
-        if(bytes(_meta.description).length > 0) metadata.description = abi.encode(bytes(_meta.description));
+    function _setMetadata(MetadataInput memory _meta) internal {
+        if(bytes(_meta.description).length > 0) metadata.description = bytes(_meta.description);
         if(bytes(_meta.name).length > 0) {
-            metadata.name = abi.encode(bytes(_meta.name));
+            metadata.name = bytes(_meta.name);
             metadata.hash_ = keccak256(abi.encodePacked(bytes(_meta.name), address(this)));
         }
-        if(bytes(_meta.imageUrl).length > 0) metadata.imageUrl = abi.encode(bytes(_meta.imageUrl));
-        if(bytes(_meta.link).length > 0) metadata.link = abi.encode(bytes(_meta.link));
+        if(bytes(_meta.imageUrl).length > 0) metadata.imageUrl = bytes(_meta.imageUrl);
+        if(bytes(_meta.link).length > 0) metadata.link = bytes(_meta.link);
         unchecked {
             if(_meta.endDateInHr > 0) metadata.endDate = uint64(_now() + (_meta.endDateInHr * 1 hours));
         }
@@ -50,7 +50,7 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
         @param _meta: New metadata
      */
     function editMetaData(MetadataInput memory _meta) public onlyOwnerOrApproved returns(bool) {
-        _metadataSetting(_meta);
+        _setMetadata(_meta);
         return true;
     }
 

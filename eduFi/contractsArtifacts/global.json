@@ -56,7 +56,7 @@
     {
       "stablecoin": "",
       "ApprovalFactory": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
-      "CampaignFactory": "0x16884C8C6a494527f4541007A46239218e76F661",
+      "CampaignFactory": "0x02A61feaCdB52bF45E86E39333aA3BEa818354e5",
       "FeeManager": "0x2864bfA7896DA58B0c1E4da982d2747A3de5D2D6",
       "VerifierV2": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3"
     },

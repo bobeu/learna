@@ -1,4 +1,5 @@
 import { Hex, hexToString, stringToHex, zeroAddress } from "viem";
+import { string } from "zod";
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
@@ -437,16 +438,19 @@ export interface CreateCampaignInput {
   endDateInHr: number;
 }
 
-export interface CampaignTemplateReadData {
+export interface FormattedCampaignTemplate {
+  contractAddress: Address;
   epochData: EpochData[];
   metadata: Metadata;
-  verifier: Address;
+  verifier: Address,
   approvalFactory: Address;
   epoches: bigint;
   owner: Address;
   isPoassClaimed: boolean[]; // Array that shows whether a builder has claimed ERC20 reward for proof of assimilation for a specified epoch
   isPointClaimed: boolean[]; // Array that shows whether a builder has claimed ERC20 reward for proof of integration for a specified epoch
 }
+
+export type CampaignTemplateReadData = Omit<FormattedCampaignTemplate, 'contractAddress'>;
 
 export const mockFilterTransactionData : FilterTransactionReturnType = {
   transactionData: [{
@@ -481,10 +485,23 @@ export const formattedMockLearners : Learner[] = mockLearners.map((m) => {
     poass: m.poass,
     ratings: m.ratings.map((r) => { return {value: r.value, ratedAt: hexToString(r.ratedAt as Hex)}}),
     point: { ...m.point, link: hexToString(m.point.link as Hex)}
-  }
+  } 
 })
 
-export const mockCampaignTemplateReadData : CampaignTemplateReadData = {
+export interface CampaignStateProps {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  status: string;
+  endDate: Date;
+  fundingAmount: string;
+  participants: number;
+  __raw: FormattedCampaignTemplate;
+}
+
+export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
+  contractAddress: zeroAddress,
   epochData: [{
     totalProofs: 0,
     setting: {
@@ -528,3 +545,14 @@ export const mockCampaignTemplateReadData : CampaignTemplateReadData = {
 }
 
 export const mockCampaigns : CampaignTemplateReadData[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => mockCampaignTemplateReadData);
+export const mockCampaignState = {
+  id: 0,
+  name: 'Some name',
+  description: 'Some description',
+  image: 'Campaign image',
+  status: 'Status',
+  endDate: new Date(),
+  fundingAmount: '0',
+  participants: 0,
+  __raw: mockCampaignTemplateReadData
+}

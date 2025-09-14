@@ -1,10 +1,11 @@
 /* eslint-disable */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
     CampaignTemplateReadData,
+    FormattedCampaignTemplate,
     mockCampaignTemplateReadData,
     type Address, 
-    type QuizResultInput, 
+    // type QuizResultInput, 
     type ReadData, 
 } from '../../types';
 
@@ -29,7 +30,7 @@ export default function LearnaApp() {
     const [hasApproval, setHasApproval] = React.useState<boolean>(false);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
     const [verificationStatus, setVerificationStatus] = React.useState<boolean>(false);
-    const [campaignsData, setCampaignsData] = React.useState<CampaignTemplateReadData[]>([mockCampaignTemplateReadData]);
+    const [campaignsData, setCampaignsData] = React.useState<FormattedCampaignTemplate[]>([mockCampaignTemplateReadData]);
 
     const chainId = useChainId();
     const config = useConfig();
@@ -78,7 +79,7 @@ export default function LearnaApp() {
     // console.log("readTxObject", readTxObject);
 
     // Read data from the CampaignFactory contact 
-    const { data: factoryReadData, refetch } = useReadContracts({
+    const { data: factoryReadData, } = useReadContracts({
         config,
         account,
         contracts: readTxObject,
@@ -121,13 +122,13 @@ export default function LearnaApp() {
     // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFatcory
     const { campaignDataTrxns, rest } = React.useMemo(() => {
         const { campaigns, ...rest } = factoryData;
-        console.log("campaignDataTrxns", campaigns);
+        // console.log("campaignDataTrxns", campaigns);
         const campaignDataTrxns = campaigns.map(({identifier}) => {
             return {
                 abi: campaignTemplateArtifacts.abi as any,
                 functionName: 'getData',
                 address: identifier as Address,
-                args: []
+                args: [account, zeroAddress], // Pass zero address in place of token address for now  
             }
         });
 
@@ -149,6 +150,8 @@ export default function LearnaApp() {
 
     // Update the state with the result  of the read action
     React.useEffect(() => {
+        // console.log("campaignDataTrxns", campaignDataTrxns);
+        // console.log("campaignsReadData", campaignsReadData);
         let campaignsData_ = formattedMockCampaignsTemplate;
         if(campaignsReadData && campaignsReadData.length > 0) {
             campaignsData_ = campaignsReadData.map(({result, status}, i) => {
@@ -156,9 +159,10 @@ export default function LearnaApp() {
                 if(status === 'success') {
                     campaignData_ = result as CampaignTemplateReadData;
                 }
-                return formatCampaignsTemplateReadData(campaignData_);
+                return formatCampaignsTemplateReadData(campaignData_, campaignDataTrxns[i].address);
             });
         }
+        // console.log("campaignsData_", campaignsData_);
         setCampaignsData(campaignsData_);
     }, [campaignsReadData]);
 

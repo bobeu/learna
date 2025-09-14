@@ -44,12 +44,6 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         _;
     }
 
-    // // Only approved account is allowed
-    // modifier onlyApproved {
-    //     require(approvalFactory.hasApproval(_msgSender()), "No approval");
-    //     _;
-    // }
-
     ///@notice Constructor
     constructor(
         address _dev, 
@@ -58,9 +52,6 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         IVerifier _verifier,
         MetadataInput memory meta
     ) payable CampaignMetadata(_operator, _approvalFactory, meta) {
-        // assert(address(_verifier) != address(0));
-        // assert(_dev != address(0));
-        // assert(address(_approvalFactory) != address(0));
         verifier = _verifier;
         dev = _dev;
     }
@@ -299,8 +290,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                         epochData[epoch].setting.funds.erc20Ass.push(
                             ERC20Token (
                                 token,
-                                abi.encode(IERC20Metadata(token).name()),
-                                abi.encode(IERC20Metadata(token).symbol()),
+                                bytes(IERC20Metadata(token).name()),
+                                bytes(IERC20Metadata(token).symbol()),
                                 allowance
                             )
                         );
@@ -308,8 +299,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                         epochData[epoch].setting.funds.erc20Int.push(
                             ERC20Token (
                                 token,
-                                abi.encode(IERC20Metadata(token).name()),
-                                abi.encode(IERC20Metadata(token).symbol()),
+                                bytes(IERC20Metadata(token).name()),
+                                bytes(IERC20Metadata(token).symbol()),
                                 allowance
                             )
                         );

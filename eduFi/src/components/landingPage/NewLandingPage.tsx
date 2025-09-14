@@ -1,65 +1,44 @@
 "use client";
 
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './Navbar';
 import ImprovedAITutor from '../ai/ImprovedAITutor';
 import Features from './Features';
 import Hero from './Hero';
 import CampaignTabs from '../campaigns/CampaignTabs';
 import Footer from './Footer';
-// import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// import { DataContext } from '@/components/StorageContextProvider';
-import { formatEther, hexToString } from 'viem';
+import { formatEther } from 'viem';
 import useStorage from '../hooks/useStorage';
-import { CampaignTemplateReadData, mockCampaignTemplateReadData } from '../../../types';
+import { CampaignStateProps, mockCampaignState } from '../../../types';
+import { toBN } from '../utilities';
 
 // Main Landing Page Component
 export default function NewLandingPage() {
   const router = useRouter();
-  const [campaigns, setCampaigns] = useState<{
-    id: number;
-    name: string;
-    description: string;
-    image: string;
-    status: string;
-    endDate: Date;
-    fundingAmount: string;
-    participants: number;
-    __raw: CampaignTemplateReadData;
-}[]>([{
-  id: 0,
-  name: '',
-  description: '',
-  image: '',
-  status: '',
-  endDate: new Date(),
-  fundingAmount: '',
-  participants: 0,
-  __raw: mockCampaignTemplateReadData
-}]);
+  const [campaigns, setCampaigns] = useState<CampaignStateProps[]>([mockCampaignState]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignStateProps>(mockCampaignState);
 //   const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
 //   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
 
   // Pull live campaign data from context and map to UI-friendly objects
   const { campaignsData } = useStorage();
 
-  const normalizeString = (val: string) => {
-    if(!val) return '';
-    return val.startsWith('0x') ? hexToString(val as any) : val;
-  };
+  // const normalizeString = (val: string) => {
+  //   if(!val) return '';
+  //   return val.startsWith('0x') ? hexToString(val as any) : val;
+  // };
 
-  const normalizeImageSrc = (val: string) => {
-    const s = normalizeString(val);
-    if(!s) return '/learna-image4.png';
-    if(s.startsWith('ipfs://')) {
-      return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
-    }
-    if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
-    return '/learna-image4.png';
-  };
+  // const normalizeImageSrc = (val: string) => {
+  //   const s = normalizeString(val);
+  //   if(!s) return '/learna-image4.png';
+  //   if(s.startsWith('ipfs://')) {
+  //     return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
+  //   }
+  //   if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
+  //   return '/learna-image4.png';
+  // };
 
   const mappedCampaigns = useMemo(() => {
     // Map on-chain data into the UI shape used by Hero/CampaignTabs/Cards
@@ -68,14 +47,14 @@ export default function NewLandingPage() {
       const latestEpoch = c.epochData?.[c.epochData.length - 1];
       const learnersCount = latestEpoch?.learners?.length || 0;
       const nativeTotal = latestEpoch ? (latestEpoch.setting.funds.nativeAss + latestEpoch.setting.funds.nativeInt) : 0n;
-      const endDateMs = (md.endDate || 0) * 1000; 
+      const endDateMs = toBN(md.endDate || 0).toNumber() * 1000; 
       const isActive = Date.now() < endDateMs || endDateMs === 0;
       const status = isActive ? 'active' : 'completed';
       return {
         id: idx + 1,
-        name: normalizeString(md.name),
-        description: normalizeString(md.description),
-        image: normalizeImageSrc(md.imageUrl),
+        name: md.name,
+        description: md.description,
+        image: md.imageUrl,
         status,
         endDate: md.endDate ? new Date(endDateMs) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         fundingAmount: nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : '0',
@@ -94,7 +73,7 @@ export default function NewLandingPage() {
     router.prefetch?.('/campaigns/new');
   }, [mappedCampaigns, router]);
 
-  const handleJoinCampaign = (campaign: any) => {
+  const handleJoinCampaign = (campaign: CampaignStateProps) => {
     setSelectedCampaign(campaign);
   };
 
@@ -102,9 +81,9 @@ export default function NewLandingPage() {
     <div className={`min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white`}>
         <Navbar />
         <Hero 
-            handleJoinCampaign={handleJoinCampaign}
-            campaigns={campaigns}
-            isLoading={isLoading}
+          handleJoinCampaign={handleJoinCampaign}
+          campaigns={campaigns}
+          isLoading={isLoading}
         />
         <CampaignTabs 
             campaigns={campaigns}
@@ -116,8 +95,8 @@ export default function NewLandingPage() {
         {/* AI Tutor Modal */}
         {selectedCampaign && (
             <ImprovedAITutor
-            campaign={selectedCampaign.__raw}
-            onClose={() => setSelectedCampaign(null)}
+              campaign={selectedCampaign.__raw}
+              onClose={() => setSelectedCampaign(mockCampaignState)}
             />
         )}
         <Footer />

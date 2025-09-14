@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAccount, useWriteContract } from 'wagmi';
-import { ProofOfAssimilation, Performance, CampaignTemplateReadData } from '../../../types';
+import { ProofOfAssimilation, Performance, Address, FormattedCampaignTemplate } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
+import { Hex, hexToString, zeroAddress } from 'viem';
+import { abi } from "../../../contractsArtifacts/template.json";
 
 interface ImprovedAITutorProps {
-  campaign: CampaignTemplateReadData;
+  campaign: FormattedCampaignTemplate;
   onClose: () => void;
 }
 
@@ -38,12 +40,14 @@ interface QuizQuestion {
   explanation: string;
 }
 
+type Steps = 'topics' | 'article' | 'quiz' | 'results';
+
 export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorProps) {
   const { address, chainId } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
   
   // State management
-  const [currentStep, setCurrentStep] = useState<'topics' | 'article' | 'quiz' | 'results'>('topics');
+  const [currentStep, setCurrentStep] = useState<Steps>('topics');
   const [selectedTopic, setSelectedTopic] = useState<GeneratedTopic | null>(null);
   const [generatedTopics, setGeneratedTopics] = useState<GeneratedTopic[]>([]);
   const [article, setArticle] = useState<GeneratedArticle | null>(null);
@@ -194,7 +198,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
   // Calculate quiz score and performance
   const calculateResults = () => {
     setEndTime(Date.now());
-    const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
+    // const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
     
     let correctAnswers = 0;
     userAnswers.forEach((answer, index) => {
@@ -241,15 +245,23 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
   // Create transaction steps for on-chain storage
   const createTransactionSteps = (): TransactionStep[] => {
     const data = prepareOnChainData();
-    if (!data) return [];
+    if (!data) return [{
+      id: 'null', 
+      title: 'null',
+      description: 'Data unavailable', 
+      functionName: 'allowance', 
+      contractAddress: zeroAddress,
+      abi: [],
+      args: []
+    }];
     
     return [{
       id: 'prove-assimilation',
       title: 'Store Proof of Learning',
       description: 'Storing your quiz results and performance rating on-chain',
       functionName: 'proveAssimilation' as any,
-      contractAddress: campaign.owner, // Campaign address
-      abi: [], // Will be filled with actual ABI
+      contractAddress: campaign.contractAddress,
+      abi,
       args: [data.proofOfAssimilation, data.performance],
     }];
   };
@@ -299,10 +311,10 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <Brain className="w-6 h-6 text-primary-500" />
-              AI Tutor - {campaign.metadata.name}
+              Learna Tutor - {hexToString(campaign.metadata.name as Hex)}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-300">
-              Learn with our intelligent AI tutor and prove your knowledge
+              Learn with our intelligent AI-powered tutor and prove your knowledge
             </DialogDescription>
           </DialogHeader>
 
@@ -572,7 +584,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
         onClose={() => setShowTransactionModal(false)}
         title="Store Proof of Learning"
         description="Storing your quiz results and performance rating on the blockchain"
-        steps={createTransactionSteps()}
+        getSteps={createTransactionSteps}
         onSuccess={handleTransactionSuccess}
         onError={handleTransactionError}
       />
