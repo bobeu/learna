@@ -1,8 +1,9 @@
 import { Badge } from 'lucide-react';
-import Image from 'next/image';
+// import Image from 'next/image';
+import { CampaignStateProps } from '../../../../types';
 
 // Compact card specifically for the hero slider
-export default function SliderCampaignMiniCard({ campaign, onJoin }: { campaign: any; onJoin: (campaign: any) => void }) {
+export default function SliderCampaignMiniCard({ campaign, onJoin }: { campaign: CampaignStateProps; onJoin: (campaign: CampaignStateProps) => void }) {
     return(
         <div
             className="relative min-w-[250px] max-w-[180px] h-[150px] rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 hover:border-primary-400 transition-colors cursor-pointer"

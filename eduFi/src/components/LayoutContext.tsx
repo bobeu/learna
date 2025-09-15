@@ -1,3 +1,4 @@
+"use client"
 import { useMiniApp } from "@neynar/react";
 import React from "react";
 

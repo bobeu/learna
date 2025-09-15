@@ -13,9 +13,9 @@ import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { DataContext } from "@/components/StorageContextProvider";
 import { formatEther } from "viem";
-import { CampaignStateProps, formattedMockLearners, mockCampaignState, mockCampaignTemplateReadData } from "../../../types";
+import { formattedMockLearners, CampaignStateProps, mockCampaignState, mockCampaignTemplateReadData } from "../../../types";
 import { useAccount } from "wagmi";
-import { calculateStreak, formatAddr, normalizeImageSrc, normalizeString } from "@/components/utilities";
+import { calculateStreak, formatAddr, normalizeImageSrc, normalizeString, toBN } from "@/components/utilities";
 
 export default function LearnPage(){
     const { theme, setTheme } = useTheme();
@@ -27,7 +27,7 @@ export default function LearnPage(){
     const [search, setSearch] = React.useState("");
     const [startDate, setStartDate] = React.useState<string>("");
     const [endDate, setEndDate] = React.useState<string>("");
-    const [selectedCampaign, setSelectedCampaign] = React.useState<CampaignStateProps>(mockCampaignState);
+    const [selectedCampaign, setSelectedCampaign] = React.useState<CampaignStateProps | null>(null);
 
     const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
     const isLoading = data?.isLoading || false;
@@ -36,30 +36,34 @@ export default function LearnPage(){
         setSelectedCampaign(campaign);
     }, []);
 
-    const closeTutor = React.useCallback(() => setSelectedCampaign(mockCampaignState), []);
+    const closeTutor = React.useCallback(() => setSelectedCampaign(null), []);
+    // console.log("data", data?.campaignsData);
 
-    const mappedCampaigns = useMemo(() => {
+    const mappedCampaigns : CampaignStateProps[] = useMemo(() => {
         return campaignsData.map((c, idx) => {
             const latest = c.epochData?.[c.epochData.length - 1];
             const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
             const learners = latest?.learners || formattedMockLearners;
+            const endDateMs = toBN(c.metadata.endDate || 0).toNumber() * 1000;
             
+            // endDate: c.metadata.endDate ? new Date(endDateMs).toISOString().split('T')[0] : null,
+            // fundingAmount: Number(formatEther(nativeTotal)),
             return {
                 id: idx,
                 name: normalizeString(c.metadata.name),
                 description: normalizeString(c.metadata.description),
-                imageUrl: normalizeImageSrc(c.metadata.imageUrl),
+                image: normalizeImageSrc(c.metadata.imageUrl),
                 link: normalizeString(c.metadata.link),
-                fundingAmount: Number(formatEther(nativeTotal)),
-                endDate: c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toISOString().split('T')[0] : null,
-                status: c.metadata.endDate && c.metadata.endDate * 1000 < Date.now() ? "completed" : "active",
-                learners: learners.length,
+                fundingAmount: formatEther(nativeTotal),
+                endDate: new Date(endDateMs),
+                status: c.metadata.endDate && endDateMs < Date.now() ? "completed" : "active",
+                participants: learners.length,
                 __raw: c
             };
         });
     }, [campaignsData]);
 
-    const filteredCampaigns = React.useMemo(() => {
+    const filteredCampaigns : CampaignStateProps[] = React.useMemo(() => {
         const q = search.trim().toLowerCase();
         return mappedCampaigns.filter((c) => {
             const matchesQuery = q.length === 0 || c.name.toLowerCase().includes(q) || String(c.fundingAmount).toLowerCase().includes(q);
@@ -95,10 +99,10 @@ export default function LearnPage(){
                 b.epochData?.forEach((e) => {
                     e.learners?.forEach((l) => {
                         quizzesTaken += l.poass.length;
-                        totalScore += l.poass.reduce((sum, p) => sum + p.score, 0);
-                        totalPoints += l.poass.reduce((sum, p) => sum + p.totalPoints, 0);
+                        totalScore += l.poass.reduce((sum, p) => sum + toBN(p.score).toNumber(), 0);
+                        totalPoints += l.poass.reduce((sum, p) => sum + toBN(p.totalPoints).toNumber(), 0);
                         streak = calculateStreak(l.poass);
-                        badges = badges + l.ratings.reduce((sum, r) => sum + r.value, 0) % 5;
+                        badges = badges + l.ratings.reduce((sum, r) => sum + toBN(r.value).toNumber(), 0) % 5;
                         if(l.poass.length > 0){
                             const best = Math.max(...l.poass.map(p => p.percentage));
                             if(best > bestScore) bestScore = best;
@@ -125,7 +129,7 @@ export default function LearnPage(){
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <Link href="/">
-                        <Button variant="outline" className={`gap-2 ${isDark ? "text-white border-neutral-700" : ""}`}>
+                        <Button variant="outline" className={`gap-2 dark:text-white border-neutral-700 hover:border-primary-400`}>
                             <ArrowLeft className="w-4 h-4" />
                             Back to Home
                         </Button>
@@ -164,7 +168,7 @@ export default function LearnPage(){
                             <div className="grid grid-cols-2 gap-3">
                                 {
                                     statsContent.map(({icon, label, value}) => (
-                                        <StatItem icon={icon} label={label} value={value} />
+                                        <StatItem icon={icon} label={label} value={value} key={label} />
                                     ))
                                 }
                             </div>
@@ -200,7 +204,7 @@ export default function LearnPage(){
             </div>
 
             {selectedCampaign && (
-                <ImprovedAITutor campaign={selectedCampaign.__raw} onClose={closeTutor} />
+                <ImprovedAITutor campaign={selectedCampaign} onClose={closeTutor} />
             )}
         </main>
     );
@@ -230,7 +234,7 @@ const getStatsContent= (stats: Stats) => {
         {
             icon: <Target className="w-4 h-4" />,
             label: 'Joined',
-            value: String(stats.pastCampaigns)
+            value: String(stats.joinedCampaigns)
         },
         {
             icon: <BookOpenCheck className="w-4 h-4" />,

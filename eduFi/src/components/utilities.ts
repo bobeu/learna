@@ -300,13 +300,17 @@ export function normalizeImageSrc(val: string) {
  */
 export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, contractAddress: Address) : FormattedCampaignTemplate {
   const { epochData, metadata: mt, ...rest } = arg;
+  console.log("formatCampaignsTemplateReadData", arg);
   return {
     contractAddress,
     epochData: epochData.map(({learners, setting, totalProofs}) => {
       return {
         totalProofs,
         setting: {
-          ...setting,
+          activatedAt: setting.activatedAt,
+          createdAt: setting.createdAt,
+          endDate: setting.endDate,
+          maxProof: setting.maxProof,
           funds: {
             nativeAss: setting.funds.nativeAss,
             nativeInt: setting.funds.nativeInt,
@@ -342,7 +346,7 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, c
       imageUrl: normalizeImageSrc(mt.imageUrl as Hex),
       endDate: mt.endDate
     },
-    ...rest
+    ...rest,
   }
 }
 

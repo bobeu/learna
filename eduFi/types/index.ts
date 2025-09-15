@@ -371,19 +371,20 @@ export interface ProofOfAssimilation {
   totalPoints: number;
   percentage: number;
   timeSpent: number;
-  completedAt: number;
+  completedAt: Hex | string; // Time the quiz was completed
 }
 
- export interface ProofOfIntegration {
-  link: string; // Can be any link to learner's portfolio e.g Githuh, figma etc
+export interface ProofOfIntegration {
+  link: string | Hex; // Can be any link to learner's portfolio e.g Githuh, figma etc
   submittedAt: number; 
   approvedAt: number; // Time the proof was approved
   score: number;
 }
 
+
 export interface Performance {
   value: number; 
-  ratedAt: string;
+  ratedAt: Hex | string;
 }
 
 export interface Learner {
@@ -475,7 +476,7 @@ export const mockLearners : Learner[] = ["https://github..com/bobeu", "https://g
     id: zeroAddress,
     ratings: [{value: 0, ratedAt: stringToHex(new Date().toString())}],
     point: {link: stringToHex(link),  submittedAt: 0, approvedAt: 0, score: 0},
-    poass: [{questionSize: 0, score: 0, totalPoints: 0, percentage: 0, timeSpent: 0, completedAt: 0}]
+    poass: [{questionSize: 0, score: 0, totalPoints: 0, percentage: 0, timeSpent: 0, completedAt: stringToHex(new Date().toString())}]
   }
 });
 
@@ -490,6 +491,7 @@ export const formattedMockLearners : Learner[] = mockLearners.map((m) => {
 
 export interface CampaignStateProps {
   id: number;
+  link?: string;
   name: string;
   description: string;
   image: string;
@@ -539,7 +541,7 @@ export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
   verifier: zeroAddress,
   approvalFactory: zeroAddress,
   epoches: 0n,
-  owner: zeroAddress,
+  owner: zeroAddress + '1' as Address,
   isPoassClaimed: [false],
   isPointClaimed: [false]
 }

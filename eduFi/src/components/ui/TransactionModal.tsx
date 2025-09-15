@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, XCircle, ExternalLink } from "lucide-react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useConfig, useWriteContract } from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
 import { Address, FunctionName } from "../../../types";
+
+const CONFIMATION_BLOCK = 2;
 
 export interface TransactionStep {
   id: string;
@@ -46,6 +49,7 @@ export default function TransactionModal({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const { writeContractAsync } = useWriteContract();
+  const config = useConfig()
 
   const steps = getSteps();
   const currentStep = steps[currentStepIndex];
@@ -53,18 +57,23 @@ export default function TransactionModal({
   const isFailed = failedSteps.has(currentStep.id);
   const isLastStep = currentStepIndex === steps.length - 1;
 
+  const waitForConfirmation = async(hash: `0x${string}`) => {
+    const receipt = await waitForTransactionReceipt(config, {hash, confirmations: CONFIMATION_BLOCK});
+    return receipt.transactionHash;
+  } 
+
   const executeStep = async (step: TransactionStep) => {
     try {
       setIsProcessing(true);
-      
-      const hash = await writeContractAsync({
+      console.log("Executing step:", step);
+      let hash = await writeContractAsync({
         address: step.contractAddress,
         abi: step.abi,
         functionName: step.functionName,
         args: step.args,
         value: step.value,
       });
-
+      hash = await waitForConfirmation(hash);
       setTxHashes(prev => ({ ...prev, [step.id]: hash }));
       setCompletedSteps(prev => new Set([...prev, step.id]));
       

@@ -1,3 +1,5 @@
+'use client';
+
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
 import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
@@ -7,6 +9,7 @@ import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/r
 import { celo, celoSepolia } from 'wagmi/chains';
 import { createPublicClient, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import DataProvider from "./DataProvider";
 
 // Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
@@ -116,7 +119,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           }}
         >
           <CoinbaseWalletAutoConnect>
-            { children }
+            <DataProvider>
+              { children }
+            </DataProvider>
           </CoinbaseWalletAutoConnect>
         </RainbowKitProvider>
       </QueryClientProvider>

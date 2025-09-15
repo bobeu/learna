@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Brain, BookOpen, Play, CheckCircle, Clock, Trophy, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useAccount, useWriteContract } from 'wagmi';
-import { ProofOfAssimilation, Performance, Address, FormattedCampaignTemplate } from '../../../types';
+import { useWriteContract } from 'wagmi';
+import { ProofOfAssimilation, Performance, CampaignStateProps } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
-import { Hex, hexToString, zeroAddress } from 'viem';
-import { abi } from "../../../contractsArtifacts/template.json";
+import { Hex, stringToHex, zeroAddress } from 'viem';
+import campaignTemplate from "../../../contractsArtifacts/template.json";
+import { normalizeString } from '../utilities';
 
 interface ImprovedAITutorProps {
-  campaign: FormattedCampaignTemplate;
+  campaign: CampaignStateProps;
   onClose: () => void;
 }
 
@@ -43,7 +44,7 @@ interface QuizQuestion {
 type Steps = 'topics' | 'article' | 'quiz' | 'results';
 
 export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorProps) {
-  const { address, chainId } = useAccount();
+  // const { address, chainId } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
   
   // State management
@@ -69,8 +70,8 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          campaignName: campaign.metadata.name,
-          campaignDescription: campaign.metadata.description 
+          campaignName: campaign.name,
+          campaignDescription: campaign.description 
         }),
       });
       
@@ -82,19 +83,19 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
         setGeneratedTopics([
           {
             id: '1',
-            title: `${campaign.metadata.name} Fundamentals`,
+            title: `${campaign.name} Fundamentals`,
             description: 'Learn the basic concepts and principles',
             difficulty: 'easy'
           },
           {
             id: '2',
-            title: `Advanced ${campaign.metadata.name} Concepts`,
+            title: `Advanced ${campaign.name} Concepts`,
             description: 'Dive deeper into complex implementations',
             difficulty: 'medium'
           },
           {
             id: '3',
-            title: `${campaign.metadata.name} Best Practices`,
+            title: `${campaign.name} Best Practices`,
             description: 'Industry standards and optimization techniques',
             difficulty: 'hard'
           }
@@ -106,7 +107,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
       setGeneratedTopics([
         {
           id: '1',
-          title: `${campaign.metadata.name} Fundamentals`,
+          title: `${campaign.name} Fundamentals`,
           description: 'Learn the basic concepts and principles',
           difficulty: 'easy'
         }
@@ -126,7 +127,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           topic: topic.title,
-          campaignName: campaign.metadata.name,
+          campaignName: campaign.name,
           maxWords: 700
         }),
       });
@@ -220,7 +221,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
     
     setPerformance({
       value: performanceValue,
-      ratedAt: new Date().toISOString()
+      ratedAt: stringToHex(new Date().toISOString())
     });
     
     setCurrentStep('results');
@@ -236,7 +237,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
       totalPoints: quizzes.length * 10, // 10 points per question
       percentage: quizScore,
       timeSpent: Math.floor((endTime - startTime) / 1000),
-      completedAt: Math.floor(Date.now() / 1000)
+      completedAt: stringToHex(Date.now().toString())
     };
     
     return { proofOfAssimilation, performance };
@@ -260,8 +261,8 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
       title: 'Store Proof of Learning',
       description: 'Storing your quiz results and performance rating on-chain',
       functionName: 'proveAssimilation' as any,
-      contractAddress: campaign.contractAddress,
-      abi,
+      contractAddress: campaign.__raw.contractAddress,
+      abi: campaignTemplate.abi as any,
       args: [data.proofOfAssimilation, data.performance],
     }];
   };
@@ -311,7 +312,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <Brain className="w-6 h-6 text-primary-500" />
-              Learna Tutor - {hexToString(campaign.metadata.name as Hex)}
+              Learna Tutor - {normalizeString(campaign.name as Hex)}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-300">
               Learn with our intelligent AI-powered tutor and prove your knowledge
@@ -401,7 +402,7 @@ export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorPr
                 {isGenerating && (
                   <div className="text-center py-8">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-500" />
-                    <p className="text-gray-600 dark:text-gray-300">Generating article...</p>
+                    <p className="text-gray-600 dark:text-gray-300">Generating content...</p>
                   </div>
                 )}
 

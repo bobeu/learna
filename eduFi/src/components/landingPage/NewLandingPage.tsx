@@ -18,7 +18,7 @@ export default function NewLandingPage() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<CampaignStateProps[]>([mockCampaignState]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignStateProps>(mockCampaignState);
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignStateProps | null>(null);
 //   const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
 //   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
 
@@ -86,18 +86,18 @@ export default function NewLandingPage() {
           isLoading={isLoading}
         />
         <CampaignTabs 
-            campaigns={campaigns}
-            handleJoinCampaign={handleJoinCampaign}
-            isLoading={isLoading}
+          campaigns={campaigns}
+          handleJoinCampaign={handleJoinCampaign}
+          isLoading={isLoading}
         />
         <Features />
 
         {/* AI Tutor Modal */}
         {selectedCampaign && (
-            <ImprovedAITutor
-              campaign={selectedCampaign.__raw}
-              onClose={() => setSelectedCampaign(mockCampaignState)}
-            />
+          <ImprovedAITutor
+            campaign={selectedCampaign}
+            onClose={() => setSelectedCampaign(null)}
+          />
         )}
         <Footer />
 

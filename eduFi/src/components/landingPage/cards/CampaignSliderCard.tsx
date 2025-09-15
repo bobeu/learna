@@ -4,9 +4,10 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CampaignStateProps } from '../../../../types';
 
 // Reusable uniform card for non-hero grids
-export default function CampaignSliderCard({ campaign, onJoin }: { campaign: any; onJoin: (campaign: any) => void }) {
+export default function CampaignSliderCard({ campaign, onJoin }: { campaign: CampaignStateProps; onJoin: (campaign: CampaignStateProps) => void }) {
     const timeLeft = Math.max(0, campaign.endDate.getTime() - Date.now());
     const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
   
@@ -14,12 +15,12 @@ export default function CampaignSliderCard({ campaign, onJoin }: { campaign: any
       <Card className="w-full h-[400px] hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-surface" onClick={() => onJoin(campaign)}>
         <CardHeader className="p-0">
           <div className="relative h-40 w-full">
-            <Image
+            {/* <Image
               src={campaign.image}
               alt={campaign.name}
               fill
               className="object-cover rounded-t-lg"
-            />
+            /> */}
             <div className="absolute top-4 right-4">
               <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
                 {campaign.status === 'active' ? 'Active' : campaign.status === 'completed' ? 'Completed' : 'Featured'}

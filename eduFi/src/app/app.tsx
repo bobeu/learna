@@ -8,7 +8,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 // note: dynamic import is required for components that use the Frame SDK
-const LearnaApp = dynamic(() => import("@/components/LearnaApp"), {
+const NewLandingPage = dynamic(() => import("@/components/landingPage/NewLandingPage"), {
   ssr: false,
   loading: () => (
     <div className="h-screen w-full flex items-center justify-center bg-white text-black dark:bg-black dark:text-white">
@@ -29,7 +29,7 @@ const LearnaApp = dynamic(() => import("@/components/LearnaApp"), {
 export default function App() {
   return (
     <div className={`${mono.variable} ${inter.variable} font-sans`}>
-      <LearnaApp />
+      <NewLandingPage />
     </div>
   );
 }

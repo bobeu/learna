@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CampaignSliderCard from '../landingPage/cards/CampaignSliderCard';
+import { CampaignStateProps } from '../../../types';
 
 {/* Campaigns Section */}
-export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, showHeader = true, compact = false, className = ''} : {campaigns: any, isLoading: boolean, handleJoinCampaign: (campaign: any) => void, showHeader?: boolean, compact?: boolean, className?: string}) {
+export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, showHeader = true, compact = false, className = ''} : {campaigns: CampaignStateProps[], isLoading: boolean, handleJoinCampaign: (campaign: CampaignStateProps) => void, showHeader?: boolean, compact?: boolean, className?: string}) {
     const [activeTab, setActiveTab] = useState('current');
 
     const currentCampaigns = campaigns.filter((c: { status: string; }) => c.status === 'active');
@@ -45,7 +46,7 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                         </Card>
                     ))
                     ) : (
-                    currentCampaigns.map((campaign: any) => (
+                    currentCampaigns.map((campaign) => (
                         <CampaignSliderCard
                             key={campaign.id}
                             campaign={campaign}
@@ -58,7 +59,7 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
 
                     <TabsContent value="featured" className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {featuredCampaigns.map((campaign: any) => (
+                            {featuredCampaigns.map((campaign) => (
                             <CampaignSliderCard
                                 key={campaign.id}
                                 campaign={campaign}
@@ -69,13 +70,15 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                     </TabsContent>
                     <TabsContent value="past" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {pastCampaigns.map((campaign: any) => (
-                        <CampaignSliderCard
-                            key={campaign.id}
-                            campaign={campaign}
-                            onJoin={handleJoinCampaign}
-                        />
-                        ))}
+                        {
+                            pastCampaigns.map((campaign) => (
+                                <CampaignSliderCard
+                                    key={campaign.id}
+                                    campaign={campaign}
+                                    onJoin={handleJoinCampaign}
+                                />
+                            ))
+                        }
                     </div>
                     </TabsContent>
                 </Tabs>
