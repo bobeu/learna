@@ -16,4 +16,6 @@ export interface DataContextProps {
     creationFee: bigint;
     verifier: Address;
     approvalFactory: Address;
+    builderCampaigns: FormattedCampaignTemplate[];
+    creatorCampaigns: FormattedCampaignTemplate[]
 }

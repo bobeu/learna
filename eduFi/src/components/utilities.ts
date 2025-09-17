@@ -2,7 +2,6 @@ import { formatEther, Hex,hexToString,keccak256, stringToBytes, stringToHex, zer
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
-import assert from "assert";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
@@ -300,15 +299,13 @@ export function normalizeImageSrc(val: string) {
  */
 export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, contractAddress: Address) : FormattedCampaignTemplate {
   const { epochData, metadata: mt, ...rest } = arg;
-  console.log("formatCampaignsTemplateReadData", arg);
+  // console.log("formatCampaignsTemplateReadData", arg);
   return {
     contractAddress,
     epochData: epochData.map(({learners, setting, totalProofs}) => {
       return {
         totalProofs,
         setting: {
-          activatedAt: setting.activatedAt,
-          createdAt: setting.createdAt,
           endDate: setting.endDate,
           maxProof: setting.maxProof,
           funds: {
@@ -344,7 +341,8 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, c
       link: normalizeString(mt.link as Hex),
       description: normalizeString(mt.description as Hex),
       imageUrl: normalizeImageSrc(mt.imageUrl as Hex),
-      endDate: mt.endDate
+      endDate: mt.endDate,
+      startDate: mt.startDate,
     },
     ...rest,
   }

@@ -1,57 +1,57 @@
 /* eslint-disable */
 import React from 'react';
 import { Confirmation, type Transaction } from '../peripherals/Confirmation';
-import { useAccount, useConfig, useReadContracts } from 'wagmi';
-import { filterTransactionData, formatAddr, mockReadData } from '../utilities';
-import { Address, CreateCampaignInput, FunctionName, ReadData } from '../../../types';
+import { useAccount } from 'wagmi';
+import { filterTransactionData, formatAddr } from '../utilities';
+import { Address, CreateCampaignInput, FunctionName } from '../../../types';
+import useStorage from '../hooks/useStorage';
 // import { Hex } from 'viem';
-// import useStorage from '../hooks/useStorage';
 
-export default function CreateCampaign({openDrawer, params, toggleDrawer }: RecordPointsProps) {
-    const { chainId, address, isConnected } = useAccount();
+export default function CreateCampaign({openDrawer, params, toggleDrawer }: CreateCampaignProps) {
+    const { chainId, address } = useAccount();
     const account = formatAddr(address);
-    const config = useConfig();
-    // const { creationFee } = useStorage();
+    // const config = useConfig();
+    const { creationFee } = useStorage();
 
-    const { transactionData: td1, contractAddresses: ca } = filterTransactionData({
-        chainId,
-        filter: true,
-        functionNames: ['getData'],
-    });
-    const readArgs = [[]];
-    const contractAddresses = [ca.CampaignFactory as Address];
-    const readTxObject = td1.map((item, i) => {
-        return{
-            abi: item.abi,
-            functionName: item.functionName,
-            address: contractAddresses[i],
-            args: readArgs[i]
-        }
-    });
+    // const { transactionData: td1, contractAddresses: ca } = filterTransactionData({
+    //     chainId,
+    //     filter: false,
+    //     // functionNames: ['getData'],
+    // });
+    // const readArgs = [[]];
+    // const contractAddresses = [ca.CampaignFactory as Address];
+    // const readTxObject = td1.map((item, i) => {
+    //     return{
+    //         abi: item.abi,
+    //         functionName: item.functionName,
+    //         address: contractAddresses[i],
+    //         args: readArgs[i]
+    //     }
+    // });
     
     // Read data from the CampaignFactory contact 
-    const { data } = useReadContracts({
-        config,
-        account,
-        contracts: readTxObject,
-        allowFailure: true,
-        query: {
-            enabled: !!isConnected,
-            refetchOnReconnect: 'always', 
-            refetchInterval: 5000,
-        }
-    });
+    // const { data } = useReadContracts({
+    //     config,
+    //     account,
+    //     contracts: readTxObject,
+    //     allowFailure: true,
+    //     query: {
+    //         enabled: !!isConnected,
+    //         refetchOnReconnect: 'always', 
+    //         refetchInterval: 5000,
+    //     }
+    // });
 
-    const { transactionData: td, args, creationFee } = React.useMemo(() => {
-        const result = data?.[0].result as ReadData || mockReadData;
+    const { transactionData: td, args } = React.useMemo(() => {
+        // const result = data?.[0].result as ReadData || mockReadData;
         const filtered = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['createCampaign']
         });
         const args = [[params]];
-        return { ...filtered, args, creationFee: result.creationFee };
-    }, [chainId, params, data]);
+        return { ...filtered, args };
+    }, [chainId, params ]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject, i) => {
@@ -79,7 +79,7 @@ export default function CreateCampaign({openDrawer, params, toggleDrawer }: Reco
     )
 }
 
-type RecordPointsProps = {
+type CreateCampaignProps = {
     params: CreateCampaignInput;
     toggleDrawer: (arg:number) => void;
     openDrawer: number;

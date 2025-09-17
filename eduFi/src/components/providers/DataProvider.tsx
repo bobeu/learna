@@ -149,7 +149,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     React.useEffect(() => {
         // console.log("campaignDataTrxns", campaignDataTrxns);
         // console.log("campaignsReadData", campaignsReadData);
-        console.log("campaignsReadData", campaignsReadData);
+        // console.log("campaignsReadData", campaignsReadData);
         let campaignsData_ = formattedMockCampaignsTemplate;
         if(campaignsReadData && campaignsReadData.length > 0) {
             campaignsData_ = campaignsReadData.map(({result, status}, i) => {
@@ -163,6 +163,20 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         setCampaignsData(campaignsData_);
     }, [campaignsReadData]);
 
+    const { builderCampaigns, creatorCampaigns } = React.useMemo(() => {
+        const userAddress = account.toLowerCase();
+        const builderCampaigns = campaignsData.filter((c) => {
+            const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));
+            return anyLearner;
+        });
+
+        const creatorCampaigns = campaignsData.filter(({owner}) => owner.toLowerCase() === userAddress);
+        return {
+            builderCampaigns,
+            creatorCampaigns
+        }
+    }, [campaignsData, account]);
+
     return (
         <StorageContextProvider
             value={{
@@ -172,6 +186,8 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
                 owner,
                 campaignsData,
                 verificationStatus,
+                builderCampaigns,
+                creatorCampaigns
             }}
         >
             { children }

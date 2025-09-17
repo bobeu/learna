@@ -10,16 +10,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, BarChart3, Users, Layers, Calendar, ImageIcon, WandSparkles, Loader2, ArrowLeft, Moon, Sun } from "lucide-react";
-import { useChainId } from "wagmi";
 import Link from "next/link";
-// import { CAMPAIGN_FACTORY_ADDRESS } from "@/components/landingPage/Hero";
 import CreateCampaign from "@/components/transactions/CreateCampaign";
-import { CreateCampaignInput } from "../../../../types";
+import { Address, CreateCampaignInput, FunctionName } from "../../../../types";
+import useStorage from "@/components/hooks/useStorage";
+import { formatEther, zeroAddress } from "viem";
+import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
+import { filterTransactionData } from "@/components/utilities";
+import { useChainId } from "wagmi";
 
 export default function NewCampaignPage(){
     const { theme, setTheme } = useTheme();
     const isDark = theme === 'dark';
-    // const { address: connectedAddress } = useAccount();
     const chainId = useChainId();
 
     const [showMyCampaigns, setShowMyCampaigns] = React.useState(false);
@@ -28,16 +30,18 @@ export default function NewCampaignPage(){
     const [aiGenerating, setAiGenerating] = React.useState(false);
 
     // Form state
-    const [name, setName] = React.useState("");
-    const [docUrl, setDocUrl] = React.useState("");
-    const [description, setDescription] = React.useState("");
-    const [imageUri, setImageUri] = React.useState("");
-    const [startDate, setStartDate] = React.useState("");
-    const [endDate, setEndDate] = React.useState("");
+    const [name, setName] = React.useState<string | null>(null);
+    const [docUrl, setDocUrl] = React.useState<string | null>(null);
+    const [description, setDescription] = React.useState<string | null>(null);
+    const [imageUri, setImageUri] = React.useState<string | null>(null);
+    const [startDate, setStartDate] = React.useState<string | null>(null);
+    const [endDate, setEndDate] = React.useState<string | null>(null);
     const [endInHours, setEndInHours] = React.useState<number | null>(null);
     const [useAiImage, setUseAiImage] = React.useState(false);
     const [imagePreview, setImagePreview] = React.useState<string>("");
-    const [openDrawer, setOpenDrawer] = React.useState<number>(0);
+    const [showTransactionModal, setShowTransactionModal] = React.useState<boolean>(false);
+
+    const { creatorCampaigns, creationFee } = useStorage();
 
     React.useEffect(() => {
         if (startDate && endDate) {
@@ -49,31 +53,78 @@ export default function NewCampaignPage(){
         }
     }, [startDate, endDate]);
 
-    const myCampaigns = React.useMemo(() => (
-        [
-            { id: 1, name: "Solidity Fundamentals", tvl: 3200, learners: 245, builders: 38, start: "2024-08-01", end: "2024-09-01" },
-            { id: 2, name: "Divvi SDK Integration", tvl: 4100, learners: 190, builders: 27, start: "2024-06-15", end: "2024-07-20" },
-        ]
-    ), []);
+    const myCampaigns = React.useMemo(() => {
+        let learners = 0;
+        let builders = 0;
+        const myCampaigns = creatorCampaigns.map(({metadata, epochData}, id) => {
+            let tvl = 0;
+            epochData.forEach(({setting: {funds : { erc20Ass, erc20Int, nativeAss, nativeInt}}, learners: lnrs}) => {
+                learners += lnrs.length;
+                tvl += Number(formatEther(nativeAss));
+                tvl += Number(formatEther(nativeInt));
+                if(erc20Ass.some((e) => e.amount > 0n)) {
+                    const sum = erc20Ass.reduce((start, current) => {
+                        return Number(formatEther(BigInt(start) + current.amount));
+                    }, 0);
+                    tvl += sum;
+                }
+                if(erc20Int.some((e) => e.amount > 0)){
+                    const sum = erc20Int.reduce((start, current) => {
+                        return Number(formatEther(BigInt(start) + current.amount));
+                    }, 0);
+                    tvl += sum;
+                }
+                builders += lnrs.reduce((prev, current) => {
+                    return prev += current.point.score > 0? 1 : 0;
+                }, 0);
+            });
 
-    const { argReady, params } = React.useMemo(() => {
-        const argReady = description !== '' && (endInHours !== null && endInHours > 0) && imageUri !== '' && name !== '';
+            
+            return{
+                id,
+                name: metadata.name,
+                tvl,
+                learners,
+                builders,
+                start: new Date(metadata.startDate).toISOString(),
+                end: new Date(metadata.endDate).toISOString()
+            }
+        })
+        return myCampaigns;
+    }, [creatorCampaigns]);
+
+    const { argReady, transactionInfo } = React.useMemo(() => {
         const params : CreateCampaignInput = {
-            description,
-            endDateInHr: Number(endInHours),
-            imageUrl: imageUri,
-            link: docUrl,
-            name
+            description: '',
+            endDateInHr: 0,
+            imageUrl: '',
+            link: '',
+            name: ''
         };
-        return { argReady, params }
+        const argReady = description && (endInHours && endInHours > 0) && imageUri && name;
+        if(description) params.description = description;
+        if(endDate) params.endDateInHr = Number(endInHours);
+        if(imageUri) params.imageUrl = imageUri;
+        if(name) params.name = name;
+        if(docUrl) params.link = docUrl;
+
+        const { contractAddresses: ca, transactionData: td} = filterTransactionData({chainId, filter: true, functionNames: ['createCampaign']});
+        const transactionInfo = {
+            contractAddress: td[0].contractAddress as Address,
+            functionName: td[0].functionName as FunctionName,
+            abi: td[0].abi,
+            args: [params],
+            value: creationFee
+        };
+
+        return { argReady, transactionInfo }
     }, [endInHours, imageUri, name, docUrl, description]);
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 
-    const toggleDrawer = (arg: number) => {
-        setOpenDrawer(arg);
-    }
-
+    // const toggleDrawer = (arg: number) => {
+    //     setOpenDrawer(arg);
+    // }
 
     const uploadToIpfs = async (file: File) => {
         setIpfsUploading(true);
@@ -106,12 +157,56 @@ export default function NewCampaignPage(){
         }
     };
 
-    const handleCreate = async () => {
-        if(!argReady) return alert("Please provide relevant information");
-        setOpenDrawer(1);
-        // console.log({ name, docUrl, description, imageUri, startDate, endDate, endInHours, tokens, nativeAmount });
-        // alert('Draft created. Hook up factory write when ready.');
+    // Prepare data for on-chain storage
+    const prepareOnChainData = () => {
+        if (!argReady) return null;
+        return transactionInfo;
     };
+
+    // Create transaction steps for on-chain storage
+      const createTransactionSteps = (): TransactionStep[] => {
+        const data = prepareOnChainData();
+        if (!data) return [{
+          id: 'null', 
+          title: 'null',
+          description: 'Data unavailable', 
+          functionName: 'allowance', 
+          contractAddress: zeroAddress,
+          abi: [],
+          args: []
+        }];
+        
+        return [{
+            id: 'create-campaign',
+            title: 'Create a new learning campaign',
+            description: `Setting up data for the new ${name} campaign on the blockchain`,
+            ...data
+        }];
+      };
+    
+    const handleCreateCampaign = () => {
+        const steps = createTransactionSteps();
+        if (steps.length === 0) {
+            alert('No data to create campaign');
+            return;
+        }
+        setShowTransactionModal(true);
+    };
+    
+    const handleTransactionSuccess = (txHash: string) => {
+        console.log('Proof of assimilation stored:', txHash);
+        setShowTransactionModal(false);
+    };
+
+    const handleTransactionError = (error: Error) => {
+        console.error('Failed to store proof:', error);
+    };
+
+    // const handleCreate = async () => {
+    //     if(!argReady) return alert("Please provide relevant information");
+    //     setShowTransactionModal(true);
+    //     // console.log({ name, docUrl, description, imageUri, startDate, endDate, endInHours, tokens, nativeAmount });
+    // };
 
     return (
         <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-black dark:font-mono">
@@ -165,35 +260,36 @@ export default function NewCampaignPage(){
                         <CardContent className="p-6 space-y-6">
                             <div>
                                 <div className="text-xl font-semibold mb-1">Create new campaign</div>
-                                <div className="text-sm text-neutral-500">Provide details and funding. You can add multiple ERC20s and native CELO.</div>
+                                <div className="text-sm text-neutral-500">Provide details.</div>
+                                {/* and funding. You can add multiple ERC20s and native CELO */}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="name">Campaign name</Label>
-                                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Solidity Fundamentals" />
+                                    <Input id="name" value={name || ''} onChange={(e) => setName(e.target.value)} placeholder="e.g. Solidity Fundamentals" />
                                 </div>
                                 <div>
                                     <Label htmlFor="doc">Documentation link</Label>
-                                    <Input id="doc" value={docUrl} onChange={(e) => setDocUrl(e.target.value)} placeholder="https://docs.example.com" />
+                                    <Input id="doc" value={docUrl || ''} onChange={(e) => setDocUrl(e.target.value)} placeholder="https://docs.example.com" />
                                 </div>
                                 <div className="md:col-span-2">
                                     <Label htmlFor="desc">Description</Label>
-                                    <Textarea id="desc" value={description} onChange={(e) => {
+                                    <Textarea id="desc" value={description || ''} onChange={(e) => {
                                         const text = e.target.value;
                                         const words = text.trim().length ? text.trim().split(/\s+/) : [];
                                         if (words.length <= 500) setDescription(text);
                                     }} rows={4} placeholder="Describe the campaign objectives and tasks (max 500 words)" />
-                                    <div className="text-xs text-neutral-500 mt-1">{description.trim().length ? Math.min(500, description.trim().split(/\s+/).length) : 0} / 500 words</div>
+                                    <div className="text-xs text-neutral-500 mt-1">{description? description.trim().length ? Math.min(500, description.trim().split(/\s+/).length) : 0 : 0} / 500 words</div>
                                 </div>
 
                                 <div>
                                     <Label>Start date</Label>
-                                    <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                    <Input type="date" value={startDate || ''} onChange={(e) => setStartDate(e.target.value)} />
                                 </div>
                                 <div>
                                     <Label>End date</Label>
-                                    <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                    <Input type="date" value={endDate || 0} onChange={(e) => setEndDate(e.target.value)} />
                                     {endInHours !== null && <div className="text-xs text-neutral-500 mt-1">Duration: {endInHours} hrs</div>}
                                 </div>
                             </div>
@@ -250,7 +346,7 @@ export default function NewCampaignPage(){
                             </div>
 
                             <div className="pt-2">
-                                <Button className="w-full" onClick={handleCreate}>Create Campaign</Button>
+                                <Button className="w-full" onClick={handleCreateCampaign}>Create Campaign</Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -260,10 +356,19 @@ export default function NewCampaignPage(){
             {selectedCampaign && (
                 <CampaignStatsModal campaign={selectedCampaign} onClose={() => setSelectedCampaign(null)} />
             )}
-            <CreateCampaign 
+            {/* <CreateCampaign 
                 openDrawer={openDrawer}
                 params={params}
                 toggleDrawer={toggleDrawer}
+            /> */}
+             <TransactionModal
+                isOpen={showTransactionModal}
+                onClose={() => setShowTransactionModal(false)}
+                title="Create new campaign"
+                description={`Setting up data for the new ${name} campaign on the blockchain`}
+                getSteps={createTransactionSteps}
+                onSuccess={handleTransactionSuccess}
+                onError={handleTransactionError}
             />
         </main>
     );

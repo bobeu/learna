@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowLeft, Calendar, Search, Trophy, Target, BookOpenCheck, BarChart3, Sparkles, Moon, Sun } from "lucide-react";
@@ -8,29 +8,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import CampaignTabs from "@/components/campaigns/CampaignTabs";
+import CampaignTabs from "@/components/campaigns/CampaignTabs"; 
 import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { DataContext } from "@/components/StorageContextProvider";
+// import { DataContext } from "@/components/StorageContextProvider";
 import { formatEther } from "viem";
-import { formattedMockLearners, CampaignStateProps, mockCampaignState, mockCampaignTemplateReadData } from "../../../types";
-import { useAccount } from "wagmi";
-import { calculateStreak, formatAddr, normalizeImageSrc, normalizeString, toBN } from "@/components/utilities";
+import { formattedMockLearners, CampaignStateProps } from "../../../types";
+// import { useAccount } from "wagmi";
+import { calculateStreak, normalizeImageSrc, normalizeString, toBN } from "@/components/utilities";
+import useStorage from "@/components/hooks/useStorage";
 
 export default function LearnPage(){
     const { theme, setTheme } = useTheme();
     const isDark = theme === "dark";
-    const data = useContext(DataContext);
-    const { address } = useAccount();
-    const userAddress = formatAddr(address).toLowerCase();
+    // const data = useContext(DataContext);
+    // const { address } = useAccount();
+    // const userAddress = formatAddr(address).toLowerCase();
 
     const [search, setSearch] = React.useState("");
     const [startDate, setStartDate] = React.useState<string>("");
     const [endDate, setEndDate] = React.useState<string>("");
     const [selectedCampaign, setSelectedCampaign] = React.useState<CampaignStateProps | null>(null);
 
-    const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
-    const isLoading = data?.isLoading || false;
+    const { isLoading, builderCampaigns, campaignsData } = useStorage();
+    // const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
+    // const isLoading = data?.isLoading || false;
 
     const handleJoinCampaign = React.useCallback((campaign: any) => {
         setSelectedCampaign(campaign);
@@ -89,13 +91,13 @@ export default function LearnPage(){
         let streak = 0;
         let badges = 0;
 
-        const builder = campaignsData.filter((c) => {
-            const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));
-            return anyLearner;
-        });
-        if(builder.length > 0) {
-            joinedCampaigns = builder.length;
-            builder.forEach((b) => {
+        // const builder = campaignsData.filter((c) => {
+        //     const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));
+        //     return anyLearner;
+        // });
+        if(builderCampaigns.length > 0) {
+            joinedCampaigns = builderCampaigns.length;
+            builderCampaigns.forEach((b) => {
                 b.epochData?.forEach((e) => {
                     e.learners?.forEach((l) => {
                         quizzesTaken += l.poass.length;

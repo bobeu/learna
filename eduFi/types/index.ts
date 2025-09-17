@@ -1,5 +1,4 @@
 import { Hex, hexToString, stringToHex, zeroAddress } from "viem";
-import { string } from "zod";
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
@@ -410,8 +409,6 @@ export interface Funds {
 
 export interface EpochSetting {
   maxProof: number; // Max number of assimilation that builders can prove in a day
-  createdAt: number;
-  activatedAt: number;
   endDate: number;
   funds: Funds;
 }
@@ -428,6 +425,7 @@ export interface Metadata {
   link: string; // Any other relevant link e.g link to documentation
   description: string; // Max length is 300
   imageUrl: string;
+  startDate: number;
   endDate: number;
 }
 
@@ -508,8 +506,6 @@ export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
     totalProofs: 0,
     setting: {
       maxProof: 0,
-      createdAt: 0,
-      activatedAt: 0,
       endDate: 0,
       funds: {
         erc20Ass: [{
@@ -536,7 +532,8 @@ export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
     link: stringToHex("https://docs.divvi.xyz"),
     description: stringToHex("Some description"),
     imageUrl: stringToHex("https://divvi.xyz/someimage.png"),
-    endDate: 145590999
+    startDate: 0,
+    endDate: 0,
   },
   verifier: zeroAddress,
   approvalFactory: zeroAddress,
