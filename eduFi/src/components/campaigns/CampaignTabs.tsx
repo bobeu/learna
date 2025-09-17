@@ -5,7 +5,7 @@ import CampaignSliderCard from '../landingPage/cards/CampaignSliderCard';
 import { CampaignStateProps } from '../../../types';
 
 {/* Campaigns Section */}
-export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, showHeader = true, compact = false, className = ''} : {campaigns: CampaignStateProps[], isLoading: boolean, handleJoinCampaign: (campaign: CampaignStateProps) => void, showHeader?: boolean, compact?: boolean, className?: string}) {
+export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, handleViewStats, showHeader = true, compact = false, className = ''} : {campaigns: CampaignStateProps[], isLoading: boolean, handleJoinCampaign: (campaign: CampaignStateProps) => void, handleViewStats?: (campaign: CampaignStateProps) => void, showHeader?: boolean, compact?: boolean, className?: string}) {
     const [activeTab, setActiveTab] = useState('current');
 
     const currentCampaigns = campaigns.filter((c: { status: string; }) => c.status === 'active');
@@ -51,6 +51,7 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                             key={campaign.id}
                             campaign={campaign}
                             onJoin={handleJoinCampaign}
+                            onViewStats={handleViewStats}
                         />
                     ))
                     )}
@@ -64,6 +65,7 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                                 key={campaign.id}
                                 campaign={campaign}
                                 onJoin={handleJoinCampaign}
+                                onViewStats={handleViewStats}
                             />
                             ))}
                         </div>
@@ -76,6 +78,7 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                                     key={campaign.id}
                                     campaign={campaign}
                                     onJoin={handleJoinCampaign}
+                                    onViewStats={handleViewStats}
                                 />
                             ))
                         }

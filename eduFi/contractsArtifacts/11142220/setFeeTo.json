@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x02A61feaCdB52bF45E86E39333aA3BEa818354e5",
+  "contractAddress": "0x3051a9d25bdAd2793a87B4eF82EE9B376Fb68440",
   "functionName": "setFeeTo",
   "inputCount": 1,
   "requireArgUpdate": true,

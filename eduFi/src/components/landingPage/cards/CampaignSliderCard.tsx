@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CampaignStateProps } from '../../../../types';
+import { normalizeImageSrc } from '../../utilities';
 
 // Reusable uniform card for non-hero grids
-export default function CampaignSliderCard({ campaign, onJoin }: { campaign: CampaignStateProps; onJoin: (campaign: CampaignStateProps) => void }) {
+export default function CampaignSliderCard({ campaign, onJoin, onViewStats }: { campaign: CampaignStateProps; onJoin: (campaign: CampaignStateProps) => void; onViewStats?: (campaign: CampaignStateProps) => void }) {
     const timeLeft = Math.max(0, campaign.endDate.getTime() - Date.now());
     const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
   
@@ -15,12 +16,12 @@ export default function CampaignSliderCard({ campaign, onJoin }: { campaign: Cam
       <Card className="w-full h-[400px] hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-surface" onClick={() => onJoin(campaign)}>
         <CardHeader className="p-0">
           <div className="relative h-40 w-full">
-            {/* <Image
-              src={campaign.image}
+            <Image
+              src={normalizeImageSrc(campaign.image)}
               alt={campaign.name}
               fill
               className="object-cover rounded-t-lg"
-            /> */}
+            />
             <div className="absolute top-4 right-4">
               <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
                 {campaign.status === 'active' ? 'Active' : campaign.status === 'completed' ? 'Completed' : 'Featured'}
@@ -50,13 +51,27 @@ export default function CampaignSliderCard({ campaign, onJoin }: { campaign: Cam
             </div>
           </div>
           
-          <Button className={`w-full mt-4 dark:text-primary-800 `} onClick={(e) => {
-            e.stopPropagation();
-            onJoin(campaign);
-          }}>
-            Join Campaign
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <div className="flex gap-2 mt-4">
+            <Button className={`flex-1 dark:text-primary-800 `} onClick={(e) => {
+              e.stopPropagation();
+              onJoin(campaign);
+            }}>
+              Join Campaign
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            {onViewStats && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewStats(campaign);
+                }}
+              >
+                Stats
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );

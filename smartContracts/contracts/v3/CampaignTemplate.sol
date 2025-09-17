@@ -54,6 +54,11 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
     ) payable CampaignMetadata(_operator, _approvalFactory, meta) {
         verifier = _verifier;
         dev = _dev;
+        unchecked {
+            if(meta.endDateInHr > 0) {
+                metadata.endDate = _now() + uint64(meta.endDateInHr * 1 hours);
+            }
+        }
     }
 
     receive() external payable {
@@ -158,17 +163,23 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @param rwType: Reward type
     */
     function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyOwnerOrApproved returns(bool) {
+        uint64 currentTime = _now();
+        if(currentTime >= metadata.endDate) {
+            epoches += 1;
+            metadata.startDate = currentTime;
+        }
         uint epoch = epoches;
         EpochSetting memory eps = epochData[epoch].setting;
         if(arg.maxProof != eps.maxProof && arg.maxProof > 0) eps.maxProof = arg.maxProof;
         unchecked {
             rwType == RewardType.POASS? epochData[epoch].setting.funds.nativeAss += msg.value : epochData[epoch].setting.funds.nativeInt += msg.value;
-            if(arg.endInHr > 0) eps.endDate = (_now() + arg.endInHr * 1 hours);
+            if(arg.endInHr > 0) {
+                uint64 newEndDate = _now() + uint64(arg.endInHr * 1 hours);
+                metadata.endDate = newEndDate;
+                eps.endDate = newEndDate;
+            }
         }
-        if(!arg.isEditing) {
-            eps.createdAt = _now();
-        }
-        eps.activatedAt = _now();
+
         if(arg.tokens.length > 0) {
             for(uint i = 0; i < arg.tokens.length; i++) {
                 _setUpERC20Funds(arg.tokens[i], arg.newOperator, epoch, rwType);
@@ -332,8 +343,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                     }
                 }
             }
+            emit PointsUpdated(targets, points, epoch);
         }
-        emit PointsUpdated(targets, points, epoch);
         return true;
     }
 

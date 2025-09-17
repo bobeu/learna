@@ -56,9 +56,9 @@
     {
       "stablecoin": "",
       "ApprovalFactory": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
-      "CampaignFactory": "0x02A61feaCdB52bF45E86E39333aA3BEa818354e5",
+      "CampaignFactory": "0x3051a9d25bdAd2793a87B4eF82EE9B376Fb68440",
       "FeeManager": "0x2864bfA7896DA58B0c1E4da982d2747A3de5D2D6",
-      "VerifierV2": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3"
+      "VerifierV2": "0xd60292815d57e281081559Fd6Bac6b4413b65773"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",

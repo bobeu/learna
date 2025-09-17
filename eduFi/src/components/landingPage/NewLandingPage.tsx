@@ -10,7 +10,9 @@ import Footer from './Footer';
 import { useRouter } from 'next/navigation';
 import { formatEther } from 'viem';
 import useStorage from '../hooks/useStorage';
-import { CampaignStateProps, mockCampaignState } from '../../../types';
+import { CampaignStateProps, mockCampaignState, FormattedCampaignTemplate } from '../../../types';
+import CampaignStatsModal from '../modals/CampaignStatsModal';
+import WalletConnectButton from '../ui/WalletConnectButton';
 import { toBN } from '../utilities';
 
 // Main Landing Page Component
@@ -19,6 +21,7 @@ export default function NewLandingPage() {
   const [campaigns, setCampaigns] = useState<CampaignStateProps[]>([mockCampaignState]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignStateProps | null>(null);
+  const [selectedCampaignStats, setSelectedCampaignStats] = useState<FormattedCampaignTemplate | null>(null);
 //   const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
 //   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
 
@@ -77,6 +80,10 @@ export default function NewLandingPage() {
     setSelectedCampaign(campaign);
   };
 
+  const handleViewCampaignStats = (campaign: CampaignStateProps) => {
+    setSelectedCampaignStats(campaign.__raw);
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white`}>
         <Navbar />
@@ -88,6 +95,7 @@ export default function NewLandingPage() {
         <CampaignTabs 
           campaigns={campaigns}
           handleJoinCampaign={handleJoinCampaign}
+          handleViewStats={handleViewCampaignStats}
           isLoading={isLoading}
         />
         <Features />
@@ -99,6 +107,16 @@ export default function NewLandingPage() {
             onClose={() => setSelectedCampaign(null)}
           />
         )}
+
+        {/* Campaign Stats Modal */}
+        {selectedCampaignStats && (
+          <CampaignStatsModal
+            campaign={selectedCampaignStats}
+            isOpen={!!selectedCampaignStats}
+            onClose={() => setSelectedCampaignStats(null)}
+          />
+        )}
+
         <Footer />
 
         {/* Scroll to top */}

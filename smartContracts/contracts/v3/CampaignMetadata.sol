@@ -29,11 +29,11 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
     ) payable {
         approvalFactory = _approvalFactory;
         operator = _operator;
-        _setMetadata(meta);
+        _setMetadata(meta, true);
     }
 
     ///@dev Set proofMeta information
-    function _setMetadata(MetadataInput memory _meta) internal {
+    function _setMetadata(MetadataInput memory _meta, bool editStartDate) internal {
         if(bytes(_meta.description).length > 0) metadata.description = bytes(_meta.description);
         if(bytes(_meta.name).length > 0) {
             metadata.name = bytes(_meta.name);
@@ -43,6 +43,7 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
         if(bytes(_meta.link).length > 0) metadata.link = bytes(_meta.link);
         unchecked {
             if(_meta.endDateInHr > 0) metadata.endDate = uint64(_now() + (_meta.endDateInHr * 1 hours));
+            if(editStartDate) metadata.startDate = uint64(_now());
         }
     }
 
@@ -50,7 +51,7 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
         @param _meta: New metadata
      */
     function editMetaData(MetadataInput memory _meta) public onlyOwnerOrApproved returns(bool) {
-        _setMetadata(_meta);
+        _setMetadata(_meta, false);
         return true;
     }
 

@@ -401,11 +401,6 @@
               "type": "uint24"
             },
             {
-              "internalType": "bool",
-              "name": "isEditing",
-              "type": "bool"
-            },
-            {
               "internalType": "uint24",
               "name": "endInHr",
               "type": "uint24"
@@ -472,16 +467,6 @@
                       "internalType": "uint24",
                       "name": "maxProof",
                       "type": "uint24"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "createdAt",
-                      "type": "uint64"
-                    },
-                    {
-                      "internalType": "uint64",
-                      "name": "activatedAt",
-                      "type": "uint64"
                     },
                     {
                       "internalType": "uint64",
@@ -688,6 +673,11 @@
                   "internalType": "bytes",
                   "name": "imageUrl",
                   "type": "bytes"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "startDate",
+                  "type": "uint64"
                 },
                 {
                   "internalType": "uint64",

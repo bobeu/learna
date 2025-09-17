@@ -16,7 +16,7 @@ import { Address, CreateCampaignInput, FunctionName } from "../../../../types";
 import useStorage from "@/components/hooks/useStorage";
 import { formatEther, zeroAddress } from "viem";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
-import { filterTransactionData } from "@/components/utilities";
+import { filterTransactionData, toBN } from "@/components/utilities";
 import { useChainId } from "wagmi";
 
 export default function NewCampaignPage(){
@@ -86,8 +86,8 @@ export default function NewCampaignPage(){
                 tvl,
                 learners,
                 builders,
-                start: new Date(metadata.startDate).toISOString(),
-                end: new Date(metadata.endDate).toISOString()
+                start: new Date(toBN(metadata.startDate).toNumber()).toString(),
+                end: new Date(toBN(metadata.endDate).toNumber()).toString()
             }
         })
         return myCampaigns;
@@ -121,10 +121,6 @@ export default function NewCampaignPage(){
     }, [endInHours, imageUri, name, docUrl, description]);
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
-
-    // const toggleDrawer = (arg: number) => {
-    //     setOpenDrawer(arg);
-    // }
 
     const uploadToIpfs = async (file: File) => {
         setIpfsUploading(true);
@@ -202,12 +198,6 @@ export default function NewCampaignPage(){
         console.error('Failed to store proof:', error);
     };
 
-    // const handleCreate = async () => {
-    //     if(!argReady) return alert("Please provide relevant information");
-    //     setShowTransactionModal(true);
-    //     // console.log({ name, docUrl, description, imageUri, startDate, endDate, endInHours, tokens, nativeAmount });
-    // };
-
     return (
         <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-black dark:font-mono">
             <div className="max-w-7xl mx-auto">
@@ -248,7 +238,7 @@ export default function NewCampaignPage(){
                                                 <div className="font-medium">{c.name}</div>
                                                 <Badge variant="outline">${c.tvl}</Badge>
                                             </div>
-                                            <div className="text-xs text-neutral-500">{c.start} → {c.end}</div>
+                                            <div className="text-xs text-neutral-500">{`from ${c.start} → ${c.end}`}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -356,11 +346,6 @@ export default function NewCampaignPage(){
             {selectedCampaign && (
                 <CampaignStatsModal campaign={selectedCampaign} onClose={() => setSelectedCampaign(null)} />
             )}
-            {/* <CreateCampaign 
-                openDrawer={openDrawer}
-                params={params}
-                toggleDrawer={toggleDrawer}
-            /> */}
              <TransactionModal
                 isOpen={showTransactionModal}
                 onClose={() => setShowTransactionModal(false)}

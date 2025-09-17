@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3",
+  "contractAddress": "0xd60292815d57e281081559Fd6Bac6b4413b65773",
   "functionName": "owner",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -149,25 +149,6 @@
         }
       ],
       "name": "Unpaused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "users",
-          "type": "address[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool[]",
-          "name": "newStatus",
-          "type": "bool[]"
-        }
-      ],
-      "name": "UserStatusChanged",
       "type": "event"
     },
     {

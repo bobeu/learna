@@ -77,6 +77,7 @@ interface ICampaignTemplate {
         bytes link; // Any other relevant link
         bytes description; // Max length is 300
         bytes imageUrl;
+        uint64 startDate;
         uint64 endDate;
     }
 
@@ -86,6 +87,7 @@ interface ICampaignTemplate {
         string description; // Max length is 300
         string imageUrl;
         uint64 endDateInHr;
+
     }
 
     // // Offchain
@@ -113,8 +115,6 @@ interface ICampaignTemplate {
 
     struct EpochSetting {
         uint24 maxProof; // Maximum assimilation learners can prove in a day
-        uint64 createdAt;
-        uint64 activatedAt;
         uint64 endDate;
         Funds funds;
     }
@@ -132,7 +132,7 @@ interface ICampaignTemplate {
 
     struct EpochSettingInput {
         uint24 maxProof; // Maximum assimilation learners can prove in a day
-        bool isEditing;
+        // bool isEditing;
         uint24 endInHr;
         address[] tokens;
         address newOperator;
