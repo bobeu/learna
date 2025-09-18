@@ -496,6 +496,11 @@
                               "internalType": "uint256",
                               "name": "amount",
                               "type": "uint256"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
                             }
                           ],
                           "internalType": "struct ICampaignTemplate.ERC20Token[]",
@@ -523,6 +528,11 @@
                               "internalType": "uint256",
                               "name": "amount",
                               "type": "uint256"
+                            },
+                            {
+                              "internalType": "uint8",
+                              "name": "decimals",
+                              "type": "uint8"
                             }
                           ],
                           "internalType": "struct ICampaignTemplate.ERC20Token[]",

@@ -11,19 +11,14 @@ import { Label } from "@/components/ui/label";
 import CampaignTabs from "@/components/campaigns/CampaignTabs"; 
 import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-// import { DataContext } from "@/components/StorageContextProvider";
 import { formatEther } from "viem";
 import { formattedMockLearners, CampaignStateProps } from "../../../types";
-// import { useAccount } from "wagmi";
 import { calculateStreak, normalizeImageSrc, normalizeString, toBN } from "@/components/utilities";
 import useStorage from "@/components/hooks/useStorage";
 
 export default function LearnPage(){
     const { theme, setTheme } = useTheme();
     const isDark = theme === "dark";
-    // const data = useContext(DataContext);
-    // const { address } = useAccount();
-    // const userAddress = formatAddr(address).toLowerCase();
 
     const [search, setSearch] = React.useState("");
     const [startDate, setStartDate] = React.useState<string>("");
@@ -48,8 +43,6 @@ export default function LearnPage(){
             const learners = latest?.learners || formattedMockLearners;
             const endDateMs = toBN(c.metadata.endDate || 0).toNumber() * 1000;
             
-            // endDate: c.metadata.endDate ? new Date(endDateMs).toISOString().split('T')[0] : null,
-            // fundingAmount: Number(formatEther(nativeTotal)),
             return {
                 id: idx,
                 name: normalizeString(c.metadata.name),
@@ -144,6 +137,7 @@ export default function LearnPage(){
                         <Button variant="outline" size="icon" onClick={() => setTheme(isDark ? 'light' : 'dark')} aria-label="Toggle theme">
                             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </Button>
+                        <ConnectButton />
                     </div>
                 </div>
 
@@ -158,14 +152,14 @@ export default function LearnPage(){
                                         <div className="text-xs text-neutral-500">Manage your learning profile</div>
                                     </div>
                                 </div>
-                                <div className="w-full sm:w-auto">
+                                {/* <div className="w-full sm:w-auto">
                                     <ConnectButton
                                         chainStatus={{ smallScreen: "none", largeScreen: "none" }}
                                         showBalance={{ smallScreen: true, largeScreen: true }}
                                         accountStatus={{ smallScreen: "avatar", largeScreen: "avatar" }}
                                         label="Connect"
                                     />
-                                </div>
+                                </div> */}
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {

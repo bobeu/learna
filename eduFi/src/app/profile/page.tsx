@@ -1,22 +1,56 @@
 "use client";
 
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { DataContext } from "@/components/StorageContextProvider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+// import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatEther } from "viem";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
+import { 
+  Plus, 
+  // ChevronDown, 
+  ChevronUp, 
+  // BarChart3, 
+  // Users, 
+  // Layers, 
+  Calendar, 
+  // ImageIcon, 
+  WandSparkles, 
+  Loader2, 
+  ArrowLeft, 
+  Moon, 
+  Sun,
+  // AlertTriangle,
+  // CheckCircle,
+  // XCircle
+} from "lucide-react";
 import CampaignMetaEditor from "@/components/profile/CampaignMetaEditor";
 import AddFund from "@/components/transactions/AddFund";
 import BuilderRewards from "@/components/profile/BuilderRewards";
-import { mockCampaignTemplateReadData } from "../../../types";
-import { formatAddr } from "@/components/utilities";
+import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
+import { mockCampaignTemplateReadData, Address, CreateCampaignInput, FunctionName } from "../../../types";
+import { formatAddr, } from "@/components/utilities";
+// import { useChainId } from "wagmi";
+import useStorage from "@/components/hooks/useStorage";
+import { formatEther as formatEtherUtil, zeroAddress } from "viem";
 
 export default function ProfilePage() {
   const { address } = useAccount();
   const data = useContext(DataContext);
+  const searchParams = useSearchParams();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
+  // const chainId = useChainId();
 
   const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
   const userAddress = formatAddr(address).toLowerCase();
@@ -32,14 +66,377 @@ export default function ProfilePage() {
 
   const [selectedForEdit, setSelectedForEdit] = useState<number | null>(null);
   const [selectedForFund, setSelectedForFund] = useState<number | null>(null);
+  
+  // Campaign creation form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [ipfsUploading, setIpfsUploading] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  
+  // Form fields
+  const [name, setName] = useState<string>("");
+  const [docUrl, setDocUrl] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [imageUri, setImageUri] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [endInHours, setEndInHours] = useState<number | null>(null);
+  const [useAiImage, setUseAiImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const { creatorCampaigns: myCampaigns, creationFee } = useStorage();
+
+  // Check if user came from "Create campaign" button
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'create') {
+      setShowCreateForm(true);
+    }
+  }, [searchParams]);
+
+  // Calculate total TVL from epoch data
+  const totalTVL = useMemo(() => {
+    return myCampaigns.reduce((total, campaign) => {
+      const campaignTVL = campaign.epochData.reduce((epochTotal, epoch) => {
+        const nativeAmount = epoch.setting.funds.nativeAss + epoch.setting.funds.nativeInt;
+        const erc20Amount = epoch.setting.funds.erc20Ass.reduce((sum, token) => sum + Number(token.amount), 0) +
+                           epoch.setting.funds.erc20Int.reduce((sum, token) => sum + Number(token.amount), 0);
+        return epochTotal + Number(nativeAmount) + erc20Amount;
+      }, 0);
+      return total + campaignTVL;
+    }, 0);
+  }, [myCampaigns]);
+
+  // Calculate end date in hours
+  useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffInHours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
+      setEndInHours(diffInHours);
+    }
+  }, [startDate, endDate]);
+
+  // Form validation
+  const isFormValid = name && description && startDate && endDate && imageUri;
+  const argReady = isFormValid;
+
+  // Transaction data preparation
+  const transactionInfo = useMemo(() => {
+    if (!argReady) return null;
+    
+    const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+    const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+    const endDateInHr = Math.ceil((endTimestamp - startTimestamp) / 3600);
+    
+    const createCampaignInput: CreateCampaignInput = {
+      name: name,
+      link: docUrl || "https://learna.vercel.app",
+      description: description,
+      imageUrl: imageUri,
+      endDateInHr: endDateInHr,
+    };
+
+    return {
+      functionName: 'createCampaign' as FunctionName,
+      contractAddress: process.env.NEXT_PUBLIC_CAMPAIGN_FACTORY_ADDRESS as Address,
+      abi: [],
+      args: [createCampaignInput],
+    };
+  }, [name, docUrl, description, imageUri, startDate, endDate, argReady]);
+
+  // Image upload functions
+  const uploadToIpfs = async (file: File) => {
+    setIpfsUploading(true);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const res = await fetch('/api/upload-to-ipfs', { method: 'POST', body });
+      const data = await res.json();
+      if (data?.uri) {
+        setImageUri(data.uri);
+        const local = URL.createObjectURL(file);
+        setImagePreview(local);
+      }
+    } catch (error) {
+      console.error('Error uploading to IPFS:', error);
+    } finally {
+      setIpfsUploading(false);
+    }
+  };
+
+  const generateAiImage = async () => {
+    setAiGenerating(true);
+    try {
+      const res = await fetch('/api/generate-image', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ prompt: `Generate a modern campaign cover image for ${name}. ${description}` }) 
+      });
+      const data = await res.json();
+      if (data?.uri) {
+        setImageUri(data.uri);
+        setImagePreview(data.uri);
+      }
+    } catch (error) {
+      console.error('Error generating AI image:', error);
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  // Transaction handling
+  const createTransactionSteps = (): TransactionStep[] => {
+    const data = transactionInfo;
+    if (!data) return [{
+      id: 'null', 
+      title: 'null',
+      description: 'Data unavailable', 
+      functionName: 'allowance', 
+      contractAddress: zeroAddress,
+      abi: [],
+      args: []
+    }];
+    
+    return [{
+      id: 'create-campaign',
+      title: 'Create a new learning campaign',
+      description: `Setting up data for the new ${name} campaign on the blockchain`,
+      functionName: data.functionName,
+      contractAddress: data.contractAddress,
+      abi: data.abi,
+      args: data.args
+    }];
+  };
+
+  const handleCreateCampaign = () => {
+    const steps = createTransactionSteps();
+    if (steps.length === 0) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    setShowTransactionModal(true);
+  };
+
+  const handleTransactionSuccess = (txHash: string) => {
+    console.log('Campaign created successfully:', txHash);
+    setShowTransactionModal(false);
+    setShowCreateForm(false);
+    // Reset form
+    setName("");
+    setDocUrl("");
+    setDescription("");
+    setImageUri("");
+    setStartDate("");
+    setEndDate("");
+    setImagePreview("");
+  };
+
+  const handleTransactionError = (error: Error) => {
+    console.error('Failed to create campaign:', error);
+    // Keep form open for user to retry
+  };
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white px-4 sm:px-6 lg:px-8 py-10">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold">Your Profile</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage your campaigns and participation</p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="outline" className={`gap-2 ${isDark ? 'text-white border-neutral-700' : ''}`}>
+                  <ArrowLeft className="w-4 h-4" /> Back to Home
+                </Button>
+              </Link>
+              <div className="text-center flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold">Your Profile</h1>
+                <p className="text-gray-600 dark:text-gray-300">Manage your campaigns and participation</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" onClick={() => setTheme(isDark ? 'light' : 'dark')} aria-label="Toggle theme">
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              <ConnectButton />
+            </div>
+          </div>
         </div>
+
+        {/* Campaign Creation Toggle */}
+        <div className="mb-6">
+          <Button 
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="w-full sm:w-auto"
+            variant={showCreateForm ? "outline" : "default"}
+          >
+            {showCreateForm ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Hide Campaign Creation Form
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Campaign
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Campaign Creation Form */}
+        {showCreateForm && (
+          <Card className="mb-8 border-neutral-200 dark:border-neutral-800 dark:bg-surface">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">Create New Campaign</CardTitle>
+              <p className="text-sm text-gray-500">Fill in the details to create your learning campaign</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Campaign Name *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter campaign name"
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="docUrl">Documentation URL</Label>
+                  <Input
+                    id="docUrl"
+                    value={docUrl}
+                    onChange={(e) => setDocUrl(e.target.value)}
+                    placeholder="https://docs.example.com"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your campaign..."
+                  className="w-full min-h-[100px]"
+                  maxLength={500}
+                />
+                <div className="text-xs text-gray-500">{description.length}/500 characters</div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start Date *</Label>
+                  <Input
+                    id="startDate"
+                    type="datetime-local"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date *</Label>
+                  <Input
+                    id="endDate"
+                    type="datetime-local"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {endInHours && (
+                <Alert>
+                  <Calendar className="h-4 w-4" />
+                  <AlertDescription>
+                    Campaign duration: {endInHours} hours ({Math.ceil(endInHours / 24)} days)
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-4">
+                <Label>Campaign Image *</Label>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadToIpfs(file);
+                      }}
+                      className="w-full"
+                      disabled={ipfsUploading}
+                    />
+                    {ipfsUploading && (
+                      <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Uploading to IPFS...
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={generateAiImage}
+                    disabled={!name || !description || aiGenerating}
+                    className="gap-2"
+                  >
+                    {aiGenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <WandSparkles className="w-4 h-4" />
+                    )}
+                    {aiGenerating ? 'Generating...' : 'AI Generate'}
+                  </Button>
+                </div>
+
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img
+                      src={imagePreview}
+                      alt="Campaign preview"
+                      className="w-full h-48 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setImagePreview("");
+                        setImageUri("");
+                      }}
+                      className="mt-2"
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button
+                  onClick={handleCreateCampaign}
+                  disabled={!isFormValid}
+                  className="flex-1"
+                >
+                  Create Campaign
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs defaultValue="creator" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -142,6 +539,17 @@ export default function ProfilePage() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Transaction Modal */}
+        <TransactionModal
+          isOpen={showTransactionModal}
+          onClose={() => setShowTransactionModal(false)}
+          title="Create new campaign"
+          description={`Setting up data for the new ${name} campaign on the blockchain`}
+          getSteps={createTransactionSteps}
+          onSuccess={handleTransactionSuccess}
+          onError={handleTransactionError}
+        />
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import {
   Users
 } from "lucide-react";
 import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FormattedCampaignTemplate, Address } from "../../../types";
 import { goodDollarService, GoodDollarUser, GoodDollarReward } from "../../services/goodDollarService";
 
@@ -120,13 +121,18 @@ export default function GoodDollarIntegrationModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-green-600" />
-            GoodDollar Integration
-          </DialogTitle>
-          <p className="text-sm text-gray-500">
-            Earn GoodDollar (G$) tokens for participating in this campaign
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                GoodDollar Integration
+              </DialogTitle>
+              <p className="text-sm text-gray-500">
+                Earn GoodDollar (G$) tokens for participating in this campaign
+              </p>
+            </div>
+            <ConnectButton />
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">

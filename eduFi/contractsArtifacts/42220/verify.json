@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32",
+  "contractAddress": "0x0B523E504bF03Aa424BCb8e43a0f2071a95eE906",
   "functionName": "verify",
   "inputCount": 0,
   "requireArgUpdate": true,
@@ -149,25 +149,6 @@
         }
       ],
       "name": "Unpaused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "users",
-          "type": "address[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool[]",
-          "name": "newStatus",
-          "type": "bool[]"
-        }
-      ],
-      "name": "UserStatusChanged",
       "type": "event"
     },
     {

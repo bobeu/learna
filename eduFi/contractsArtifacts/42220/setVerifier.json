@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xC358487F0f0c7EBf785165f643CC4ae4AC0E2175",
+  "contractAddress": "0x6F9C90A4A50C8448A2c04f9Fd968CaF68eb33Ba7",
   "functionName": "setVerifier",
   "inputCount": 1,
   "requireArgUpdate": true,

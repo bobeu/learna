@@ -541,7 +541,7 @@ The Tailwind palette now uses a neon-lime on deep-black theme matching the attac
 
 ## Recent Updates
 
-### Text Color Improvements (December 2024)
+### Text Color Improvements (December 2025)
 
 #### Hero Section Text Visibility Enhancement
 - **Main Headline**: Updated from `text-black dark:text-gray-300 opacity-80` to `text-gray-900 dark:text-white` for better contrast
@@ -618,7 +618,7 @@ Resolved failure where `next/image` received hex-encoded URLs (e.g., `0x...`). M
 - **Builder Profile**: Enhanced with reward tracking, performance metrics, and claim functionality
 - **Data Integration**: Full integration with `Learner` interface and on-chain data structures
 
-## Recent Updates (December 2024)
+## Recent Updates (December 2025)
 
 ### Campaign Management System Enhancement
 A comprehensive campaign management system has been implemented with the following components:
@@ -765,7 +765,7 @@ The project is now ready for production use with all major features implemented 
 
 ---
 
-**Last Updated**: December 2024
+**Last Updated**: December 2025
 **Version**: 3.0.0
 **Status**: Complete with Major Feature Updates - Campaign Management, AI Integration, Image Rendering, and Enhanced UX
 ```

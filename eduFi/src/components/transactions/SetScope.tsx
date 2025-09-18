@@ -7,21 +7,20 @@ import { Address, FunctionName } from '../../../types';
 
 export default function SetScope({openDrawer, scope, toggleDrawer }: SetScopenProps) {
     const { chainId } = useAccount();
-    const { callback } = useStorage();
+    const { } = useStorage();
 
     const { mutate, setupArgs } = React.useMemo(() => {
         const mutate = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['setScope'],
-            callback
         });
         
         const setupArgs = [scope];
-
+ 
         return { mutate, setupArgs, };
 
-    }, [chainId, scope, callback]);
+    }, [chainId, scope ]);
 
     const getTransactions = React.useCallback(() => {
         const transactions = mutate.transactionData.map((txObject) => {

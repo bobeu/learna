@@ -164,16 +164,18 @@ class AIService {
   async generateImage(prompt: string): Promise<string> {
     try {
       if (!this.genAI) {
-        return `ipfs://ai-generated/mock/${encodeURIComponent(prompt.slice(0, 32))}`;
+        // Return a working IPFS URI for mock images
+        return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
       }
 
       // Note: Gemini doesn't support image generation directly
       // This would need to be integrated with a different service like DALL-E or Midjourney
-      // For now, return a mock IPFS URI
-      return `ipfs://ai-generated/mock/${encodeURIComponent(prompt.slice(0, 32))}`;
+      // For now, return a working IPFS URI
+      return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
     } catch (error) {
       console.error('Error generating image:', error);
-      return `ipfs://ai-generated/mock/${encodeURIComponent(prompt.slice(0, 32))}`;
+      // Return a working fallback IPFS URI
+      return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
     }
   }
 

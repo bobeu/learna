@@ -7,17 +7,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, BarChart3, Users, Layers, Calendar, ImageIcon, WandSparkles, Loader2, ArrowLeft, Moon, Sun } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, Layers, Calendar, ImageIcon, WandSparkles, Loader2, ArrowLeft, Moon, Sun } from "lucide-react";
 import Link from "next/link";
-import CreateCampaign from "@/components/transactions/CreateCampaign";
-import { Address, CreateCampaignInput, FunctionName } from "../../../../types";
+import { Address, CreateCampaignInput, FormattedCampaignTemplate, FunctionName } from "../../../../types";
 import useStorage from "@/components/hooks/useStorage";
 import { formatEther, zeroAddress } from "viem";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
 import { filterTransactionData, toBN } from "@/components/utilities";
 import { useChainId } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import CampaignStatsModal from "@/components/modals/CampaignStatsModal";
 
 export default function NewCampaignPage(){
     const { theme, setTheme } = useTheme();
@@ -25,9 +25,10 @@ export default function NewCampaignPage(){
     const chainId = useChainId();
 
     const [showMyCampaigns, setShowMyCampaigns] = React.useState(false);
-    const [selectedCampaign, setSelectedCampaign] = React.useState<any | null>(null);
+    const [selectedCampaign, setSelectedCampaign] = React.useState<FormattedCampaignTemplate | null>(null);
     const [ipfsUploading, setIpfsUploading] = React.useState(false);
     const [aiGenerating, setAiGenerating] = React.useState(false);
+    const [campaingStatModalOpen, setCampaignStatModalOpen] = React.useState(false);
 
     // Form state
     const [name, setName] = React.useState<string | null>(null);
@@ -42,6 +43,9 @@ export default function NewCampaignPage(){
     const [showTransactionModal, setShowTransactionModal] = React.useState<boolean>(false);
 
     const { creatorCampaigns, creationFee } = useStorage();
+    const onCloseCampaignStatModal = () => {
+        setCampaignStatModalOpen(false);
+    };
 
     React.useEffect(() => {
         if (startDate && endDate) {
@@ -56,7 +60,8 @@ export default function NewCampaignPage(){
     const myCampaigns = React.useMemo(() => {
         let learners = 0;
         let builders = 0;
-        const myCampaigns = creatorCampaigns.map(({metadata, epochData}, id) => {
+        const myCampaigns = creatorCampaigns.map((myCampaign, id) => {
+            const {metadata, epochData} = myCampaign;
             let tvl = 0;
             epochData.forEach(({setting: {funds : { erc20Ass, erc20Int, nativeAss, nativeInt}}, learners: lnrs}) => {
                 learners += lnrs.length;
@@ -87,7 +92,8 @@ export default function NewCampaignPage(){
                 learners,
                 builders,
                 start: new Date(toBN(metadata.startDate).toNumber()).toString(),
-                end: new Date(toBN(metadata.endDate).toNumber()).toString()
+                end: new Date(toBN(metadata.endDate).toNumber()).toString(),
+                _raw: myCampaign
             }
         })
         return myCampaigns;
@@ -212,6 +218,7 @@ export default function NewCampaignPage(){
                         <Button variant="outline" size="icon" onClick={() => setTheme(isDark ? 'light' : 'dark')} aria-label="Toggle theme">
                             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </Button>
+                        <ConnectButton />
                     </div>
                 </div>
 
@@ -233,7 +240,10 @@ export default function NewCampaignPage(){
                             {showMyCampaigns && (
                                 <div className="space-y-2">
                                     {myCampaigns.map((c) => (
-                                        <button key={c.id} className="w-full text-left p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900" onClick={() => setSelectedCampaign(c)}>
+                                        <button key={c.id} className="w-full text-left p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900" onClick={() => {
+                                            setSelectedCampaign(c._raw);
+                                            setCampaignStatModalOpen(true);
+                                        }}>
                                             <div className="flex items-center justify-between">
                                                 <div className="font-medium">{c.name}</div>
                                                 <Badge variant="outline">${c.tvl}</Badge>
@@ -343,9 +353,12 @@ export default function NewCampaignPage(){
                 </div>
             </div>
 
-            {selectedCampaign && (
-                <CampaignStatsModal campaign={selectedCampaign} onClose={() => setSelectedCampaign(null)} />
-            )}
+            <CampaignStatsModal 
+                isOpen={campaingStatModalOpen}
+                campaign={selectedCampaign} 
+                onClose={onCloseCampaignStatModal} 
+            />
+            
              <TransactionModal
                 isOpen={showTransactionModal}
                 onClose={() => setShowTransactionModal(false)}
@@ -370,36 +383,3 @@ function Stat({ label, value, icon }: { label: string; value: string; icon?: Rea
         </div>
     );
 }
-
-function CampaignStatsModal({ campaign, onClose }: { campaign: any; onClose: () => void }){
-    const [open, setOpen] = React.useState(true);
-    const learners = campaign.learners;
-    const builders = campaign.builders;
-    const participationRate = Math.min(100, Math.round((learners / 500) * 100));
-
-    return (
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) onClose(); }}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Campaign Analytics - {campaign.name}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                        <Stat label="Total Learners" value={String(learners)} icon={<Users className="w-4 h-4" />} />
-                        <Stat label="Total Builders" value={String(builders)} icon={<Layers className="w-4 h-4" />} />
-                        <Stat label="TVL" value={`$${campaign.tvl}`} icon={<BarChart3 className="w-4 h-4" />} />
-                    </div>
-                    <div>
-                        <div className="text-sm mb-1">Participation</div>
-                        <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full">
-                            <div className="h-2 bg-primary-500 rounded-full" style={{ width: `${participationRate}%` }} />
-                        </div>
-                        <div className="text-xs text-neutral-500 mt-1">{participationRate}% of target</div>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-

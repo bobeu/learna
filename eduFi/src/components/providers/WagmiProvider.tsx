@@ -71,6 +71,16 @@ export function getDefaultPublicClient(networkName: string) {
   });
 }
 
+// Create a single QueryClient instance outside the component
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes
+    },
+  },
+});
+
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the default config from RainbowKit
   const config = getDefaultConfig({
@@ -106,7 +116,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={queryClient}>
         <RainbowKitProvider 
           coolMode={true}
           modalSize="compact" 

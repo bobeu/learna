@@ -160,6 +160,7 @@ export interface ERC20Token {
   tokenName: string;
   tokenSymbol: string;
   amount: bigint;
+  decimals: number;
 }
 
 export interface Funds {
@@ -282,13 +283,15 @@ export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
           token: zeroAddress,
           tokenName: stringToHex("Celo Dollar"),
           tokenSymbol: stringToHex("CUSD"),
-          amount: 0n
+          amount: 0n,
+          decimals: 18
         }],
         erc20Int: [{
           token: zeroAddress,
           tokenName: stringToHex("Celo Dollar"),
           tokenSymbol: stringToHex("CUSD"),
-          amount: 0n
+          amount: 0n,
+          decimals: 8
         }],
         nativeAss: 0n,
         nativeInt: 0n

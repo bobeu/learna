@@ -49,8 +49,6 @@ interface ICampaignTemplate {
         uint64 value; 
         bytes ratedAt; // Date rated
     }
-        // ProofOfIntegration poi; // Link to proof of integration if user has taken SDK test
-        // ProofOfAssimilation poa;
 
     // This should be a link to user portfolio such as github or any link to proof that user integrate or learn something valuable;
     // Proof of assimilation is achieved when user successfully complete a short training section with our Agent and take the short test to proof that they understand what they just learnt. They in turn earn POINT token as reward. They earn other asset provided by the campaign operator when they successfully integrate what they learned
@@ -69,6 +67,7 @@ interface ICampaignTemplate {
         bytes tokenName;
         bytes tokenSymbol;
         uint256 amount;
+        uint8 decimals;
     }
 
     struct Metadata {
@@ -89,17 +88,6 @@ interface ICampaignTemplate {
         uint64 endDateInHr;
 
     }
-
-    // // Offchain
-    // struct Metric {
-    //     bytes identifier;
-    //     uint24 length;
-    //     uint32 totalLearners;
-    //     uint32 numOfIntegration;
-    //     uint256 nativeFunds;
-    //     ERC20Token[] tokenFunds;
-    //     //////////////////////////////////////////////////////////////////////Add more metrics and deliverables
-    // }
 
     struct Spot {
         uint value;

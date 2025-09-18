@@ -44,7 +44,6 @@ interface QuizQuestion {
 type Steps = 'topics' | 'article' | 'quiz' | 'results';
 
 export default function ImprovedAITutor({ campaign, onClose }: ImprovedAITutorProps) {
-  // const { address, chainId } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
   
   // State management

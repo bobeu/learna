@@ -5,8 +5,7 @@ import globalContractData from "../../contractsArtifacts/global.json";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
-import _d_ from "../../_d_.json";
-import { Address, Admin, Campaign, CampaignHash, CampaignTemplateReadData, Eligibility, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FormattedData, FunctionName, mockCampaigns, Profile, ProofOfAssimilation, Question, Quiz, QuizData, QuizResultInput, ReadData, ReadProfile, StateData, TransactionData, WeekData, WeekProfileData } from "../../types";
+import { Address, Admin, Campaign, CampaignTemplateReadData, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FunctionName, mockCampaigns, ProofOfAssimilation, ReadData, TransactionData } from "../../types";
 
 export const TOTAL_WEIGHT = 100;
 
@@ -17,66 +16,6 @@ export const mockCampaign : Campaign = {
   identifier: zeroAddress
 }
 
-export const mockCData : CampaignHash[] = [
-  {
-    encoded:  mockEncoded,
-    hash_: mockHash,
-  }
-];
-
-export const mockProfile : Profile = {
-  other: {
-    passkey: "0x",
-    haskey: false,
-    totalQuizPerWeek: 0,
-    amountMinted: 0n
-  },
-  quizResults: [
-    {
-      answers: [
-        {
-          isUserSelected: false,
-          questionHash: '',
-          selected: 0
-        }
-      ],
-      other: {
-        completedAt: '',
-        id: '1',
-        title: 'solidity',
-        percentage: 0,
-        quizId: '2',
-        score: 0,
-        timeSpent: 0,
-        totalPoints: 0
-      }
-    }
-  ]
-}
-
-export const mockEligibility : Eligibility = {
-  isEligible: false,
-  erc20Amount: 0n,
-  nativeAmount: 0n,
-  weekId: 0n,
-  token: zeroAddress,
-  hash_: mockHash,
-  platform: 0n
-}
-
-export const mockReadProfile : ReadProfile = {
-  eligibility: mockEligibility,
-  hash_: mockHash,
-  profile: mockProfile,
-  isClaimed: false
-}
-
-export const mockWeekProfileData : WeekProfileData = {
-  campaigns: [mockReadProfile],
-  weekId: 0n
-}
-
-export const mockWeekData : WeekData[] = [{campaigns: [mockCampaign,], claimDeadline: 0n, weekId: 0n}];
 export const mockReadData : ReadData = {
   approvalFactory: zeroAddress,
   creationFee: 0n,
@@ -98,49 +37,49 @@ export const toHash = (arg: string) => {
   return keccak256(stringToHex(arg));
 }
 
-export const mockQuiz : Quiz = {
-  id: "",
-  title: "",
-  description: "",
-  questions: [
-    {
-      category: '',
-      correctAnswer: 0,
-      difficulty: '',
-      hash: mockReadProfile.hash_,
-      id: 0,
-      options: [''],
-      points: 0,
-      question: '',
-      explanation: ''
-    }
-  ],
-  totalPoints: 0,
-  timeLimit: 0,
-  difficulty: 'easy',
-  category: "",
-  imageUrl: "",
-  createdAt: new Date()
-}
+// export const mockQuiz : Quiz = {
+//   id: "",
+//   title: "",
+//   description: "",
+//   questions: [
+//     {
+//       category: '',
+//       correctAnswer: 0,
+//       difficulty: '',
+//       hash: mockReadProfile.hash_,
+//       id: 0,
+//       options: [''],
+//       points: 0,
+//       question: '',
+//       explanation: ''
+//     }
+//   ],
+//   totalPoints: 0,
+//   timeLimit: 0,
+//   difficulty: 'easy',
+//   category: "",
+//   imageUrl: "",
+//   createdAt: new Date()
+// }
 
-export const mockQuizResult : QuizResultInput = {
-  answers: [
-    {
-      isUserSelected: false,
-      questionHash: mockReadProfile.hash_,
-      selected: 0
-    }
-  ],
-  other: {
-    quizId: "",
-    score: 0,
-    title: '',
-    totalPoints: 0,
-    percentage: 0,
-    timeSpent: 0,
-    completedAt: new Date().toString(),
-  }
-}
+// export const mockQuizResult : QuizResultInput = {
+//   answers: [
+//     {
+//       isUserSelected: false,
+//       questionHash: mockReadProfile.hash_,
+//       selected: 0
+//     }
+//   ],
+//   other: {
+//     quizId: "",
+//     score: 0,
+//     title: '',
+//     totalPoints: 0,
+//     percentage: 0,
+//     timeSpent: 0,
+//     completedAt: new Date().toString(),
+//   }
+// }
 
 /**
  * @dev Converts an argument to a bigInt value
@@ -315,7 +254,8 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, c
               tokenName: normalizeString(erc20Ass.tokenName as Hex),
               tokenSymbol: normalizeString(erc20Ass.tokenSymbol as Hex),
               amount:erc20Ass.amount,
-              token:erc20Ass.token  
+              token:erc20Ass.token,
+              decimals: erc20Ass.decimals
             })),
             erc20Int: setting.funds.erc20Ass.map((erc20Int) => ({
               ...erc20Int,

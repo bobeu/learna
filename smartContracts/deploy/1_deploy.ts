@@ -11,6 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   	const {deployments, getNamedAccounts,  network} = hre;
 	const {deploy, read, execute } = deployments;
 	let { 
+		deployer,
 		routeTo, dev, 
 		admin3,  
 		admin,  
@@ -22,9 +23,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let mode = Mode.LOCAL;
 	// const minimumToken = parseUnits('0.00001', 18);
 	const networkName = network.name;
-	const deployer = networkName === 'sepolia'? admin2 : admin4;
+	// const deployer = networkName === 'sepolia'? admin2 : admin4;
 	// const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
-	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('12795439251423179418351918761589831883253868888326667545888975468034221072432');
+	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('9186502517255327601873870048821518942839570257762675244524402438880947571356');
 	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const newAdmins = [admin4, admin, admin2];
@@ -90,13 +91,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// } catch (error) {
 	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 	// 	console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
-
-	// try {
-	// 	await execute('VerifierV2', {from: deployer}, 'setPermission', learna.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setPermission:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
 	// try {

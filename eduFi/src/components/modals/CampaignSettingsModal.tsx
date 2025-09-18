@@ -23,6 +23,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FormattedCampaignTemplate, EpochSettingInput, RewardType } from "../../../types";
 import { formatEther, parseEther, formatUnits, parseUnits } from "viem";
 import { hexToString } from "viem";
@@ -207,12 +208,17 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Campaign Settings
-          </DialogTitle>
-          <p className="text-sm text-gray-500">
-            Update your campaign configuration and funding
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl font-bold">
+                Campaign Settings
+              </DialogTitle>
+              <p className="text-sm text-gray-500">
+                Update your campaign configuration and funding
+              </p>
+            </div>
+            {/* <ConnectButton /> */}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">

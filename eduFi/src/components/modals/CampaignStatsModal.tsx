@@ -23,13 +23,14 @@ import {
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FormattedCampaignTemplate, EpochData, Learner, Address } from "../../../types";
-import { formatEther, formatUnits, hexToString } from "viem";
+import { formatEther, formatUnits, Hex, hexToString } from "viem";
 import LearnerProfileModal from "./LearnerProfileModal";
 import CampaignSettingsModal from "./CampaignSettingsModal";
 import RewardClaimModal from "./RewardClaimModal";
+import { formatAddr, formattedMockCampaignsTemplate, normalizeString, toBN } from '../utilities';
 
 interface CampaignStatsModalProps {
-  campaign: FormattedCampaignTemplate;
+  campaign: FormattedCampaignTemplate | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -62,10 +63,11 @@ function FundDisplay({ funds, title }: FundDisplayProps) {
   const erc20Tokens = useMemo(() => {
     const allTokens = [...funds.erc20Ass, ...funds.erc20Int];
     return allTokens.map(token => ({
-      ...token,
-      name: hexToString(token.tokenName),
-      symbol: hexToString(token.tokenSymbol),
-      amount: formatUnits(token.amount, 18) // Assuming 18 decimals for now
+      token: token.token,
+      name: hexToString(token.tokenName as Hex),
+      symbol: hexToString(token.tokenSymbol as Hex),
+      amount: formatUnits(token.amount, token.decimals),
+      decimals: token.decimals
     }));
   }, [funds.erc20Ass, funds.erc20Int]);
 
@@ -74,7 +76,7 @@ function FundDisplay({ funds, title }: FundDisplayProps) {
       <h4 className="font-semibold text-sm text-gray-700">{title}</h4>
       
       {/* Native Funds */}
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between p-3 border border-gray-600/40 rounded-lg">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-green-600" />
           <span className="text-sm font-medium">Native (CELO)</span>
@@ -260,27 +262,33 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
 }
 
 // Main Campaign Stats Modal Component
-export default function CampaignStatsModal({ campaign, isOpen, onClose }: CampaignStatsModalProps) {
+export default function CampaignStatsModal({ campaign: inCampaign, isOpen, onClose }: CampaignStatsModalProps) {
   const { address, isConnected } = useAccount();
+  const userAddress = formatAddr(address).toLowerCase();
   const [selectedLearner, setSelectedLearner] = useState<Learner | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showClaimReward, setShowClaimReward] = useState(false);
   const [selectedEpoch, setSelectedEpoch] = useState(0);
 
-  const isOwner = useMemo(() => {
-    return address?.toLowerCase() === campaign.owner.toLowerCase();
-  }, [address, campaign.owner]);
+  const {isOwner, campaign} = useMemo(() => {
+    const defaultCampaign : FormattedCampaignTemplate = formattedMockCampaignsTemplate[0];
+    console.log("defaultValue", defaultCampaign);
+    if(!inCampaign) return { isOwner: false, campaign: defaultCampaign};
+    return { isOwner: userAddress === inCampaign.owner.toLowerCase(), campaign: inCampaign};
+  }, [address, inCampaign?.owner]);
 
-  const campaignMetadata = useMemo(() => {
-    return {
-      name: hexToString(campaign.metadata.name),
-      description: hexToString(campaign.metadata.description),
-      link: hexToString(campaign.metadata.link),
-      imageUrl: hexToString(campaign.metadata.imageUrl),
+  const { campaignMetadata, totalProofs } = useMemo(() => {
+    const totalProofs = campaign.epochData.reduce((sum, epoch) => sum + toBN(epoch.totalProofs).toNumber(), 0);
+    const campaignMetadata =  {
+      name: normalizeString(campaign.metadata.name as Hex),
+      description: normalizeString(campaign.metadata.description as Hex),
+      link: normalizeString(campaign.metadata.link as Hex),
+      imageUrl: normalizeString(campaign.metadata.imageUrl as Hex),
       startDate: new Date(Number(campaign.metadata.startDate) * 1000),
       endDate: new Date(Number(campaign.metadata.endDate) * 1000),
     };
-  }, [campaign.metadata]);
+    return { campaignMetadata, totalProofs }
+  }, [campaign?.metadata]);
 
   const handleLearnerClick = (learner: Learner) => {
     setSelectedLearner(learner);
@@ -309,9 +317,6 @@ export default function CampaignStatsModal({ campaign, isOpen, onClose }: Campai
                   {campaignMetadata.description}
                 </p>
               </div>
-              {!isConnected && (
-                <ConnectButton />
-              )}
             </div>
           </DialogHeader>
 
@@ -347,7 +352,7 @@ export default function CampaignStatsModal({ campaign, isOpen, onClose }: Campai
                       <Trophy className="w-4 h-4 text-yellow-600" />
                       <div>
                         <p className="text-2xl font-bold">
-                          {campaign.epochData.reduce((sum, epoch) => sum + epoch.totalProofs, 0)}
+                          {totalProofs}
                         </p>
                         <p className="text-xs text-gray-500">Total Proofs</p>
                       </div>

@@ -303,7 +303,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                                 token,
                                 bytes(IERC20Metadata(token).name()),
                                 bytes(IERC20Metadata(token).symbol()),
-                                allowance
+                                allowance,
+                                IERC20Metadata(token).decimals()
                             )
                         );
                     } else {
@@ -312,7 +313,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                                 token,
                                 bytes(IERC20Metadata(token).name()),
                                 bytes(IERC20Metadata(token).symbol()),
-                                allowance
+                                allowance,
+                                IERC20Metadata(token).decimals()
                             )
                         );
                     }

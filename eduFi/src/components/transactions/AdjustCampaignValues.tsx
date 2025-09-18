@@ -8,19 +8,17 @@ import { Hex } from 'viem';
 
 export default function AdjustCampaignValues({erc20Values, nativeValues, openDrawer, campaignHash, toggleDrawer }: RegisterUsersForWeeklyEarningProps) {
     const { chainId } = useAccount();
-    const { callback } = useStorage();
 
     const { transactionData: td } = React.useMemo(() => {
         const filtered = filterTransactionData({
             chainId,
             filter: true,
             functionNames: ['adjustCampaignValues'],
-            callback
-        });
+        });   
 
         return { ...filtered };
-    }, [chainId, callback]);
-
+                                                    }, [chainId]);
+                                                                 
     const getTransactions = React.useCallback(() => {
         const transactions = td.map((txObject) => {
             const transaction : Transaction = {

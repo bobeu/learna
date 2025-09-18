@@ -19,6 +19,7 @@ import {
   XCircle,
   ExternalLink
 } from "lucide-react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Learner } from "../../../types";
 import { formatUnits } from "viem";
 
@@ -168,9 +169,12 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Learner Profile
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl font-bold">
+              Learner Profile
+            </DialogTitle>
+            <ConnectButton />
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">

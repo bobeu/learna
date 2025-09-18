@@ -4,21 +4,22 @@ import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Award, 
-  Trophy, 
+  // Trophy, 
   DollarSign, 
   CheckCircle, 
   XCircle,
   AlertTriangle,
   Loader2,
-  ExternalLink
+  // ExternalLink
 } from "lucide-react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FormattedCampaignTemplate, Address } from "../../../types";
-import { formatEther, formatUnits } from "viem";
+import { formatEther, formatUnits, Hex } from "viem";
 import { hexToString } from "viem";
 
 interface RewardClaimModalProps {
@@ -50,26 +51,32 @@ export default function RewardClaimModal({
   onClose 
 }: RewardClaimModalProps) {
   const { address } = useAccount();
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { writeContractAsync, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+  const [customError, setCustomError] = useState<string | null>(null);
 
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
 
   // Check if user has participated in this epoch
-  const hasParticipated = useMemo(() => {
-    if (!address || !campaign.epochData[epochIndex]) return false;
-    
+  const { isFundedCampaign, hasParticipated } = useMemo(() => {
+    if (!address || !campaign.epochData[epochIndex]) return { isFundedCampaign: false, hasParticipated: false, isEligible: false };
     const epochData = campaign.epochData[epochIndex];
-    return epochData.learners.some(learner => 
-      learner.id.toLowerCase() === address.toLowerCase()
+    const isFundedCampaign = (epochData.setting.funds.nativeAss > 0n || epochData.setting.funds.nativeInt > 0n) || epochData.setting.funds.erc20Ass.some(token => token.amount > 0n) || epochData.setting.funds.erc20Int.some(token => token.amount > 0n);
+    const hasParticipated = epochData.learners.some(learner => 
+      learner.id.toLowerCase() === address.toLowerCase() && learner.poass.some(poa => poa.score > 0)
     );
+    const isEligible = isFundedCampaign && hasParticipated;
+    return { 
+      isFundedCampaign, 
+      hasParticipated
+    };
   }, [address, campaign.epochData, epochIndex]);
 
   // Calculate user's rewards
   const userRewards = useMemo((): RewardInfo => {
-    if (!address || !hasParticipated || !campaign.epochData[epochIndex]) {
+    if (!address || !isFundedCampaign || !hasParticipated || !campaign.epochData[epochIndex]) {
       return {
         canClaim: false,
         totalScore: 0n,
@@ -133,8 +140,8 @@ export default function RewardClaimModal({
     const erc20Rewards = epochData.setting.funds.erc20Ass.map(token => ({
       token: token.token,
       amount: (token.amount * userProportion) / 10000n,
-      name: hexToString(token.tokenName),
-      symbol: hexToString(token.tokenSymbol)
+      name: hexToString(token.tokenName as Hex),
+      symbol: hexToString(token.tokenSymbol as Hex)
     }));
 
     const totalRewards = nativeReward + erc20Rewards.reduce((sum, reward) => sum + reward.amount, 0n);
@@ -146,14 +153,18 @@ export default function RewardClaimModal({
       nativeReward,
       erc20Rewards
     };
-  }, [address, hasParticipated, campaign.epochData, epochIndex]);
+  }, [address, hasParticipated, campaign.epochData, isFundedCampaign, epochIndex]);
 
   const handleClaimReward = async () => {
-    if (!address || !userRewards.canClaim) return;
+    if (!address || !userRewards.canClaim) {
+      console.error('Cannot claim reward: missing address or not eligible');
+      return;
+    }
 
     try {
-      await writeContract({
-        address: campaign.contractAddress as `0x${string}`,
+      setCustomError(null);
+      await writeContractAsync({
+        address: campaign.contractAddress as Address,
         abi: [
           {
             name: "claimReward",
@@ -168,8 +179,31 @@ export default function RewardClaimModal({
         functionName: "claimReward",
         args: [BigInt(epochIndex)]
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error claiming reward:", err);
+      
+      // Parse and display user-friendly error messages
+      let errorMessage = 'Failed to claim reward. Please try again.';
+      
+      if (err?.message) {
+        if (err.message.includes('insufficient funds')) {
+          errorMessage = 'Insufficient funds for transaction. Please check your wallet balance.';
+        } else if (err.message.includes('user rejected')) {
+          errorMessage = 'Transaction was rejected. Please try again.';
+        } else if (err.message.includes('already claimed')) {
+          errorMessage = 'Rewards have already been claimed for this epoch.';
+        } else if (err.message.includes('not eligible')) {
+          errorMessage = 'You are not eligible to claim rewards for this epoch.';
+        } else if (err.message.includes('epoch not found')) {
+          errorMessage = 'Epoch not found. Please refresh and try again.';
+        } else if (err.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = `Transaction failed: ${err.message}`;
+        }
+      }
+      
+      setCustomError(errorMessage);
     }
   };
 
@@ -178,7 +212,7 @@ export default function RewardClaimModal({
     if (!epochData) return null;
     
     return {
-      startDate: new Date(Number(epochData.setting.startDate) * 1000),
+      startDate: new Date(Number(campaign.metadata.startDate) * 1000),
       endDate: new Date(Number(epochData.setting.endDate) * 1000),
       maxProof: epochData.setting.maxProof,
       totalLearners: epochData.learners.length,
@@ -208,12 +242,17 @@ export default function RewardClaimModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Claim Rewards - Epoch {epochIndex + 1}
-          </DialogTitle>
-          <p className="text-sm text-gray-500">
-            {epochMetadata.startDate.toLocaleDateString()} - {epochMetadata.endDate.toLocaleDateString()}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl font-bold">
+                Claim Rewards - Epoch {epochIndex + 1}
+              </DialogTitle>
+              <p className="text-sm text-gray-500">
+                {epochMetadata.startDate.toLocaleDateString()} - {epochMetadata.endDate.toLocaleDateString()}
+              </p>
+            </div>
+            <ConnectButton />
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -321,11 +360,11 @@ export default function RewardClaimModal({
           )}
 
           {/* Error Display */}
-          {error && (
+          {(error || customError) && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Error: {error.message}
+                {customError || 'Transaction failed. Please try again.'}
               </AlertDescription>
             </Alert>
           )}
