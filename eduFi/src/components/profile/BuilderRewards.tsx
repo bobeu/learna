@@ -257,7 +257,7 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
         onClose={() => setShowClaimModal(false)}
         title="Claim Your Rewards"
         description="Please confirm the transactions to claim your earned rewards"
-        steps={createClaimSteps()}
+        getSteps={createClaimSteps}
         onSuccess={handleClaimSuccess}
         onError={handleClaimError}
       />

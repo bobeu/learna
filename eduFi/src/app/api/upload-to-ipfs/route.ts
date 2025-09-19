@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       const uri = `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
       return NextResponse.json({ uri });
     }
-
+ 
     const data = await response.json();
     const uri = `ipfs://${data.IpfsHash}`;
     return NextResponse.json({ uri });

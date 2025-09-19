@@ -14,7 +14,11 @@ class AIService {
     if (!this.genAI) {
       throw new Error('Gemini API key not configured');
     }
-    return this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = process.env.GEMINI_MODEL;
+    if(!model){
+      throw new Error('Gemini model not specified');
+    }
+    return this.genAI.getGenerativeModel({ model });
   }
 
   async generateTopics(campaignName: string, campaignDescription: string): Promise<Array<{

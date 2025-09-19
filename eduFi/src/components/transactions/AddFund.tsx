@@ -359,7 +359,7 @@ export default function AddFund({ isOpen, onClose, campaignAddress, campaignName
         onClose={() => setShowTransactionModal(false)}
         title="Adding Funds to Campaign"
         description="Please confirm the transactions to add funds to your campaign"
-        steps={createTransactionSteps()}
+        getSteps={createTransactionSteps}
         onSuccess={handleTransactionSuccess}
         onError={handleTransactionError}
       />
