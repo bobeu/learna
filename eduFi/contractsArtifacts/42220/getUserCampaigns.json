@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0x6F9C90A4A50C8448A2c04f9Fd968CaF68eb33Ba7",
+  "contractAddress": "0x35F97b7CD7961ed9914315664bA99c6F73a989ac",
   "functionName": "getUserCampaigns",
   "inputCount": 1,
   "requireArgUpdate": true,

@@ -1,27 +1,22 @@
+/* eslint-disable */
+
 "use client";
 
 import React, { useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  User, 
   Trophy, 
   Star, 
   Calendar, 
-  Award,
-  Clock,
   Target,
-  TrendingUp,
   CheckCircle,
-  XCircle,
   ExternalLink
 } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Learner } from "../../../types";
-import { formatUnits } from "viem";
+import { Learner, Performance, ProofOfIntegration } from "../../../types";
 
 interface LearnerProfileModalProps {
   learner: Learner;
@@ -30,19 +25,20 @@ interface LearnerProfileModalProps {
 }
 
 interface ProofOfAchievementProps {
-  poa: Learner['poass'][0];
+  poi: ProofOfIntegration;
   index: number;
 }
 
 interface RatingProps {
-  rating: Learner['ratings'][0];
+  rating: Performance;
   index: number;
 }
 
 // Proof of Achievement Component
-function ProofOfAchievement({ poa, index }: ProofOfAchievementProps) {
-  const statusColor = poa.verified ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-  const statusIcon = poa.verified ? CheckCircle : XCircle;
+// const { verificationStatus: isVerified } = useStorage();
+function ProofOfAchievement({ poi, index }: ProofOfAchievementProps) {
+  const statusColor = poi.verified ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+  // const statusIcon = poi.verified ? CheckCircle : XCircle; 
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -54,34 +50,47 @@ function ProofOfAchievement({ poa, index }: ProofOfAchievementProps) {
                 Proof #{index + 1}
               </Badge>
               <Badge className={`text-xs ${statusColor}`}>
-                {poa.verified ? "Verified" : "Pending"}
+                {poi.verified ? "Verified" : "Pending"}
               </Badge>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium">Score: {poa.score}</span>
+                <span className="text-sm font-medium">Score: {poi.score}</span>
               </div>
               
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-600" />
                 <span className="text-sm text-gray-500">
-                  {new Date(Number(poa.timestamp) * 1000).toLocaleDateString()}
+                  {new Date(Number(poi.approvedAt) * 1000).toLocaleDateString()}
                 </span>
               </div>
               
-              {poa.link && (
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                  <a 
-                    href={poa.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    View Proof
-                  </a>
+              {poi.links && poi.links.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-medium text-gray-700">Submitted Links:</span>
+                  </div>
+                  <div className="space-y-1">
+                    {poi.links.map((link, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">#{index + 1}</span>
+                        <a 
+                          href={link.value} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline truncate max-w-xs"
+                        >
+                          {link.value}
+                        </a>
+                        <span className="text-xs text-gray-400">
+                          {new Date(Number(link.submittedAt) * 1000).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -127,15 +136,15 @@ function Rating({ rating, index }: RatingProps) {
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-600" />
                 <span className="text-sm text-gray-500">
-                  {new Date(Number(rating.timestamp) * 1000).toLocaleDateString()}
+                  {/* {new Date(Number(rating.ratedAt) * 1000).toLocaleDateString()} */}
+                  { rating.ratedAt }
                 </span>
-              </div>
-              
-              {rating.comment && (
+              </div>      
+              {/* {rating.comment && (
                 <p className="text-sm text-gray-600 mt-2">
                   "{rating.comment}"
                 </p>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -148,7 +157,7 @@ function Rating({ rating, index }: RatingProps) {
 export default function LearnerProfileModal({ learner, isOpen, onClose }: LearnerProfileModalProps) {
   const learnerStats = useMemo(() => {
     const totalScore = learner.poass.reduce((sum, poa) => sum + poa.score, 0);
-    const verifiedProofs = learner.poass.filter(poa => poa.verified).length;
+    const verifiedPoints = learner.point.verified ? 1 : 0; // Verified proof of integrations. Points are verified when builder's score is greater than 0
     const totalProofs = learner.poass.length;
     const avgRating = learner.ratings.length > 0 
       ? learner.ratings.reduce((sum, rating) => sum + rating.value, 0) / learner.ratings.length 
@@ -157,11 +166,11 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
 
     return {
       totalScore,
-      verifiedProofs,
+      verifiedProofs: verifiedPoints,
       totalProofs,
       avgRating,
       totalRatings,
-      verificationRate: totalProofs > 0 ? (verifiedProofs / totalProofs) * 100 : 0
+      verificationRate: totalProofs > 0 ? (verifiedPoints / totalProofs) * 100 : 0
     };
   }, [learner]);
 
@@ -316,24 +325,44 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
             </TabsList>
 
             <TabsContent value="proofs" className="space-y-4">
-              {learner.poass.length > 0 ? (
-                <div className="space-y-3">
-                  {learner.poass.map((poa, index) => (
-                    <ProofOfAchievement 
-                      key={index} 
-                      poa={poa} 
-                      index={index} 
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No proofs of achievement yet</p>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Proof of Integration */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-lg">Proof of Integration</h3>
+                <ProofOfAchievement poi={learner.point} index={0} />
+              </div>
+
+              {/* Proof of Assimilation */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-lg">Proof of Assimilation</h3>
+                {learner.poass.length > 0 ? (
+                  <div className="space-y-3">
+                    {learner.poass.map((poa, index) => (
+                      <div key={index} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">Proof of Assimilation #{index + 1}</h4>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            Completed
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <p>Score: {poa.score}</p>
+                          <p>Total Points: {poa.totalPoints}</p>
+                          <p>Percentage: {poa.percentage}%</p>
+                          <p>Time Spent: {poa.timeSpent} minutes</p>
+                          <p>Completed: {new Date(Number(poa.completedAt) * 1000).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No proofs of achievement yet</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="ratings" className="space-y-4">

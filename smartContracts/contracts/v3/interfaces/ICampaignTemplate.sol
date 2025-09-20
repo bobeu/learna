@@ -16,6 +16,7 @@ interface ICampaignTemplate {
     error ClaimNotReady();
     error BalanceAnomally();
     error InsufficientValue();
+    error NoProofOfLearning();
     error MaxFundDepthExceeded();
     error CannotShareZeroValue();
     error MaxProofPerDayExceeded();
@@ -37,11 +38,16 @@ interface ICampaignTemplate {
         bytes completedAt;
     }
 
+    struct Link {
+        bytes value;
+        uint64 submittedAt;
+    }
+
     struct ProofOfIntegration {
-        bytes link; // Can be any link to learner's portfolio e.g Githuh, figma etc
-        uint64 submittedAt; 
+        Link[3] links; // Can be any link to learner's portfolio e.g Githuh, figma etc
         uint64 approvedAt; 
-        uint64 score;
+        uint64 score; // This is the point earned for integration not the actual token amount. Calculation is based on the total points for the campaign/epoch
+        bool verified; // Link must be verified before builder can be eligible for their reward
     }
 
     ///@dev Expected to be rated by AI after quiz or test completion

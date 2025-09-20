@@ -4,17 +4,14 @@ import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Award, 
-  // Trophy, 
   DollarSign, 
   CheckCircle, 
   XCircle,
   AlertTriangle,
   Loader2,
-  // ExternalLink
 } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -57,7 +54,7 @@ export default function RewardClaimModal({
   });
   const [customError, setCustomError] = useState<string | null>(null);
 
-  const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
+  // const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
 
   // Check if user has participated in this epoch
   const { isFundedCampaign, hasParticipated } = useMemo(() => {
@@ -67,7 +64,7 @@ export default function RewardClaimModal({
     const hasParticipated = epochData.learners.some(learner => 
       learner.id.toLowerCase() === address.toLowerCase() && learner.poass.some(poa => poa.score > 0)
     );
-    const isEligible = isFundedCampaign && hasParticipated;
+    // const isEligible = isFundedCampaign && hasParticipated;
     return { 
       isFundedCampaign, 
       hasParticipated

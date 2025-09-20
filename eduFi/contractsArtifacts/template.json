@@ -105,6 +105,11 @@
     },
     {
       "inputs": [],
+      "name": "NoProofOfLearning",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "NotVerified",
       "type": "error"
     },
@@ -319,6 +324,35 @@
     {
       "inputs": [
         {
+          "internalType": "address[]",
+          "name": "targets",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint32[]",
+          "name": "points",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        }
+      ],
+      "name": "approveIntegration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint8",
           "name": "fundIndex",
           "type": "uint8"
@@ -327,14 +361,33 @@
           "internalType": "uint256",
           "name": "epoch",
           "type": "uint256"
-        },
-        {
-          "internalType": "enum ICampaignTemplate.RewardType",
-          "name": "rwType",
-          "type": "uint8"
         }
       ],
-      "name": "claimReward",
+      "name": "claimRewardForPOASS",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "fundIndex",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimRewardForPOINT",
       "outputs": [
         {
           "internalType": "bool",
@@ -586,14 +639,21 @@
                     {
                       "components": [
                         {
-                          "internalType": "bytes",
-                          "name": "link",
-                          "type": "bytes"
-                        },
-                        {
-                          "internalType": "uint64",
-                          "name": "submittedAt",
-                          "type": "uint64"
+                          "components": [
+                            {
+                              "internalType": "bytes",
+                              "name": "value",
+                              "type": "bytes"
+                            },
+                            {
+                              "internalType": "uint64",
+                              "name": "submittedAt",
+                              "type": "uint64"
+                            }
+                          ],
+                          "internalType": "struct ICampaignTemplate.Link[3]",
+                          "name": "links",
+                          "type": "tuple[3]"
                         },
                         {
                           "internalType": "uint64",
@@ -604,6 +664,11 @@
                           "internalType": "uint64",
                           "name": "score",
                           "type": "uint64"
+                        },
+                        {
+                          "internalType": "bool",
+                          "name": "verified",
+                          "type": "bool"
                         }
                       ],
                       "internalType": "struct ICampaignTemplate.ProofOfIntegration",
@@ -827,31 +892,14 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "unpause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
-          "internalType": "address[]",
-          "name": "targets",
-          "type": "address[]"
-        },
-        {
-          "internalType": "uint32[]",
-          "name": "points",
-          "type": "uint32[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "epoch",
-          "type": "uint256"
+          "internalType": "string[3]",
+          "name": "links",
+          "type": "string[3]"
         }
       ],
-      "name": "updatePoints",
+      "name": "submitProofOfIntegration",
       "outputs": [
         {
           "internalType": "bool",
@@ -859,6 +907,13 @@
           "type": "bool"
         }
       ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },

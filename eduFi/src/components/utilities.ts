@@ -6,8 +6,24 @@ import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
 import { CAST_MESSAGES } from "@/lib/constants";
 import { Address, Admin, Campaign, CampaignTemplateReadData, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FunctionName, mockCampaigns, ProofOfAssimilation, ReadData, TransactionData } from "../../types";
+import campaigntemplate from "../../contractsArtifacts/template.json";
+import assert from "assert";
 
-export const TOTAL_WEIGHT = 100;
+export type UserType = 'builder' | 'campaignOwner';
+export interface BuildUserTransactionDataProps {
+  userType?: UserType;
+  chainId?: number;
+  functionName: FunctionName;
+  contractAddress?: Address;
+  args: any[];
+}
+
+export interface TrxnData {
+  contractAddress: Address;
+  abi: any;
+  functionName: FunctionName;
+  args: any[];
+}
 
 export const mockHash = keccak256(stringToBytes('solidity'), 'hex');
 export const mockEncoded = stringToHex("solidity");
@@ -36,50 +52,6 @@ export const mockAdmins : Admin = {
 export const toHash = (arg: string) => {
   return keccak256(stringToHex(arg));
 }
-
-// export const mockQuiz : Quiz = {
-//   id: "",
-//   title: "",
-//   description: "",
-//   questions: [
-//     {
-//       category: '',
-//       correctAnswer: 0,
-//       difficulty: '',
-//       hash: mockReadProfile.hash_,
-//       id: 0,
-//       options: [''],
-//       points: 0,
-//       question: '',
-//       explanation: ''
-//     }
-//   ],
-//   totalPoints: 0,
-//   timeLimit: 0,
-//   difficulty: 'easy',
-//   category: "",
-//   imageUrl: "",
-//   createdAt: new Date()
-// }
-
-// export const mockQuizResult : QuizResultInput = {
-//   answers: [
-//     {
-//       isUserSelected: false,
-//       questionHash: mockReadProfile.hash_,
-//       selected: 0
-//     }
-//   ],
-//   other: {
-//     quizId: "",
-//     score: 0,
-//     title: '',
-//     totalPoints: 0,
-//     percentage: 0,
-//     timeSpent: 0,
-//     completedAt: new Date().toString(),
-//   }
-// }
 
 /**
  * @dev Converts an argument to a bigInt value
@@ -264,14 +236,19 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, c
             })),
           }
         },
-        learners: learners.map(({id, ratings, poass, point: { link,approvedAt, score, submittedAt }}) => ({
+        learners: learners.map(({id, ratings, poass, point: { links, approvedAt, score, verified }}) => ({
           id,
           poass,
           ratings: ratings.map(({ratedAt, value}) => ({
             value,
             ratedAt: normalizeString(ratedAt as Hex)
           })),
-          point: { approvedAt, score, submittedAt, link: normalizeString(link as Hex)}
+          point: { approvedAt, score, verified, links: links.map(({ submittedAt, value }) => {
+            return {
+              value: normalizeString(value as Hex),
+              submittedAt
+            }
+          })}
         }))
       }
     }),
@@ -311,3 +288,16 @@ export const calculateStreak = (results: ProofOfAssimilation[]): number => {
   return streak;
 };
 
+export function buildTransactionData({functionName, chainId, contractAddress, args} : BuildUserTransactionDataProps) {
+  const abi = campaigntemplate.abi.filter(({name}) => name === functionName);
+  console.log("Utilities: abi: ", abi);
+  let trxnData : TrxnData = {contractAddress: zeroAddress, abi: [], functionName: '', args: []};
+  if(functionName === 'createCampaign') {
+    const { transactionData } = filterTransactionData({chainId, filter: true, functionNames: [functionName]});
+    trxnData = { contractAddress: transactionData[0].contractAddress as Address, abi: transactionData[0].abi, args, functionName};
+  } else {
+    assert(contractAddress !== undefined, `Contract address not provided for ${functionName}`);
+    trxnData = { contractAddress, args, functionName, abi: campaigntemplate.abi};
+  }
+  return trxnData;
+}

@@ -1,13 +1,11 @@
-import { LayoutContext } from "../LayoutContext";
-import { StorageContextProvider } from "../StorageContextProvider";
 /* eslint-disable */
+import { StorageContextProvider } from "../StorageContextProvider";
 import React from 'react';
 import { 
     CampaignTemplateReadData,
     FormattedCampaignTemplate,
     mockCampaignTemplateReadData,
     type Address, 
-    // type QuizResultInput, 
     type ReadData, 
 } from '../../../types';
 import { useAccount, useChainId, useConfig, useReadContracts } from 'wagmi';
@@ -34,22 +32,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     const { isConnected, address } = useAccount();
     const account = formatAddr(address);
 
-    // Load user results from localStorage on component mount
-    // useEffect(() => {
-    //     const savedResults = localStorage.getItem('quizResults');
-    //     if (savedResults) {
-    //         try {
-    //             const parsedResults = JSON.parse(savedResults).map((result: any) => ({
-    //                 ...result,
-    //                 completedAt: new Date(result.completedAt)
-    //             }));
-    //             setUserResults(parsedResults);
-    //         } catch (error) {
-    //             console.error('Error loading saved results:', error);
-    //         }
-    //     }
-    // }, []);
-
     // Build read transactions data
     const { transactionData: td, contractAddresses: ca } = filterTransactionData({
         chainId,
@@ -73,8 +55,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         }
     });
 
-    // console.log("readTxObject", readTxObject);
-
     // Read data from the CampaignFactory contact 
     const { data: factoryReadData, } = useReadContracts({
         config,
@@ -87,8 +67,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
             refetchInterval: 5000,
         }
     });
-
-    // console.log("factoryReadData", factoryReadData);
 
     // Update the state with the result  of the read action
     React.useEffect(() => {
@@ -119,7 +97,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFatcory
     const { campaignDataTrxns, rest } = React.useMemo(() => {
         const { campaigns, ...rest } = factoryData;
-        // console.log("campaignDataTrxns", campaigns);
         const campaignDataTrxns = campaigns.map(({identifier}) => {
             return {
                 abi: campaignTemplateArtifacts.abi as any,
@@ -147,9 +124,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     
     // Update the state with the result  of the read action
     React.useEffect(() => {
-        // console.log("campaignDataTrxns", campaignDataTrxns);
-        // console.log("campaignsReadData", campaignsReadData);
-        // console.log("campaignsReadData", campaignsReadData);
         let campaignsData_ = formattedMockCampaignsTemplate;
         if(campaignsReadData && campaignsReadData.length > 0) {
             campaignsData_ = campaignsReadData.map(({result, status}, i) => {

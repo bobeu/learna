@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CampaignSliderCard from '../landingPage/cards/CampaignSliderCard';
+import CampaignSliderCard from '../learnaApp/cards/CampaignSliderCard';
 import { CampaignStateProps } from '../../../types';
 
 {/* Campaigns Section */}

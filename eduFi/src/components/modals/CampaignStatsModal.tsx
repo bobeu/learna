@@ -13,15 +13,13 @@ import {
   DollarSign, 
   Settings, 
   Award,
-  Clock,
   Target,
   TrendingUp,
   ExternalLink,
   ChevronRight,
-  Wallet
+  // Wallet
 } from "lucide-react";
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FormattedCampaignTemplate, EpochData, Learner, Address } from "../../../types";
 import { formatEther, formatUnits, Hex, hexToString } from "viem";
 import LearnerProfileModal from "./LearnerProfileModal";
@@ -104,7 +102,7 @@ function FundDisplay({ funds, title }: FundDisplayProps) {
 function LearnerList({ learners, onLearnerClick }: LearnerListProps) {
   return (
     <div className="space-y-2">
-      {learners.map((learner, index) => {
+      {learners.map((learner,) => {
         const totalScore = learner.poass.reduce((sum, poa) => sum + poa.score, 0);
         const avgRating = learner.ratings.length > 0 
           ? learner.ratings.reduce((sum, rating) => sum + rating.value, 0) / learner.ratings.length 
@@ -263,7 +261,7 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
 
 // Main Campaign Stats Modal Component
 export default function CampaignStatsModal({ campaign: inCampaign, isOpen, onClose }: CampaignStatsModalProps) {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const userAddress = formatAddr(address).toLowerCase();
   const [selectedLearner, setSelectedLearner] = useState<Learner | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -272,10 +270,10 @@ export default function CampaignStatsModal({ campaign: inCampaign, isOpen, onClo
 
   const {isOwner, campaign} = useMemo(() => {
     const defaultCampaign : FormattedCampaignTemplate = formattedMockCampaignsTemplate[0];
-    console.log("defaultValue", defaultCampaign);
+    // console.log("defaultValue", defaultCampaign);
     if(!inCampaign) return { isOwner: false, campaign: defaultCampaign};
     return { isOwner: userAddress === inCampaign.owner.toLowerCase(), campaign: inCampaign};
-  }, [address, inCampaign?.owner]);
+  }, [address, inCampaign?.owner, inCampaign, userAddress]);
 
   const { campaignMetadata, totalProofs } = useMemo(() => {
     const totalProofs = campaign.epochData.reduce((sum, epoch) => sum + toBN(epoch.totalProofs).toNumber(), 0);
@@ -288,7 +286,7 @@ export default function CampaignStatsModal({ campaign: inCampaign, isOpen, onClo
       endDate: new Date(Number(campaign.metadata.endDate) * 1000),
     };
     return { campaignMetadata, totalProofs }
-  }, [campaign?.metadata]);
+  }, [campaign?.metadata, campaign?.epochData]);
 
   const handleLearnerClick = (learner: Learner) => {
     setSelectedLearner(learner);

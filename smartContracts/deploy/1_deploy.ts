@@ -69,29 +69,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`campapaignFactory deployed to: ${campapaignFactory.address}`);
 
-	// try {
-	// 	console.log(`Setting fee receiver on CampaignFactory`);
-	// 	await execute('CampaignFactory', {from: deployer}, 'setFeeTo', feeManager.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		console.log(`Setting fee receiver on CampaignFactory`);
+		await execute('CampaignFactory', {from: deployer}, 'setFeeTo', feeManager.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
-	// try {
-	// 	console.log(`Setting verifier on CampaignFactory`);
-	// 	await execute('CampaignFactory', {from: deployer}, 'setVerifier', verifier.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		console.log(`Setting verifier on CampaignFactory`);
+		await execute('CampaignFactory', {from: deployer}, 'setVerifier', verifier.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
-	// try {
-	// 	console.log(`Setting factory on ApprovalFactory`);
-	// 	await execute('ApprovalFactory', {from: deployer}, 'setFactory', campapaignFactory.address);
-	// } catch (error) {
-	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-	// 	console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	// }
+	try {
+		console.log(`Setting factory on ApprovalFactory`);
+		await execute('ApprovalFactory', {from: deployer}, 'setFactory', campapaignFactory.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
 
 	// try {
 	// 	// await execute('Verifier', {from: deployer}, 'toggleUseWalletVerification');

@@ -50,8 +50,8 @@ export default function CampaignViewPage() {
               <div className="space-y-2">
                 <div>Native (Assimilation): {funds.nativeAss.toString()}</div>
                 <div>Native (Integration): {funds.nativeInt.toString()}</div>
-                <div>ERC20 (Assimilation): {funds.erc20Ass.map((t:any,i:number)=>`${t.tokenSymbol}:${t.amount.toString()}`).join(", ")}</div>
-                <div>ERC20 (Integration): {funds.erc20Int.map((t:any,i:number)=>`${t.tokenSymbol}:${t.amount.toString()}`).join(", ")}</div>
+                <div>ERC20 (Assimilation): {funds.erc20Ass.map((t)  =>`${t.tokenSymbol}:${t.amount.toString()}`).join(", ")}</div>
+                <div>ERC20 (Integration): {funds.erc20Int.map((t) =>`${t.tokenSymbol}:${t.amount.toString()}`).join(", ")}</div>
               </div>
             ) : (
               <div>No epoch found.</div>
@@ -68,7 +68,7 @@ export default function CampaignViewPage() {
               <div>No learners yet.</div>
             ) : (
               <ul className="space-y-2">
-                {learners.map((l:any, i:number) => (
+                {learners.map((l, i) => (
                   <li key={i} className="truncate">{l.id}</li>
                 ))}
               </ul>

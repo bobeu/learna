@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react";
-import type { DataContextProps } from './storageContext';
+import type { DataContextProps, NeynaDataContextProps } from './storageContext';
 
 export interface LearnaProviderProps {
     value: DataContextProps;
@@ -9,11 +9,11 @@ export interface LearnaProviderProps {
 }
 
 // Neyna authentication type
-// export interface NeynaProviderProps {
-//     value: NeynaDataContextProps;
-//     children: React.ReactNode;
-// }
-// export const NeynarDataContext = React.createContext<NeynaDataContextProps | null>(null); 
+export interface NeynaProviderProps {
+    value: NeynaDataContextProps;
+    children: React.ReactNode;
+}
+export const NeynarDataContext = React.createContext<NeynaDataContextProps | null>(null); 
 
 export const DataContext = React.createContext<DataContextProps | null>(null);
 
@@ -25,10 +25,10 @@ export const StorageContextProvider = ({ value, children } : LearnaProviderProps
     );
 }
 
-// export const NeynaStorageContextProvider = ({ value, children } : NeynaProviderProps) => {
-//     return(
-//         <NeynarDataContext.Provider value={value}>
-//             { children }
-//         </NeynarDataContext.Provider>
-//     );
-// }
+export const NeynaStorageContextProvider = ({ value, children } : NeynaProviderProps) => {
+    return(
+        <NeynarDataContext.Provider value={value}>
+            { children }
+        </NeynarDataContext.Provider>
+    );
+}

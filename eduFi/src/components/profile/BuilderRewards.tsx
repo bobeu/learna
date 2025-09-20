@@ -4,10 +4,10 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, TrendingUp, Clock, CheckCircle } from "lucide-react";
-import { useAccount, useWriteContract } from "wagmi";
+import { Loader2, Coins, TrendingUp, CheckCircle } from "lucide-react";
+import { useWriteContract } from "wagmi";
 import { formatEther } from "viem";
-import { CampaignTemplateReadData, Learner, Performance } from "../../../types";
+import { CampaignTemplateReadData, Learner, RewardType, Address } from "../../../types";
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
 
 interface BuilderRewardsProps {
@@ -16,11 +16,14 @@ interface BuilderRewardsProps {
 }
 
 export default function BuilderRewards({ campaign, learnerData }: BuilderRewardsProps) {
-  const { address, chainId } = useAccount();
-  const { writeContractAsync, isPending } = useWriteContract();
+  // const { address, chainId } = useAccount();
+  const { isPending } = useWriteContract();
   
   const [showClaimModal, setShowClaimModal] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  // const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedRewardType, setSelectedRewardType] = useState<RewardType | null>(null);
+  const [selectedFundIndex, setSelectedFundIndex] = useState<number>(0);
+  const [selectedEpoch, setSelectedEpoch] = useState<bigint>(0n);
 
   // Calculate total earnings from all epochs
   const totalEarnings = useMemo(() => {
@@ -53,6 +56,40 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
     const totalRating = learnerData.ratings.reduce((sum, rating) => sum + rating.value, 0);
     return totalRating / learnerData.ratings.length;
   }, [learnerData]);
+
+  // Get available funds for dropdown
+  const availableFunds = useMemo(() => {
+    const funds: Array<{ index: number; name: string; type: 'native' | 'erc20'; symbol: string }> = [];
+    
+    campaign.epochData.forEach((epoch, epochIndex) => {
+      // Add native funds
+      if (epoch.setting.funds.nativeAss > 0n || epoch.setting.funds.nativeInt > 0n) {
+        funds.push({
+          index: epochIndex,
+          name: `Epoch ${epochIndex + 1} - Native (CELO)`,
+          type: 'native',
+          symbol: 'CELO'
+        });
+      }
+      
+      // Add ERC20 funds
+      [...epoch.setting.funds.erc20Ass, ...epoch.setting.funds.erc20Int].forEach((token, tokenIndex) => {
+        funds.push({
+          index: epochIndex * 100 + tokenIndex, // Create unique index
+          name: `Epoch ${epochIndex + 1} - ${token.tokenSymbol}`,
+          type: 'erc20',
+          symbol: token.tokenSymbol
+        });
+      });
+    });
+    
+    return funds;
+  }, [campaign]);
+
+  // Get available epochs
+  const availableEpochs = useMemo(() => {
+    return campaign.epochData.map((_, index) => BigInt(index));
+  }, [campaign]);
 
   // Check if user is eligible to claim
   const isEligibleToClaim = useMemo(() => {
@@ -89,37 +126,20 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
   }, [totalEarnings, performanceScore, isEligibleToClaim]);
 
   const createClaimSteps = (): TransactionStep[] => {
-    const steps: TransactionStep[] = [];
+    if (!selectedRewardType) return [];
     
-    // Add claim step for native tokens
-    if (claimableAmounts.native > 0n) {
-      steps.push({
-        id: 'claim-native',
-        title: 'Claim Native Rewards',
-        description: `Claiming ${formatEther(claimableAmounts.native)} CELO`,
-        functionName: 'claimReward' as any,
-        contractAddress: campaign.owner, // Campaign address
-        abi: [], // Will be filled with actual ABI
-        args: ['native', claimableAmounts.native],
-      });
-    }
-
-    // Add claim steps for ERC20 tokens
-    Object.entries(claimableAmounts.erc20).forEach(([address, token]) => {
-      if (token.amount > 0n) {
-        steps.push({
-          id: `claim-erc20-${address}`,
-          title: `Claim ${token.symbol} Rewards`,
-          description: `Claiming ${formatEther(token.amount)} ${token.symbol}`,
-          functionName: 'claimReward' as any,
-          contractAddress: campaign.owner,
-          abi: [],
-          args: [address, token.amount],
-        });
-      }
-    });
-
-    return steps;
+    const functionName = selectedRewardType === RewardType.POINT ? 'claimRewardForPOINT' : 'claimRewardForPOASS';
+    const rewardTypeName = selectedRewardType === RewardType.POINT ? 'Proof of Integration' : 'Proof of Assimilation';
+    
+    return [{
+      id: `claim-${selectedRewardType === RewardType.POINT ? 'point' : 'poass'}`,
+      title: `Claim ${rewardTypeName} Rewards`,
+      description: `Claiming rewards for ${rewardTypeName} from fund index ${selectedFundIndex}`,
+      functionName: functionName as any,
+      contractAddress: campaign.owner as Address,
+      abi: [],
+      args: [selectedFundIndex, selectedEpoch],
+    }];
   };
 
   const handleClaim = () => {
@@ -220,24 +240,88 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
             </div>
           )}
 
-          {/* Claim Button */}
-          <Button
-            onClick={handleClaim}
-            disabled={!isEligibleToClaim || isPending}
-            className="w-full bg-primary-500 text-black hover:bg-primary-400"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Coins className="w-4 h-4 mr-2" />
-                Claim Rewards
-              </>
-            )}
-          </Button>
+          {/* Claim Options */}
+          {isEligibleToClaim && (
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-900 dark:text-white">Claim Rewards</h4>
+              
+              {/* Reward Type Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Reward Type:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={selectedRewardType === RewardType.POINT ? "default" : "outline"}
+                    onClick={() => setSelectedRewardType(RewardType.POINT)}
+                    className="text-sm"
+                  >
+                    Proof of Integration
+                  </Button>
+                  <Button
+                    variant={selectedRewardType === RewardType.POASS ? "default" : "outline"}
+                    onClick={() => setSelectedRewardType(RewardType.POASS)}
+                    className="text-sm"
+                  >
+                    Proof of Assimilation
+                  </Button>
+                </div>
+              </div>
+
+              {/* Fund Selection */}
+              {selectedRewardType && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Fund:</label>
+                  <select
+                    value={selectedFundIndex}
+                    onChange={(e) => setSelectedFundIndex(parseInt(e.target.value))}
+                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    {availableFunds.map((fund) => (
+                      <option key={fund.index} value={fund.index}>
+                        {fund.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Epoch Selection */}
+              {selectedRewardType && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Epoch:</label>
+                  <select
+                    value={selectedEpoch.toString()}
+                    onChange={(e) => setSelectedEpoch(BigInt(e.target.value))}
+                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    {availableEpochs.map((epoch, index) => (
+                      <option key={epoch.toString()} value={epoch.toString()}>
+                        Epoch {index + 1}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Claim Button */}
+              <Button
+                onClick={handleClaim}
+                disabled={!selectedRewardType || isPending}
+                className="w-full bg-primary-500 text-black hover:bg-primary-400"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Coins className="w-4 h-4 mr-2" />
+                    Claim {selectedRewardType === RewardType.POINT ? 'Integration' : 'Assimilation'} Rewards
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
 
           {!isEligibleToClaim && (
             <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">

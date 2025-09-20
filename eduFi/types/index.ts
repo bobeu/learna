@@ -1,10 +1,10 @@
 import { Hex, hexToString, stringToHex, zeroAddress } from "viem";
+
 export type CategoryType  = 'defi' | 'reactjs' | 'solidity' | 'wagmi' | string;
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
 export type FunctionName = 
   '' | 
-  'claimReward'|
   'getData'|
   'owner'|
   'allowance'|
@@ -31,10 +31,21 @@ export type FunctionName =
   'banOrUnbanUser'|
   'getCampaingData' |
   'getVerificationStatus' |
+  'proveAssimilation' |
   'createCampaign' |
   'hasApproval' |
   'withdraw' |
+  'addFund' |
+  'claimRewardForPOINT' |
+  'claimRewardForPOASS'|
+  'submitProofOfIntegration'|
+  'approveIntegration'|
+  'proveAssimilation'|
+  'epochSetting'|
   'setMinimumToken';
+
+export const CampaignFactoryFunctions : FunctionName[] = ['createCampaign'];
+export const CampaignTemplateFunctions : FunctionName[] = ['addFund', 'approveIntegration', 'epochSetting', 'claimRewardForPOASS', 'claimRewardForPOINT', 'proveAssimilation', 'submitProofOfIntegration'];
 
 export enum RewardType { POASS, POINT }
 export type VoidFunc = () => void;
@@ -135,13 +146,17 @@ export interface ProofOfAssimilation {
   completedAt: Hex | string; // Time the quiz was completed
 }
 
-export interface ProofOfIntegration {
-  link: string | Hex; // Can be any link to learner's portfolio e.g Githuh, figma etc
-  submittedAt: number; 
-  approvedAt: number; // Time the proof was approved
-  score: number;
+export interface Link {
+  value: string;
+  submittedAt: bigint;
 }
 
+export interface ProofOfIntegration {
+  links: Link[];
+  approvedAt: number;
+  score: number;
+  verified: boolean;
+}
 
 export interface Performance {
   value: number; 
@@ -153,6 +168,12 @@ export interface Learner {
   ratings: Performance[];
   point: ProofOfIntegration;
   poass: ProofOfAssimilation[];
+}
+
+export interface ApproveIntegrationParams {
+  targets: Address[];
+  points: number[];
+  epoch: bigint;
 }
     
 export interface ERC20Token {
@@ -244,7 +265,7 @@ export const mockLearners : Learner[] = ["https://github..com/bobeu", "https://g
   return {
     id: zeroAddress,
     ratings: [{value: 0, ratedAt: stringToHex(new Date().toString())}],
-    point: {link: stringToHex(link),  submittedAt: 0, approvedAt: 0, score: 0},
+    point: {links: [{value: stringToHex(link), submittedAt: 0n}], approvedAt: 0, score: 0, verified: false},
     poass: [{questionSize: 0, score: 0, totalPoints: 0, percentage: 0, timeSpent: 0, completedAt: stringToHex(new Date().toString())}]
   }
 });
@@ -254,7 +275,7 @@ export const formattedMockLearners : Learner[] = mockLearners.map((m) => {
     id: m.id,
     poass: m.poass,
     ratings: m.ratings.map((r) => { return {value: r.value, ratedAt: hexToString(r.ratedAt as Hex)}}),
-    point: { ...m.point, link: hexToString(m.point.link as Hex)}
+    point: { ...m.point, links: [{value: hexToString(m.point.links[0].value as Hex), submittedAt: 0n}]}
   } 
 })
 

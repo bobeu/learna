@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CampaignTabs from "@/components/campaigns/CampaignTabs"; 
-import ImprovedAITutor from "@/components/ai/ImprovedAITutor";
+import AITutor from "@/components/ai/AITutor";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { formatEther } from "viem";
 import { formattedMockLearners, CampaignStateProps } from "../../../types";
@@ -26,15 +26,12 @@ export default function LearnPage(){
     const [selectedCampaign, setSelectedCampaign] = React.useState<CampaignStateProps | null>(null);
 
     const { isLoading, builderCampaigns, campaignsData } = useStorage();
-    // const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
-    // const isLoading = data?.isLoading || false;
 
-    const handleJoinCampaign = React.useCallback((campaign: any) => {
+    const handleJoinCampaign = React.useCallback((campaign: CampaignStateProps) => {
         setSelectedCampaign(campaign);
     }, []);
 
     const closeTutor = React.useCallback(() => setSelectedCampaign(null), []);
-    // console.log("data", data?.campaignsData);
 
     const mappedCampaigns : CampaignStateProps[] = useMemo(() => {
         return campaignsData.map((c, idx) => {
@@ -117,7 +114,7 @@ export default function LearnPage(){
             badges,
         }                                                        
         return getStatsContent(stats);
-    }, [mappedCampaigns]);
+    }, [mappedCampaigns, builderCampaigns]);
 
     return (
         <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-black dark:font-mono">
@@ -200,7 +197,7 @@ export default function LearnPage(){
             </div>
 
             {selectedCampaign && (
-                <ImprovedAITutor campaign={selectedCampaign} onClose={closeTutor} />
+                <AITutor campaign={selectedCampaign} onClose={closeTutor} />
             )}
         </main>
     );

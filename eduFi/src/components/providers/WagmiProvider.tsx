@@ -7,8 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { APP_DESCRIPTION, APP_URL } from "@/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
 import { celo, celoSepolia } from 'wagmi/chains';
-import { createPublicClient, createWalletClient } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { createPublicClient } from "viem";
+// import { privateKeyToAccount } from "viem/accounts";
 import DataProvider from "./DataProvider";
 
 // Your walletconnect project Id

@@ -38,11 +38,14 @@ import CampaignMetaEditor from "@/components/profile/CampaignMetaEditor";
 import AddFund from "@/components/transactions/AddFund";
 import BuilderRewards from "@/components/profile/BuilderRewards";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
+import ProofSubmissionModal from "@/components/modals/ProofSubmissionModal";
+import BuilderApprovalModal from "@/components/modals/BuilderApprovalModal";
 import { mockCampaignTemplateReadData, Address, CreateCampaignInput, FunctionName } from "../../../types";
 import { formatAddr, } from "@/components/utilities";
 // import { useChainId } from "wagmi";
 import useStorage from "@/components/hooks/useStorage";
-import { formatEther as formatEtherUtil, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
+import Image from "next/image";
 
 export default function ProfilePage() {
   const { address } = useAccount();
@@ -51,9 +54,11 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   // const chainId = useChainId();
-
-  const campaignsData = data?.campaignsData || [mockCampaignTemplateReadData];
+  
   const userAddress = formatAddr(address).toLowerCase();
+  const campaignsData = useMemo(() => {
+    return (data?.campaignsData || [mockCampaignTemplateReadData]);
+  }, [data]);
 
   const { creatorCampaigns, builderCampaigns } = useMemo(() => {
     const creator = campaignsData.filter((c) => c.owner.toLowerCase() === userAddress);
@@ -72,6 +77,10 @@ export default function ProfilePage() {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [ipfsUploading, setIpfsUploading] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [showProofSubmission, setShowProofSubmission] = useState(false);
+  const [selectedCampaignForProof, setSelectedCampaignForProof] = useState<Address | null>(null);
+  const [showBuilderApproval, setShowBuilderApproval] = useState(false);
+  const [selectedCampaignForApproval, setSelectedCampaignForApproval] = useState<Address | null>(null);
   
   // Form fields
   const [name, setName] = useState<string>("");
@@ -81,10 +90,10 @@ export default function ProfilePage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [endInHours, setEndInHours] = useState<number | null>(null);
-  const [useAiImage, setUseAiImage] = useState(false);
+  // const [useAiImage, setUseAiImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const { creatorCampaigns: myCampaigns, creationFee } = useStorage();
+  // const { creatorCampaigns: myCampaigns } = useStorage();
 
   // Check if user came from "Create campaign" button
   useEffect(() => {
@@ -95,17 +104,17 @@ export default function ProfilePage() {
   }, [searchParams]);
 
   // Calculate total TVL from epoch data
-  const totalTVL = useMemo(() => {
-    return myCampaigns.reduce((total, campaign) => {
-      const campaignTVL = campaign.epochData.reduce((epochTotal, epoch) => {
-        const nativeAmount = epoch.setting.funds.nativeAss + epoch.setting.funds.nativeInt;
-        const erc20Amount = epoch.setting.funds.erc20Ass.reduce((sum, token) => sum + Number(token.amount), 0) +
-                           epoch.setting.funds.erc20Int.reduce((sum, token) => sum + Number(token.amount), 0);
-        return epochTotal + Number(nativeAmount) + erc20Amount;
-      }, 0);
-      return total + campaignTVL;
-    }, 0);
-  }, [myCampaigns]);
+  // const totalTVL = useMemo(() => {
+  //   return myCampaigns.reduce((total, campaign) => {
+  //     const campaignTVL = campaign.epochData.reduce((epochTotal, epoch) => {
+  //       const nativeAmount = epoch.setting.funds.nativeAss + epoch.setting.funds.nativeInt;
+  //       const erc20Amount = epoch.setting.funds.erc20Ass.reduce((sum, token) => sum + Number(token.amount), 0) +
+  //                          epoch.setting.funds.erc20Int.reduce((sum, token) => sum + Number(token.amount), 0);
+  //       return epochTotal + Number(nativeAmount) + erc20Amount;
+  //     }, 0);
+  //     return total + campaignTVL;
+  //   }, 0);
+  // }, [myCampaigns]);
 
   // Calculate end date in hours
   useEffect(() => {
@@ -165,6 +174,7 @@ export default function ProfilePage() {
     }
   };
 
+  // Generate image using AI
   const generateAiImage = async () => {
     setAiGenerating(true);
     try {
@@ -398,7 +408,7 @@ export default function ProfilePage() {
 
                 {imagePreview && (
                   <div className="mt-4">
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="Campaign preview"
                       className="w-full h-48 object-cover rounded-lg border"
@@ -465,12 +475,24 @@ export default function ProfilePage() {
                       <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
                       <div className="truncate">Epoches: {c.epoches?.toString?.() || 0}</div>
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForEdit(idx)}>Edit metadata</Button>
-                      <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForFund(idx)}>Add funds</Button>
-                      <Link href={{ pathname: "/profile/view", query: { i: idx.toString() } }}>
-                        <Button className="bg-primary-500 text-black hover:bg-primary-400">View</Button>
-                      </Link>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForEdit(idx)}>Edit metadata</Button>
+                        <Button variant="outline" className="border-neutral-700 text-gray-900 dark:text-white dark:border-gray-600" onClick={() => setSelectedForFund(idx)}>Add funds</Button>
+                        <Link href={{ pathname: "/profile/view", query: { i: idx.toString() } }}>
+                          <Button className="bg-primary-500 text-black hover:bg-primary-400">View</Button>
+                        </Link>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-green-600 text-green-600 hover:bg-green-50"
+                        onClick={() => {
+                          setSelectedCampaignForApproval(c.contractAddress);
+                          setShowBuilderApproval(true);
+                        }}
+                      >
+                        Review Builder Submissions
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -498,7 +520,7 @@ export default function ProfilePage() {
             {builderCampaigns.length === 0 && (
               <Card>
                 <CardContent className="p-6 text-center text-gray-600 dark:text-gray-300">
-                  You haven't subscribed to any campaigns yet.
+                  You haven&apos;t subscribed to any campaigns yet.
                 </CardContent>
               </Card>
             )}
@@ -507,7 +529,7 @@ export default function ProfilePage() {
                 const latest = c.epochData?.[c.epochData.length - 1];
                 const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
                 const learners = latest?.learners || [];
-                const userLearnerData = learners.find((l: any) => l.id.toLowerCase() === userAddress);
+                const userLearnerData = learners.find((l) => l.id.toLowerCase() === userAddress);
                 
                 return (
                   <div key={idx} className="space-y-4">
@@ -521,9 +543,21 @@ export default function ProfilePage() {
                           <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
                           <div className="truncate">Total Learners: {learners.length}</div>
                         </div>
-                        <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
-                          <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
-                        </Link>
+                        <div className="space-y-2">
+                          <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
+                            <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
+                          </Link>
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => {
+                              setSelectedCampaignForProof(c.contractAddress);
+                              setShowProofSubmission(true);
+                            }}
+                          >
+                            Submit Proof of Integration
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                     
@@ -550,6 +584,33 @@ export default function ProfilePage() {
           onSuccess={handleTransactionSuccess}
           onError={handleTransactionError}
         />
+
+        {/* Proof Submission Modal */}
+        {selectedCampaignForProof && (
+          <ProofSubmissionModal
+            isOpen={showProofSubmission}
+            onClose={() => {
+              setShowProofSubmission(false);
+              setSelectedCampaignForProof(null);
+            }}
+            campaignAddress={selectedCampaignForProof}
+            epochData={campaignsData.find(c => c.contractAddress === selectedCampaignForProof)?.epochData || []}
+          />
+        )}
+
+        {/* Builder Approval Modal */}
+        {selectedCampaignForApproval && (
+          <BuilderApprovalModal
+            isOpen={showBuilderApproval}
+            onClose={() => {
+              setShowBuilderApproval(false);
+              setSelectedCampaignForApproval(null);
+            }}
+            campaignAddress={selectedCampaignForApproval}
+            learners={campaignsData.find(c => c.contractAddress === selectedCampaignForApproval)?.epochData?.[0]?.learners || []}
+            epoch={BigInt(campaignsData.find(c => c.contractAddress === selectedCampaignForApproval)?.epochData?.[0]?.setting?.endDate || 0n)}
+          />
+        )}
       </div>
     </div>
   );

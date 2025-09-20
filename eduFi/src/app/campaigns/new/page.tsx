@@ -83,8 +83,6 @@ export default function NewCampaignPage(){
                     return prev += current.point.score > 0? 1 : 0;
                 }, 0);
             });
-
-            
             return{
                 id,
                 name: metadata.name,
@@ -114,7 +112,7 @@ export default function NewCampaignPage(){
         if(name) params.name = name;
         if(docUrl) params.link = docUrl;
 
-        const { contractAddresses: ca, transactionData: td} = filterTransactionData({chainId, filter: true, functionNames: ['createCampaign']});
+        const { transactionData: td} = filterTransactionData({chainId, filter: true, functionNames: ['createCampaign']});
         const transactionInfo = {
             contractAddress: td[0].contractAddress as Address,
             functionName: td[0].functionName as FunctionName,
@@ -124,7 +122,7 @@ export default function NewCampaignPage(){
         };
 
         return { argReady, transactionInfo }
-    }, [endInHours, imageUri, name, docUrl, description]);
+    }, [endInHours, chainId, imageUri, name, docUrl, description]);
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 
