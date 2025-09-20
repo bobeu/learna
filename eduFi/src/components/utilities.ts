@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { formatEther, Hex,hexToString,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";

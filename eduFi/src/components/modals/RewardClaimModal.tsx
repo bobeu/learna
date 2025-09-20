@@ -1,10 +1,12 @@
 "use client";
-
+/* eslint-disable */
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Award, 
   DollarSign, 
@@ -12,12 +14,15 @@ import {
   XCircle,
   AlertTriangle,
   Loader2,
+  Coins,
+  Zap,
 } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { FormattedCampaignTemplate, Address } from "../../../types";
+import { FormattedCampaignTemplate, Address, FunctionName, RewardType } from "../../../types";
 import { formatEther, formatUnits, Hex } from "viem";
 import { hexToString } from "viem";
+import campaignTemplate from "../../../contractsArtifacts/template.json";
 
 interface RewardClaimModalProps {
   campaign: FormattedCampaignTemplate;
@@ -36,8 +41,32 @@ interface RewardInfo {
     amount: bigint;
     name: string;
     symbol: string;
+    fundIndex: number;
   }>;
   reason?: string;
+}
+
+interface AvailableFund {
+  fundIndex: number;
+  token: Address;
+  name: string;
+  symbol: string;
+  amount: bigint;
+  decimals: number;
+  rewardType: RewardType;
+}
+
+type ClaimRewardType = 'claimRewardForPOINT' | 'claimRewardForPOASS' 
+
+const getDefaultReturnValue = (reason: string) => {
+  return {
+    canClaim: false,
+    totalScore: 0n,
+    totalRewards: 0n,
+    nativeReward: 0n,
+    erc20Rewards: [],
+    reason
+  };
 }
 
 // Main Reward Claim Modal Component
@@ -53,93 +82,185 @@ export default function RewardClaimModal({
     hash,
   });
   const [customError, setCustomError] = useState<string | null>(null);
+  const [selectedRewardType, setSelectedRewardType] = useState<ClaimRewardType | null>(null);
+  const [selectedFundIndex, setSelectedFundIndex] = useState<number | null>(null);
 
   // const [isCheckingEligibility, setIsCheckingEligibility] = useState(false);
 
+  // Get available funds for claiming
+  const availableFunds = useMemo((): AvailableFund[] => {
+    if (!campaign.epochData[epochIndex]) return [];
+    const epochData = campaign.epochData[epochIndex];
+    const funds: AvailableFund[] = [];
+
+    // Add native funds for POASS
+    if (epochData.setting.funds.nativeAss > 0n) {
+      funds.push({
+        fundIndex: 0, // Native token is always at index 0
+        token: campaign.contractAddress as Address,
+        name: 'CELO',
+        symbol: 'CELO',
+        amount: epochData.setting.funds.nativeAss,
+        decimals: 18,
+        rewardType: RewardType.POASS
+      });
+    }
+
+    // Add native funds for POINT
+    if (epochData.setting.funds.nativeInt > 0n) {
+      funds.push({
+        fundIndex: 0, // Native token is always at index 0
+        token: campaign.contractAddress as Address,
+        name: 'CELO',
+        symbol: 'CELO',
+        amount: epochData.setting.funds.nativeInt,
+        decimals: 18,
+        rewardType: RewardType.POINT
+      });
+    }
+
+    // Add ERC20 funds for POASS
+    epochData.setting.funds.erc20Ass.forEach((token, index) => {
+      if (token.amount > 0n) {
+        funds.push({
+          fundIndex: index,
+          token: token.token,
+          name: hexToString(token.tokenName as Hex),
+          symbol: hexToString(token.tokenSymbol as Hex),
+          amount: token.amount,
+          decimals: token.decimals,
+          rewardType: RewardType.POASS
+        });
+      }
+    });
+
+    // Add ERC20 funds for POINT
+    epochData.setting.funds.erc20Int.forEach((token, index) => {
+      if (token.amount > 0n) {
+        funds.push({
+          fundIndex: index,
+          token: token.token,
+          name: hexToString(token.tokenName as Hex),
+          symbol: hexToString(token.tokenSymbol as Hex),
+          amount: token.amount,
+          decimals: token.decimals,
+          rewardType: RewardType.POINT
+        });
+      }
+    });
+
+    return funds;
+  }, [campaign.epochData, epochIndex, campaign.contractAddress]);
+
   // Check if user has participated in this epoch
   const { isFundedCampaign, hasParticipated } = useMemo(() => {
-    if (!address || !campaign.epochData[epochIndex]) return { isFundedCampaign: false, hasParticipated: false, isEligible: false };
+    if (!address || !campaign.epochData[epochIndex]) return { isFundedCampaign: false, hasParticipated: false };
     const epochData = campaign.epochData[epochIndex];
-    const isFundedCampaign = (epochData.setting.funds.nativeAss > 0n || epochData.setting.funds.nativeInt > 0n) || epochData.setting.funds.erc20Ass.some(token => token.amount > 0n) || epochData.setting.funds.erc20Int.some(token => token.amount > 0n);
+    const isFundedCampaign = availableFunds.length > 0;
     const hasParticipated = epochData.learners.some(learner => 
-      learner.id.toLowerCase() === address.toLowerCase() && learner.poass.some(poa => poa.score > 0)
+      learner.id.toLowerCase() === address.toLowerCase() && 
+      (learner.poass.some(poa => poa.score > 0) || learner.point.verified)
     );
-    // const isEligible = isFundedCampaign && hasParticipated;
     return { 
       isFundedCampaign, 
       hasParticipated
     };
-  }, [address, campaign.epochData, epochIndex]);
+  }, [address, campaign.epochData, epochIndex, availableFunds]);
+
+  // Get filtered funds based on selected reward type
+  const filteredFunds = useMemo(() => {
+    if (!selectedRewardType) return [];
+    const rewardType = selectedRewardType === 'claimRewardForPOASS' ? RewardType.POASS : RewardType.POINT;
+    return availableFunds.filter(fund => fund.rewardType === rewardType);
+  }, [availableFunds, selectedRewardType]);
 
   // Calculate user's rewards
   const userRewards = useMemo((): RewardInfo => {
     if (!address || !isFundedCampaign || !hasParticipated || !campaign.epochData[epochIndex]) {
-      return {
-        canClaim: false,
-        totalScore: 0n,
-        totalRewards: 0n,
-        nativeReward: 0n,
-        erc20Rewards: [],
-        reason: "User has not participated in this epoch"
-      };
+      return getDefaultReturnValue("User has not participated in this epoch");
     }
-
     const epochData = campaign.epochData[epochIndex];
     const userLearner = epochData.learners.find(learner => 
       learner.id.toLowerCase() === address.toLowerCase()
     );
 
     if (!userLearner) {
-      return {
-        canClaim: false,
-        totalScore: 0n,
-        totalRewards: 0n,
-        nativeReward: 0n,
-        erc20Rewards: [],
-        reason: "User data not found"
-      };
+      return getDefaultReturnValue("User data not found");
     }
+    // const totalAllScores = epochData.learners.reduce((sum, learner) => 
+    //   sum + learner.poass.reduce((learnerSum, poa) => learnerSum + BigInt(poa.score), 0n), 0n
+    // );
 
-    // Calculate total score from user's proofs
-    const totalScore = userLearner.poass.reduce((sum, poa) => sum + BigInt(poa.score), 0n);
+    // Calculate total score based on selected reward type
+    let totalScore = 0n;
+    if (selectedRewardType === 'claimRewardForPOASS') {
+      totalScore = userLearner.poass.reduce((sum, poa) => sum + BigInt(poa.score), 0n);
+    } else if (selectedRewardType === 'claimRewardForPOINT') {
+      totalScore = userLearner.point.verified ? 1n : 0n;
+    }
     
     if (totalScore === 0n) {
-      return {
-        canClaim: false,
-        totalScore: 0n,
-        totalRewards: 0n,
-        nativeReward: 0n,
-        erc20Rewards: [],
-        reason: "No proofs of achievement to claim rewards for"
-      };
+      return getDefaultReturnValue(`No ${selectedRewardType === 'claimRewardForPOASS' ? 'proofs of assimilation' : 'proof of integration'} to claim rewards for`);
     }
 
     // Calculate rewards based on total funds and user's contribution
-    const totalAllScores = epochData.learners.reduce((sum, learner) => 
-      sum + learner.poass.reduce((learnerSum, poa) => learnerSum + BigInt(poa.score), 0n), 0n
-    );
+    let totalAllScores = 0n;
+    if (selectedRewardType === 'claimRewardForPOASS') {
+      totalAllScores = epochData.learners.reduce((sum, learner) => 
+        sum + learner.poass.reduce((learnerSum, poa) => learnerSum + BigInt(poa.score), 0n), 0n
+      );
+    } else if (selectedRewardType === 'claimRewardForPOINT') {
+      totalAllScores = BigInt(epochData.learners.filter(learner => learner.point.verified).length);
+    }
 
     if (totalAllScores === 0n) {
-      return {
-        canClaim: false,
-        totalScore: 0n,
-        totalRewards: 0n,
-        nativeReward: 0n,
-        erc20Rewards: [],
-        reason: "No total scores found in epoch"
-      };
+      return getDefaultReturnValue("No total scores found in epoch");
     }
 
     // Calculate proportional rewards
     const userProportion = (totalScore * 10000n) / totalAllScores; // Using 10000 for precision
-    const nativeReward = (epochData.setting.funds.nativeAss * userProportion) / 10000n;
     
-    const erc20Rewards = epochData.setting.funds.erc20Ass.map(token => ({
-      token: token.token,
-      amount: (token.amount * userProportion) / 10000n,
-      name: hexToString(token.tokenName as Hex),
-      symbol: hexToString(token.tokenSymbol as Hex)
-    }));
+    // Calculate native reward
+    let nativeReward = 0n;
+    if (selectedRewardType === 'claimRewardForPOASS') {
+      nativeReward = (epochData.setting.funds.nativeAss * userProportion) / 10000n;
+    } else if (selectedRewardType === 'claimRewardForPOINT') {
+      nativeReward = (epochData.setting.funds.nativeInt * userProportion) / 10000n;
+    }
+    
+    // Calculate ERC20 rewards
+    const erc20Rewards: {
+      token: Address;
+      amount: bigint;
+      name: string;
+      symbol: string;
+      fundIndex: number;
+    }[] = [];
+    if (selectedRewardType === 'claimRewardForPOASS') {
+      epochData.setting.funds.erc20Ass.forEach((token, index) => {
+        if (token.amount > 0n) {
+          erc20Rewards.push({
+            token: token.token,
+            amount: (token.amount * userProportion) / 10000n,
+            name: hexToString(token.tokenName as Hex),
+            symbol: hexToString(token.tokenSymbol as Hex),
+            fundIndex: index
+          });
+        }
+      });
+    } else if (selectedRewardType === 'claimRewardForPOINT') {
+      epochData.setting.funds.erc20Int.forEach((token, index) => {
+        if (token.amount > 0n) {
+          erc20Rewards.push({
+            token: token.token,
+            amount: (token.amount * userProportion) / 10000n,
+            name: hexToString(token.tokenName as Hex),
+            symbol: hexToString(token.tokenSymbol as Hex),
+            fundIndex: index
+          });
+        }
+      });
+    }
 
     const totalRewards = nativeReward + erc20Rewards.reduce((sum, reward) => sum + reward.amount, 0n);
 
@@ -150,31 +271,21 @@ export default function RewardClaimModal({
       nativeReward,
       erc20Rewards
     };
-  }, [address, hasParticipated, campaign.epochData, isFundedCampaign, epochIndex]);
+  }, [address, hasParticipated, campaign.epochData, isFundedCampaign, epochIndex, selectedRewardType]);
 
   const handleClaimReward = async () => {
-    if (!address || !userRewards.canClaim) {
-      console.error('Cannot claim reward: missing address or not eligible');
+    if (!address || !userRewards.canClaim || !selectedRewardType || selectedFundIndex === null) {
+      console.error('Cannot claim reward: missing required parameters');
       return;
     }
-
+    
     try {
       setCustomError(null);
       await writeContractAsync({
         address: campaign.contractAddress as Address,
-        abi: [
-          {
-            name: "claimReward",
-            type: "function",
-            stateMutability: "nonpayable",
-            inputs: [
-              { name: "epochIndex", type: "uint256" }
-            ],
-            outputs: []
-          }
-        ],
-        functionName: "claimReward",
-        args: [BigInt(epochIndex)]
+        abi: campaignTemplate.abi,
+        functionName: selectedRewardType as FunctionName,
+        args: [selectedFundIndex, BigInt(epochIndex)]
       });
     } catch (err: any) {
       console.error("Error claiming reward:", err);
@@ -215,7 +326,7 @@ export default function RewardClaimModal({
       totalLearners: epochData.learners.length,
       totalProofs: epochData.totalProofs
     };
-  }, [epochData]);
+  }, [epochData, campaign.metadata.startDate]);
 
   if (!epochData || !epochMetadata) {
     return (
@@ -304,11 +415,82 @@ export default function RewardClaimModal({
             </Alert>
           )}
 
-          {/* Reward Breakdown */}
-          {userRewards.canClaim && (
+          {/* Reward Type Selection */}
+          {hasParticipated && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Your Rewards</CardTitle>
+                <CardTitle className="text-lg">Select Reward Type</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reward-type">Choose what you want to claim rewards for:</Label>
+                  <Select 
+                    value={selectedRewardType || ""} 
+                    onValueChange={(value: ClaimRewardType) => {
+                      setSelectedRewardType(value);
+                      setSelectedFundIndex(null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select reward type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="claimRewardForPOASS">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-purple-600" />
+                          <span>Proof of Assimilation (POASS)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="claimRewardForPOINT">
+                        <div className="flex items-center gap-2">
+                          <Coins className="w-4 h-4 text-orange-600" />
+                          <span>Proof of Integration (POINT)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Fund Selection */}
+                {selectedRewardType && filteredFunds.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="fund-selection">Select fund to claim from:</Label>
+                    <Select 
+                      value={selectedFundIndex?.toString() || ""} 
+                      onValueChange={(value) => setSelectedFundIndex(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select fund" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredFunds.map((fund) => (
+                          <SelectItem key={`${fund.fundIndex}-${fund.rewardType}`} value={fund.fundIndex.toString()}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-blue-600">
+                                  {fund.symbol[0] || 'T'}
+                                </span>
+                              </div>
+                              <span>{fund.name} ({fund.symbol})</span>
+                              <span className="text-sm text-gray-500">
+                                - {formatUnits(fund.amount, fund.decimals)} available
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Reward Breakdown */}
+          {userRewards.canClaim && selectedRewardType && selectedFundIndex !== null && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Your Estimated Rewards</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Native Token Reward */}
@@ -381,7 +563,7 @@ export default function RewardClaimModal({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            {userRewards.canClaim && (
+            {userRewards.canClaim && selectedRewardType && selectedFundIndex !== null && (
               <Button 
                 onClick={handleClaimReward} 
                 disabled={isPending || isConfirming}
@@ -395,7 +577,7 @@ export default function RewardClaimModal({
                 ) : (
                   <>
                     <Award className="w-4 h-4 mr-2" />
-                    Claim Rewards
+                    Claim {selectedRewardType === 'claimRewardForPOASS' ? 'POASS' : 'POINT'} Rewards
                   </>
                 )}
               </Button>

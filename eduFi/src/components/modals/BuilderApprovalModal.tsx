@@ -101,24 +101,27 @@ export default function BuilderApprovalModal({
     }
     
     setError(null);
+    setIsSubmitting(true);
     setShowTransactionModal(true);
   };
 
   const handleTransactionSuccess = () => {
     setShowTransactionModal(false);
+    setIsSubmitting(false);
     setSelectedBuilders(new Set());
     setScores(new Map());
     onClose();
   };
 
-  const handleTransactionError = (error: string) => {
-    setError(error);
+  const handleTransactionError = (error: Error) => {
+    setError(error.message || 'Unknown error');
+    setIsSubmitting(false);
     setShowTransactionModal(false);
   };
 
   return (
     <>
-      <Dialog open={isOpen} onClose={onClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -265,9 +268,11 @@ export default function BuilderApprovalModal({
         <TransactionModal
           isOpen={showTransactionModal}
           onClose={() => setShowTransactionModal(false)}
-          steps={createTransactionSteps()}
+          getSteps={createTransactionSteps}
           onSuccess={handleTransactionSuccess}
           onError={handleTransactionError}
+          description="Approving proofs of integrations"
+          title="Approve proofs"
         />
       )}
     </>

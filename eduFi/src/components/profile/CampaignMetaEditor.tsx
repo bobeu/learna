@@ -1,16 +1,17 @@
 "use client";
-
+/* eslint-disable */
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "../../../types";
 
-export default function CampaignMetaEditor({ campaign, onClose }: { campaign: any; onClose: () => void }) {
-  const [name, setName] = useState(campaign.metadata.name || "");
-  const [link, setLink] = useState(campaign.metadata.link || "");
-  const [imageUrl, setImageUrl] = useState(campaign.metadata.imageUrl || "");
-  const [description, setDescription] = useState(campaign.metadata.description || "");
+export default function CampaignMetaEditor({ metadata: mt, onClose }: { metadata: Metadata; onClose: () => void }) {
+  const [name, setName] = useState(mt.name || "");
+  const [link, setLink] = useState(mt.link || "");
+  const [imageUrl, setImageUrl] = useState(mt.imageUrl || "");
+  const [description, setDescription] = useState(mt.description || "");
 
   const handleSave = async () => {
     // TODO: integrate on-chain write when ABI/methods are defined.

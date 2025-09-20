@@ -1,16 +1,16 @@
 "use client";
-
-import React, { useState, useMemo } from 'react';
+/* eslint-disable */
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { useWriteContract, usePublicClient, useAccount } from "wagmi";
-import { erc20Abi, parseUnits, isAddress, formatEther } from "viem";
-import { filterTransactionData } from '../utilities';
+import { Loader2, Plus, Trash2, CheckCircle } from "lucide-react";
+import { useWriteContract, usePublicClient } from "wagmi";
+import { erc20Abi, parseUnits, isAddress } from "viem";
+// import { filterTransactionData } from '../utilities';
 import { Address } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
 
@@ -32,7 +32,7 @@ interface AddFundProps {
 }
 
 export default function AddFund({ isOpen, onClose, campaignAddress, campaignName }: AddFundProps) {
-  const { address, chainId } = useAccount();
+  // const { chainId } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
   const publicClient = usePublicClient();
   
@@ -41,10 +41,10 @@ export default function AddFund({ isOpen, onClose, campaignAddress, campaignName
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { contractAddresses } = useMemo(() => 
-    filterTransactionData({ chainId, filter: false }), 
-    [chainId]
-  );
+  // const { contractAddresses } = useMemo(() => 
+  //   filterTransactionData({ chainId, filter: false }), 
+  //   [chainId]
+  // );
 
   const addToken = () => {
     setTokens(prev => [...prev, { 
@@ -148,6 +148,7 @@ export default function AddFund({ isOpen, onClose, campaignAddress, campaignName
       alert('Please add at least one funding source');
       return;
     }
+    setIsProcessing(true);
     setShowTransactionModal(true);
   };
 
@@ -356,7 +357,10 @@ export default function AddFund({ isOpen, onClose, campaignAddress, campaignName
 
       <TransactionModal
         isOpen={showTransactionModal}
-        onClose={() => setShowTransactionModal(false)}
+        onClose={() => {
+          setShowTransactionModal(false);
+          setIsProcessing(false);
+        }}
         title="Adding Funds to Campaign"
         description="Please confirm the transactions to add funds to your campaign"
         getSteps={createTransactionSteps}

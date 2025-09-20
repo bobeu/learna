@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,31 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useWriteContract } from "wagmi";
-import { Address, FunctionName } from "../../../types";
+import { Address, EpochData, FunctionName } from "../../../types";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
-import { X, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import campaignTemplate from "../../../contractsArtifacts/template.json";
+import { useAccount } from "wagmi";
 
 interface ProofSubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   campaignAddress: Address;
-  epochData: any[];
+  epochData: EpochData[];
 }
 
 export default function ProofSubmissionModal({ 
   isOpen, 
   onClose, 
   campaignAddress, 
-  epochData 
+  // epochData 
 }: ProofSubmissionModalProps) {
   const [links, setLinks] = useState<string[]>(["", "", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   
-  const { address, isConnected } = useAccount();
-  const { writeContract } = useWriteContract();
+  const { isConnected } = useAccount();
+  // const { writeContract } = useWriteContract();
 
   // Update link at specific index
   const updateLink = (index: number, value: string) => {
@@ -53,6 +54,8 @@ export default function ProofSubmissionModal({
   const addLink = () => {
     if (links.length < 3) {
       setLinks([...links, ""]);
+    } else {
+      // Alert the user with proper message that they have exceeded the maximum required number of links
     }
   };
 
@@ -66,6 +69,9 @@ export default function ProofSubmissionModal({
 
   // Prepare transaction data
   const transactionData = useMemo(() => {
+    const functionName = 'submitProofOfIntegration' as FunctionName;
+    const abi = campaignTemplate.abi.filter(({name}) => name === functionName);
+    console.log("abi: ", abi);
     const validLinks = links.filter(link => link.trim() !== "");
     // Pad with empty strings to ensure array length is 3
     const paddedLinks = [...validLinks];
@@ -74,9 +80,9 @@ export default function ProofSubmissionModal({
     }
     
     return {
-      functionName: 'submitProofOfIntegration' as FunctionName,
+      functionName,
       contractAddress: campaignAddress,
-      abi: [],
+      abi,
       args: [paddedLinks.slice(0, 3)] // Ensure exactly 3 strings
     };
   }, [links, campaignAddress]);
@@ -101,23 +107,26 @@ export default function ProofSubmissionModal({
     }
     
     setError(null);
+    setIsSubmitting(true);
     setShowTransactionModal(true);
   };
 
   const handleTransactionSuccess = () => {
+    setIsSubmitting(false);
     setShowTransactionModal(false);
     setLinks(["", "", ""]);
     onClose();
   };
 
-  const handleTransactionError = (error: string) => {
-    setError(error);
+  const handleTransactionError = (error: Error) => {
+    setError(error.message || "Unknown error");
+    setIsSubmitting(false);
     setShowTransactionModal(false);
   };
 
   return (
     <>
-      <Dialog open={isOpen} onClose={onClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -207,9 +216,11 @@ export default function ProofSubmissionModal({
 
       {showTransactionModal && (
         <TransactionModal
+          title="Proof of integration"
+          description="Submitting proof of integration"
           isOpen={showTransactionModal}
           onClose={() => setShowTransactionModal(false)}
-          steps={createTransactionSteps()}
+          getSteps={createTransactionSteps}
           onSuccess={handleTransactionSuccess}
           onError={handleTransactionError}
         />

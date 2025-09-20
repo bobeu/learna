@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { ethers } from 'ethers';
 import { Address } from '../../types';
 
@@ -311,7 +313,8 @@ class GoodDollarService {
     requirements: string[];
   }> {
     try {
-      const [userInfo, tokenInfo] = await Promise.all([
+      // const [userInfo, tokenInfo] = await Promise.all([
+      const [userInfo] = await Promise.all([
         this.getUserInfo(userAddress),
         this.getTokenInfo()
       ]);

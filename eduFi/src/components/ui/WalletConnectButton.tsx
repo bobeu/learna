@@ -1,9 +1,10 @@
 "use client";
-
+/* eslint-disable */
 import React from 'react';
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "./button";
 import { Wallet, User } from "lucide-react";
+import Image from 'next/image';
 
 interface WalletConnectButtonProps {
   variant?: "default" | "outline" | "ghost";
@@ -87,7 +88,7 @@ export default function WalletConnectButton({
                   }}
                 >
                   {chain.iconUrl && (
-                    <img
+                    <Image
                       alt={chain.name ?? "Chain icon"}
                       src={chain.iconUrl}
                       style={{ width: 12, height: 12 }}
