@@ -33,7 +33,6 @@ export default function ProofSubmissionModal({
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   
   const { isConnected } = useAccount();
-  // const { writeContract } = useWriteContract();
 
   // Update link at specific index
   const updateLink = (index: number, value: string) => {

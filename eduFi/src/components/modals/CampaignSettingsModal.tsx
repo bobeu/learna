@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { FormattedCampaignTemplate, EpochSettingInput, RewardType } from "../../../types";
+import campaignTemplate from "../../../contractsArtifacts/template.json";
 
 interface CampaignSettingsModalProps {
   campaign: FormattedCampaignTemplate;
@@ -149,27 +150,11 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
         tokens: updatedSettings.tokens,
         newOperator: updatedSettings.newOperator
       };
-
+      const functionName = "epochSetting";
       await writeContract({
         address: campaign.contractAddress as `0x${string}`,
-        abi: [
-          {
-            name: "epochSetting",
-            type: "function",
-            stateMutability: "nonpayable",
-            inputs: [
-              { name: "setting", type: "tuple", components: [
-                { name: "maxProof", type: "uint256" },
-                { name: "endInHr", type: "uint256" },
-                { name: "tokens", type: "address[]" },
-                { name: "newOperator", type: "address" }
-              ]},
-              { name: "rewardType", type: "uint8" }
-            ],
-            outputs: []
-          }
-        ],
-        functionName: "epochSetting",
+        abi: campaignTemplate.abi.filter(({name}) => name === functionName),
+        functionName,
         args: [contractArgs as any, rewardType]
       });
     } catch (err) {

@@ -102,7 +102,9 @@ export default function LearnPage(){
                     });
                 });
             });
-            averageScore = totalPoints > 0 ? Math.round((totalScore / totalPoints) * 100) : 0;
+            if(totalPoints > 0) {
+                if(totalScore > 0) averageScore = Math.round((totalScore / totalPoints) * 100);
+            }
         }
 
         const stats = {

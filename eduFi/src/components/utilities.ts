@@ -5,7 +5,6 @@ import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
-import { CAST_MESSAGES } from "@/lib/constants";
 import { Address, Admin, Campaign, CampaignTemplateReadData, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FunctionName, mockCampaigns, ProofOfAssimilation, ReadData, TransactionData } from "../../types";
 import campaigntemplate from "../../contractsArtifacts/template.json";
 import assert from "assert";
@@ -175,17 +174,6 @@ export function filterTransactionData({chainId, filter, functionNames = []}: Fil
     approvedFunctions,
     contractAddresses: contractAddresses[0],
   }
-}
-
-/**
- * @dev Fetch and format cast messages or text
- * @param task : This is the function name that was performed
- * @param weekId : WeekId, perhaps the current week
- * @returns 
- */
-export function getCastText(task: FunctionName, weekId: number) {
-  const filtered = CAST_MESSAGES.filter(({key}) => key === task);
-  return filtered?.[0]?.handler(weekId) || '';
 }
 
  // Normalize campaign data for UI

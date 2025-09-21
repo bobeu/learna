@@ -712,17 +712,6 @@
     ox "^0.4.4"
     zod "^3.24.1"
 
-"@farcaster/frame-sdk@>=0.0.31 <1.0.0":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.1.8.tgz#0cea025f971eff2ea77c934127b19268a4b870fb"
-  integrity sha512-tUZwoscn9ai9gXAKmfL+CAbquYuDHynH2b0SXys1wu4D4RYZysApYAnyXMBM3HZp8tBb0zgQdNZ5MNySfyXy/g==
-  dependencies:
-    "@farcaster/miniapp-sdk" "0.1.8"
-    "@farcaster/quick-auth" "^0.0.6"
-    comlink "^4.4.2"
-    eventemitter3 "^5.0.1"
-    ox "^0.4.4"
-
 "@farcaster/frame-wagmi-connector@>=0.0.19 <1.0.0":
   version "0.0.53"
   resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.53.tgz#c1364d8ab60ba6480959c8cba153a40a49cb6a3f"
@@ -758,6 +747,15 @@
     ox "^0.4.4"
     zod "^3.25.0"
 
+"@farcaster/miniapp-core@0.3.9":
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/@farcaster/miniapp-core/-/miniapp-core-0.3.9.tgz#10d29cdacca161dfa99f46fbaad937fff1385d39"
+  integrity sha512-7k2AHYycFABUEQFHGqsuZr6P6UQOE2WO4/Qj/kQ1ydKA8QjrWxO4HjiPfnTdvqH0xOKtdavbFOV5lK5bDLkemw==
+  dependencies:
+    "@solana/web3.js" "^1.98.2"
+    ox "^0.4.4"
+    zod "^3.25.0"
+
 "@farcaster/miniapp-node@^0.1.6":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@farcaster/miniapp-node/-/miniapp-node-0.1.7.tgz#4b5f4ce2a0f743e5c956342720c7756b0140500d"
@@ -768,12 +766,12 @@
     ox "^0.4.4"
     zod "^3.24.1"
 
-"@farcaster/miniapp-sdk@0.1.8", "@farcaster/miniapp-sdk@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@farcaster/miniapp-sdk/-/miniapp-sdk-0.1.8.tgz#3536dda2cb5915dc734a09e067477d7b33809797"
-  integrity sha512-izvv3k8FdDZM0pl2lGDzr9WWuiakmjhO5h9Jz+gJ7nXsHs5JmQXBnyE9XnCpNMCifk/bVxwsN3G/XpxWMyyJzA==
+"@farcaster/miniapp-sdk@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@farcaster/miniapp-sdk/-/miniapp-sdk-0.1.10.tgz#71186b5a70777f60c63abf009307b26ded74fbbd"
+  integrity sha512-ueoEAH3N7hIrV+L9pXdLJZpOY1GsOuwKN7MckouSEWY98H5A7KVajyGmGSDDVzjRWpu7Vndu4NZUHoOhF4nTOA==
   dependencies:
-    "@farcaster/miniapp-core" "0.3.7"
+    "@farcaster/miniapp-core" "0.3.9"
     "@farcaster/quick-auth" "^0.0.6"
     comlink "^4.4.2"
     eventemitter3 "^5.0.1"

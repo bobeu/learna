@@ -12,7 +12,6 @@ import { formatEther } from 'viem';
 import useStorage from '../hooks/useStorage';
 import { CampaignStateProps, mockCampaignState, FormattedCampaignTemplate } from '../../../types';
 import CampaignStatsModal from '../modals/CampaignStatsModal';
-// import WalletConnectButton from '../ui/WalletConnectButton';
 import { toBN } from '../utilities';
 
 // Main Landing Page Component
@@ -25,23 +24,7 @@ export default function LandingPage() {
 //   const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
 //   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
 
-  // Pull live campaign data from context and map to UI-friendly objects
   const { campaignsData } = useStorage();
-
-  // const normalizeString = (val: string) => {
-  //   if(!val) return '';
-  //   return val.startsWith('0x') ? hexToString(val as any) : val;
-  // };
-
-  // const normalizeImageSrc = (val: string) => {
-  //   const s = normalizeString(val);
-  //   if(!s) return '/learna-image4.png';
-  //   if(s.startsWith('ipfs://')) {
-  //     return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
-  //   }
-  //   if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
-  //   return '/learna-image4.png';
-  // };
 
   const mappedCampaigns = useMemo(() => {
     // Map on-chain data into the UI shape used by Hero/CampaignTabs/Cards
@@ -90,7 +73,7 @@ export default function LandingPage() {
         <Hero 
           handleJoinCampaign={handleJoinCampaign}
           campaigns={campaigns}
-          isLoading={isLoading}
+          // isLoading={isLoading}
         />
         <CampaignTabs 
           campaigns={campaigns}

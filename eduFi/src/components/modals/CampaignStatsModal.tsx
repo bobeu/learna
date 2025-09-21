@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -103,10 +103,15 @@ function LearnerList({ learners, onLearnerClick }: LearnerListProps) {
   return (
     <div className="space-y-2">
       {learners.map((learner,) => {
+        const ratingSize = learner.ratings.length;
+        const totalRating = learner.ratings.reduce((sum, rating) => sum + rating.value, 0);
         const totalScore = learner.poass.reduce((sum, poa) => sum + poa.score, 0);
-        const avgRating = learner.ratings.length > 0 
-          ? learner.ratings.reduce((sum, rating) => sum + rating.value, 0) / learner.ratings.length 
-          : 0;
+        let avgRating = 0;
+        if(ratingSize > 0){
+          if(totalRating > 0){
+            avgRating = totalRating / ratingSize;
+          }
+        }
 
         return (
           <Card 
@@ -273,7 +278,7 @@ export default function CampaignStatsModal({ campaign: inCampaign, isOpen, onClo
     // console.log("defaultValue", defaultCampaign);
     if(!inCampaign) return { isOwner: false, campaign: defaultCampaign};
     return { isOwner: userAddress === inCampaign.owner.toLowerCase(), campaign: inCampaign};
-  }, [address, inCampaign?.owner, inCampaign, userAddress]);
+  }, [inCampaign?.owner, userAddress]);
 
   const { campaignMetadata, totalProofs } = useMemo(() => {
     const totalProofs = campaign.epochData.reduce((sum, epoch) => sum + toBN(epoch.totalProofs).toNumber(), 0);

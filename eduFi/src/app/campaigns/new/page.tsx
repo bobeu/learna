@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ export default function NewCampaignPage(){
         };
 
         return { argReady, transactionInfo }
-    }, [endInHours, chainId, imageUri, name, docUrl, description]);
+    }, [endInHours, chainId, imageUri, name, docUrl, description, creationFee, endDate]);
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 

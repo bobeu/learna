@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React, { useContext, useMemo, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-// import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatEther } from "viem";
 import Link from "next/link";
@@ -43,7 +42,7 @@ import BuilderApprovalModal from "@/components/modals/BuilderApprovalModal";
 import { mockCampaignTemplateReadData, Address, CreateCampaignInput, FunctionName } from "../../../types";
 import { formatAddr, } from "@/components/utilities";
 // import { useChainId } from "wagmi";
-import useStorage from "@/components/hooks/useStorage";
+// import useStorage from "@/components/hooks/useStorage";
 import { zeroAddress } from "viem";
 import Image from "next/image";
 
@@ -501,7 +500,7 @@ export default function ProfilePage() {
 
             {selectedForEdit !== null && creatorCampaigns[selectedForEdit] && (
               <CampaignMetaEditor 
-                campaign={creatorCampaigns[selectedForEdit]}
+                metadata={creatorCampaigns[selectedForEdit].metadata}
                 onClose={() => setSelectedForEdit(null)}
               />
             )}

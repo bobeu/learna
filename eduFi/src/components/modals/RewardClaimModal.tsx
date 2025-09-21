@@ -250,10 +250,13 @@ export default function RewardClaimModal({
       });
     } else if (selectedRewardType === 'claimRewardForPOINT') {
       epochData.setting.funds.erc20Int.forEach((token, index) => {
+        let amount = 0n;
+        const amtInt = token.amount * userProportion;
+        if(amtInt > 0n) amount = amtInt / 10000n;
         if (token.amount > 0n) {
           erc20Rewards.push({
             token: token.token,
-            amount: (token.amount * userProportion) / 10000n,
+            amount,
             name: hexToString(token.tokenName as Hex),
             symbol: hexToString(token.tokenSymbol as Hex),
             fundIndex: index

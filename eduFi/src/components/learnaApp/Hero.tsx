@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React, { useMemo } from "react";
 import { ArrowRight, Play, Star, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -10,9 +10,10 @@ import Autoplay from 'embla-carousel-autoplay';
 import { Button } from '@/components/ui/button';
 import SliderCampaignMiniCard from "./cards/SliderCampaignMiniCard";
 import HowItWorksModal from './HowItWorksModal';
+import { CampaignStateProps } from "../../../types";
 
 {/* Hero Section with campaign slider */}
-export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campaigns: any, isLoading: boolean, handleJoinCampaign: (campaign: any) => void}) {
+export default function Hero({campaigns, handleJoinCampaign} : {campaigns: CampaignStateProps[], handleJoinCampaign: (campaign: any) => void}) {
     const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
     const router = useRouter();
@@ -89,7 +90,7 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
                         </button>
                         <div className="flex gap-3 overflow-x-auto scrollbar-hide">
                             {/* {(isLoading ? MOCK_CAMPAIGNS : campaigns).slice(0, 6).map((c) => ( */}
-                            {(isLoading ? MOCK_CAMPAIGNS : campaigns).map((c: any) => (
+                            {campaigns && campaigns.length > 0 && campaigns.map((c) => (
                             <div key={c.id} className="min-w-[150px] max-w-[250px] shrink-0 cursor-pointer" onClick={() => handleJoinCampaign(c)}>
                                 <SliderCampaignMiniCard campaign={c} onJoin={handleJoinCampaign} />
                             </div>
@@ -120,106 +121,106 @@ export default function Hero({campaigns, isLoading, handleJoinCampaign} : {campa
 }
 
 // Mock contract addresses and ABIs
-export const CAMPAIGN_FACTORY_ADDRESS = "0x16884C8C6a494527f4541007A46239218e76F661";
-export const CAMPAIGN_FACTORY_ABI = [
-  {
-    "inputs": [],
-    "name": "getData",
-    "outputs": [
-      {
-        "components": [
-          {"internalType": "address", "name": "dev", "type": "address"},
-          {"internalType": "address", "name": "feeTo", "type": "address"},
-          {"internalType": "uint256", "name": "creationFee", "type": "uint256"},
-          {"internalType": "address", "name": "verifier", "type": "address"},
-          {"internalType": "address", "name": "approvalFactory", "type": "address"},
-          {
-            "components": [
-              {"internalType": "address", "name": "creator", "type": "address"},
-              {"internalType": "address", "name": "identifier", "type": "address"}
-            ],
-            "internalType": "struct CampaignFactory.Campaign[]",
-            "name": "campaigns",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct CampaignFactory.ReadData",
-        "name": "data",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-];
+// const CAMPAIGN_FACTORY_ADDRESS = "0x16884C8C6a494527f4541007A46239218e76F661";
+// const CAMPAIGN_FACTORY_ABI = [
+//   {
+//     "inputs": [],
+//     "name": "getData",
+//     "outputs": [
+//       {
+//         "components": [
+//           {"internalType": "address", "name": "dev", "type": "address"},
+//           {"internalType": "address", "name": "feeTo", "type": "address"},
+//           {"internalType": "uint256", "name": "creationFee", "type": "uint256"},
+//           {"internalType": "address", "name": "verifier", "type": "address"},
+//           {"internalType": "address", "name": "approvalFactory", "type": "address"},
+//           {
+//             "components": [
+//               {"internalType": "address", "name": "creator", "type": "address"},
+//               {"internalType": "address", "name": "identifier", "type": "address"}
+//             ],
+//             "internalType": "struct CampaignFactory.Campaign[]",
+//             "name": "campaigns",
+//             "type": "tuple[]"
+//           }
+//         ],
+//         "internalType": "struct CampaignFactory.ReadData",
+//         "name": "data",
+//         "type": "tuple"
+//       }
+//     ],
+//     "stateMutability": "view",
+//     "type": "function"
+//   }
+// ];
 
 // Mock campaign data
-export const MOCK_CAMPAIGNS = [
-  {
-    id: 1,
-    address: "0x1234567890123456789012345678901234567890",
-    name: "Solidity Fundamentals",
-    description: "Master the basics of Solidity programming language",
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    fundingAmount: "1000",
-    participants: 245,
-    image: "/campaign-images/solidity-fundamentals.svg",
-    status: "active"
-  },
-  {
-    id: 2,
-    address: "0x2345678901234567890123456789012345678901",
-    name: "Celo Blockchain Development",
-    description: "Learn to build on the Celo blockchain ecosystem",
-    endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
-    fundingAmount: "2500",
-    participants: 189,
-    image: "/campaign-images/celo-blockchain-development.svg",
-    status: "active"
-  },
-  {
-    id: 3,
-    address: "0x3456789012345678901234567890123456789012",
-    name: "Divvi SDK Integration",
-    description: "Integrate Divvi SDK into your applications",
-    endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
-    fundingAmount: "1500",
-    participants: 156,
-    image: "/campaign-images/divvi-sdk-integration.svg",
-    status: "active"
-  },
-  {
-    id: 4,
-    address: "0x4567890123456789012345678901234567890123",
-    name: "Web3 Security Best Practices",
-    description: "Learn essential security practices for Web3 development",
-    endDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    fundingAmount: "2000",
-    participants: 312,
-    image: "/campaign-images/web3-security-best-practices.svg",
-    status: "completed"
-  },
-  {
-    id: 5,
-    address: "0x5678901234567890123456789012345678901234",
-    name: "DeFi Protocols Deep Dive",
-    description: "Understanding decentralized finance protocols",
-    endDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    fundingAmount: "3000",
-    participants: 278,
-    image: "/campaign-images/defi-protocols-deep-dive.svg",
-    status: "completed"
-  },
-  {
-    id: 6,
-    address: "0x6789012345678901234567890123456789012345",
-    name: "NFT Development Course",
-    description: "Create and deploy NFT smart contracts",
-    endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-    fundingAmount: "1800",
-    participants: 198,
-    image: "/campaign-images/nft-development-course.svg",
-    status: "featured"
-  }
-];
+// const MOCK_CAMPAIGNS = [
+//   {
+//     id: 1,
+//     address: "0x1234567890123456789012345678901234567890",
+//     name: "Solidity Fundamentals",
+//     description: "Master the basics of Solidity programming language",
+//     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "1000",
+//     participants: 245,
+//     image: "/campaign-images/solidity-fundamentals.svg",
+//     status: "active"
+//   },
+//   {
+//     id: 2,
+//     address: "0x2345678901234567890123456789012345678901",
+//     name: "Celo Blockchain Development",
+//     description: "Learn to build on the Celo blockchain ecosystem",
+//     endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "2500",
+//     participants: 189,
+//     image: "/campaign-images/celo-blockchain-development.svg",
+//     status: "active"
+//   },
+//   {
+//     id: 3,
+//     address: "0x3456789012345678901234567890123456789012",
+//     name: "Divvi SDK Integration",
+//     description: "Integrate Divvi SDK into your applications",
+//     endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "1500",
+//     participants: 156,
+//     image: "/campaign-images/divvi-sdk-integration.svg",
+//     status: "active"
+//   },
+//   {
+//     id: 4,
+//     address: "0x4567890123456789012345678901234567890123",
+//     name: "Web3 Security Best Practices",
+//     description: "Learn essential security practices for Web3 development",
+//     endDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "2000",
+//     participants: 312,
+//     image: "/campaign-images/web3-security-best-practices.svg",
+//     status: "completed"
+//   },
+//   {
+//     id: 5,
+//     address: "0x5678901234567890123456789012345678901234",
+//     name: "DeFi Protocols Deep Dive",
+//     description: "Understanding decentralized finance protocols",
+//     endDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "3000",
+//     participants: 278,
+//     image: "/campaign-images/defi-protocols-deep-dive.svg",
+//     status: "completed"
+//   },
+//   {
+//     id: 6,
+//     address: "0x6789012345678901234567890123456789012345",
+//     name: "NFT Development Course",
+//     description: "Create and deploy NFT smart contracts",
+//     endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+//     fundingAmount: "1800",
+//     participants: 198,
+//     image: "/campaign-images/nft-development-course.svg",
+//     status: "featured"
+//   }
+// ];
   

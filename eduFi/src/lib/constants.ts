@@ -1,4 +1,4 @@
-import { Address, FunctionName } from "../../types";
+import { Address } from "../../types";
 
 export const RECEIVER = "0xa1f70ffA4322E3609dD905b41f17Bf3913366bC1" as Address;
 export const APP_URL = process.env.NEXT_PUBLIC_URL!;
@@ -16,18 +16,3 @@ export const APP_WEBHOOK_URL = process.env.NEXT_PUBLIC_NEYNAR_API_KEY && process
     : `${APP_URL}/api/webhook`;
 export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
 export const MINI_APP_METADATA = process.env.NEXT_PUBLIC_MINI_APP_METADATA;
-
-export const CAST_MESSAGES : {key: FunctionName, handler(weekId: number): string}[] = [
-    {
-        key: 'claimReward',
-        handler: (weekId) => `Claimed my reward for week ${weekId}`
-    },
-    {
-        key: 'recordPoints',
-        handler: (weekId) => `Sharing my points for week ${weekId}`
-    },
-    {
-        key: 'sortWeeklyReward',
-        handler: (weekId) => `Week ${weekId} payout is sorted. You can now claim your rewards`
-    },
-];

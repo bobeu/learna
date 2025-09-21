@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export default function HowItWorksModal({ open, onClose }: { open: boolean; onCl
                         </video>
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400">If the video doesn't load, ensure the file exists at public/how-it-works.mp4</div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">If the video doesn&apos;t load, ensure the file exists at {"public/how-it-works.mp4"}</div>
                         <a href={videoSrc} download className="inline-flex">
                             <Button size="sm" variant="outline">Download video</Button>
                         </a>

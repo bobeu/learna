@@ -35,7 +35,6 @@ interface RatingProps {
 }
 
 // Proof of Achievement Component
-// const { verificationStatus: isVerified } = useStorage();
 function ProofOfAchievement({ poi, index }: ProofOfAchievementProps) {
   const statusColor = poi.verified ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
   // const statusIcon = poi.verified ? CheckCircle : XCircle; 

@@ -181,16 +181,20 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   // Calculate quiz score and performance
   const calculateResults = () => {
     setEndTime(Date.now());
-    // const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
-    
-    let correctAnswers = 0;
+  
+    let correctAnswers = 0; 
+    let score = 0;
+    const quizSize = quizzes.length;
     userAnswers.forEach((answer, index) => {
       if (answer === quizzes[index].correctAnswer) {
         correctAnswers++;
       }
     });
-    
-    const score = Math.round((correctAnswers / quizzes.length) * 100);
+    if(quizSize > 0) {
+      if(correctAnswers > 0) {
+        score = Math.round((correctAnswers / quizSize) * 100);
+      }
+    }
     setQuizScore(score);
     
     // Calculate performance rating
@@ -212,13 +216,18 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   // Prepare data for on-chain storage
   const prepareOnChainData = () => {
     if (!performance || !selectedTopic || !article) return null;
+    let timeSpent = 0;
+    const timeDiff = endTime - startTime;
+    if(timeDiff > 0) {
+      timeSpent = Math.floor(timeDiff / 1000); // in seconds
+    }
     
     const proofOfAssimilation: ProofOfAssimilation = {
       questionSize: quizzes.length,
       score: quizScore,
       totalPoints: quizzes.length * 10, // 10 points per question
       percentage: quizScore,
-      timeSpent: Math.floor((endTime - startTime) / 1000),
+      timeSpent,
       completedAt: stringToHex(Date.now().toString())
     };
     
@@ -335,10 +344,8 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
               <Quiz 
                 calculateResults={calculateResults}
                 currentQuizIndex={currentQuizIndex}
-                generateQuiz={generateQuiz}
                 quizzes={quizzes}
                 setCurrentQuizIndex={setCurrentQuizIndex}
-                setCurrentStep={setCurrentStep}
                 setUserAnswers={setUserAnswers}
                 userAnswers={userAnswers}
               />

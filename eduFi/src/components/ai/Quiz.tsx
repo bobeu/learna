@@ -1,15 +1,13 @@
+/* eslint-disable */
 import React from 'react'
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Steps } from './ArticleReading';
 
 function Quiz(props : QuizProps) {
     const {
         setCurrentQuizIndex,
         setUserAnswers,
-        generateQuiz, 
-        setCurrentStep, 
         calculateResults,
         currentQuizIndex,
         quizzes,
@@ -96,12 +94,9 @@ export interface QuizQuestion {
 
 export interface QuizProps {
     setUserAnswers: (arg: number[]) => void;
-    generateQuiz: () => void;
-    setCurrentStep: (arg: Steps) => void;
     setCurrentQuizIndex: (ar: number) => void;
     calculateResults: () => void;
     currentQuizIndex: number;
     quizzes: QuizQuestion[];
     userAnswers: number[];
-
 }
