@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react";
-import type { NeynaDataContextProps, DataContextProps } from './storageContext';
+import type { DataContextProps, NeynaDataContextProps } from './storageContext';
 
 export interface LearnaProviderProps {
     value: DataContextProps;
@@ -13,9 +13,9 @@ export interface NeynaProviderProps {
     value: NeynaDataContextProps;
     children: React.ReactNode;
 }
+export const NeynarDataContext = React.createContext<NeynaDataContextProps | null>(null); 
 
 export const DataContext = React.createContext<DataContextProps | null>(null);
-export const NeynarDataContext = React.createContext<NeynaDataContextProps | null>(null); 
 
 export const StorageContextProvider = ({ value, children } : LearnaProviderProps) => {
     return(

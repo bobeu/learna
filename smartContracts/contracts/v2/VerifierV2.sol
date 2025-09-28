@@ -5,7 +5,6 @@ import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/Self
 import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { ILearna } from "../interfaces/ILearna.sol";
 import { Approved } from "../Approved.sol";
 
 interface IVerifierV2 {
@@ -152,14 +151,11 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
     */
     function banOrUnbanUser(address[] memory users) public onlyApproved whenNotPaused  returns(bool) {
         uint size = users.length;
-        bool[] memory statuses = new bool[](size);
         for(uint i = 0; i < size; i++) {
             address user = users[i]; 
             bool status = blacklisted[user];
-            statuses[i] = !status;
             blacklisted[user] = !status;
         }
-        emit ILearna.UserStatusChanged(users, statuses);
         return true;
     } 
 

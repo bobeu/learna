@@ -1,20 +1,23 @@
 "use client";
-
+/* eslint-disable */
 import React from "react";
 import dynamic from "next/dynamic";
+import { JetBrains_Mono, Inter } from "next/font/google";
+import Loading from "@/components/utilities/Loading";
+
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 // note: dynamic import is required for components that use the Frame SDK
-const Educaster = dynamic(() => import("~/components/Educaster"), {
+const LandingPage = dynamic(() => import("@/components/learnaApp/LandingPage"), {
   ssr: false,
-  loading: () => (
-      <div className="h-screen relative w-full flex items-center justify-center text-sm font-mono">
-        <h3 className="py-12 p-5 text-center rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white animate-bounce-gentle">
-          <p className="animate-ping">Loading...</p>
-        </h3>
-      </div>
-    ),
+  loading: () => (<Loading />),
 });
-export default function App() {
-  return <Educaster />;
-}
 
+export default function App() {
+  return (
+    <div className={`${mono.variable} ${inter.variable} font-sans`}>
+      <LandingPage />
+    </div>
+  );
+}

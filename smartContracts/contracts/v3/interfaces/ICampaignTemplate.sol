@@ -16,6 +16,7 @@ interface ICampaignTemplate {
     error ClaimNotReady();
     error BalanceAnomally();
     error InsufficientValue();
+    error NoProofOfLearning();
     error MaxFundDepthExceeded();
     error CannotShareZeroValue();
     error MaxProofPerDayExceeded();
@@ -37,11 +38,16 @@ interface ICampaignTemplate {
         bytes completedAt;
     }
 
+    struct Link {
+        bytes value;
+        uint64 submittedAt;
+    }
+
     struct ProofOfIntegration {
-        bytes link; // Can be any link to learner's portfolio e.g Githuh, figma etc
-        uint64 submittedAt; 
+        Link[3] links; // Can be any link to learner's portfolio e.g Githuh, figma etc
         uint64 approvedAt; 
-        uint64 score;
+        uint64 score; // This is the point earned for integration not the actual token amount. Calculation is based on the total points for the campaign/epoch
+        bool verified; // Link must be verified before builder can be eligible for their reward
     }
 
     ///@dev Expected to be rated by AI after quiz or test completion
@@ -49,8 +55,6 @@ interface ICampaignTemplate {
         uint64 value; 
         bytes ratedAt; // Date rated
     }
-        // ProofOfIntegration poi; // Link to proof of integration if user has taken SDK test
-        // ProofOfAssimilation poa;
 
     // This should be a link to user portfolio such as github or any link to proof that user integrate or learn something valuable;
     // Proof of assimilation is achieved when user successfully complete a short training section with our Agent and take the short test to proof that they understand what they just learnt. They in turn earn POINT token as reward. They earn other asset provided by the campaign operator when they successfully integrate what they learned
@@ -69,6 +73,7 @@ interface ICampaignTemplate {
         bytes tokenName;
         bytes tokenSymbol;
         uint256 amount;
+        uint8 decimals;
     }
 
     struct Metadata {
@@ -77,6 +82,7 @@ interface ICampaignTemplate {
         bytes link; // Any other relevant link
         bytes description; // Max length is 300
         bytes imageUrl;
+        uint64 startDate;
         uint64 endDate;
     }
 
@@ -86,18 +92,8 @@ interface ICampaignTemplate {
         string description; // Max length is 300
         string imageUrl;
         uint64 endDateInHr;
-    }
 
-    // // Offchain
-    // struct Metric {
-    //     bytes identifier;
-    //     uint24 length;
-    //     uint32 totalLearners;
-    //     uint32 numOfIntegration;
-    //     uint256 nativeFunds;
-    //     ERC20Token[] tokenFunds;
-    //     //////////////////////////////////////////////////////////////////////Add more metrics and deliverables
-    // }
+    }
 
     struct Spot {
         uint value;
@@ -113,8 +109,6 @@ interface ICampaignTemplate {
 
     struct EpochSetting {
         uint24 maxProof; // Maximum assimilation learners can prove in a day
-        uint64 createdAt;
-        uint64 activatedAt;
         uint64 endDate;
         Funds funds;
     }
@@ -132,7 +126,7 @@ interface ICampaignTemplate {
 
     struct EpochSettingInput {
         uint24 maxProof; // Maximum assimilation learners can prove in a day
-        bool isEditing;
+        // bool isEditing;
         uint24 endInHr;
         address[] tokens;
         address newOperator;

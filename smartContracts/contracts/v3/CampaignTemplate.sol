@@ -44,12 +44,6 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         _;
     }
 
-    // // Only approved account is allowed
-    // modifier onlyApproved {
-    //     require(approvalFactory.hasApproval(_msgSender()), "No approval");
-    //     _;
-    // }
-
     ///@notice Constructor
     constructor(
         address _dev, 
@@ -58,11 +52,13 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         IVerifier _verifier,
         MetadataInput memory meta
     ) payable CampaignMetadata(_operator, _approvalFactory, meta) {
-        // assert(address(_verifier) != address(0));
-        // assert(_dev != address(0));
-        // assert(address(_approvalFactory) != address(0));
         verifier = _verifier;
         dev = _dev;
+        unchecked {
+            if(meta.endDateInHr > 0) {
+                metadata.endDate = _now() + uint64(meta.endDateInHr * 1 hours);
+            }
+        }
     }
 
     receive() external payable {
@@ -167,17 +163,23 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @param rwType: Reward type
     */
     function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyOwnerOrApproved returns(bool) {
+        uint64 currentTime = _now();
+        if(currentTime >= metadata.endDate) {
+            epoches += 1;
+            metadata.startDate = currentTime;
+        }
         uint epoch = epoches;
         EpochSetting memory eps = epochData[epoch].setting;
         if(arg.maxProof != eps.maxProof && arg.maxProof > 0) eps.maxProof = arg.maxProof;
         unchecked {
             rwType == RewardType.POASS? epochData[epoch].setting.funds.nativeAss += msg.value : epochData[epoch].setting.funds.nativeInt += msg.value;
-            if(arg.endInHr > 0) eps.endDate = (_now() + arg.endInHr * 1 hours);
+            if(arg.endInHr > 0) {
+                uint64 newEndDate = _now() + uint64(arg.endInHr * 1 hours);
+                metadata.endDate = newEndDate;
+                eps.endDate = newEndDate;
+            }
         }
-        if(!arg.isEditing) {
-            eps.createdAt = _now();
-        }
-        eps.activatedAt = _now();
+
         if(arg.tokens.length > 0) {
             for(uint i = 0; i < arg.tokens.length; i++) {
                 _setUpERC20Funds(arg.tokens[i], arg.newOperator, epoch, rwType);
@@ -228,26 +230,21 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         return true;
     }
 
-    /**@dev Learners claim reward
+    /**@dev Claim reward for proof of assimilation
         @param fundIndex : The position of the erc20 token in the list of erc20 funds.
         @param epoch : Epoch to claim from .
-        @param rwType : Reward type .
         @notice Learners can only claim from an epoch if the epoch deadline has passed.
      */
-    function claimReward(
-        uint8 fundIndex, 
-        uint epoch, 
-        RewardType rwType
-    ) public whenNotPaused validateEpochInput(epoch) returns(bool) {
+    function claimRewardForPOASS(uint8 fundIndex, uint epoch) public whenNotPaused validateEpochInput(epoch) returns(bool) {
         address sender = _msgSender();
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
         if(!verifier.isVerified(sender)) revert NotVerified();
         Spot memory spot = spots[sender][epoch];
         Common.ShareOut memory sh = dev._rebalance(
             _calculateShare(
-                rwType,
-                rwType == RewardType.POASS? _calculateProofs(epoch, spot.value) : epochData[epoch].learners[spot.value].point.score, 
-                rwType == RewardType.POASS? epochData[epoch].totalProofs : _getProofsOfInt(epoch), 
+                RewardType.POASS,
+                _calculateProofs(epoch, spot.value), 
+                epochData[epoch].totalProofs, 
                 fundIndex, 
                 epoch, 
                 _msgSender()
@@ -255,21 +252,52 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         );
         unchecked {
             if(sh.erc20 > 0) {
-                isClaimed[rwType][epoch][sender][sh.token] = true;
-                if(rwType == RewardType.POASS) {
-                    epochData[epoch].setting.funds.erc20Ass[fundIndex].amount -= sh.erc20;
-                } else {
-                    epochData[epoch].setting.funds.erc20Int[fundIndex].amount -= sh.erc20;
-                }
+                isClaimed[RewardType.POASS][epoch][sender][sh.token] = true;
+                epochData[epoch].setting.funds.erc20Ass[fundIndex].amount -= sh.erc20;
                 sender._sendErc20(sh.erc20, sh.token);
             }
             if(sh.native > 0) {
-                isClaimed[rwType][epoch][sender][address(this)] = true;
-                if(rwType == RewardType.POASS) {
-                    epochData[epoch].setting.funds.nativeAss -= sh.native;
-                } else {
-                    epochData[epoch].setting.funds.nativeInt -= sh.native;
-                }
+                isClaimed[RewardType.POASS][epoch][sender][address(this)] = true;
+                epochData[epoch].setting.funds.nativeAss -= sh.native;
+                sender._sendValue(sh.native);
+            }
+        }
+        emit Claimed(sender, sh);
+        return true;
+    }
+
+    /**@dev Claim reward for proof of integration 
+        @param fundIndex : The position of the erc20 token in the list of erc20 funds.
+        @param epoch : Epoch to claim from .
+        @notice Learners can only claim from an epoch if the epoch deadline has passed.
+     */
+    function claimRewardForPOINT(
+        uint8 fundIndex, 
+        uint epoch
+    ) public whenNotPaused validateEpochInput(epoch) returns(bool) {
+        address sender = _msgSender();
+        if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
+        if(!verifier.isVerified(sender)) revert NotVerified();
+        Spot memory spot = spots[sender][epoch];
+        Common.ShareOut memory sh = dev._rebalance(
+            _calculateShare(
+                RewardType.POINT,
+                epochData[epoch].learners[spot.value].point.score, 
+                _getProofsOfInt(epoch), 
+                fundIndex, 
+                epoch, 
+                _msgSender()
+            )
+        );
+        unchecked {
+            if(sh.erc20 > 0) {
+                isClaimed[RewardType.POINT][epoch][sender][sh.token] = true;
+                epochData[epoch].setting.funds.erc20Int[fundIndex].amount -= sh.erc20;
+                sender._sendErc20(sh.erc20, sh.token);
+            }
+            if(sh.native > 0) {
+                isClaimed[RewardType.POINT][epoch][sender][address(this)] = true;
+                epochData[epoch].setting.funds.nativeInt -= sh.native;
                 sender._sendValue(sh.native);
             }
         }
@@ -299,18 +327,20 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                         epochData[epoch].setting.funds.erc20Ass.push(
                             ERC20Token (
                                 token,
-                                abi.encode(IERC20Metadata(token).name()),
-                                abi.encode(IERC20Metadata(token).symbol()),
-                                allowance
+                                bytes(IERC20Metadata(token).name()),
+                                bytes(IERC20Metadata(token).symbol()),
+                                allowance,
+                                IERC20Metadata(token).decimals()
                             )
                         );
                     } else {
                         epochData[epoch].setting.funds.erc20Int.push(
                             ERC20Token (
                                 token,
-                                abi.encode(IERC20Metadata(token).name()),
-                                abi.encode(IERC20Metadata(token).symbol()),
-                                allowance
+                                bytes(IERC20Metadata(token).name()),
+                                bytes(IERC20Metadata(token).symbol()),
+                                allowance,
+                                IERC20Metadata(token).decimals()
                             )
                         );
                     }
@@ -320,13 +350,29 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         }
     }
 
-    /**@dev Owner or approved account can explicitly update proof of integration reward for learners
+    /**@dev Builders submit proof on integration 
+        @param links : Array of links to the proof. This could be any valid link e.g Github, Figma, etc
+        @notice Builder can submit at most 3 links before the epoch ends. Continous submission will override existing links which allow
+        them to edit as many time as they wish. Builder must have proof assimilation before they can submit proof of integration.
+     */
+    function submitProofOfIntegration(string[3] memory links) public returns(bool) {
+        uint epoch = epoches;
+        address sender = _msgSender();
+        Spot memory spot = spots[sender][epoch];
+        if(!spot.hasValue) revert NoProofOfLearning();
+        for(uint8 i = 0; i < links.length; i++) {
+            epochData[epoch].learners[spot.value].point.links[i] = Link(bytes(links[i]), _now());
+        }
+        return true;
+    }
+
+    /**@dev Owner or approved account can explicitly approve proof of integration reward for learners/builders
         @param targets : Array of target addresses
         @param points : Points earned as proof of integration
         @param epoch : Epoch Id
         @notice Targets array size must tally with that of points. 
      */
-    function updatePoints(
+    function approveIntegration(
         address[] memory targets, 
         uint32[]memory points, 
         uint epoch
@@ -336,13 +382,14 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                 address target = targets[i];
                 Spot memory spot = spots[target][epoch];
                 if(target != address(0)) {
+                    epochData[epoch].learners[spot.value].point.verified = true;
                     unchecked {
                         epochData[epoch].learners[spot.value].point.score += points[i];
                     }
                 }
             }
+            emit PointsUpdated(targets, points, epoch);
         }
-        emit PointsUpdated(targets, points, epoch);
         return true;
     }
 

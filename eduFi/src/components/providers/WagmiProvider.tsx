@@ -1,12 +1,15 @@
+'use client';
+
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
 import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { APP_DESCRIPTION, APP_URL } from "~/lib/constants";
+import { APP_DESCRIPTION, APP_URL } from "@/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
-import { celo, celoSepolia } from 'wagmi/chains';
-import { createPublicClient, createWalletClient } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { celo, celoSepolia } from "wagmi/chains";
+import { createPublicClient } from "viem";
+// import { privateKeyToAccount } from "viem/accounts";
+import DataProvider from "./DataProvider";
 
 // Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
@@ -68,6 +71,16 @@ export function getDefaultPublicClient(networkName: string) {
   });
 }
 
+// Create a single QueryClient instance outside the component
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes
+    },
+  },
+});
+
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the default config from RainbowKit
   const config = getDefaultConfig({
@@ -76,11 +89,11 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     appIcon: 'https://learna.vercel.app/learna-logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
-    chains: [celoSepolia, celo ],
+    chains: [celoSepolia, celo],
     ssr: true,
     multiInjectedProviderDiscovery: true,
-    pollingInterval: 10_000,
-    syncConnectedChain: true,
+    // pollingInterval: 10_000,
+    // syncConnectedChain: true,
     transports: {
       [celoSepolia.id]: http(),
       [celo.id]: http(),
@@ -93,22 +106,22 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   const theme = lightTheme(
     {
       ...lightTheme.accentColors.purple,
-      accentColorForeground: '#a855f7',
+      accentColorForeground: '#0f1113',
       borderRadius: 'large',
       fontStack: 'system',
       overlayBlur: 'small',
       accentColor: '#fff'
     }
   );
-
+  
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={queryClient}>
         <RainbowKitProvider 
           coolMode={true}
           modalSize="compact" 
           theme={theme} 
-          initialChain={celo.id} 
+          initialChain={celoSepolia.id} 
           showRecentTransactions={true}
           appInfo={{
             appName: "Learna",
@@ -116,7 +129,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           }}
         >
           <CoinbaseWalletAutoConnect>
-            { children }
+            <DataProvider>
+              { children }
+            </DataProvider>
           </CoinbaseWalletAutoConnect>
         </RainbowKitProvider>
       </QueryClientProvider>

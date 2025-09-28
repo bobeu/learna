@@ -48,6 +48,15 @@
     @apply bg-white/70 backdrop-blur-sm border border-white/20 shadow-xl;
   }
   
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
   .btn-primary {
     @apply bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
   }

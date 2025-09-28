@@ -1,31 +1,38 @@
 {
   "approvedFunctions": [
-    "recordPoints",
-    "toggleAdminStatus",
-    "setPermission",
-    "isPermitted",
-    "setTransitionInterval",
-    "sortWeeklyReward",
-    "adjustCampaignValues",
-    "setUpCampaign",
-    "getProfile",
+    "setCreationFee",
+    "setFeeTo",
+    "setVerifier",
+    "setApprovalFactory",
+    "createCampaign",
+    "getUserCampaigns",
     "getData",
-    "approve",
-    "setMinimumToken",
-    "owner",
-    "allowance",
-    "pause",
-    "unpause",
-    "claimReward",
-    "setScope",
-    "setConfigId",
-    "configId",
+    "hasApproval",
+    "removeApproval",
+    "setApproval",
+    "setFactory",
+    "getFactory",
+    "verify",
+    "verifyByApprove",
+    "toggleUseWalletVerification",
     "banOrUnbanUser",
     "getVerificationStatus",
-    "verify",
-    "isWalletVerificationRequired",
-    "balanceOf",
-    "delegateTransaction"
+    "panicWithdraw",
+    "withdraw",
+    "owner"
+  ],
+  "approveTemplateFunctions": [
+    "getData",
+    "addFund",
+    "claimRewardForPOINT",
+    "claimRewardForPOASS",
+    "submitProofOfIntegration",
+    "approveIntegration",
+    "proveAssimilation",
+    "epochSetting",
+    "pause",
+    "unpause",
+    "owner"
   ],
   "chainName": {
     "42220": "celo",
@@ -37,17 +44,15 @@
   ],
   "paths": {
     "42220": [
+      "deployments\\celo\\ApprovalFactory.json",
+      "deployments\\celo\\CampaignFactory.json",
       "deployments\\celo\\FeeManager.json",
-      "deployments\\celo\\LearnaV2.json",
-      "deployments\\celo\\PlatformToken.json",
       "deployments\\celo\\VerifierV2.json"
     ],
     "11142220": [
       "deployments\\sepolia\\ApprovalFactory.json",
       "deployments\\sepolia\\CampaignFactory.json",
       "deployments\\sepolia\\FeeManager.json",
-      "deployments\\sepolia\\LearnaV2.json",
-      "deployments\\sepolia\\PlatformToken.json",
       "deployments\\sepolia\\VerifierV2.json"
     ]
   },
@@ -55,20 +60,16 @@
     {
       "stablecoin": "",
       "ApprovalFactory": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
-      "CampaignFactory": "0x16884C8C6a494527f4541007A46239218e76F661",
+      "CampaignFactory": "0xC358487F0f0c7EBf785165f643CC4ae4AC0E2175",
       "FeeManager": "0x2864bfA7896DA58B0c1E4da982d2747A3de5D2D6",
-      "LearnaV2": "0x97867791A9635BA0b82AaEd9D2b722c44f93C86E",
-      "PlatformToken": "0x626Bafa462125FC16978D3bb9304483430576863",
-      "VerifierV2": "0xDc65C624aa92c1e24E3eE7eca94925e7396028a3"
+      "VerifierV2": "0xd60292815d57e281081559Fd6Bac6b4413b65773"
     },
     {
       "stablecoin": "0x765de816845861e75a25fca122bb6898b8b1282a",
-      "ApprovalFactory": "",
-      "CampaignFactory": "",
+      "ApprovalFactory": "0x58eeFd82452dbd7A3E6977b5ce17eB58Af9b13Ec",
+      "CampaignFactory": "0x35F97b7CD7961ed9914315664bA99c6F73a989ac",
       "FeeManager": "0xa3C385ED8DF6A7B71CA79f24c6e51C5E1a2fadd0",
-      "LearnaV2": "0xb0e9B198CC0DC4ceBaaA425F272E6661e35B5203",
-      "PlatformToken": "0x18673C0bFA8d56864F09DbEBF0C3C97BEe20078d",
-      "VerifierV2": "0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32"
+      "VerifierV2": "0x0B523E504bF03Aa424BCb8e43a0f2071a95eE906"
     }
   ]
 }

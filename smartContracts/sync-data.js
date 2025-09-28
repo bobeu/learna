@@ -2,14 +2,20 @@
 
 const fs = require('fs');
 const path = require('path');
+const campaignTemplateArtifacts = require('./artifacts/contracts/v3/CampaignTemplate.sol/CampaignTemplate.json');
+const erc20Artifacts = require('./artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json');
 
 // Configuration - directory files
 const HARDHAT_ARTIFACTS_PATH = './deployments/';
 const REACT_DATA_PATH = '../eduFi/contractsArtifacts';
+const CAMPAIGN_TEMPLATE_ABI_PATH = '../eduFi/contractsArtifacts/template.json';
+const ERC20_ABI_PATH ='../eduFi/contractsArtifacts/erc20.json';
 const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
-const approvedFunctions = ['recordPoints', 'toggleAdminStatus', 'setPermission', 'isPermitted', 'setTransitionInterval', 'sortWeeklyReward', 'adjustCampaignValues', 'setUpCampaign', 'getProfile', 'getData', 'approve', 'setMinimumToken', 'owner', 'allowance', 'pause', 'unpause', 'claimReward', 'setScope', 'setConfigId', 'configId', 'banOrUnbanUser', 'getVerificationStatus', 'verify', 'isWalletVerificationRequired', 'balanceOf', 'delegateTransaction'];
-const readFunctions = ['getData', 'owner', 'allowance', 'configId', 'getVerificationStatus', '', 'balanceOf', 'isPermitted'];
+const approvedFunctions = ['setCreationFee', 'setFeeTo', 'setVerifier', 'setApprovalFactory', 'createCampaign', 'getUserCampaigns', 'getData', 'hasApproval', 'removeApproval', 'setApproval', 'setFactory', 'getFactory', 'verify', 'verifyByApprove', 'toggleUseWalletVerification', 'banOrUnbanUser', 'getVerificationStatus', 'panicWithdraw', 'withdraw', 'owner'];
+const approveTemplateFunctions = ['getData', 'addFund', 'claimRewardForPOINT', 'claimRewardForPOASS', 'submitProofOfIntegration', 'approveIntegration', 'proveAssimilation', 'epochSetting', 'pause', 'unpause', 'owner'];
+const readFunctions = ['getUserCampaigns', 'getData', 'hasApproval', 'getFactory', 'getVerificationStatus'];
 const functionsRequireArgUpdate = approvedFunctions;
+const requiredContracts = ['ApprovalFactory.json', 'CampaignFactory.json', 'FeeManager.json', 'VerifierV2.json'];
 const chainName = {11142220: 'sepolia', 42220: 'celo'};
 const chainIds = [11142220, 42220]
 let workBuild = {
@@ -17,8 +23,19 @@ let workBuild = {
     42220: [],
 };
 
+const campaignTemplateContents = {
+    abi: campaignTemplateArtifacts.abi,
+    contractName: campaignTemplateArtifacts.contractName
+}
+
+const erc20ArtifactsContents = {
+    abi: erc20Artifacts.abi,
+    contractName: erc20Artifacts.contractName
+}
+
 let globalOutput = {
     approvedFunctions: approvedFunctions,
+    approveTemplateFunctions: approveTemplateFunctions,
     chainName: chainName,
     chainIds: chainIds,
     paths: workBuild,
@@ -49,6 +66,9 @@ let itemOutput = {
 if (!fs.existsSync(REACT_DATA_PATH)) {
     fs.mkdirSync(REACT_DATA_PATH, { recursive: true });
 }
+// if (!fs.existsSync(CAMPAIGN_TEMPLATE_ABI_PATH)) {
+//     fs.mkdirSync(CAMPAIGN_TEMPLATE_ABI_PATH, { recursive: true });
+// }
 
 // Function to walk through directories recursively
 function walkDir(dir) {
@@ -64,12 +84,13 @@ function walkDir(dir) {
             const isChainRelated = filePath.includes(chainName[chain]);
             const fileWithSolcInputs = file.includes('solcInputs');
             const fileWithChainId = file.endsWith('.chainId');
+            const onlyRequired = requiredContracts.includes(file);
             if (stat && stat.isDirectory() && !fileWithSolcInputs && !fileWithChainId) {
                 if(isChainRelated){
                     workBuild[chain].concat(walkDir(filePath));
                 }
             } else {
-                if(isChainRelated && !fileWithSolcInputs && !fileWithChainId) workBuild[chain].push(filePath);
+                if(isChainRelated && !fileWithSolcInputs && !fileWithChainId && onlyRequired) workBuild[chain].push(filePath);
             }
         });
     })
@@ -116,6 +137,8 @@ try {
 
     });
     fs.writeFileSync(GLOBAL_OUTPUT_PATH, JSON.stringify(globalOutput, null, 2));
+    fs.writeFileSync(CAMPAIGN_TEMPLATE_ABI_PATH, JSON.stringify(campaignTemplateContents, null, 2));
+    fs.writeFileSync(ERC20_ABI_PATH, JSON.stringify(erc20ArtifactsContents, null, 2));
     console.log("✅ Data synchronization completed!");
 } catch (error) {
     console.error("❌ Error syncing ABIs:", error);

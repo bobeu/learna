@@ -220,7 +220,7 @@ async function main() {
     // ]);
 
     // Get frame name from user
-    const frameName = 'Educaster'
+    const frameName = 'Learna'
     // const { frameName } = await inquirer.prompt([
     //   {
     //     type: 'input',
@@ -420,7 +420,7 @@ async function main() {
     console.log('📝 Make sure to configure the environment variables from .env in your hosting provider');
 
   } catch (error) {
-    console.error('\n❌ Error:', error.message);
+    console.error('\n❌ Error:', error?.stack || error?.data.message || error?.buffer || error.message);
     process.exit(1);
   }
 }
