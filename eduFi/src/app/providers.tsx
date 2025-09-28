@@ -16,7 +16,7 @@ const WagmiProvider = dynamic(
 export function Providers({ children } : {children: React.ReactNode}) {
   return (
     <WagmiProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
         <MiniAppProvider analyticsEnabled={true}>
           <NeynaAppContext>
             {children}
