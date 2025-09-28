@@ -1,13 +1,13 @@
 'use client';
 
 /* eslint-disable */
-import React, { useEffect, useState } from "react";
-import { http, useAccount, useConnect, WagmiProvider } from "wagmi";
+import React from "react";
+import { http, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { APP_DESCRIPTION, APP_URL } from "@/lib/constants";
 import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/rainbowkit";
 import { celo, celoSepolia } from "wagmi/chains";
-import { createPublicClient } from "viem";
+// import { createPublicClient } from "viem";
 // import { privateKeyToAccount } from "viem/accounts";
 import DataProvider from "./DataProvider";
 
@@ -19,67 +19,67 @@ const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
 if (!projectId) throw new Error('Project ID is undefined');
 
 // Custom hook for Coinbase Wallet detection and auto-connection
-function useCoinbaseWalletAutoConnect() {
-  const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
-  const { connect, connectors } = useConnect();
-  const { isConnected } = useAccount();
+// function useCoinbaseWalletAutoConnect() {
+//   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
+//   const { connect, connectors } = useConnect();
+//   const { isConnected } = useAccount();
 
-  useEffect(() => {
-    // Check if we're running in Coinbase Wallet
-    const checkCoinbaseWallet = () => {
-      const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
-        window.ethereum?.isCoinbaseWalletExtension ||
-        window.ethereum?.isCoinbaseWalletBrowser;
-      setIsCoinbaseWallet(!!isInCoinbaseWallet);
-    };
+//   useEffect(() => {
+//     // Check if we're running in Coinbase Wallet
+//     const checkCoinbaseWallet = () => {
+//       const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
+//         window.ethereum?.isCoinbaseWalletExtension ||
+//         window.ethereum?.isCoinbaseWalletBrowser;
+//       setIsCoinbaseWallet(!!isInCoinbaseWallet);
+//     };
     
-    checkCoinbaseWallet();
-    window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     checkCoinbaseWallet();
+//     window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
     
-    return () => {
-      window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
-    };
-  }, []);
+//     return () => {
+//       window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     };
+//   }, []);
 
-  useEffect(() => {
-    // Auto-connect if in Coinbase Wallet and not already connected
-    if (isCoinbaseWallet && !isConnected) {
-      connect({ connector: connectors[1] }); // Coinbase Wallet connector
-    }
-  }, [isCoinbaseWallet, isConnected, connect, connectors]);
+//   useEffect(() => {
+//     // Auto-connect if in Coinbase Wallet and not already connected
+//     if (isCoinbaseWallet && !isConnected) {
+//       connect({ connector: connectors[1] }); // Coinbase Wallet connector
+//     }
+//   }, [isCoinbaseWallet, isConnected, connect, connectors]);
 
-  return isCoinbaseWallet;
-}
+//   return isCoinbaseWallet;
+// }
 
 // Wrapper component that provides Coinbase Wallet auto-connection
-function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
-  useCoinbaseWalletAutoConnect();
-  return <>{children}</>;
-}
+// function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
+//   useCoinbaseWalletAutoConnect();
+//   return <>{children}</>;
+// }
 
-/**
- * @dev Get wallet client for signing transactions
- * @param networkName : Connected chain name
- * @param pkey : Private key. Note: Protect your private key at all cost. Use environment variables where necessary
- * @returns : Wallet client for signing transactions
- */
-export function getDefaultPublicClient(networkName: string) {
-  return createPublicClient({
-    chain: networkName === 'sepolia'? celoSepolia : celo,
-    transport: http(),
-    // transport: http('https://celo.drpc.org')
-  });
-}
+// /**
+//  * @dev Get wallet client for signing transactions
+//  * @param networkName : Connected chain name
+//  * @param pkey : Private key. Note: Protect your private key at all cost. Use environment variables where necessary
+//  * @returns : Wallet client for signing transactions
+//  */
+// export function getDefaultPublicClient(networkName: string) {
+//   return createPublicClient({
+//     chain: networkName === 'sepolia'? celoSepolia : celo,
+//     transport: http(),
+//     // transport: http('https://celo.drpc.org')
+//   });
+// }
 
 // Create a single QueryClient instance outside the component
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes
-    },
-  },
-});
+// const queryClient = new QueryClient({
+//   defaultOptions: {
+//     queries: {
+//       staleTime: 1000 * 60 * 5, // 5 minutes
+//       gcTime: 1000 * 60 * 10, // 10 minutes
+//     },
+//   },
+// });
 
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the default config from RainbowKit
@@ -92,8 +92,8 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     chains: [celoSepolia, celo],
     ssr: true,
     multiInjectedProviderDiscovery: true,
-    // pollingInterval: 10_000,
-    // syncConnectedChain: true,
+    pollingInterval: 10_000,
+    syncConnectedChain: true,
     transports: {
       [celoSepolia.id]: http(),
       [celo.id]: http(),
@@ -116,23 +116,23 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={new QueryClient()}>
         <RainbowKitProvider 
           coolMode={true}
           modalSize="compact" 
           theme={theme} 
-          initialChain={celoSepolia.id} 
+          initialChain={celo.id} 
           showRecentTransactions={true}
           appInfo={{
             appName: "Learna",
             learnMoreUrl: 'https://learna.vercel.app'
           }}
         >
-          <CoinbaseWalletAutoConnect>
+          {/* <CoinbaseWalletAutoConnect> */}
             <DataProvider>
               { children }
             </DataProvider>
-          </CoinbaseWalletAutoConnect>
+          {/* </CoinbaseWalletAutoConnect> */}
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
