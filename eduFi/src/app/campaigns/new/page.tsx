@@ -343,9 +343,9 @@ export default function NewCampaignPage(){
                                 </p>
                             </div>
 
-                            {/* <div className="pt-2">
+                            <div className="pt-2">
                                 <Button className="w-full" onClick={handleCreateCampaign}>Create Campaign</Button>
-                            </div> */}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
