@@ -8,7 +8,7 @@ Learna is a decentralized Web3 learning platform designed to revolutionize the t
 In today’s rapidly evolving tech landscape, consistent learning is not just beneficial—it’s essential for success. However, the traditional methods of consuming information, such as lengthy articles and overwhelming documentation, make it difficult for people to keep up. With new technologies emerging at a relentless pace, staying current feels more like a burden than a journey. The challenge lies in making learning both accessible and engaging, especially for developers who must constantly upgrade their skills to stay relevant.
 
 ## Solution Statement
-Leveraging the power of artificial intelligence, we’re transforming how developers learn—making it intuitive, engaging, and rewarding. Our platform uses AI to generate dynamic quizzes tailored to different difficulty levels, offering a fun and efficient way to stay updated in the fast-paced tech world. Born out of the Farcaster Quiz Hackathon, Learna is built as a Farcaster-based mini-app on the Celo blockchain. It combines decentralized tech with personalized learning experiences, with more interactive and adaptive methods on the way.
+Leveraging the power of artificial intelligence, we’re transforming how builders learn — making it intuitive, engaging, and rewarding. Our platform uses AI to generate dynamic quizzes tailored to different difficulty levels, offering a fun and efficient way to stay updated in the fast-paced tech world. Born out of the Farcaster Quiz Hackathon, Learna is built as a Farcaster-based mini-app on the Celo blockchain. It combines decentralized tech with personalized learning experiences, with more interactive and adaptive methods on the way.
 
 ## Goal
 The core goals of Learna are:
@@ -58,13 +58,10 @@ Learna is a mobile-first, React-based application built for the web3 and web2 au
 - A smart contract, deployed on the Celo main network, that manages sensitive and financial logic.
 - A user interface for interacting with the application.
 - Backend service that manages interactions with the Farcaster client, such as publishing casts, notifying the users, etc.
-- 
+
 ## Latest Smart contracts information (Celo mainnet)
-- Token smart contract deployed at __[0x4DaC0671376712689ce790f567bf508948A8eff3](https://celoscan.io/address/0x4DaC0671376712689ce790f567bf508948A8eff3#code)__ __
-- Claim contract deployed at __[0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d](https://celoscan.io/address/0x22452d9eCCD3A6084bBa3b446CA0C47fDb92dA6d#code)__ 
-- ClaimV2 contract deployed at __[0x880cD2d07E512B083Efc8136493f948895D2C6fB](https://celoscan.io/address/0x880cD2d07E512B083Efc8136493f948895D2C6fB#code)__ 
-- Learna Factory contract (main) deployed at __[0xC6f50e2E63a1b12Fb2A4340DD7ccdebE687a026b](https://celoscan.io/address/0x5894cab8EEd154726A0c14Fb7eCf042E43Bf2C44]b#code)__ 
-- LearnaV2 Factory contract (main) deployed at __[0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca](https://celoscan.io/address/0x8EACc9ecFe02EFc5A604976cf1952C0d279268Ca#code)__ 
+- Quizzer contract deployed at __[0x131DFa5467c4902F6b692A89C80503ca089253e9](https://celoscan.io/address/0x131DFa5467c4902F6b692A89C80503ca089253e9#code)__
+- IdentityVerifier contract deployed at __[0x959cD9B2Ee4099150F39ADBa450Df16399cA6969](https://celoscan.io/address/0x959cD9B2Ee4099150F39ADBa450Df16399cA6969#code)__ 
 
 ## Site
 - [Interact with Learna here](https://learna.vercel.app)
