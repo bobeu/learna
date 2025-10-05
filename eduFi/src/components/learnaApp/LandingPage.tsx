@@ -68,8 +68,8 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white`}>
-        <Navbar />
+    <div className={`min-h-screen transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white font-mono`}>
+        {/* <Navbar /> */}
         <Hero 
           handleJoinCampaign={handleJoinCampaign}
           campaigns={campaigns}

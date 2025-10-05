@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CampaignTabs from "@/components/campaigns/CampaignTabs"; 
 import AITutor from "@/components/ai/AITutor";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { formatEther } from "viem";
 import { formattedMockLearners, CampaignStateProps } from "../../../types";
 import { calculateStreak, normalizeImageSrc, normalizeString, toBN } from "@/components/utilities";
@@ -120,7 +119,7 @@ export default function LearnPage(){
     }, [mappedCampaigns, builderCampaigns]);
 
     return (
-        <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-black dark:font-mono">
+        <main className="min-h-screen px-4 sm:px-6 lg:px-8 py-4 bg-white dark:bg-black dark:font-mono">
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <Link href="/">
@@ -134,10 +133,6 @@ export default function LearnPage(){
                             <Sparkles className="w-4 h-4 mr-1" />
                             Learning Hub
                         </div>
-                        <Button variant="outline" size="icon" onClick={() => setTheme(isDark ? 'light' : 'dark')} aria-label="Toggle theme">
-                            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                        </Button>
-                        <ConnectButton />
                     </div>
                 </div>
 
@@ -152,14 +147,6 @@ export default function LearnPage(){
                                         <div className="text-xs text-neutral-500">Manage your learning profile</div>
                                     </div>
                                 </div>
-                                {/* <div className="w-full sm:w-auto">
-                                    <ConnectButton
-                                        chainStatus={{ smallScreen: "none", largeScreen: "none" }}
-                                        showBalance={{ smallScreen: true, largeScreen: true }}
-                                        accountStatus={{ smallScreen: "avatar", largeScreen: "avatar" }}
-                                        label="Connect"
-                                    />
-                                </div> */}
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {
