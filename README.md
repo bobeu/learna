@@ -60,7 +60,8 @@ Learna is a mobile-first, React-based application built for the web3 and web2 au
 - Backend service that manages interactions with the Farcaster client, such as publishing casts, notifying the users, etc.
 
 ## Latest Smart contracts information (Celo mainnet)
-- Quizzer contract deployed at __[0x131DFa5467c4902F6b692A89C80503ca089253e9](https://celoscan.io/address/0x131DFa5467c4902F6b692A89C80503ca089253e9#code)__
+- Factory V3 contract deployed at __[0x131DFa5467c4902F6b692A89C80503ca089253e9](https://celoscan.io/address/0x131DFa5467c4902F6b692A89C80503ca089253e9#code)__
+- Factory V2 contract deployed at __[0x36F2F4A30C15356A53b4AB7F159c2106675865c2](https://celoscan.io/address/0x36F2F4A30C15356A53b4AB7F159c2106675865c2#code)__
 - IdentityVerifier contract deployed at __[0x959cD9B2Ee4099150F39ADBa450Df16399cA6969](https://celoscan.io/address/0x959cD9B2Ee4099150F39ADBa450Df16399cA6969#code)__ 
 
 ## Site

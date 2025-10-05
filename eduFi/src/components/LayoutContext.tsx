@@ -12,7 +12,7 @@ export const LayoutContext = ({overrideClassName, children} : {overrideClassName
                 paddingLeft: context?.client.safeAreaInsets?.left ?? 10,
                 paddingRight: context?.client.safeAreaInsets?.right ?? 10,
             }}
-            className={["relative pb-4 mx-auto bg-white dark:bg-blackish"].join(overrideClassName)}
+            className={["relative bg-white dark:bg-blackish"].join(overrideClassName)}
     >
         { isSDKLoaded && children }
     </div>

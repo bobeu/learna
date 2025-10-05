@@ -7,6 +7,7 @@ import { Providers } from "@/app/providers";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { LayoutContext } from "@/components/LayoutContext";
+import Navbar from "@/components/learnaApp/Navbar";
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -29,14 +30,15 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
-          <Providers>
-            <ErrorBoundary>
-              <LayoutContext> 
-                {children}
-              </LayoutContext>
-            </ErrorBoundary>
-          </Providers>
+      <body className="font-mono">
+        <Providers>
+          <ErrorBoundary>
+            <Navbar />
+            <LayoutContext>
+              {children}
+            </LayoutContext>
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );
