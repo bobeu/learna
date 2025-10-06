@@ -62,7 +62,11 @@ Learna is a mobile-first, React-based application built for the web3 and web2 au
 ## Latest Smart contracts information (Celo mainnet)
 - Factory V3 contract deployed at __[0x131DFa5467c4902F6b692A89C80503ca089253e9](https://celoscan.io/address/0x131DFa5467c4902F6b692A89C80503ca089253e9#code)__
 - Factory V2 contract deployed at __[0x36F2F4A30C15356A53b4AB7F159c2106675865c2](https://celoscan.io/address/0x36F2F4A30C15356A53b4AB7F159c2106675865c2#code)__
+- Factory V1 contract deployed at __[0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32](https://celoscan.io/address/0xdfA76177CA4fE4D903A290Ab8BA91064E923EB32#code)__
+- Factory V0 contract deployed at __[0x880cD2d07E512B083Efc8136493f948895D2C6fB](https://celoscan.io/address/0x880cD2d07E512B083Efc8136493f948895D2C6fB#code)__
 - IdentityVerifier contract deployed at __[0x959cD9B2Ee4099150F39ADBa450Df16399cA6969](https://celoscan.io/address/0x959cD9B2Ee4099150F39ADBa450Df16399cA6969#code)__ 
+- Verifier V1 contract deployed at __[0x959cD9B2Ee4099150F39ADBa450Df16399cA6969](https://celoscan.io/address/0x959cD9B2Ee4099150F39ADBa450Df16399cA6969#code)__ 
+- Verifier V0 contract deployed at __[0xb0e9b198cc0dc4cebaaa425f272e6661e35b5203](https://celoscan.io/address/0xb0e9b198cc0dc4cebaaa425f272e6661e35b5203#code)__ 
 
 ## Site
 - [Interact with Learna here](https://learna.vercel.app)
