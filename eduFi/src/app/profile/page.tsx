@@ -32,7 +32,7 @@ import TransactionModal, { TransactionStep } from "@/components/ui/TransactionMo
 import ProofSubmissionModal from "@/components/modals/ProofSubmissionModal";
 import BuilderApprovalModal from "@/components/modals/BuilderApprovalModal";
 import { mockCampaignTemplateReadData, Address, CreateCampaignInput, FunctionName } from "../../../types";
-import { formatAddr, } from "@/components/utilities";
+import { formatAddr, uploadImageToPinata } from "@/components/utilities";
 import useStorage from "@/components/hooks/useStorage";
 import { zeroAddress } from "viem";
 import Image from "next/image";
@@ -152,17 +152,29 @@ export default function ProfilePage() {
   const uploadToIpfs = async (file: File) => {
     setIpfsUploading(true);
     try {
-      const body = new FormData();
-      body.append('file', file);
-      const res = await fetch('/api/upload-to-ipfs', { method: 'POST', body });
-      const data = await res.json();
-      if (data?.uri) {
-        setImageUri(data.uri);
+      const result = await uploadImageToPinata({
+        file: file,
+        fileName: file.name,
+        fileType: file.type
+      });
+
+      if (result.success && result.imageURI) {
+        // Convert gateway URL to IPFS URI format for consistency
+        const ipfsUri = result.imageURI.replace('https://gateway.pinata.cloud/ipfs/', 'ipfs://');
+        setImageUri(ipfsUri);
+        const local = URL.createObjectURL(file);
+        setImagePreview(local);
+      } else {
+        console.error('Upload failed:', result.error);
+        // Fallback to local preview if upload fails
         const local = URL.createObjectURL(file);
         setImagePreview(local);
       }
     } catch (error) {
       console.error('Error uploading to IPFS:', error);
+      // Fallback to local preview if upload fails
+      const local = URL.createObjectURL(file);
+      setImagePreview(local);
     } finally {
       setIpfsUploading(false);
     }

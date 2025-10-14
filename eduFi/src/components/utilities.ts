@@ -8,6 +8,9 @@ import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/refe
 import { Address, Admin, Campaign, CampaignTemplateReadData, FilterTransactionDataProps, FilterTransactionReturnType, FormattedCampaignTemplate, FunctionName, mockCampaigns, ProofOfAssimilation, ReadData, TransactionData } from "../../types";
 import campaigntemplate from "../../contractsArtifacts/template.json";
 import assert from "assert";
+import { PinataSDK } from "pinata";
+// import { uploadMobile } from "thirdweb/storage";
+// import { createThirdwebClient } from "thirdweb";
 
 export type UserType = 'builder' | 'campaignOwner';
 export interface BuildUserTransactionDataProps {
@@ -289,4 +292,162 @@ export function buildTransactionData({functionName, chainId, contractAddress, ar
     trxnData = { contractAddress, args, functionName, abi: campaigntemplate.abi};
   }
   return trxnData;
+}
+
+// File validation constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
+// Environment variable validation
+function validateEnvironmentVariables() {
+  const requiredVars = {
+    PINATA_JWT_SECRET: process.env.PINATA_JWT_SECRET,
+    PINATA_GATEWAY: process.env.PINATA_GATEWAY,
+  };
+
+  const missingVars = Object.entries(requiredVars)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+
+  return requiredVars as {
+    PINATA_JWT_SECRET: string;
+    PINATA_GATEWAY: string;
+  };
+}
+
+// File validation function
+function validateFile(file: File, fileName: string, fileType: string): void {
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+  }
+
+  // Check file type
+  if (!ALLOWED_FILE_TYPES.includes(fileType)) {
+    throw new Error(`File type ${fileType} is not allowed. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`);
+  }
+
+  // Check file extension
+  const fileExtension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+  if (!ALLOWED_EXTENSIONS.includes(fileExtension)) {
+    throw new Error(`File extension ${fileExtension} is not allowed. Allowed extensions: ${ALLOWED_EXTENSIONS.join(', ')}`);
+  }
+
+  // Check if file is empty
+  if (file.size === 0) {
+    throw new Error('File cannot be empty');
+  }
+}
+
+// Secure Pinata initialization with proper error handling
+function initializePinata() {
+  try {
+    const envVars = validateEnvironmentVariables();
+    
+    return new PinataSDK({
+      pinataJwt: envVars.PINATA_JWT_SECRET,
+      pinataGateway: envVars.PINATA_GATEWAY,
+    });
+  } catch (error) {
+    console.error('Failed to initialize Pinata:', error);
+    throw new Error('Pinata initialization failed. Please check your environment configuration.');
+  }
+}
+
+// Generate unique filename to prevent conflicts
+function generateUniqueFileName(originalName: string): string {
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(2, 8);
+  const extension = originalName.substring(originalName.lastIndexOf('.'));
+  return `${timestamp}_${randomString}${extension}`;
+}
+
+// Upload image to Pinata with comprehensive error handling and security
+export async function uploadImageToPinata({
+  file, 
+  fileName, 
+  fileType
+}: {
+  file: File; 
+  fileName: string; 
+  fileType: string;
+}): Promise<{ success: boolean; imageURI?: string; error?: string }> {
+  try {
+    // Validate input parameters
+    if (!file) {
+      throw new Error('File is required');
+    }
+    if (!fileName || fileName.trim() === '') {
+      throw new Error('File name is required');
+    }
+    if (!fileType || fileType.trim() === '') {
+      throw new Error('File type is required');
+    }
+
+    // Validate file
+    validateFile(file, fileName, fileType);
+
+    // Initialize Pinata with secure configuration
+    const pinata = initializePinata();
+
+    // Generate unique filename to prevent conflicts
+    const uniqueFileName = generateUniqueFileName(fileName);
+
+    // Create file with proper type
+    const imageFile = new File([file], uniqueFileName, { type: fileType });
+
+    // Upload to Pinata using the correct API structure
+    const response = await pinata.upload.public.file(imageFile);
+
+    // Verify upload was successful
+    if (!response || !response.cid) {
+      alert('Upload failed: No CID returned from Pinata');
+      return {
+        success: false,
+        error: 'Upload failed: No CID returned from Pinata'
+      };
+    }
+
+    // Get the public gateway URL
+    const gatewayUrl = `${process.env.PINATA_GATEWAY}/ipfs/${response.cid}`;
+    
+    // Verify the uploaded file is accessible
+    try {
+      const verificationResponse = await fetch(gatewayUrl, { method: 'HEAD' });
+      if (!verificationResponse.ok) {
+        alert(`File verification failed: ${verificationResponse.status}`);
+        return {
+          success: false,
+          error: `File verification failed: ${verificationResponse.status}`
+        };
+      }
+    } catch (verificationError) {
+      alert('File verification failed, but upload may have succeeded: ' + verificationError);
+      return {
+        success: false,
+        error: 'File verification failed, but upload may have succeeded: ' + verificationError
+      };
+    }
+
+    return {
+      success: true,
+      imageURI: gatewayUrl
+    };
+
+  } catch (error) {
+    console.error('Upload to Pinata failed:', error);
+    
+    // Return user-friendly error messages
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during upload';
+    
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
 }
