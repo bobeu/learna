@@ -126,7 +126,7 @@ export default function NewCampaignPage(){
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 
-    const uploadToIpfs = async (file: File) => {
+    const uploadImage = async (file: File) => {
         setIpfsUploading(true);
         try {
             const result = await uploadImageToPinata({
@@ -322,7 +322,7 @@ export default function NewCampaignPage(){
                                     <div className="flex items-center gap-3">
                                         <Input type="file" accept="image/*" onChange={(e) => {
                                             const file = e.target.files?.[0];
-                                            if (file) uploadToIpfs(file);
+                                            if (file) uploadImage(file);
                                         }} />
                                         {ipfsUploading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     </div>
