@@ -19,7 +19,7 @@ import { useChainId } from "wagmi";
 import CampaignStatsTemplate from "@/components/modals/CampaignStatsTemplate";
 import { MotionDisplayWrapper } from "@/components/peripherals/MotionDisplayWrapper";
 
-export const ButtonTemplate = ({isDark, isExit, disabled, text, onClick} : {isDark: boolean; isExit: boolean; disabled: boolean; text?: string; onClick: () => void}) => {
+const ButtonTemplate = ({isDark, isExit, disabled, text, onClick} : {isDark: boolean; isExit: boolean; disabled: boolean; text?: string; onClick: () => void}) => {
     return(
          <Button 
             disabled={disabled}
