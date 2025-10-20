@@ -1,19 +1,19 @@
-import Blockies from "react-blockies";
-import { zeroAddress } from "viem";
+// import Blockies from "react-blockies";
+// import { zeroAddress } from "viem";
 
-interface BlockieProp {
-  account: string;
-  size?: number;
-}
+// interface BlockieProp {
+//   account: string;
+//   size?: number;
+// }
 
-export const Blockie = (props: BlockieProp) => {
-  const { account, size } = props;
+// export const Blockie = (props: BlockieProp) => {
+//   const { account, size } = props;
 
-  return (
-    <Blockies
-      seed={account?.toLowerCase() || zeroAddress}
-      size={size || 4}
-      scale={3}
-    />
-  );
-}
+//   return (
+//     <Blockies
+//       seed={account?.toLowerCase() || zeroAddress}
+//       size={size || 4}
+//       scale={3}
+//     />
+//   );
+// }
