@@ -12,7 +12,7 @@ import { ChevronDown, ChevronUp, BarChart3, Layers, Calendar, ImageIcon, WandSpa
 import Link from "next/link";
 import { Address, CreateCampaignInput, FunctionName } from "../../../../types";
 import useStorage from "@/components/hooks/useStorage";
-import { formatEther, zeroAddress } from "viem";
+import { formatEther, parseUnits, zeroAddress } from "viem";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
 import { filterTransactionData, formattedMockCampaignsTemplate, toBN, uploadImageToPinata } from "@/components/utilities";
 import { useChainId } from "wagmi";
@@ -139,7 +139,7 @@ export default function NewCampaignPage(){
             functionName: td[0].functionName as FunctionName,
             abi: td[0].abi,
             args: [params],
-            value: creationFee
+            value: creationFee === 0n? parseUnits('0.001', 18) : creationFee
         };
 
         return { argReady, transactionInfo }
@@ -245,7 +245,6 @@ export default function NewCampaignPage(){
     };
     
     const handleTransactionSuccess = (txHash: string) => {
-        console.log('Proof of assimilation stored:', txHash);
         setShowTransactionModal(false);
     };
 

@@ -65,7 +65,6 @@ export default function TransactionModal({
   const executeStep = async (step: TransactionStep) => {
     try {
       setIsProcessing(true);
-      console.log("Executing step:", step);
       let hash = await writeContractAsync({
         address: step.contractAddress,
         abi: step.abi,

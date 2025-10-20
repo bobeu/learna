@@ -5,7 +5,6 @@ import { normalizeImageSrc } from '../../utilities';
 
 // Compact card specifically for the hero slider
 export default function SliderCampaignMiniCard({ campaign, onJoin }: { campaign: CampaignStateProps; onJoin: (campaign: CampaignStateProps) => void }) {
-    console.log("Image src", campaign.image);
     return(
         <div
             className="relative min-w-[250px] max-w-[180px] h-[150px] rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 hover:border-primary-400 transition-colors cursor-pointer"
