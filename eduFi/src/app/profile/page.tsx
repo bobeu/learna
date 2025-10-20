@@ -155,7 +155,8 @@ export default function ProfilePage() {
       const result = await uploadImageToPinata({
         file: file,
         fileName: file.name,
-        fileType: file.type
+        fileType: file.type,
+        campaignName: name || "unnamed-campaign",
       });
 
       if (result.success && result.imageURI) {

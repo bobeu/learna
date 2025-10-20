@@ -139,10 +139,8 @@ export default function NewCampaignPage(){
             if (result.success && result.imageURI) {
                 // Convert gateway URL to IPFS URI format for consistency
                 const ipfsUri = result.imageURI.replace('https://gateway.pinata.cloud/ipfs/', 'ipfs://');
-                console.log('Uploaded to IPFS:', ipfsUri);
                 setImageUri(ipfsUri);
                 const local = URL.createObjectURL(file);
-                console.log('local:', local);
                 setImagePreview(local);
             } else {
                 console.error('Upload failed:', result.error);

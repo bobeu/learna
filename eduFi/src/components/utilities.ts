@@ -192,11 +192,6 @@ export function normalizeImageSrc(val: string) {
   if(ipfsUri.startsWith('http://') || ipfsUri.startsWith('https://') || ipfsUri.startsWith('/')) return ipfsUri;
   if(!ipfsUri) return '/learna-image4.png';
   return '/learna-image4.png';
-  // if(s.startsWith('ipfs://')) {
-  //   return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
-  // }
-  
-  // return '/learna-image4.png';
 };
 
 /**
