@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
     const result = await uploadImageToPinata({
       file: file,
       fileName: file.name,
-      fileType: file.type
+      fileType: file.type,
+      campaignName: form.get('campaignName') as string || "unnamed-campaign",
     });
 
     if (result.success && result.imageURI) {
