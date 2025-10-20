@@ -14,7 +14,7 @@ import { Address, CreateCampaignInput, FormattedCampaignTemplate, FunctionName }
 import useStorage from "@/components/hooks/useStorage";
 import { formatEther, zeroAddress } from "viem";
 import TransactionModal, { TransactionStep } from "@/components/ui/TransactionModal";
-import { filterTransactionData, toBN } from "@/components/utilities";
+import { filterTransactionData, toBN, uploadImageToPinata } from "@/components/utilities";
 import { useChainId } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import CampaignStatsModal from "@/components/modals/CampaignStatsModal";
@@ -126,18 +126,33 @@ export default function NewCampaignPage(){
 
     const totalTVL = React.useMemo(() => myCampaigns.reduce((s, c) => s + c.tvl, 0), [myCampaigns]);
 
-    const uploadToIpfs = async (file: File) => {
+    const uploadImage = async (file: File) => {
         setIpfsUploading(true);
-        try{
-            const body = new FormData();
-            body.append('file', file);
-            const res = await fetch('/api/upload-to-ipfs', { method: 'POST', body });
-            const data = await res.json();
-            if (data?.uri) {
-                setImageUri(data.uri);
+        try {
+            const result = await uploadImageToPinata({
+                file: file,
+                fileName: file.name,
+                fileType: file.type,
+                campaignName: name || ''
+            });
+
+            if (result.success && result.imageURI) {
+                // Convert gateway URL to IPFS URI format for consistency
+                const ipfsUri = result.imageURI.replace('https://gateway.pinata.cloud/ipfs/', 'ipfs://');
+                setImageUri(ipfsUri);
+                const local = URL.createObjectURL(file);
+                setImagePreview(local);
+            } else {
+                console.error('Upload failed:', result.error);
+                // Fallback to local preview if upload fails
                 const local = URL.createObjectURL(file);
                 setImagePreview(local);
             }
+        } catch (error) {
+            console.error('Error uploading to IPFS:', error);
+            // Fallback to local preview if upload fails
+            const local = URL.createObjectURL(file);
+            setImagePreview(local);
         } finally {
             setIpfsUploading(false);
         }
@@ -308,7 +323,7 @@ export default function NewCampaignPage(){
                                     <div className="flex items-center gap-3">
                                         <Input type="file" accept="image/*" onChange={(e) => {
                                             const file = e.target.files?.[0];
-                                            if (file) uploadToIpfs(file);
+                                            if (file) uploadImage(file);
                                         }} />
                                         {ipfsUploading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     </div>

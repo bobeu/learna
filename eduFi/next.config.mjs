@@ -18,6 +18,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: process.env.NEXT_PUBLIC_PINATA_GATEWAY || 'gateway.pinata.cloud',
+        pathname: '/ipfs/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'cloudflare-ipfs.com',
         pathname: '/ipfs/**',
       },
