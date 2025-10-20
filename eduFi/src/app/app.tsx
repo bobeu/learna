@@ -16,7 +16,7 @@ const LandingPage = dynamic(() => import("@/components/learnaApp/LandingPage"), 
 
 export default function App() {
   return (
-    <div className={`font-mono`}>
+    <div>
       <LandingPage />
     </div>
   );

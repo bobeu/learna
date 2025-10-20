@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Plus, Trash2, CheckCircle } from "lucide-react";
 import { useWriteContract, usePublicClient } from "wagmi";
 import { erc20Abi, parseUnits, isAddress } from "viem";
-// import { filterTransactionData } from '../utilities';
 import { Address } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
 
@@ -40,11 +39,6 @@ export default function AddFund({ isOpen, onClose, campaignAddress, campaignName
   const [tokens, setTokens] = useState<TokenInput[]>([]);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // const { contractAddresses } = useMemo(() => 
-  //   filterTransactionData({ chainId, filter: false }), 
-  //   [chainId]
-  // );
 
   const addToken = () => {
     setTokens(prev => [...prev, { 

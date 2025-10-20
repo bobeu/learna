@@ -11,8 +11,8 @@ import DataProvider from "./DataProvider";
 
 // Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
-// const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
-// const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
+const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
+const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
 
 if (!projectId) throw new Error('Project ID is undefined');
 
@@ -55,30 +55,6 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
   return <>{children}</>;
 }
 
-// /**
-//  * @dev Get wallet client for signing transactions
-//  * @param networkName : Connected chain name
-//  * @param pkey : Private key. Note: Protect your private key at all cost. Use environment variables where necessary
-//  * @returns : Wallet client for signing transactions
-//  */
-// export function getDefaultPublicClient(networkName: string) {
-//   return createPublicClient({
-//     chain: networkName === 'sepolia'? celoSepolia : celo,
-//     transport: http(),
-//     // transport: http('https://celo.drpc.org')
-//   });
-// }
-
-// Create a single QueryClient instance outside the component
-// const queryClient = new QueryClient({
-//   defaultOptions: {
-//     queries: {
-//       staleTime: 1000 * 60 * 5, // 5 minutes
-//       gcTime: 1000 * 60 * 10, // 10 minutes
-//     },
-//   },
-// });
-
 export default function Provider({ children }: { children: React.ReactNode }) {
   // Load the default config from RainbowKit
   const config = getDefaultConfig({
@@ -93,12 +69,10 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     pollingInterval: 10_000,
     syncConnectedChain: true,
     transports: {
-      [celoSepolia.id]: http(),
-      [celo.id]: http(),
+      [celoSepolia.id]: http(alchemy_celosepolia_api),
+      [celo.id]: http(alchemy_celo_api),
     },
   });
-  // [celoSepolia.id]: http(alchemy_celosepolia_api),
-  // [celoAlfajores.id]: http(alchemy_alfajores_api),
 
   // Light theme configuration for RainbowKit wallet set up
   const theme = lightTheme(

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { formatEther } from "viem";
+import { formatEther, parseUnits } from "viem";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -82,7 +82,7 @@ export default function ProfilePage() {
   // const [useAiImage, setUseAiImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const { creatorCampaigns: myCampaigns } = useStorage();
+  const { creatorCampaigns: myCampaigns, creationFee } = useStorage();
 
   // Check if user came from "Create campaign" button
   useEffect(() => {
@@ -145,6 +145,7 @@ export default function ProfilePage() {
       contractAddress: process.env.NEXT_PUBLIC_CAMPAIGN_FACTORY_ADDRESS as Address,
       abi: [],
       args: [createCampaignInput],
+      value: creationFee === 0n? parseUnits('0.001', 18) : creationFee
     };
   }, [name, docUrl, description, imageUri, startDate, endDate, argReady]);
 
@@ -212,7 +213,8 @@ export default function ProfilePage() {
       functionName: 'allowance', 
       contractAddress: zeroAddress,
       abi: [],
-      args: []
+      args: [],
+      value: undefined
     }];
     
     return [{
@@ -222,7 +224,8 @@ export default function ProfilePage() {
       functionName: data.functionName,
       contractAddress: data.contractAddress,
       abi: data.abi,
-      args: data.args
+      args: data.args,
+      value: data.value
     }];
   };
 

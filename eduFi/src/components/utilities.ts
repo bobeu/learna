@@ -188,7 +188,6 @@ export const normalizeString = (val: string) => {
 export function normalizeImageSrc(val: string) {
   const normalized = normalizeString(val);
   const ipfsUri = normalized.replace('https://gateway.pinata.cloud/ipfs/', 'ipfs://');
-  console.log('Normalized:', ipfsUri);
   if(ipfsUri.startsWith('http://') || ipfsUri.startsWith('https://') || ipfsUri.startsWith('/')) return ipfsUri;
   if(!ipfsUri) return '/learna-image4.png';
   return '/learna-image4.png';
