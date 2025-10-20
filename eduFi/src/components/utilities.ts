@@ -186,13 +186,17 @@ export const normalizeString = (val: string) => {
 };
 
 export function normalizeImageSrc(val: string) {
-  const s = normalizeString(val);
-  if(!s) return '/learna-image4.png';
-  if(s.startsWith('ipfs://')) {
-      return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
-  }
-  if(s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) return s;
+  const normalized = normalizeString(val);
+  const ipfsUri = normalized.replace('https://gateway.pinata.cloud/ipfs/', 'ipfs://');
+  console.log('Normalized:', ipfsUri);
+  if(ipfsUri.startsWith('http://') || ipfsUri.startsWith('https://') || ipfsUri.startsWith('/')) return ipfsUri;
+  if(!ipfsUri) return '/learna-image4.png';
   return '/learna-image4.png';
+  // if(s.startsWith('ipfs://')) {
+  //   return `https://ipfs.io/ipfs/${s.replace('ipfs://','')}`;
+  // }
+  
+  // return '/learna-image4.png';
 };
 
 /**
@@ -302,8 +306,8 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 // Environment variable validation
 function validateEnvironmentVariables() {
   const requiredVars = {
-    PINATA_JWT_SECRET: process.env.PINATA_JWT_SECRET,
-    PINATA_GATEWAY: process.env.PINATA_GATEWAY,
+    PINATA_JWT_SECRET: process.env.NEXT_PUBLIC_PINATA_JWT_SECRET_ACCESS_TOKEN,
+    PINATA_GATEWAY: process.env.NEXT_PUBLIC_PINATA_GATEWAY,
   };
 
   const missingVars = Object.entries(requiredVars)
@@ -371,11 +375,13 @@ function generateUniqueFileName(originalName: string): string {
 export async function uploadImageToPinata({
   file, 
   fileName, 
-  fileType
+  fileType,
+  campaignName
 }: {
   file: File; 
   fileName: string; 
   fileType: string;
+  campaignName: string
 }): Promise<{ success: boolean; imageURI?: string; error?: string }> {
   try {
     // Validate input parameters
@@ -401,9 +407,13 @@ export async function uploadImageToPinata({
     // Create file with proper type
     const imageFile = new File([file], uniqueFileName, { type: fileType });
 
+    // console.log("pinata", pinata);
     // Upload to Pinata using the correct API structure
-    const response = await pinata.upload.public.file(imageFile);
+    const response = await pinata.upload.public
+    .file(imageFile)
+    .name(campaignName);
 
+    console.log("Response", response);
     // Verify upload was successful
     if (!response || !response.cid) {
       alert('Upload failed: No CID returned from Pinata');
@@ -414,29 +424,33 @@ export async function uploadImageToPinata({
     }
 
     // Get the public gateway URL
-    const gatewayUrl = `${process.env.PINATA_GATEWAY}/ipfs/${response.cid}`;
+    // const gatewayUrl = `${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${response.cid}`;
+    const imageUrl = await pinata.gateways.public.convert(response.cid);
+    // console.log("NEXT_PUBLIC_PINATA_GATEWAY", process.env.NEXT_PUBLIC_PINATA_GATEWAY);
+    console.log("imageUrl", imageUrl);
     
     // Verify the uploaded file is accessible
-    try {
-      const verificationResponse = await fetch(gatewayUrl, { method: 'HEAD' });
-      if (!verificationResponse.ok) {
-        alert(`File verification failed: ${verificationResponse.status}`);
-        return {
-          success: false,
-          error: `File verification failed: ${verificationResponse.status}`
-        };
-      }
-    } catch (verificationError) {
-      alert('File verification failed, but upload may have succeeded: ' + verificationError);
-      return {
-        success: false,
-        error: 'File verification failed, but upload may have succeeded: ' + verificationError
-      };
-    }
+    // try {
+    //   const verificationResponse = await fetch(gatewayUrl, { method: 'HEAD' });
+    //   console.log("verificationResponse", verificationResponse)
+    //   if (!verificationResponse.ok) {
+    //     alert(`File verification failed: ${verificationResponse.status}`);
+    //     return {
+    //       success: false,
+    //       error: `File verification failed: ${verificationResponse.status}`
+    //     };
+    //   }
+    // } catch (verificationError) {
+    //   alert('File verification failed, but upload may have succeeded: ' + verificationError);
+    //   return {
+    //     success: false,
+    //     error: 'File verification failed, but upload may have succeeded: ' + verificationError
+    //   };
+    // }
 
     return {
       success: true,
-      imageURI: gatewayUrl
+      imageURI: imageUrl
     };
 
   } catch (error) {
