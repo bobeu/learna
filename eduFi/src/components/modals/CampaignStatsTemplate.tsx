@@ -24,7 +24,8 @@ import { formatEther, formatUnits, Hex, hexToString } from "viem";
 import LearnerProfileModal from "./LearnerProfileModal";
 import CampaignSettingsModal from "./CampaignSettingsModal";
 import RewardClaimModal from "./RewardClaimModal";
-import { formatAddr, formattedMockCampaignsTemplate, normalizeString, toBN } from '../utilities';
+import { formatAddr, normalizeString, toBN } from '../utilities';
+import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 
 interface CampaignStatsModalProps {
   campaign: FormattedCampaignTemplate;
@@ -367,11 +368,23 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Owner</p>
-                  <p className="text-sm font-mono">{campaign.owner}</p>
+                  <AddressWrapper
+                    account={campaign.owner}
+                    display={true}
+                    copyIconSize='6'
+                    size={6}
+                    overrideClassName='font-mono text-sm'
+                  />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Contract</p>
-                  <p className="text-sm font-mono">{campaign.contractAddress}</p>
+                  <AddressWrapper
+                    account={campaign.contractAddress}
+                    display={true}
+                    copyIconSize='6'
+                    size={6}
+                    overrideClassName='font-mono text-sm'
+                  />
                 </div>
               </div>
               
