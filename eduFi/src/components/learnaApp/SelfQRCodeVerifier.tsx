@@ -58,7 +58,7 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
                 }
             ).build();
             setSelfApp(app);
-            setUniversalLink(getUniversalLink(app));
+            setUniversalLink(getUniversalLink(app as any));
         } catch (error) {
             console.error("Failed to initialize Self app:", error);
         }

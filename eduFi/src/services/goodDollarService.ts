@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+// @ts-ignore: Missing type declarations for 'ethers' in this environment
 import { ethers } from 'ethers';
 import { Address } from '../../types';
 

@@ -32,19 +32,24 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     const { isConnected, address } = useAccount();
     const account = formatAddr(address);
 
-    // Build read transactions data
-    const { transactionData: td, contractAddresses: ca } = filterTransactionData({
-        chainId,
-        filter: true,
-        functionNames: ['owner', 'getData', 'hasApproval', 'getVerificationStatus'],
-    });
-    const readArgs = [[], [], [account], [account]];
-    const contractAddresses = [
-        td[0].contractAddress as Address,
-        ca.CampaignFactory as Address,
-        ca.ApprovalFactory as Address,
-        ca.VerifierV2 as Address,
-    ];
+    const { td, readArgs, contractAddresses } = React.useMemo(() => {
+        // Build read transactions data
+        const { transactionData: td, contractAddresses: ca } = filterTransactionData({
+            chainId,
+            filter: true,
+            functionNames: ['owner', 'getData', 'hasApproval', 'getVerificationStatus'],
+        });
+        const readArgs = [[], [], [account], [account]];
+        const contractAddresses = [
+            td[0].contractAddress as Address,
+            ca.CampaignFactory as Address,
+            ca.ApprovalFactory as Address,
+            ca.VerifierV2 as Address,
+        ];
+
+        return { td, readArgs, contractAddresses };
+    }, [account, chainId]);
+
 
     const readTxObject = td.map((item, i) => {
         return{
@@ -94,7 +99,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         setHasApproval(hasApproval_);
     }, [factoryReadData]);
 
-    // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFatcory
+    // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFactory
     const { campaignDataTrxns, rest } = React.useMemo(() => {
         const { campaigns, ...rest } = factoryData;
         const campaignDataTrxns = campaigns.map(({identifier}) => {

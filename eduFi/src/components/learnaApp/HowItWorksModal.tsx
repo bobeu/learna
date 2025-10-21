@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
  */
 export default function HowItWorksModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const videoSrc = "/how-it-works.mp4"; 
-    // const poster = "/campaign-images/celo-blockchain-development.svg";
 
     return (
         <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>

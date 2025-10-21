@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { formatEther, Hex,hexToString,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
 import BigNumber from "bignumber.js";
+// @ts-ignore: Missing type declarations for 'ethers' in this environment
 import { ethers } from "ethers";
 import globalContractData from "../../contractsArtifacts/global.json";
 import { getFunctionData } from "../../functionData";
@@ -9,8 +10,6 @@ import { Address, Admin, Campaign, CampaignTemplateReadData, FilterTransactionDa
 import campaigntemplate from "../../contractsArtifacts/template.json";
 import assert from "assert";
 import { PinataSDK } from "pinata";
-// import { uploadMobile } from "thirdweb/storage";
-// import { createThirdwebClient } from "thirdweb";
 
 export type UserType = 'builder' | 'campaignOwner';
 export interface BuildUserTransactionDataProps {
@@ -165,17 +164,20 @@ export const formatAddr = (x: string | undefined) : Address => {
  * @returns object containing array of transaction data and approved functions
  */
 export function filterTransactionData({chainId, filter, functionNames = []}: FilterTransactionDataProps) : FilterTransactionReturnType {
-  const { approvedFunctions, contractAddresses } = globalContractData;
+  const { approvedFunctions, contractAddresses, chainIds } = globalContractData;
   const transactionData : TransactionData[] = [];
-  if(filter) {
+  let chainid = chainId || chainIds[0];
+  const chainIndex = chainIds.indexOf(chainid);
+  if(filter && functionNames.length > 0) {
     functionNames.forEach((functionName) => {
-      transactionData.push(getFunctionData(functionName, chainId));
+      transactionData.push(getFunctionData(functionName, chainIndex));
     })
   }
+  
   return {
     transactionData,
     approvedFunctions,
-    contractAddresses: contractAddresses[0],
+    contractAddresses: contractAddresses[chainIndex],
   }
 }
 
@@ -280,7 +282,6 @@ export const calculateStreak = (results: ProofOfAssimilation[]): number => {
 
 export function buildTransactionData({functionName, chainId, contractAddress, args} : BuildUserTransactionDataProps) {
   const abi = campaigntemplate.abi.filter(({name}) => name === functionName);
-  console.log("Utilities: abi: ", abi);
   let trxnData : TrxnData = {contractAddress: zeroAddress, abi: [], functionName: '', args: []};
   if(functionName === 'createCampaign') {
     const { transactionData } = filterTransactionData({chainId, filter: true, functionNames: [functionName]});
@@ -418,30 +419,8 @@ export async function uploadImageToPinata({
     }
 
     // Get the public gateway URL
-    // const gatewayUrl = `${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${response.cid}`;
     const imageUrl = await pinata.gateways.public.convert(response.cid);
-    // console.log("NEXT_PUBLIC_PINATA_GATEWAY", process.env.NEXT_PUBLIC_PINATA_GATEWAY);
-    console.log("imageUrl", imageUrl);
     
-    // Verify the uploaded file is accessible
-    // try {
-    //   const verificationResponse = await fetch(gatewayUrl, { method: 'HEAD' });
-    //   console.log("verificationResponse", verificationResponse)
-    //   if (!verificationResponse.ok) {
-    //     alert(`File verification failed: ${verificationResponse.status}`);
-    //     return {
-    //       success: false,
-    //       error: `File verification failed: ${verificationResponse.status}`
-    //     };
-    //   }
-    // } catch (verificationError) {
-    //   alert('File verification failed, but upload may have succeeded: ' + verificationError);
-    //   return {
-    //     success: false,
-    //     error: 'File verification failed, but upload may have succeeded: ' + verificationError
-    //   };
-    // }
-
     return {
       success: true,
       imageURI: imageUrl
