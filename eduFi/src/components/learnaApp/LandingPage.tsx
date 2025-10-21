@@ -1,7 +1,6 @@
 "use client";
 /*eslint-disable */
 import React, { useState, useEffect, useMemo } from 'react';
-import Navbar from './Navbar';
 import ImprovedAITutor from '../ai/AITutor';
 import Features from './Features';
 import Hero from './Hero';

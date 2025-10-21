@@ -26,7 +26,9 @@ export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {  
+}>) {
+    // const headersObj = await headers();
+    // const cookies = headersObj.get('cookie')
 
   return (
     <html lang="en">

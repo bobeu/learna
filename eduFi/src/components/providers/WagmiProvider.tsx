@@ -9,7 +9,6 @@ import { RainbowKitProvider, getDefaultConfig, lightTheme, } from "@rainbow-me/r
 import { celo, celoSepolia } from "wagmi/chains";
 import DataProvider from "./DataProvider";
 
-// Your walletconnect project Id
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
 const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
 const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API as string;
@@ -60,12 +59,12 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   const config = getDefaultConfig({
     appName: 'Learna',
     projectId,
-    appIcon: 'https://learna.vercel.app/learna-logo.png',
+    appIcon: 'https://learna.vercel.app/logo.png',
     appDescription: APP_DESCRIPTION,
     appUrl: APP_URL,
     chains: [celoSepolia, celo],
-    ssr: true,
-    multiInjectedProviderDiscovery: true,
+    // ssr: true,
+    // multiInjectedProviderDiscovery: true,
     pollingInterval: 10_000,
     syncConnectedChain: true,
     transports: {
@@ -87,7 +86,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   );
   
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider config={config as unknown as any} >
       <QueryClientProvider client={new QueryClient()}>
         <RainbowKitProvider 
           coolMode={true}
