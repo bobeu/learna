@@ -3,18 +3,44 @@
 pragma solidity 0.8.28;
 
 import { Common } from "../../interfaces/Common.sol";
-import { IVerifier } from "../../interfaces/IVerifier.sol";
 import { IApprovalFactory } from "../ApprovalFactory.sol";
 
 interface ICampaignFactory { 
-    function updatedUserCampaign(address user) external;
+    error FeetoIsTheSame();
+    error ZeroAddress();
+    error InsufficientValue();
+    error NoApproval();
+
+    event NewCampaign(address indexed sender, address indexed campaign);
+
+    struct Campaign {
+        address creator;
+        address identifier;
+    }
+
+    struct UserCampaign {
+        address user;
+        address campaign;
+        bool isCreator;
+    }
+
+    struct ReadData {
+        address dev;
+        address feeTo;
+        uint creationFee;
+        IApprovalFactory approvalFactory;
+        Campaign[] campaigns;
+    }
+
+    function updateUserCampaign(address user) external;
+    function getCampaign(uint index) external view returns(Campaign memory);
 }
 
 interface ICampaignTemplate {
-    error NotVerified();
     error InvalidEpoch();
     error ClaimNotReady();
     error BalanceAnomally();
+    error NotTheOperator();
     error InsufficientValue();
     error NoProofOfLearning();
     error MaxFundDepthExceeded();
@@ -135,11 +161,21 @@ interface ICampaignTemplate {
     struct ReadData {
         EpochData[] epochData;
         Metadata metadata;
-        IVerifier verifier;
         IApprovalFactory approvalFactory;
         uint epoches;
         address owner;
         bool[] isPoassClaimed;
         bool[] isPointClaimed;
     }
+
+    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable returns(bool);
+    function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating, address user) external returns(bool);
+    function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) external returns(bool);
+    function claimRewardForPOINT(uint8 fundIndex, uint epoch, address user) external returns(bool);
+    function submitProofOfIntegration(string[3] memory links, address user) external returns(bool);
+    function approveIntegration(address[] memory targets, uint32[]memory points, uint epoch) external returns(bool);
+    function addFund(address token, uint epoch, RewardType rwType) external payable returns(bool);
+    function editMetaData(MetadataInput memory _meta) external returns(bool);
+    function pause() external returns(bool);
+    function unpause() external returns(bool);
 }

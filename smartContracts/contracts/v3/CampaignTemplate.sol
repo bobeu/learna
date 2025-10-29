@@ -5,7 +5,6 @@ pragma solidity 0.8.28;
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IERC20Metadata, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IVerifier } from "../interfaces/IVerifier.sol";
 import { UtilsV3 } from "./UtilsV3.sol";
 import { Common } from "../interfaces/Common.sol";
 import { ICampaignTemplate, ICampaignFactory } from "./interfaces/ICampaignTemplate.sol";
@@ -21,8 +20,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
 
     address private dev;
 
-    // Verifier contract
-    IVerifier private verifier;
+    address internal operator;
 
     /**@dev Mapping showing whether user has claimed reward for an epoch or not
         @notice We use address(this) to represent 3rd key in the mapping for the native coin e.g Celo. Since there can be more than one reward token in a campign,
@@ -46,14 +44,13 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
 
     ///@notice Constructor
     constructor(
-        address _dev, 
         address _operator, 
+        address _dev, 
         IApprovalFactory _approvalFactory, 
-        IVerifier _verifier,
         MetadataInput memory meta
-    ) payable CampaignMetadata(_operator, _approvalFactory, meta) {
-        verifier = _verifier;
+    ) payable CampaignMetadata(_approvalFactory, meta) {
         dev = _dev;
+        operator =_operator;
         unchecked {
             if(meta.endDateInHr > 0) {
                 metadata.endDate = _now() + uint64(meta.endDateInHr * 1 hours);
@@ -162,7 +159,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @param arg : Setting of type EpochSettingInput
         @param rwType: Reward type
     */
-    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyOwnerOrApproved returns(bool) {
+    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyApproved returns(bool) {
         uint64 currentTime = _now();
         if(currentTime >= metadata.endDate) {
             epoches += 1;
@@ -193,19 +190,18 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @param poa : Proof of assimilation object
         @param rating : Performance rating for completing a path
      */
-    function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating) public whenNotPaused returns(bool) {
+    function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating, address user) external whenNotPaused returns(bool) {
         uint epoch = epoches;
-        address sender = _msgSender();
-        Spot memory spot = spots[sender][epoch];
+        Spot memory spot = spots[user][epoch];
         if(!spot.hasValue) {
             spot.hasValue = true;
             spot.value = epochData[epoch].learners.length;
             epochData[epoch].learners.push();
-            spots[sender][epoch] = spot;
-            epochData[epoch].learners[spot.value].id = sender;
+            spots[user][epoch] = spot;
+            epochData[epoch].learners[spot.value].id = user;
         }
         // Learner memory lnr = learners[epoch][spot.value];
-        Frequency memory fq = frequencies[sender];
+        Frequency memory fq = frequencies[user];
         uint24 maxProof = epochData[epoch].setting.maxProof;
         unchecked {
             if(fq.lastSeen > 0) {
@@ -224,9 +220,9 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         }
         epochData[epoch].learners[spot.value].poass.push(poa);
         epochData[epoch].learners[spot.value].ratings.push(rating);
-        ICampaignFactory(approvalFactory.getFactory()).updatedUserCampaign(sender);
+        ICampaignFactory(approvalFactory.getFactory()).updateUserCampaign(user);
 
-        emit Proof(poa, sender);
+        emit Proof(poa, user);
         return true;
     }
 
@@ -235,11 +231,9 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @param epoch : Epoch to claim from .
         @notice Learners can only claim from an epoch if the epoch deadline has passed.
      */
-    function claimRewardForPOASS(uint8 fundIndex, uint epoch) public whenNotPaused validateEpochInput(epoch) returns(bool) {
-        address sender = _msgSender();
+    function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) public whenNotPaused validateEpochInput(epoch) returns(bool) {
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
-        if(!verifier.isVerified(sender)) revert NotVerified();
-        Spot memory spot = spots[sender][epoch];
+        Spot memory spot = spots[user][epoch];
         Common.ShareOut memory sh = dev._rebalance(
             _calculateShare(
                 RewardType.POASS,
@@ -247,22 +241,22 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                 epochData[epoch].totalProofs, 
                 fundIndex, 
                 epoch, 
-                _msgSender()
+                user
             )
         );
         unchecked {
             if(sh.erc20 > 0) {
-                isClaimed[RewardType.POASS][epoch][sender][sh.token] = true;
+                isClaimed[RewardType.POASS][epoch][user][sh.token] = true;
                 epochData[epoch].setting.funds.erc20Ass[fundIndex].amount -= sh.erc20;
-                sender._sendErc20(sh.erc20, sh.token);
+                user._sendErc20(sh.erc20, sh.token);
             }
             if(sh.native > 0) {
-                isClaimed[RewardType.POASS][epoch][sender][address(this)] = true;
+                isClaimed[RewardType.POASS][epoch][user][address(this)] = true;
                 epochData[epoch].setting.funds.nativeAss -= sh.native;
-                sender._sendValue(sh.native);
+                user._sendValue(sh.native);
             }
         }
-        emit Claimed(sender, sh);
+        emit Claimed(user, sh);
         return true;
     }
 
@@ -273,12 +267,11 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
      */
     function claimRewardForPOINT(
         uint8 fundIndex, 
-        uint epoch
+        uint epoch,
+        address user
     ) public whenNotPaused validateEpochInput(epoch) returns(bool) {
-        address sender = _msgSender();
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
-        if(!verifier.isVerified(sender)) revert NotVerified();
-        Spot memory spot = spots[sender][epoch];
+        Spot memory spot = spots[user][epoch];
         Common.ShareOut memory sh = dev._rebalance(
             _calculateShare(
                 RewardType.POINT,
@@ -286,22 +279,22 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
                 _getProofsOfInt(epoch), 
                 fundIndex, 
                 epoch, 
-                _msgSender()
+                user
             )
         );
         unchecked {
             if(sh.erc20 > 0) {
-                isClaimed[RewardType.POINT][epoch][sender][sh.token] = true;
+                isClaimed[RewardType.POINT][epoch][user][sh.token] = true;
                 epochData[epoch].setting.funds.erc20Int[fundIndex].amount -= sh.erc20;
-                sender._sendErc20(sh.erc20, sh.token);
+                user._sendErc20(sh.erc20, sh.token);
             }
             if(sh.native > 0) {
-                isClaimed[RewardType.POINT][epoch][sender][address(this)] = true;
+                isClaimed[RewardType.POINT][epoch][user][address(this)] = true;
                 epochData[epoch].setting.funds.nativeInt -= sh.native;
-                sender._sendValue(sh.native);
+                user._sendValue(sh.native);
             }
         }
-        emit Claimed(sender, sh);
+        emit Claimed(user, sh);
         return true;
     }
 
@@ -355,10 +348,9 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         @notice Builder can submit at most 3 links before the epoch ends. Continous submission will override existing links which allow
         them to edit as many time as they wish. Builder must have proof assimilation before they can submit proof of integration.
      */
-    function submitProofOfIntegration(string[3] memory links) public returns(bool) {
+    function submitProofOfIntegration(string[3] memory links, address user) public returns(bool) {
         uint epoch = epoches;
-        address sender = _msgSender();
-        Spot memory spot = spots[sender][epoch];
+        Spot memory spot = spots[user][epoch];
         if(!spot.hasValue) revert NoProofOfLearning();
         for(uint8 i = 0; i < links.length; i++) {
             epochData[epoch].learners[spot.value].point.links[i] = Link(bytes(links[i]), _now());
@@ -376,7 +368,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         address[] memory targets, 
         uint32[]memory points, 
         uint epoch
-    ) external onlyOwnerOrApproved whenNotPaused returns(bool) {
+    ) external onlyApproved whenNotPaused returns(bool) {
         if(targets.length == points.length) {
             for(uint32 i = 0; i < targets.length; i++) {
                 address target = targets[i];
@@ -393,7 +385,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         return true;
     }
 
-    /**@dev Set metadata
+    /**@dev Add funds to campaign
         @param token: Token address
         @param epoch: Epoch Id
         @param rwType: Reward type
@@ -402,15 +394,14 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata, ReentrancyGuar
         address token, 
         uint epoch, 
         RewardType rwType
-    ) external payable onlyOwnerOrApproved whenNotPaused returns(bool) {
-        _setUpERC20Funds(token, _msgSender(), epoch, rwType);
+    ) external payable onlyApproved whenNotPaused returns(bool) {
+        _setUpERC20Funds(token, operator, epoch, rwType);
         return true;
     }
 
     function getData(address target, address token) external view returns(ReadData memory data) {
         uint _epoches = epoches + 1;
         data.metadata = metadata;
-        data.verifier = verifier;
         data.owner = operator;
         data.approvalFactory = approvalFactory;
         data.epoches = epoches;

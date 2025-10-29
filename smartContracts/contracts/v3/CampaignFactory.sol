@@ -2,41 +2,13 @@
 
 pragma solidity 0.8.28;
 
-import { CampaignTemplate, ICampaignTemplate } from "./CampaignTemplate.sol";
+import { CampaignTemplate, ICampaignTemplate, ICampaignFactory } from "./CampaignTemplate.sol";
 import { IApprovalFactory } from "./ApprovalFactory.sol";
-import { IVerifier } from "../interfaces/IVerifier.sol";
 import { UtilsV3 } from "./UtilsV3.sol";
 
-contract CampaignFactory {
+contract CampaignFactory is ICampaignFactory{
     using UtilsV3 for *;
-
-    error FeetoIsTheSame();
-    error ZeroAddress();
-    error InsufficientValue();
-    error NoApproval();
-
-    event NewCampaign(address indexed sender, address indexed campaign);
-
-    struct Campaign {
-        address creator;
-        address identifier;
-    }
-
-    struct UserCampaign {
-        address user;
-        address campaign;
-        bool isCreator;
-    }
-
-    struct ReadData {
-        address dev;
-        address feeTo;
-        uint creationFee;
-        IVerifier verifier;
-        IApprovalFactory approvalFactory;
-        Campaign[] campaigns;
-    }
-
+    
     ///@notice Dev address
     address private dev;
 
@@ -49,17 +21,8 @@ contract CampaignFactory {
     ///@notice All campaigns
     Campaign[] private campaigns;
 
-    // Verifier contract
-    IVerifier private verifier;
-
     ///@notice Approval factory contract
     IApprovalFactory private approvalFactory;
-
-    ///@notice User campaigns
-    mapping(address => UserCampaign[]) private userCampaigns;
-
-    ///@notice Users' registered campaign
-    mapping(address => mapping(address => bool)) private isRegisteredCampaign;
 
     // Only approved account is allowed
     modifier onlyApproved {
@@ -109,18 +72,6 @@ contract CampaignFactory {
         }
     }
 
-     /**@dev Set new Verifier contract 
-        @param newVerifier : New Verifier contract
-     */
-    function setVerifier(address newVerifier) external onlyApproved returns(bool) {
-        if(newVerifier != address(verifier)) {
-            verifier = IVerifier(newVerifier);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /**@dev Set new approval contract 
         @param newApprovalFactory : New Approval contract
      */
@@ -142,7 +93,7 @@ contract CampaignFactory {
                 feeTo._sendValue(creationFee);
                 address sender = msg.sender;
                 unchecked {
-                    address campaign = address(new CampaignTemplate{value: msg.value - creationFee}(dev, sender, approvalFactory, verifier, metadata));
+                    address campaign = address(new CampaignTemplate{value: msg.value - creationFee}(sender, dev, approvalFactory, metadata));
                     campaigns.push(Campaign(sender, campaign));
                     isRegisteredCampaign[address(this)][campaign] = true;
                     emit NewCampaign(sender, campaign);
@@ -155,18 +106,11 @@ contract CampaignFactory {
         return true;
     }
 
-    function updatedUserCampaign(address user) external {
-        address _sender = _msgSender();
-        if(isRegisteredCampaign[address(this)][_sender]) {
-            if(!isRegisteredCampaign[user][_sender]) {
-                isRegisteredCampaign[user][_sender] = true;
-                userCampaigns[user].push(UserCampaign(user, _sender, false));
-            }
+    function getCampaign(uint index) external view returns(Campaign memory cmp) {
+        if(index < campaigns.length) {
+            cmp = campaigns[index];
         }
-    }
-
-    function getUserCampaigns(address target) external view returns(UserCampaign[] memory) {
-        return userCampaigns[target];
+        return cmp;
     }
 
     ///@dev Get campaign data
@@ -175,7 +119,6 @@ contract CampaignFactory {
             dev,
             feeTo,
             creationFee,
-            verifier,
             approvalFactory,
             campaigns
         );
