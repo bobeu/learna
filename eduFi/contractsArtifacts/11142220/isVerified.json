@@ -1,7 +1,7 @@
 {
   "contractAddress": "0x2460df5b4c0721905794cEea39846e0b6619572D",
-  "functionName": "owner",
-  "inputCount": 0,
+  "functionName": "isVerified",
+  "inputCount": 1,
   "requireArgUpdate": false,
   "abi": [
     {

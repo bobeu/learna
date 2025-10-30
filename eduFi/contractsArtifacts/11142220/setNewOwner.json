@@ -1,6 +1,6 @@
 {
   "contractAddress": "0xf461387Ee12E4E889082100257AE17F9953D73f3",
-  "functionName": "setVerifier",
+  "functionName": "setNewOwner",
   "inputCount": 1,
   "requireArgUpdate": false,
   "abi": [

@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import { Brain } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useWriteContract } from 'wagmi';
-import { ProofOfAssimilation, Performance, CampaignStateProps } from '../../../types';
+import { useAccount, useWriteContract } from 'wagmi';
+import { ProofOfAssimilation, Performance, CampaignStateProps, FunctionName, Address } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
 import { Hex, stringToHex, zeroAddress } from 'viem';
-import campaignTemplate from "../../../contractsArtifacts/template.json";
-import { normalizeString } from '../utilities';
+// import campaignTemplate from "../../../contractsArtifacts/template.json";
+import { filterTransactionData, normalizeString } from '../utilities';
 import ArticleReading, { Steps } from './ArticleReading';
 import Quiz, { QuizQuestion } from './Quiz';
 import Results from './Results';
@@ -28,6 +28,7 @@ interface GeneratedArticle {
 
 export default function AITutor({ campaign, onClose }: AITutorProps) {
   const { isPending } = useWriteContract(); 
+  const { chainId } = useAccount();
   
   // State management
   const [currentStep, setCurrentStep] = useState<Steps>('topics');
@@ -241,15 +242,16 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
       abi: [],
       args: []
     }];
+    const { transactionData: td } = filterTransactionData({chainId, filter: true, functionNames: ['proveAssimilation']})
     
     return [{
       id: 'prove-assimilation',
       title: 'Store Proof of Learning',
       description: 'Storing your quiz results and performance rating on-chain',
-      functionName: 'proveAssimilation',
-      contractAddress: campaign.__raw.contractAddress,
-      abi: campaignTemplate.abi,
-      args: [data.proofOfAssimilation, data.performance],
+      functionName: td[0].functionName as FunctionName,
+      contractAddress: td[0].contractAddress as Address,
+      abi: td[0].abi,
+      args: [data.proofOfAssimilation, data.performance, campaign.__raw.contractInfo.index],
     }];
   };
 

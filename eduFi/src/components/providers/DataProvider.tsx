@@ -4,7 +4,9 @@ import React from 'react';
 import { 
     CampaignTemplateReadData,
     FormattedCampaignTemplate,
+    InterfacerReadData,
     mockCampaignTemplateReadData,
+    mockInterfacerReadData,
     type Address, 
     type ReadData, 
 } from '../../../types';
@@ -25,6 +27,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     const [hasApproval, setHasApproval] = React.useState<boolean>(false);
     const [owner, setOwner] = React.useState<Address>(zeroAddress);
     const [verificationStatus, setVerificationStatus] = React.useState<boolean>(false);
+    const [interfacerData, setInterfacerData] = React.useState<InterfacerReadData>(mockInterfacerReadData);
     const [campaignsData, setCampaignsData] = React.useState<FormattedCampaignTemplate[]>([mockCampaignTemplateReadData]);
 
     const chainId = useChainId();
@@ -37,14 +40,15 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         const { transactionData: td, contractAddresses: ca } = filterTransactionData({
             chainId,
             filter: true,
-            functionNames: ['owner', 'getData', 'hasApproval', 'getVerificationStatus'],
+            functionNames: ['owner', 'getFactoryData', 'hasApproval', 'isVerified', 'getInterfacerData'],
         });
-        const readArgs = [[], [], [account], [account]];
+        const readArgs = [[], [], [account], [account], []];
         const contractAddresses = [
             td[0].contractAddress as Address,
             ca.CampaignFactory as Address,
             ca.ApprovalFactory as Address,
-            ca.VerifierV2 as Address,
+            ca.IdentityVerifier as Address,
+            ca.Interfacer as Address,
         ];
 
         return { td, readArgs, contractAddresses };
@@ -79,6 +83,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         let owner_ : Address = zeroAddress;
         let hasApproval_ : boolean = false;
         let verificationStatus_ : boolean = false;
+        let interfacerData_ : InterfacerReadData = mockInterfacerReadData;
 
         if(factoryReadData && factoryReadData[0].status === 'success' && factoryReadData[0].result !== undefined) {
             owner_ = factoryReadData[0].result as Address;
@@ -92,27 +97,32 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         if(factoryReadData && factoryReadData[3].status === 'success' && factoryReadData[3].result !== undefined) {
             verificationStatus_ = factoryReadData[3].result as boolean;
         }
+        if(factoryReadData && factoryReadData[4].status === 'success' && factoryReadData[4].result !== undefined) {
+            interfacerData_ = factoryReadData[4].result as InterfacerReadData;
+        }
         
         setOwner(owner_);
         setData(data);
         setVerificationStatus(verificationStatus_);
         setHasApproval(hasApproval_);
+        setInterfacerData(interfacerData_);
     }, [factoryReadData]);
 
+    console.log("factoryData", factoryData)
     // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFactory
     const { campaignDataTrxns, rest } = React.useMemo(() => {
         const { campaigns, ...rest } = factoryData;
         const campaignDataTrxns = campaigns.map(({identifier}) => {
             return {
                 abi: campaignTemplateArtifacts.abi as any,
-                functionName: 'getData',
+                functionName: 'getCampaignData',
                 address: identifier as Address,
-                args: [account, zeroAddress], // Pass zero address in place of token address for now  
+                args: [account, zeroAddress],
             }
         });
 
         return { campaignDataTrxns, rest }
-    }, [factoryData]);
+    }, [factoryData, account]);
     
     // Read data from the campaign addresses
     const { data: campaignsReadData, isLoading: isLoadingCampaigns } = useReadContracts({
@@ -137,7 +147,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
                 if(status === 'success') {
                     campaignData_ = result as CampaignTemplateReadData;
                 }
-                return formatCampaignsTemplateReadData(campaignData_, campaignDataTrxns[i].address);
+                return formatCampaignsTemplateReadData(campaignData_, campaignDataTrxns[i].address, i);
             });
         }
         setCampaignsData(campaignsData_);
@@ -149,7 +159,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
             const anyLearner = c.epochData?.some((e) => e.learners?.some((l) => l.id.toLowerCase() === userAddress));
             return anyLearner;
         });
-
+        
         const creatorCampaigns = campaignsData.filter(({owner}) => owner.toLowerCase() === userAddress);
         return {
             builderCampaigns,
@@ -167,8 +177,9 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
                 campaignsData,
                 verificationStatus,
                 builderCampaigns,
-                creatorCampaigns
-            }}
+                creatorCampaigns,
+                interfacerData
+            }} 
         >
             { children }
         </StorageContextProvider>

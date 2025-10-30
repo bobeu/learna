@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.28;
 
-import { ICampaignTemplate, ICampaignFactory } from "./interfaces/ICampaignTemplate.sol";
+import { ICampaignTemplate, ICampaignFactory, IInterfacer } from "./interfaces/ICampaignTemplate.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 
-contract Interfacer {
+contract Interfacer is IInterfacer {
     // ERRORS
     error NotCampaignOwner();
     error OnlyOwner();
@@ -29,7 +29,7 @@ contract Interfacer {
     address private owner;
 
     ///@notice User campaigns
-    mapping(address => UserCampaign[]) private userCampaigns;
+    mapping(address => ICampaignFactory.UserCampaign[]) private userCampaigns;
 
     ///@notice Users' registered campaign
     mapping(address => mapping(address => bool)) private isRegisteredCampaign;
@@ -40,15 +40,8 @@ contract Interfacer {
     }
 
     // ============== CONSTRUCTOR ==============
-    constructor (address _factory) {
-        _setFactory(_factory);
+    constructor () {
         owner = _msgSender();
-    }
-
-    // Set new factory address
-    function _setFactory(address _factory) private {
-        if(_factory == address(0)) revert FactoryIsZeroAddress();
-        factory = ICampaignFactory(_factory);
     }
 
     function _msgSender() internal view returns(address sender) {
@@ -76,7 +69,8 @@ contract Interfacer {
     }
 
     function setFactory(address _factory) public onlyOwner returns(bool) {
-        _setFactory(_factory);
+        if(_factory == address(0)) revert FactoryIsZeroAddress();
+        factory = ICampaignFactory(_factory);
         return true;
     }
     
@@ -104,7 +98,7 @@ contract Interfacer {
         @param campaignIndex : Campaign index
     */
     function epochSetting(ICampaignTemplate.EpochSettingInput memory arg, ICampaignTemplate.RewardType rwType, uint campaignIndex) external payable returns(bool){
-        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).epochSetting(arg, rwType));
+        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).epochSetting{value: msg.value}(arg, rwType));
     }
 
     /**@dev Record points based on learning outcome
@@ -165,12 +159,11 @@ contract Interfacer {
 
     /**@dev Add funds to campaign
         @param token: Token address
-        @param epoch: Epoch Id
         @param rwType: Reward type
         @param campaignIndex : Campaign index
     */
-    function addFund(address token, uint epoch, ICampaignTemplate.RewardType rwType, uint campaignIndex) external payable returns(bool){
-        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).addFund(token, epoch, rwType));
+    function addFund(address token, ICampaignTemplate.RewardType rwType, uint campaignIndex) external payable returns(bool){
+        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).addFund{value: msg.value}(token, rwType));
     }
 
     /**@dev Set metadata
@@ -202,16 +195,21 @@ contract Interfacer {
         if(isRegisteredCampaign[address(this)][_sender]) {
             if(!isRegisteredCampaign[user][_sender]) {
                 isRegisteredCampaign[user][_sender] = true;
-                userCampaigns[user].push(UserCampaign(user, _sender, false));
+                userCampaigns[user].push(ICampaignFactory.UserCampaign(user, _sender, false));
             }
         }
     }
 
-    function getUserCampaigns(address target) external view returns(UserCampaign[] memory) {
+    function getUserCampaigns(address target) external view returns(ICampaignFactory.UserCampaign[] memory) {
         return userCampaigns[target];
     }
 
-    function getData() public view returns(ReadData memory) {
+    function registerCampaign(address _campaign) external {
+        require(_msgSender() == address(factory), "NotAllowed");
+        isRegisteredCampaign[address(this)][_campaign] = true;
+    }
+
+    function getInterfacerData() public view returns(ReadData memory) {
         return ReadData(
             address(factory),
             address(verifier),

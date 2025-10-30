@@ -1,7 +1,7 @@
 {
   "contractAddress": "0xf461387Ee12E4E889082100257AE17F9953D73f3",
-  "functionName": "setVerifier",
-  "inputCount": 1,
+  "functionName": "submitProofOfIntegration",
+  "inputCount": 2,
   "requireArgUpdate": false,
   "abi": [
     {

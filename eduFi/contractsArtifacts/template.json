@@ -4,22 +4,17 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_dev",
+          "name": "_operator",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_operator",
+          "name": "_dev",
           "type": "address"
         },
         {
           "internalType": "contract IApprovalFactory",
           "name": "_approvalFactory",
-          "type": "address"
-        },
-        {
-          "internalType": "contract IVerifier",
-          "name": "_verifier",
           "type": "address"
         },
         {
@@ -110,12 +105,7 @@
     },
     {
       "inputs": [],
-      "name": "NotVerified",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ReentrancyGuardReentrantCall",
+      "name": "NotTheOperator",
       "type": "error"
     },
     {
@@ -300,11 +290,6 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "epoch",
-          "type": "uint256"
-        },
-        {
           "internalType": "enum ICampaignTemplate.RewardType",
           "name": "rwType",
           "type": "uint8"
@@ -361,6 +346,11 @@
           "internalType": "uint256",
           "name": "epoch",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
         }
       ],
       "name": "claimRewardForPOASS",
@@ -385,6 +375,11 @@
           "internalType": "uint256",
           "name": "epoch",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
         }
       ],
       "name": "claimRewardForPOINT",
@@ -503,7 +498,7 @@
           "type": "address"
         }
       ],
-      "name": "getData",
+      "name": "getCampaignData",
       "outputs": [
         {
           "components": [
@@ -765,11 +760,6 @@
               "type": "tuple"
             },
             {
-              "internalType": "contract IVerifier",
-              "name": "verifier",
-              "type": "address"
-            },
-            {
               "internalType": "contract IApprovalFactory",
               "name": "approvalFactory",
               "type": "address"
@@ -806,7 +796,13 @@
     {
       "inputs": [],
       "name": "pause",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -878,6 +874,11 @@
           "internalType": "struct ICampaignTemplate.Performance",
           "name": "rating",
           "type": "tuple"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
         }
       ],
       "name": "proveAssimilation",
@@ -897,6 +898,11 @@
           "internalType": "string[3]",
           "name": "links",
           "type": "string[3]"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
         }
       ],
       "name": "submitProofOfIntegration",
@@ -913,7 +919,13 @@
     {
       "inputs": [],
       "name": "unpause",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

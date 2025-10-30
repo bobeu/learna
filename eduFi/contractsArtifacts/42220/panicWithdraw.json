@@ -2,7 +2,7 @@
   "contractAddress": "0xa3C385ED8DF6A7B71CA79f24c6e51C5E1a2fadd0",
   "functionName": "panicWithdraw",
   "inputCount": 1,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [

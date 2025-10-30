@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Coins, TrendingUp, CheckCircle } from "lucide-react";
 import { useWriteContract } from "wagmi";
 import { formatEther } from "viem";
-import { CampaignTemplateReadData, Learner, RewardType, Address, FunctionName } from "../../../types";
-import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
+import { CampaignTemplateReadData, Learner, RewardType } from "../../../types";
+import RewardClaimModal from '@/components/modals/RewardClaimModal';
 
 interface BuilderRewardsProps {
   campaign: CampaignTemplateReadData;
@@ -20,10 +20,7 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
   const { isPending } = useWriteContract();
   
   const [showClaimModal, setShowClaimModal] = useState(false);
-  // const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedRewardType, setSelectedRewardType] = useState<RewardType | null>(null);
-  const [selectedFundIndex, setSelectedFundIndex] = useState<number>(0);
-  const [selectedEpoch, setSelectedEpoch] = useState<bigint>(0n);
+  const [selectedEpochIndex, setSelectedEpochIndex] = useState<number | null>(null);
 
   // Calculate total earnings from all epochs
   const totalEarnings = useMemo(() => {
@@ -125,39 +122,9 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
     return { native: claimableNative, erc20: claimableERC20 };
   }, [totalEarnings, performanceScore, isEligibleToClaim]);
 
-  const createClaimSteps = (): TransactionStep[] => {
-    if (!selectedRewardType) return [];
-    
-    const functionName = selectedRewardType === RewardType.POINT ? 'claimRewardForPOINT' : 'claimRewardForPOASS';
-    const rewardTypeName = selectedRewardType === RewardType.POINT ? 'Proof of Integration' : 'Proof of Assimilation';
-    
-    return [{
-      id: `claim-${selectedRewardType === RewardType.POINT ? 'point' : 'poass'}`,
-      title: `Claim ${rewardTypeName} Rewards`,
-      description: `Claiming rewards for ${rewardTypeName} from fund index ${selectedFundIndex}`,
-      functionName: functionName as FunctionName,
-      contractAddress: campaign.owner as Address,
-      abi: [],
-      args: [selectedFundIndex, selectedEpoch],
-    }];
-  };
-
-  const handleClaim = () => {
-    const steps = createClaimSteps();
-    if (steps.length === 0) {
-      alert('No rewards available to claim');
-      return;
-    }
+  const openClaimForEpoch = (epochIdx: number) => {
+    setSelectedEpochIndex(epochIdx);
     setShowClaimModal(true);
-  };
-
-  const handleClaimSuccess = (txHash: string) => {
-    console.log('Claim transaction successful:', txHash);
-    setShowClaimModal(false);
-  };
-
-  const handleClaimError = (error: Error) => {
-    console.error('Claim transaction failed:', error);
   };
 
   const getPerformanceBadge = (score: number) => {
@@ -240,88 +207,44 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
             </div>
           )}
 
-          {/* Claim Options */}
-          {isEligibleToClaim && (
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white">Claim Rewards</h4>
-              
-              {/* Reward Type Selection */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Reward Type:</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={selectedRewardType === RewardType.POINT ? "default" : "outline"}
-                    onClick={() => setSelectedRewardType(RewardType.POINT)}
-                    className="text-sm"
-                  >
-                    Proof of Integration
-                  </Button>
-                  <Button
-                    variant={selectedRewardType === RewardType.POASS ? "default" : "outline"}
-                    onClick={() => setSelectedRewardType(RewardType.POASS)}
-                    className="text-sm"
-                  >
-                    Proof of Assimilation
-                  </Button>
-                </div>
-              </div>
-
-              {/* Fund Selection */}
-              {selectedRewardType && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Fund:</label>
-                  <select
-                    value={selectedFundIndex}
-                    onChange={(e) => setSelectedFundIndex(parseInt(e.target.value))}
-                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  >
-                    {availableFunds.map((fund) => (
-                      <option key={fund.index} value={fund.index}>
-                        {fund.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Epoch Selection */}
-              {selectedRewardType && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Select Epoch:</label>
-                  <select
-                    value={selectedEpoch.toString()}
-                    onChange={(e) => setSelectedEpoch(BigInt(e.target.value))}
-                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  >
-                    {availableEpochs.map((epoch, index) => (
-                      <option key={epoch.toString()} value={epoch.toString()}>
-                        Epoch {index + 1}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Claim Button */}
-              <Button
-                onClick={handleClaim}
-                disabled={!selectedRewardType || isPending}
-                className="w-full bg-primary-500 text-black hover:bg-primary-400"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Coins className="w-4 h-4 mr-2" />
-                    Claim {selectedRewardType === RewardType.POINT ? 'Integration' : 'Assimilation'} Rewards
-                  </>
-                )}
-              </Button>
+          {/* Your Campaign Epochs and Funds */}
+          <div className="space-y-3">
+            <h4 className="font-medium text-gray-900 dark:text-white">Your Campaign Epochs</h4>
+            <div className="space-y-2">
+              {campaign.epochData.map((epoch, idx) => (
+                <Card key={idx} className="border-neutral-200 dark:border-neutral-800">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Epoch {idx + 1}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {/* Native funds */}
+                    {(epoch.setting.funds.nativeAss > 0n || epoch.setting.funds.nativeInt > 0n) && (
+                      <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <span className="text-sm">Native (CELO)</span>
+                        <Button size="sm" variant="outline" onClick={() => openClaimForEpoch(idx)}>Claim</Button>
+                      </div>
+                    )}
+                    {/* ERC20 funds */}
+                    {[...epoch.setting.funds.erc20Ass, ...epoch.setting.funds.erc20Int].length > 0 && (
+                      <div className="space-y-1">
+                        {[...epoch.setting.funds.erc20Ass, ...epoch.setting.funds.erc20Int].map((t, i) => (
+                          <div key={`${t.token}-${i}`} className="flex items-center justify-between p-2 border border-neutral-200 dark:border-neutral-700 rounded">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-blue-600 dark:text-blue-300">{t.tokenSymbol?.[0] || 'T'}</span>
+                              </div>
+                              <span className="text-sm">{t.tokenName} ({t.tokenSymbol})</span>
+                            </div>
+                            <Button size="sm" variant="outline" onClick={() => openClaimForEpoch(idx)}>Claim</Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          )}
+          </div>
 
           {!isEligibleToClaim && (
             <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
@@ -336,15 +259,15 @@ export default function BuilderRewards({ campaign, learnerData }: BuilderRewards
         </CardContent>
       </Card>
 
-      <TransactionModal
-        isOpen={showClaimModal}
-        onClose={() => setShowClaimModal(false)}
-        title="Claim Your Rewards"
-        description="Please confirm the transactions to claim your earned rewards"
-        getSteps={createClaimSteps}
-        onSuccess={handleClaimSuccess}
-        onError={handleClaimError}
-      />
+      {showClaimModal && selectedEpochIndex !== null && (
+        <RewardClaimModal
+          campaign={campaign as any}
+          epochIndex={selectedEpochIndex}
+          campaignIndex={campaign.contractInfo.index}
+          isOpen={showClaimModal}
+          onClose={() => setShowClaimModal(false)}
+        />
+      )}
     </>
   );
 }

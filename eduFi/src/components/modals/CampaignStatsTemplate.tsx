@@ -23,7 +23,7 @@ import { FormattedCampaignTemplate, EpochData, Learner, Address } from "../../..
 import { formatEther, formatUnits, Hex, hexToString } from "viem";
 import LearnerProfileModal from "./LearnerProfileModal";
 import CampaignSettingsModal from "./CampaignSettingsModal";
-import RewardClaimModal from "./RewardClaimModal";
+// Reward claiming is handled in the Builder profile, not here
 import { formatAddr, normalizeString, toBN } from '../utilities';
 import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 
@@ -237,16 +237,7 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
       <div>
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold">Learners ({totalLearners})</h4>
-          {userAddress && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onClaimReward(epochIndex)}
-            >
-              <Award className="w-4 h-4 mr-2" />
-              Claim Rewards
-            </Button>
-          )}
+          {/* Claim actions are handled in Builder profile, not here */}
         </div>
         <LearnerList 
           learners={epochData.learners} 
@@ -263,8 +254,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
   const userAddress = formatAddr(address).toLowerCase();
   const [selectedLearner, setSelectedLearner] = useState<Learner | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showClaimReward, setShowClaimReward] = useState(false);
-  const [selectedEpoch, setSelectedEpoch] = useState(0);
+  // Removed claim reward modal state from stats template
 
   const isOwner = userAddress === campaign.owner.toLowerCase();
 
@@ -285,10 +275,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
     setSelectedLearner(learner);
   };
 
-  const handleClaimReward = (epochIndex: number) => {
-    setSelectedEpoch(epochIndex);
-    setShowClaimReward(true);
-  };
+  const handleClaimReward = (_epochIndex: number) => {};
 
   const handleSettingsClick = () => {
     setShowSettings(true);
@@ -379,7 +366,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
                 <div>
                   <p className="text-sm font-medium text-gray-500">Contract</p>
                   <AddressWrapper
-                    account={campaign.contractAddress}
+                    account={campaign.contractInfo.address}
                     display={true}
                     copyIconSize='6'
                     size={6}
@@ -456,15 +443,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
       />
     )}
 
-    {/* Reward Claim Modal */}
-    {showClaimReward && (
-      <RewardClaimModal
-        campaign={campaign}
-        epochIndex={selectedEpoch}
-        isOpen={showClaimReward}
-        onClose={() => setShowClaimReward(false)}
-      />
-    )}
+    {/* Removed RewardClaimModal from stats template */}
     </>
   );
 }

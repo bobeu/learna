@@ -2,7 +2,8 @@
 
 pragma solidity 0.8.28;
 
-import { CampaignTemplate, ICampaignTemplate, ICampaignFactory } from "./CampaignTemplate.sol";
+import { CampaignTemplate } from "./CampaignTemplate.sol";
+import { ICampaignFactory, ICampaignTemplate, IInterfacer } from "./interfaces/ICampaignTemplate.sol";
 import { IApprovalFactory } from "./ApprovalFactory.sol";
 import { UtilsV3 } from "./UtilsV3.sol";
 
@@ -95,7 +96,7 @@ contract CampaignFactory is ICampaignFactory{
                 unchecked {
                     address campaign = address(new CampaignTemplate{value: msg.value - creationFee}(sender, dev, approvalFactory, metadata));
                     campaigns.push(Campaign(sender, campaign));
-                    isRegisteredCampaign[address(this)][campaign] = true;
+                    IInterfacer(approvalFactory.getInterfacer()).registerCampaign(campaign);
                     emit NewCampaign(sender, campaign);
                 }
             }
@@ -114,7 +115,7 @@ contract CampaignFactory is ICampaignFactory{
     }
 
     ///@dev Get campaign data
-    function getData() public view returns(ReadData memory data) {
+    function getFactoryData() public view returns(ReadData memory data) {
         data = ReadData(
             dev,
             feeTo,
