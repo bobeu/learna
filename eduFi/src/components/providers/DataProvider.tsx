@@ -19,6 +19,7 @@ import {
     formatCampaignsTemplateReadData,
     formattedMockCampaignsTemplate
 } from '../utilities';
+import { usePublicDataFetcher } from './usePublicDataFetcher';
 
 import campaignTemplateArtifacts from "../../../contractsArtifacts/template.json";
 
@@ -29,11 +30,24 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     const [verificationStatus, setVerificationStatus] = React.useState<boolean>(false);
     const [interfacerData, setInterfacerData] = React.useState<InterfacerReadData>(mockInterfacerReadData);
     const [campaignsData, setCampaignsData] = React.useState<FormattedCampaignTemplate[]>([mockCampaignTemplateReadData]);
+    const [isLoadingCampaignsPublic, setIsLoadingCampaignsPublic] = React.useState<boolean>(false);
 
     const chainId = useChainId();
     const config = useConfig();
     const { isConnected, address } = useAccount();
     const account = formatAddr(address);
+
+    // Use public data fetcher hook when user is not connected
+    usePublicDataFetcher({
+        setFactoryData: setData,
+        setOwner,
+        setHasApproval,
+        setVerificationStatus,
+        setInterfacerData,
+        setCampaignsData,
+        setIsLoadingCampaigns: setIsLoadingCampaignsPublic,
+        factoryData,
+    });
 
     const { td, readArgs, contractAddresses } = React.useMemo(() => {
         // Build read transactions data
@@ -84,31 +98,32 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         let hasApproval_ : boolean = false;
         let verificationStatus_ : boolean = false;
         let interfacerData_ : InterfacerReadData = mockInterfacerReadData;
-
-        if(factoryReadData && factoryReadData[0].status === 'success' && factoryReadData[0].result !== undefined) {
-            owner_ = factoryReadData[0].result as Address;
+        if(isConnected) {
+            if(factoryReadData && factoryReadData[0].status === 'success' && factoryReadData[0].result !== undefined) {
+                owner_ = factoryReadData[0].result as Address;
+            }
+            if(factoryReadData && factoryReadData[1].status === 'success' && factoryReadData[1].result !== undefined) {
+                data = factoryReadData[1].result as ReadData;
+            }
+            if(factoryReadData && factoryReadData[2].status === 'success' && factoryReadData[2].result !== undefined) {
+                hasApproval_ = factoryReadData[2].result as boolean;
+            }
+            if(factoryReadData && factoryReadData[3].status === 'success' && factoryReadData[3].result !== undefined) {
+                verificationStatus_ = factoryReadData[3].result as boolean;
+            }
+            if(factoryReadData && factoryReadData[4].status === 'success' && factoryReadData[4].result !== undefined) {
+                interfacerData_ = factoryReadData[4].result as InterfacerReadData;
+            }
+            
+            setOwner(owner_);
+            setData(data);
+            setVerificationStatus(verificationStatus_);
+            setHasApproval(hasApproval_);
+            setInterfacerData(interfacerData_);
         }
-        if(factoryReadData && factoryReadData[1].status === 'success' && factoryReadData[1].result !== undefined) {
-            data = factoryReadData[1].result as ReadData;
-        }
-        if(factoryReadData && factoryReadData[2].status === 'success' && factoryReadData[2].result !== undefined) {
-            hasApproval_ = factoryReadData[2].result as boolean;
-        }
-        if(factoryReadData && factoryReadData[3].status === 'success' && factoryReadData[3].result !== undefined) {
-            verificationStatus_ = factoryReadData[3].result as boolean;
-        }
-        if(factoryReadData && factoryReadData[4].status === 'success' && factoryReadData[4].result !== undefined) {
-            interfacerData_ = factoryReadData[4].result as InterfacerReadData;
-        }
-        
-        setOwner(owner_);
-        setData(data);
-        setVerificationStatus(verificationStatus_);
-        setHasApproval(hasApproval_);
-        setInterfacerData(interfacerData_);
     }, [factoryReadData]);
 
-    console.log("factoryData", factoryData)
+    // console.log("factoryData", factoryData)
     // Prepare to read data from the CampaignTemplate with the results fetched from the CampaignFactory
     const { campaignDataTrxns, rest } = React.useMemo(() => {
         const { campaigns, ...rest } = factoryData;
@@ -171,7 +186,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         <StorageContextProvider
             value={{
             ...rest,
-                isLoading: isLoadingCampaigns,
+                isLoading: isConnected ? isLoadingCampaigns : isLoadingCampaignsPublic,
                 hasApproval,
                 owner,
                 campaignsData,

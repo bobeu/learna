@@ -12,10 +12,12 @@ import {
   Star, 
   Calendar, 
   Target,
+  User2,
+  UserCheck,
   CheckCircle,
   ExternalLink
 } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Learner, Performance, ProofOfIntegration } from "../../../types";
 
 interface LearnerProfileModalProps {
@@ -159,7 +161,7 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
     const verifiedPoints = learner.point.verified ? 1 : 0; // Verified proof of integrations. Points are verified when builder's score is greater than 0
     const totalProofs = learner.poass.length;
     const avgRating = learner.ratings.length > 0 
-      ? learner.ratings.reduce((sum, rating) => sum + rating.value, 0) / learner.ratings.length 
+      ? learner.ratings.reduce((sum, rating) => sum + Number(rating.value), 0) / learner.ratings.length 
       : 0;
     const totalRatings = learner.ratings.length;
 
@@ -181,7 +183,8 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
             <DialogTitle className="text-xl font-bold">
               Learner Profile
             </DialogTitle>
-            <ConnectButton />
+            {/* { poi.isVerified? <UserCheck className={`${statusColor} h-4 w-4`} /> : <User2 />} */}
+            {/* <ConnectButton /> */}
           </div>
         </DialogHeader>
 

@@ -4,20 +4,19 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, TrendingUp, CheckCircle } from "lucide-react";
-import { useWriteContract } from "wagmi";
+import { Coins, TrendingUp, CheckCircle } from "lucide-react";
+// import { useWriteContract } from "wagmi";
 import { formatEther } from "viem";
-import { CampaignTemplateReadData, Learner, RewardType } from "../../../types";
+import { FormattedCampaignTemplate, Learner } from "../../../types";
 import RewardClaimModal from '@/components/modals/RewardClaimModal';
 
 interface BuilderRewardsProps {
-  campaign: CampaignTemplateReadData;
+  campaign: FormattedCampaignTemplate;
   learnerData: Learner;
 }
 
 export default function BuilderRewards({ campaign, learnerData }: BuilderRewardsProps) {
-  // const { address, chainId } = useAccount();
-  const { isPending } = useWriteContract();
+  // const { isPending } = useWriteContract();
   
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [selectedEpochIndex, setSelectedEpochIndex] = useState<number | null>(null);

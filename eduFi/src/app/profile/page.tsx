@@ -537,51 +537,53 @@ export default function ProfilePage() {
               </Card>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {builderCampaigns.map((c, idx) => {
-                const latest = c.epochData?.[c.epochData.length - 1];
-                const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
-                const learners = latest?.learners || [];
-                const userLearnerData = learners.find((l) => l.id.toLowerCase() === userAddress);
-                
-                return (
-                  <div key={idx} className="space-y-4">
-                    <Card className="bg-white dark:bg-surface">
-                      <CardHeader>
-                        <CardTitle className="truncate">{c.metadata.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="text-sm text-gray-700 dark:text-gray-200">
-                          <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
-                          <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
-                          <div className="truncate">Total Learners: {learners.length}</div>
-                        </div>
-                        <div className="space-y-2">
-                          <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
-                            <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
-                          </Link>
-                          <Button 
-                            variant="outline" 
-                            className="w-full"
-                            onClick={() => {
-                              setSelectedCampaignForProof(c.contractInfo.address);
-                              setShowProofSubmission(true);
-                            }}
-                          >
-                            Submit Proof of Integration
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    {userLearnerData && (
-                      <BuilderRewards 
-                        campaign={c} 
-                        learnerData={userLearnerData} 
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              {
+                builderCampaigns.map((c, idx) => {
+                  const latest = c.epochData?.[c.epochData.length - 1];
+                  const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
+                  const learners = latest?.learners || [];
+                  const userLearnerData = learners.find((l) => l.id.toLowerCase() === userAddress);
+                  
+                  return (
+                    <div key={idx} className="space-y-4">
+                      <Card className="bg-white dark:bg-surface">
+                        <CardHeader>
+                          <CardTitle className="truncate">{c.metadata.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="text-sm text-gray-700 dark:text-gray-200">
+                            <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
+                            <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
+                            <div className="truncate">Total Learners: {learners.length}</div>
+                          </div>
+                          <div className="space-y-2">
+                            <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
+                              <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
+                            </Link>
+                            <Button 
+                              variant="outline" 
+                              className="w-full"
+                              onClick={() => {
+                                setSelectedCampaignForProof(c.contractInfo.address);
+                                setShowProofSubmission(true);
+                              }}
+                            >
+                              Submit Proof of Integration
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {userLearnerData && (
+                        <BuilderRewards 
+                          campaign={c} 
+                          learnerData={userLearnerData} 
+                        />
+                      )}
+                    </div>
+                  );
+                })
+              }
             </div>
           </TabsContent>
         </Tabs>
