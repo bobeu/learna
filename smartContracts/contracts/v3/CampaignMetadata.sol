@@ -10,25 +10,21 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
     // Campaign information such as name, etc. 
     Metadata internal metadata;
 
-    address internal operator;
-
     ///@notice Approval factory contract
     IApprovalFactory internal approvalFactory;
 
     ///@dev Only operator function
-    modifier onlyOwnerOrApproved {
-        require(_msgSender() == operator || approvalFactory.hasApproval(_msgSender()), "No approval");
+    modifier onlyApproved {
+        require(approvalFactory.hasApproval(_msgSender()), "No approval");
         _;
     }
 
     ///@notice Constructor
     constructor(
-        address _operator, 
         IApprovalFactory _approvalFactory, 
         MetadataInput memory meta
     ) payable {
         approvalFactory = _approvalFactory;
-        operator = _operator;
         _setMetadata(meta, true);
     }
 
@@ -50,19 +46,21 @@ abstract contract CampaignMetadata is ICampaignTemplate, Pausable {
     /**@dev Set metadata
         @param _meta: New metadata
      */
-    function editMetaData(MetadataInput memory _meta) public onlyOwnerOrApproved returns(bool) {
+    function editMetaData(MetadataInput memory _meta) external onlyApproved returns(bool) {
         _setMetadata(_meta, false);
         return true;
     }
 
     ///@dev Only approved account can pause execution
-    function pause() public onlyOwnerOrApproved {
+    function pause() external onlyApproved returns(bool) {
         _pause();
+        return true;
     }
 
     ///@dev Only approved account can continue execution
-    function unpause() public onlyOwnerOrApproved {
+    function unpause() external onlyApproved returns(bool) {
         _pause();
+        return true;
     }
 
     ///@dev Only approved account can continue execution

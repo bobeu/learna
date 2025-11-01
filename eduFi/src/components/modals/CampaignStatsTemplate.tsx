@@ -11,7 +11,7 @@ import {
   Calendar, 
   DollarSign, 
   Settings, 
-  Award,
+  // Award,
   Target,
   TrendingUp,
   ExternalLink,
@@ -19,11 +19,11 @@ import {
   // Wallet
 } from "lucide-react";
 import { useAccount } from "wagmi";
-import { FormattedCampaignTemplate, EpochData, Learner, Address } from "../../../types";
+import { FormattedCampaignTemplate, EpochData, Learner, Address, Funds } from "../../../types";
 import { formatEther, formatUnits, Hex, hexToString } from "viem";
 import LearnerProfileModal from "./LearnerProfileModal";
 import CampaignSettingsModal from "./CampaignSettingsModal";
-import RewardClaimModal from "./RewardClaimModal";
+// Reward claiming is handled in the Builder profile, not here
 import { formatAddr, normalizeString, toBN } from '../utilities';
 import AddressWrapper from '../peripherals/AddressFormatter/AddressWrapper';
 
@@ -46,7 +46,7 @@ export interface LearnerListProps {
 }
 
 export interface FundDisplayProps {
-  funds: EpochData['setting']['funds'];
+  funds: Funds;
   title: string;
 }
 
@@ -60,8 +60,9 @@ function FundDisplay({ funds, title }: FundDisplayProps) {
     const allTokens = [...funds.erc20Ass, ...funds.erc20Int];
     return allTokens.map(token => ({
       token: token.token,
-      name: hexToString(token.tokenName as Hex),
-      symbol: hexToString(token.tokenSymbol as Hex),
+      // name: hexToString(token.tokenName as Hex),
+      name: token.tokenName,
+      symbol: token.tokenSymbol,
       amount: formatUnits(token.amount, token.decimals),
       decimals: token.decimals
     }));
@@ -102,8 +103,8 @@ function LearnerList({ learners, onLearnerClick }: LearnerListProps) {
     <div className="space-y-2">
       {learners.map((learner,) => {
         const ratingSize = learner.ratings.length;
-        const totalRating = learner.ratings.reduce((sum, rating) => sum + rating.value, 0);
-        const totalScore = learner.poass.reduce((sum, poa) => sum + poa.score, 0);
+        const totalRating = learner.ratings.reduce((sum, rating) => sum + Number(rating.value), 0);
+        const totalScore = learner.poass.reduce((sum, poa) => sum + Number(poa.score), 0);
         const avgRating = ratingSize > 0? totalRating / ratingSize : 0;
 
         return (
@@ -216,7 +217,7 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
               <TrendingUp className="w-4 h-4 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {totalLearners > 0 ? (totalProofs / totalLearners).toFixed(1) : 0}
+                  {totalLearners > 0 ? (Number(totalProofs) / Number(totalLearners)).toFixed(1) : 0}
                 </p>
                 <p className="text-xs text-gray-500">Avg/User</p>
               </div>
@@ -237,16 +238,7 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
       <div>
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold">Learners ({totalLearners})</h4>
-          {userAddress && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onClaimReward(epochIndex)}
-            >
-              <Award className="w-4 h-4 mr-2" />
-              Claim Rewards
-            </Button>
-          )}
+          {/* Claim actions are handled in Builder profile, not here */}
         </div>
         <LearnerList 
           learners={epochData.learners} 
@@ -263,8 +255,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
   const userAddress = formatAddr(address).toLowerCase();
   const [selectedLearner, setSelectedLearner] = useState<Learner | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showClaimReward, setShowClaimReward] = useState(false);
-  const [selectedEpoch, setSelectedEpoch] = useState(0);
+  // Removed claim reward modal state from stats template
 
   const isOwner = userAddress === campaign.owner.toLowerCase();
 
@@ -285,10 +276,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
     setSelectedLearner(learner);
   };
 
-  const handleClaimReward = (epochIndex: number) => {
-    setSelectedEpoch(epochIndex);
-    setShowClaimReward(true);
-  };
+  const handleClaimReward = (_epochIndex: number) => {};
 
   const handleSettingsClick = () => {
     setShowSettings(true);
@@ -379,7 +367,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
                 <div>
                   <p className="text-sm font-medium text-gray-500">Contract</p>
                   <AddressWrapper
-                    account={campaign.contractAddress}
+                    account={campaign.contractInfo.address}
                     display={true}
                     copyIconSize='6'
                     size={6}
@@ -407,17 +395,19 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
         </TabsContent>
 
         <TabsContent value="epochs" className="space-y-6">
-          {campaign.epochData.map((epochData, index) => (
-            <EpochStats
-              key={index}
-              epochData={epochData}
-              epochIndex={index}
-              onLearnerClick={handleLearnerClick}
-              onClaimReward={handleClaimReward}
-              isOwner={isOwner}
-              userAddress={address}
-            />
-          ))}
+          {
+            campaign.epochData.map((epochData, index) => (
+              <EpochStats
+                key={index}
+                epochData={epochData}
+                epochIndex={index}
+                onLearnerClick={handleLearnerClick}
+                onClaimReward={handleClaimReward}
+                isOwner={isOwner}
+                userAddress={address}
+              />
+            ))
+          }
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
@@ -456,15 +446,7 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
       />
     )}
 
-    {/* Reward Claim Modal */}
-    {showClaimReward && (
-      <RewardClaimModal
-        campaign={campaign}
-        epochIndex={selectedEpoch}
-        isOpen={showClaimReward}
-        onClose={() => setShowClaimReward(false)}
-      />
-    )}
+    {/* Removed RewardClaimModal from stats template */}
     </>
   );
 }

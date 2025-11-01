@@ -6,35 +6,31 @@ import { ISelfVerificationRoot } from "@selfxyz/contracts/contracts/interfaces/I
 import { AttestationId } from "@selfxyz/contracts/contracts/constants/AttestationId.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Approved } from "../Approved.sol";
-
-interface IVerifierV2 {
-    function getVerificationStatus(address user) external view returns(bool);
-}
+import { IVerifier } from "../interfaces/IVerifier.sol";
 
 /**
- * @title Claim
- *  Inspired by Self protocol.See https://github.com/selfxyz/self/blob/main/contracts/contracts/example/Airdrop.sol for more information
+ * @title IdentityVerifier.sol
+ * @notice This contract handles identity verification using Self protocol's Verification system.
+ * It allows users to verify their identity and claim rewards while preventing multiple verifications.
+ * Users can be blacklisted to restrict access. They can also be verified via temporary wallet verification.
+ * @dev Inherits from SelfVerificationRoot for Self protocol integration, Approved for access control, and ReentrancyGuard for security.
+ * @author Bobeu && Self Protocol
  */
-contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGuard {
+contract IdentityVerifier is SelfVerificationRoot, IVerifier, Approved, ReentrancyGuard {
     // Events
     event UserVerified(address indexed registeredUserIdentifier);
 
     /// @notice Verification config ID for identity verification
     bytes32 public configId;
 
-    ///@notice When this flag is turned off, user will need no verification to claim reward
-    bool public isWalletVerificationRequired; // default is true in the constructor, meaning user must verify before claiming
+    ///@notice When this flag is false, user will need to use Self verification
+    bool public useWalletVerification; //Whether to use wallet verification or not
 
     /// @dev User's registered claim. We use this to prevent users from trying to verify twice
     mapping(address => bool) internal verificationStatus;
 
     // Blacklist
     mapping(address => bool) internal blacklisted;
-
-    modifier whenWalletRequired() {
-        require(isWalletVerificationRequired, "Wallet verification required");
-        _;
-    }
 
     /**
      * @dev Constructor
@@ -43,7 +39,7 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
      * us the headache of generating the contract address ahead of time 
      */
     constructor(address identityVerificationHubAddress) SelfVerificationRoot(identityVerificationHubAddress, 0) {
-        isWalletVerificationRequired = true; 
+        useWalletVerification = true; 
     }
 
     receive() external payable {}
@@ -55,13 +51,6 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
     ) public view override returns (bytes32) {
         // Return your app's configuration ID
         return configId;
-    }
-
-    /**@dev Return user's verification status
-        * @param user : User's account
-     */
-    function getVerificationStatus(address user) external view returns(bool) {
-        return verificationStatus[user];
     }
 
     // Set verification config ID
@@ -98,7 +87,8 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
      * user cannot make eligibity check twice in the same week.
      * @notice Should be called by anyone provided they subscribed to the campaign already
      */
-    function verify() external whenWalletRequired returns(bool) {
+    function verify() external returns(bool) {
+        require(useWalletVerification, "Use wallet verification not activated");
         _verify(_msgSender());
         return true;
     }
@@ -110,7 +100,7 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
      * @notice Should be called only by the approved account provided the parsed user had subscribed to the campaign already.
      * Must not be using Self verification.
      */
-    function verifyByApproved(address user) external whenWalletRequired onlyApproved returns(bool) {
+    function verifyByApproved(address user) external onlyApproved returns(bool) {
         _verify(user);
         return true;
     }
@@ -125,23 +115,20 @@ contract VerifierV2 is SelfVerificationRoot, IVerifierV2, Approved, ReentrancyGu
         bytes memory /**unused-param */
     ) internal override {
         address user = address(uint160(output.userIdentifier));
-        require(output.userIdentifier > 0, "InvalidUserIdentifier");
-        require(output.olderThan >= 16, "You should be at least 16 yrs");
-        bool[3] memory ofacs = output.ofac;
-        for(uint8 i = 0; i < ofacs.length; i++) {
-            require(ofacs[i], "Sanction individual");
-        }
- 
         _verify(user);
 
         emit UserVerified(user);
     }
 
     /**
-     * @dev Update the isWalletVerificationRequired = true; flag
+     * @dev Update the useWalletVerification
      */
     function toggleUseWalletVerification() public onlyApproved {
-       isWalletVerificationRequired = !isWalletVerificationRequired;
+       useWalletVerification = !useWalletVerification;
+    }
+
+    function isVerified(address user) external view returns(bool) {
+        return verificationStatus[user] && !blacklisted[user];
     }
 
     /**

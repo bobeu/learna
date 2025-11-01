@@ -72,12 +72,12 @@ export default function ProfilePage() {
   const [selectedCampaignForApproval, setSelectedCampaignForApproval] = useState<Address | null>(null);
   
   // Form fields
-  const [name, setName] = useState<string>("");
-  const [docUrl, setDocUrl] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [imageUri, setImageUri] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [name, setName] = useState<string | null>(null);
+  const [docUrl, setDocUrl] = useState<string | null>(null);
+  const [description, setDescription] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [endInHours, setEndInHours] = useState<number | null>(null);
   // const [useAiImage, setUseAiImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -118,19 +118,20 @@ export default function ProfilePage() {
   }, [startDate, endDate]);
 
   // Form validation
-  const isFormValid = name && description && startDate && endDate && imageUri;
-  const argReady = isFormValid;
+  const argReady = name && description && startDate && endDate && imageUri;
 
   // Transaction data preparation
   const transactionInfo = useMemo(() => {
     if (!argReady) return null;
-    let startTimestamp = 0;
-    let endTimestamp = 0;
+    // let startTimestamp = 0;
+    // let endTimestamp = 0;
     let endDateInHr = 0;
     const startDateInNum = new Date(startDate).getTime();
     const endDateInNum = new Date(endDate).getTime();
-    if(startDateInNum > 0) startTimestamp = Math.floor(startDateInNum / 1000);
-    if(endDateInNum > 0) endTimestamp = Math.floor(endDateInNum / 1000);
+    // if(startDateInNum > 0) startTimestamp = Math.floor(startDateInNum / 1000);
+    // if(endDateInNum > 0) endTimestamp = Math.floor(endDateInNum / 1000);
+    if(startDateInNum > 0) endDateInHr = Math.floor(((startDateInNum - endDateInNum) / 1000) / 360);
+    console.log("endDateInHr", endDateInHr);
     
     const createCampaignInput: CreateCampaignInput = {
       name: name,
@@ -316,7 +317,7 @@ export default function ProfilePage() {
                   <Label htmlFor="name">Campaign Name *</Label>
                   <Input
                     id="name"
-                    value={name}
+                    value={name || 'null'}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter campaign name"
                     className="w-full"
@@ -326,7 +327,7 @@ export default function ProfilePage() {
                   <Label htmlFor="docUrl">Documentation URL</Label>
                   <Input
                     id="docUrl"
-                    value={docUrl}
+                    value={docUrl || 'null'}
                     onChange={(e) => setDocUrl(e.target.value)}
                     placeholder="https://docs.example.com"
                     className="w-full"
@@ -338,13 +339,13 @@ export default function ProfilePage() {
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
-                  value={description}
+                  value={description || 'null'}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your campaign..."
                   className="w-full min-h-[100px]"
                   maxLength={500}
                 />
-                <div className="text-xs text-gray-500">{description.length}/500 characters</div>
+                <div className="text-xs text-gray-500">{description?.length}/500 characters</div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -353,7 +354,7 @@ export default function ProfilePage() {
                   <Input
                     id="startDate"
                     type="datetime-local"
-                    value={startDate}
+                    value={startDate || 'null'}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full"
                   />
@@ -363,7 +364,7 @@ export default function ProfilePage() {
                   <Input
                     id="endDate"
                     type="datetime-local"
-                    value={endDate}
+                    value={endDate || 'null'}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="w-full"
                   />
@@ -442,7 +443,7 @@ export default function ProfilePage() {
               <div className="flex gap-4 pt-4">
                 <Button
                   // onClick={handleCreateCampaign}
-                  disabled={!isFormValid}
+                  disabled={!argReady}
                   className="flex-1"
                 >
                   Create Campaign
@@ -497,7 +498,7 @@ export default function ProfilePage() {
                         variant="outline" 
                         className="w-full border-green-600 text-green-600 hover:bg-green-50"
                         onClick={() => {
-                          setSelectedCampaignForApproval(c.contractAddress);
+                          setSelectedCampaignForApproval(c.contractInfo.address);
                           setShowBuilderApproval(true);
                         }}
                       >
@@ -519,8 +520,9 @@ export default function ProfilePage() {
             {selectedForFund !== null && creatorCampaigns[selectedForFund] && (
               <AddFund
                 isOpen={true}
+                campaignIndex={creatorCampaigns[selectedForFund].contractInfo.index}
                 onClose={() => setSelectedForFund(null)}
-                campaignAddress={creatorCampaigns[selectedForFund].owner} // This should be the campaign identifier
+                campaignAddress={creatorCampaigns[selectedForFund].contractInfo.address} // This should be the campaign identifier
                 campaignName={creatorCampaigns[selectedForFund].metadata.name}
               />
             )}
@@ -535,51 +537,53 @@ export default function ProfilePage() {
               </Card>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {builderCampaigns.map((c, idx) => {
-                const latest = c.epochData?.[c.epochData.length - 1];
-                const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
-                const learners = latest?.learners || [];
-                const userLearnerData = learners.find((l) => l.id.toLowerCase() === userAddress);
-                
-                return (
-                  <div key={idx} className="space-y-4">
-                    <Card className="bg-white dark:bg-surface">
-                      <CardHeader>
-                        <CardTitle className="truncate">{c.metadata.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="text-sm text-gray-700 dark:text-gray-200">
-                          <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
-                          <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
-                          <div className="truncate">Total Learners: {learners.length}</div>
-                        </div>
-                        <div className="space-y-2">
-                          <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
-                            <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
-                          </Link>
-                          <Button 
-                            variant="outline" 
-                            className="w-full"
-                            onClick={() => {
-                              setSelectedCampaignForProof(c.contractAddress);
-                              setShowProofSubmission(true);
-                            }}
-                          >
-                            Submit Proof of Integration
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    {userLearnerData && (
-                      <BuilderRewards 
-                        campaign={c} 
-                        learnerData={userLearnerData} 
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              {
+                builderCampaigns.map((c, idx) => {
+                  const latest = c.epochData?.[c.epochData.length - 1];
+                  const nativeTotal = latest ? (latest.setting.funds.nativeAss + latest.setting.funds.nativeInt) : 0n;
+                  const learners = latest?.learners || [];
+                  const userLearnerData = learners.find((l) => l.id.toLowerCase() === userAddress);
+                  
+                  return (
+                    <div key={idx} className="space-y-4">
+                      <Card className="bg-white dark:bg-surface">
+                        <CardHeader>
+                          <CardTitle className="truncate">{c.metadata.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="text-sm text-gray-700 dark:text-gray-200">
+                            <div className="truncate">Ends: {c.metadata.endDate ? new Date(c.metadata.endDate * 1000).toLocaleString() : "Not set"}</div>
+                            <div className="truncate">Funding (native): {nativeTotal ? Number(formatEther(nativeTotal)).toFixed(2) : "0"}</div>
+                            <div className="truncate">Total Learners: {learners.length}</div>
+                          </div>
+                          <div className="space-y-2">
+                            <Link href={{ pathname: "/profile/view", query: { i: idx.toString(), role: "builder" } }}>
+                              <Button className="w-full bg-primary-500 text-black hover:bg-primary-400">View Details</Button>
+                            </Link>
+                            <Button 
+                              variant="outline" 
+                              className="w-full"
+                              onClick={() => {
+                                setSelectedCampaignForProof(c.contractInfo.address);
+                                setShowProofSubmission(true);
+                              }}
+                            >
+                              Submit Proof of Integration
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {userLearnerData && (
+                        <BuilderRewards 
+                          campaign={c} 
+                          learnerData={userLearnerData} 
+                        />
+                      )}
+                    </div>
+                  );
+                })
+              }
             </div>
           </TabsContent>
         </Tabs>
@@ -604,7 +608,7 @@ export default function ProfilePage() {
               setSelectedCampaignForProof(null);
             }}
             campaignAddress={selectedCampaignForProof}
-            epochData={campaignsData.find(c => c.contractAddress === selectedCampaignForProof)?.epochData || []}
+            epochData={campaignsData.find(c => c.contractInfo.address === selectedCampaignForProof)?.epochData || []}
           />
         )}
 
@@ -617,8 +621,8 @@ export default function ProfilePage() {
               setSelectedCampaignForApproval(null);
             }}
             campaignAddress={selectedCampaignForApproval}
-            learners={campaignsData.find(c => c.contractAddress === selectedCampaignForApproval)?.epochData?.[0]?.learners || []}
-            epoch={BigInt(campaignsData.find(c => c.contractAddress === selectedCampaignForApproval)?.epochData?.[0]?.setting?.endDate || 0n)}
+            learners={campaignsData.find(c => c.contractInfo.address === selectedCampaignForApproval)?.epochData?.[0]?.learners || []}
+            epoch={BigInt(campaignsData.find(c => c.contractInfo.address === selectedCampaignForApproval)?.epochData?.[0]?.setting?.endDate || 0n)}
           />
         )}
       </div>

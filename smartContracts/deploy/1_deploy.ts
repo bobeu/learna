@@ -13,7 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	let { 
 		deployer,
 		routeTo, dev, 
-		admin3,  
+		// admin3,  
 		admin,  
 		admin2,  
 		admin4, 
@@ -25,8 +25,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const networkName = network.name;
 	// const deployer = networkName === 'sepolia'? admin2 : admin4;
 	// const transitionInterval = networkName === 'alfajores'? 6 : 10; //6 mins for testnet : 1hr for mainnet 
-	// const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('9186502517255327601873870048821518942839570257762675244524402438880947571356');
-	// const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
+	const scopeValue = (networkName === 'alfajores' || networkName === 'sepolia')? BigInt('20799336930628592874674157055357186694905720289678945318700937265906333634412') : BigInt('9186502517255327601873870048821518942839570257762675244524402438880947571356');
+	const verificationConfig = '0x8475d3180fa163aec47620bfc9cd0ac2be55b82f4c149186a34f64371577ea58'; // Accepts all countries. Filtered individuals from the list of sanctioned countries using ofac1, 2, and 3
 	if(networkName !== 'hardhat') mode = Mode.LIVE;
 	const newAdmins = [admin4, admin, admin2];
 	// const approvers = [admin4, admin3, admin2];
@@ -46,12 +46,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`Fee Manager contract deployed to: ${feeManager.address}`);
 
-	const verifier = await deploy("VerifierV2", {
+	const interfacer = await deploy("Interfacer", {
+		from: deployer,
+		args: [],
+		log: true,
+	});
+	console.log(`Interfacer contract deployed to: ${interfacer.address}`);
+	
+	const verifier = await deploy("IdentityVerifier", {
 		from: deployer,
 		args: [identityVerificationHub],
 		log: true,
 	});
-	console.log(`Verifier contract deployed to: ${verifier.address}`);
+	console.log(`IdentityVerifier contract deployed to: ${verifier.address}`);
 	
 	const approvalFactory = await deploy("ApprovalFactory", {
 		from: deployer,
@@ -78,16 +85,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	}
 
 	try {
-		console.log(`Setting verifier on CampaignFactory`);
-		await execute('CampaignFactory', {from: deployer}, 'setVerifier', verifier.address);
+		console.log(`Setting verifier on Interfacer`);
+		await execute('Interfacer', {from: deployer}, 'setVerifier', verifier.address);
 	} catch (error) {
 		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 		console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	}
 
 	try {
-		console.log(`Setting factory on ApprovalFactory`);
-		await execute('ApprovalFactory', {from: deployer}, 'setFactory', campapaignFactory.address);
+		console.log(`Setting Interfacer on ApprovalFactory`);
+		await execute('ApprovalFactory', {from: deployer}, 'setInterfacer', interfacer.address);
+	} catch (error) {
+		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+		console.error("Error executing setInterfacer:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	}
+
+	try {
+		console.log(`Setting Factory on Interfacer`);
+		await execute('Interfacer', {from: deployer}, 'setFactory', campapaignFactory.address);
 	} catch (error) {
 		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 		console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
@@ -116,12 +131,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 	// Read actions
-	const isWalletVerificationRequired = await read('VerifierV2', 'isWalletVerificationRequired');
-	const config = await read('VerifierV2', 'configId');
-	const scope = await read('VerifierV2', 'scope');
+	const useWalletVerification = await read('IdentityVerifier', 'useWalletVerification');
+	const config = await read('IdentityVerifier', 'configId');
+	const scope = await read('IdentityVerifier', 'scope');
 
 	console.log("scope", toBigInt(scope.toString()));
-	console.log("isWalletVerificationRequired", isWalletVerificationRequired);
+	console.log("useWalletVerification", useWalletVerification);
 	console.log("config", config);
 	
 }

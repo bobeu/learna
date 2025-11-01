@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { ArrowLeft, Calendar, Search, Trophy, Target, BookOpenCheck, BarChart3, Sparkles, Moon, Sun } from "lucide-react";
+import { ArrowLeft, Calendar, Search, Trophy, Target, BookOpenCheck, BarChart3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import { calculateStreak, normalizeImageSrc, normalizeString, toBN } from "@/com
 import useStorage from "@/components/hooks/useStorage";
 
 export default function LearnPage(){
-    const { theme, setTheme } = useTheme();
+    const { theme } = useTheme();
     const isDark = theme === "dark";
 
     const [search, setSearch] = React.useState("");

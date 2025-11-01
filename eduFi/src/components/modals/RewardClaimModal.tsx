@@ -27,6 +27,7 @@ import campaignTemplate from "../../../contractsArtifacts/template.json";
 interface RewardClaimModalProps {
   campaign: FormattedCampaignTemplate;
   epochIndex: number;
+  campaignIndex: bigint;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -73,6 +74,7 @@ const getDefaultReturnValue = (reason: string) => {
 export default function RewardClaimModal({ 
   campaign, 
   epochIndex, 
+  campaignIndex,
   isOpen, 
   onClose 
 }: RewardClaimModalProps) {
@@ -97,7 +99,7 @@ export default function RewardClaimModal({
     if (epochData.setting.funds.nativeAss > 0n) {
       funds.push({
         fundIndex: 0, // Native token is always at index 0
-        token: campaign.contractAddress as Address,
+        token: campaign.contractInfo.address as Address,
         name: 'CELO',
         symbol: 'CELO',
         amount: epochData.setting.funds.nativeAss,
@@ -110,7 +112,7 @@ export default function RewardClaimModal({
     if (epochData.setting.funds.nativeInt > 0n) {
       funds.push({
         fundIndex: 0, // Native token is always at index 0
-        token: campaign.contractAddress as Address,
+        token: campaign.contractInfo.address as Address,
         name: 'CELO',
         symbol: 'CELO',
         amount: epochData.setting.funds.nativeInt,
@@ -150,7 +152,7 @@ export default function RewardClaimModal({
     });
 
     return funds;
-  }, [campaign.epochData, epochIndex, campaign.contractAddress]);
+  }, [campaign.epochData, epochIndex, campaign.contractInfo.address]);
 
   // Check if user has participated in this epoch
   const { isFundedCampaign, hasParticipated } = useMemo(() => {
@@ -285,10 +287,10 @@ export default function RewardClaimModal({
     try {
       setCustomError(null);
       await writeContractAsync({
-        address: campaign.contractAddress as Address,
+        address: campaign.contractInfo.address as Address,
         abi: campaignTemplate.abi,
         functionName: selectedRewardType as FunctionName,
-        args: [selectedFundIndex, BigInt(epochIndex)]
+        args: [selectedFundIndex, BigInt(epochIndex), BigInt(campaignIndex)]
       });
     } catch (err: any) {
       console.error("Error claiming reward:", err);

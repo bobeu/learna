@@ -51,7 +51,7 @@ export default function GoodDollarIntegrationModal({
     try {
       const [user, rewards] = await Promise.all([
         goodDollarService.getUserInfo(address),
-        goodDollarService.calculatePotentialRewards(address, campaign.contractAddress, epochIndex)
+        goodDollarService.calculatePotentialRewards(address, campaign.contractInfo.address, epochIndex)
       ]);
       
       setUserInfo(user);
@@ -95,7 +95,7 @@ export default function GoodDollarIntegrationModal({
     try {
       const result = await goodDollarService.claimCampaignRewards(
         address, 
-        campaign.contractAddress, 
+        campaign.contractInfo.address, 
         epochIndex
       );
       

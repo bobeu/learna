@@ -200,11 +200,11 @@ export function normalizeImageSrc(val: string) {
  * @param arg : Data to format
  * @returns Formatted data
  */
-export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, contractAddress: Address) : FormattedCampaignTemplate {
+export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, address: Address, index: number) : FormattedCampaignTemplate {
   const { epochData, metadata: mt, ...rest } = arg;
   // console.log("formatCampaignsTemplateReadData", arg);
   return {
-    contractAddress,
+    contractInfo: { address, index: BigInt(index) },
     epochData: epochData.map(({learners, setting, totalProofs}) => {
       return {
         totalProofs,
@@ -257,7 +257,7 @@ export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, c
   }
 }
 
-export const formattedMockCampaignsTemplate = mockCampaigns.map((campaign) => formatCampaignsTemplateReadData(campaign, zeroAddress));
+export const formattedMockCampaignsTemplate = mockCampaigns.map((campaign, i) => formatCampaignsTemplateReadData(campaign, zeroAddress, i));
 
 export const formatTime = (seconds: number) => {
   const secondsInNumber = toBN(seconds).toNumber();
@@ -408,7 +408,7 @@ export async function uploadImageToPinata({
     .file(imageFile)
     .name(campaignName);
 
-    console.log("Response", response);
+    // console.log("Response", response);
     // Verify upload was successful
     if (!response || !response.cid) {
       alert('Upload failed: No CID returned from Pinata');

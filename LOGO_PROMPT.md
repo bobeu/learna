@@ -1,8 +1,0 @@
-
-Learna is a decentralized Web3 learning platform designed to revolutionize the traditional educational experience by merging the worlds of learning and blockchain. The platform offers users an interactive and gamified learning environment that is not only fun and engaging but also incentivizes participation through rewards. With features like quizzes, videos, and guided learning paths, Learna creates a more dynamic and decentralized approach to education. The goal is to create a professional, modern, and simple logo, icon and favicon that represents the brand's core concepts without using the "Learna" text.
-
-The logo's key concepts include **learning** (using calm elements), **earning** (with subtle hints of coins or cryptocurrency), and the ideas of **assimilation** (lemon accents) and **proof of integration**. It should also embody a sense of **curiosity** with a mild, simple feel.
-
-The visual style should be **modern and minimalistic**, featuring a primary **Neon lime and deep black palette** with no gradient and glow effects. The design should also incorporate a subtle **blockchain aesthetic** with geometric or block-like elements.
-
-The final icon must be **scalable** and versatile enough to function as a tiny 16x16px favicon as well as a logo. It should be easily recognizable on both light and dark backgrounds, maintaining a high-tech and trustworthy look that appeals to both crypto and traditional learning users. The output should be in three separate downloadable for - a logo, icon and a favicon.

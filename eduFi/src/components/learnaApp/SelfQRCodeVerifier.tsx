@@ -22,7 +22,7 @@ export default function SelfQRCodeVerifier({ back, toggleDrawer } : {toggleDrawe
     const { verificationConfig, claim, scope } = React.useMemo(
         () => {
             const { contractAddresses } = filterTransactionData({chainId, filter: false});
-            const claim = contractAddresses.VerifierV2 as Address
+            const claim = contractAddresses.IdentityVerifier as Address
             const scope = process.env.NEXT_PUBLIC_SCOPE as string;
             const verificationConfig : VerificationConfig = {
                 minimumAge: 16,

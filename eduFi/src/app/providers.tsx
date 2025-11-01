@@ -8,9 +8,7 @@ import RouteTransitionOverlay from "@/components/RouteTransitionOverlay";
 
 const WagmiProvider = dynamic(
   () => import("@/components/providers/WagmiProvider"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 export function Providers({ children } : {children: React.ReactNode}) {

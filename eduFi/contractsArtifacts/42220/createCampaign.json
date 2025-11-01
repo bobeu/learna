@@ -2,7 +2,7 @@
   "contractAddress": "0x35F97b7CD7961ed9914315664bA99c6F73a989ac",
   "functionName": "createCampaign",
   "inputCount": 1,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [
