@@ -1,6 +1,6 @@
 {
   "contractAddress": "0x3b244c281042F38085ec7d43eb134b3D6b0609B1",
-  "functionName": "setVerifier",
+  "functionName": "pause",
   "inputCount": 1,
   "requireArgUpdate": false,
   "abi": [

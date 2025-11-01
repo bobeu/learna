@@ -19,7 +19,6 @@ import {
   saveUnsavedProgress,
   loadUnsavedProgress,
   clearUnsavedProgress,
-  hasUnsavedProgress,
   isProgressAlreadySaved,
   type UnsavedQuizProgress
 } from './quizProgressStorage';
@@ -65,19 +64,19 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Get saved learner data from blockchain to filter out already saved progress
   const savedLearnerData = useMemo(() => {
-    if (!address || !campaignsData) return null;
+    if(!address || !campaignsData) return null;
     const userAddr = userAddress.toLowerCase();
     const campaignData = campaignsData.find(c => 
       c.contractInfo.address.toLowerCase() === campaign.__raw.contractInfo.address.toLowerCase()
     );
     
-    if (!campaignData) return null;
+    if(!campaignData) return null;
     
     // Get learner data from all epochs
     const allPoass: Array<{ score: number; percentage: number; questionSize: number; timeSpent: number }> = [];
     campaignData.epochData.forEach(epoch => {
       const learner = epoch.learners.find(l => l.id.toLowerCase() === userAddr);
-      if (learner) {
+      if(learner) {
         learner.poass.forEach(poa => {
           allPoass.push({
             score: poa.score,
@@ -94,10 +93,10 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Save current progress to localStorage
   const saveProgress = useCallback(() => {
-    if (!address || !userAddress) return;
+    if(!address || !userAddress) return;
     
     // Only save if we're on results page with valid data
-    if (currentStep === 'results' && performance && selectedTopic && article) {
+    if(currentStep === 'results' && performance && selectedTopic && article) {
       const progress: UnsavedQuizProgress = {
         campaignId: campaign.__raw.contractInfo.index.toString(),
         campaignAddress: campaign.__raw.contractInfo.address,
@@ -129,7 +128,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
       };
       
       // Check if this progress is already saved on blockchain
-      if (!savedLearnerData || !isProgressAlreadySaved(progress, savedLearnerData)) {
+      if(!savedLearnerData || !isProgressAlreadySaved(progress, savedLearnerData)) {
         saveUnsavedProgress(userAddress, progress);
         setHasUnsavedData(true);
       }
@@ -138,47 +137,47 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Restore progress from localStorage on mount
   useEffect(() => {
-    if (!address || !userAddress) return;
+    if(!address || !userAddress) return;
     
     const saved = loadUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
-    if (!saved) return;
+    if(!saved) return;
     
     // Check if saved progress is already on blockchain
-    if (savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
+    if(savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
       clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
       return;
     }
     
     // Restore the saved progress
-    if (saved.topic) {
+    if(saved.topic) {
       setSelectedTopic(saved.topic as GeneratedTopic);
     }
-    if (saved.article) {
+    if(saved.article) {
       setArticle(saved.article);
     }
-    if (saved.quizzes.length > 0) {
+    if(saved.quizzes.length > 0) {
       setQuizzes(saved.quizzes);
     }
-    if (saved.userAnswers.length > 0) {
+    if(saved.userAnswers.length > 0) {
       setUserAnswers(saved.userAnswers);
       setCurrentQuizIndex(saved.currentQuizIndex);
     }
-    if (saved.quizScore > 0) {
+    if(saved.quizScore > 0) {
       setQuizScore(saved.quizScore);
     }
-    if (saved.performance) {
+    if(saved.performance) {
       setPerformance({
         value: saved.performance.value,
         ratedAt: stringToHex(saved.performance.ratedAt || new Date().toISOString())
       });
     }
-    if (saved.startTime) {
+    if(saved.startTime) {
       setStartTime(saved.startTime);
     }
-    if (saved.endTime) {
+    if(saved.endTime) {
       setEndTime(saved.endTime);
     }
-    if (saved.currentStep) {
+    if(saved.currentStep) {
       setCurrentStep(saved.currentStep);
     }
     
@@ -186,18 +185,19 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   }, [address, userAddress, campaign.__raw.contractInfo.index, savedLearnerData]);
 
   // Auto-save progress when quiz results are calculated
+  // saveProgress already checks if data is on blockchain before saving
   useEffect(() => {
-    if (currentStep === 'results' && performance && selectedTopic && article) {
+    if(currentStep === 'results' && performance && selectedTopic && article) {
       saveProgress();
     }
   }, [currentStep, performance, selectedTopic, article, saveProgress]);
 
   // Handle dialog close with confirmation if there's unsaved data
   const handleDialogClose = useCallback((open: boolean) => {
-    if (!open && hasUnsavedData && currentStep === 'results') {
+    if(!open && hasUnsavedData && currentStep === 'results') {
       setShowConfirmationDialog(true);
       setPendingClose(true);
-    } else if (!open) {
+    } else if(!open) {
       onClose();
     }
   }, [hasUnsavedData, currentStep, onClose]);
@@ -213,7 +213,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Handle discard
   const handleDiscard = useCallback(() => {
-    if (address && userAddress) {
+    if(address && userAddress) {
       clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
     }
     setShowConfirmationDialog(false);
@@ -235,10 +235,11 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const topics = await response.json();
         setGeneratedTopics(topics);
       } else {
+        console.log("response", response)
         // Fallback to mock topics
         setGeneratedTopics([
           {
@@ -292,7 +293,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const articleData = await response.json();
         setArticle(articleData);
       } else {
@@ -313,7 +314,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Generate quiz based on article
   const generateQuiz = async () => {
-    if (!article) return;
+    if(!article) return;
     
     setIsGenerating(true);
     try {
@@ -327,7 +328,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const quizData = await response.json();
         setQuizzes(quizData);
       } else {
@@ -363,7 +364,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     let correctAnswers = 0; 
     const quizSize = quizzes.length;
     userAnswers.forEach((answer, index) => {
-      if (answer === quizzes[index].correctAnswer) {
+      if(answer === quizzes[index].correctAnswer) {
         correctAnswers++;
       }
     });
@@ -372,10 +373,10 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     
     // Calculate performance rating
     let performanceValue = 0;
-    if (score >= 90) performanceValue = 5;
-    else if (score >= 80) performanceValue = 4;
-    else if (score >= 70) performanceValue = 3;
-    else if (score >= 60) performanceValue = 2;
+    if(score >= 90) performanceValue = 5;
+    else if(score >= 80) performanceValue = 4;
+    else if(score >= 70) performanceValue = 3;
+    else if(score >= 60) performanceValue = 2;
     else performanceValue = 1;
     
     setPerformance({
@@ -388,7 +389,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Prepare data for on-chain storage
   const prepareOnChainData = () => {
-    if (!performance || !selectedTopic || !article) return null;
+    if(!performance || !selectedTopic || !article) return null;
     let timeSpent = 0;
     const timeDiff = endTime - startTime;
     if(timeDiff > 0) {
@@ -410,7 +411,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   // Create transaction steps for on-chain storage
   const createTransactionSteps = (): TransactionStep[] => {
     const data = prepareOnChainData();
-    if (!data) return [{
+    if(!data) return [{
       id: 'null', 
       title: 'null',
       description: 'Data unavailable', 
@@ -434,23 +435,44 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   const handleStoreOnChain = () => {
     const steps = createTransactionSteps();
-    if (steps.length === 0) {
+    if(steps.length === 0) {
       alert('No data to store');
       return;
     }
     setShowTransactionModal(true);
   };
 
-  const handleTransactionSuccess = (txHash: string) => {
+  const handleTransactionSuccess = useCallback((txHash: string) => {
     console.log('Proof of assimilation stored:', txHash);
     setShowTransactionModal(false);
     
     // Clear saved progress from localStorage since it's now on blockchain
-    if (address && userAddress) {
-      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+    // This should only happen on successful transaction completion
+    if(address && userAddress) {
+      const campaignId = campaign.__raw.contractInfo.index.toString();
+      clearUnsavedProgress(userAddress, campaignId);
       setHasUnsavedData(false);
+      
+      // Verify the data was actually cleared
+      const remainingData = loadUnsavedProgress(userAddress, campaignId);
+      if(remainingData) {
+        console.warn('Failed to clear unsaved progress, attempting again...');
+        clearUnsavedProgress(userAddress, campaignId);
+      }
+      
+      console.log('Successfully cleared unsaved progress after on-chain storage');
     }
-  };
+    
+    // Reset any pending close states
+    setPendingClose(false);
+    setShowConfirmationDialog(false);
+    
+    // Close the AITutor modal immediately after successful transaction
+    // Use a small delay to ensure transaction modal closes smoothly first
+    setTimeout(() => {
+      onClose();
+    }, 500);
+  }, [address, userAddress, campaign, onClose]);
 
   const handleTransactionError = (error: Error) => {
     console.error('Failed to store proof:', error);
@@ -573,7 +595,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
           quizScore={quizScore}
           performanceValue={performance.value}
           onDismiss={() => {
-            if (address && userAddress) {
+            if(address && userAddress) {
               clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
             }
             setHasUnsavedData(false);

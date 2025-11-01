@@ -114,12 +114,12 @@ export function getAllUnsavedProgressKeys(address: string): string[] {
   if (typeof window === 'undefined') return [];
   
   try {
-    const prefix = getStorageKey(address.toLowerCase(), '');
+    const userPrefix = `${STORAGE_PREFIX}${address.toLowerCase()}_`;
     const keys: string[] = [];
     
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(STORAGE_PREFIX) && key.includes(address.toLowerCase())) {
+      if (key && key.startsWith(userPrefix)) {
         keys.push(key);
       }
     }
@@ -157,7 +157,7 @@ export function isProgressAlreadySaved(
       saved.score === progress.quizScore &&
       saved.percentage === progress.quizScore &&
       saved.questionSize === progress.quizzes.length &&
-      Math.abs(saved.timeSpent - timeSpent) < 5 // Allow 5 second tolerance
+      Math.abs(Number(saved.timeSpent) - Number(timeSpent)) < 5 // Allow 5 second tolerance
     );
   });
 }

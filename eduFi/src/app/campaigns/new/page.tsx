@@ -315,8 +315,9 @@ export default function NewCampaignPage(){
                                     <CampaignStatsTemplate campaign={selectedCampaign} /> 
                                 </MotionDisplayWrapper>
                                         : 
-                                    <MotionDisplayWrapper className="absolute left-[20%] top-20 md:left-1/3 md:top-1/3 flex flex-col items-center text-center gap-2">
+                                    <MotionDisplayWrapper className="absolute left-[10%] top-20 md:left-1/3 md:top-1/3 flex flex-col items-center text-center gap-2">
                                         <h3 className="text-xl">You have no campaign</h3>
+                                        <h3 className="text-neutral-500">Connect your wallet to see your campaigns or create one</h3>
                                         <ButtonTemplate 
                                             isDark={isDark} 
                                             onClick={onClickNewButton} 

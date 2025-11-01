@@ -92,7 +92,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           coolMode={true}
           modalSize="compact" 
           theme={theme} 
-          initialChain={celoSepolia.id} 
+          initialChain={celo.id} 
           showRecentTransactions={true}
           appInfo={{
             appName: "Learna",

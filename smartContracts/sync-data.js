@@ -79,12 +79,18 @@ let globalOutput = {
         {
             "stablecoin": '',
             "ApprovalFactory": "",
-            "CampaignFactory": ""
+            "CampaignFactory": "",
+            "IdentityVerifier": "",
+            "Interfacer": "",
+            "FeeManager": "",
         },
         {
             "stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a',
             "ApprovalFactory": "",
-            "CampaignFactory": ""
+            "CampaignFactory": "",
+            "IdentityVerifier": "",
+            "Interfacer": "",
+            "FeeManager": "",
         }
     ],
 };

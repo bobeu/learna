@@ -53,12 +53,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`Interfacer contract deployed to: ${interfacer.address}`);
 	
-	const verifier = await deploy("IdentityVerifier", {
+	const identityVerifier = await deploy("IdentityVerifier", {
 		from: deployer,
 		args: [identityVerificationHub],
 		log: true,
 	});
-	console.log(`IdentityVerifier contract deployed to: ${verifier.address}`);
+	console.log(`IdentityVerifier contract deployed to: ${identityVerifier.address}`);
 	
 	const approvalFactory = await deploy("ApprovalFactory", {
 		from: deployer,
@@ -76,37 +76,37 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`campapaignFactory deployed to: ${campapaignFactory.address}`);
 
-	try {
-		console.log(`Setting fee receiver on CampaignFactory`);
-		await execute('CampaignFactory', {from: deployer}, 'setFeeTo', feeManager.address);
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	console.log(`Setting fee receiver on CampaignFactory`);
+	// 	await execute('CampaignFactory', {from: deployer}, 'setFeeTo', feeManager.address);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	try {
-		console.log(`Setting verifier on Interfacer`);
-		await execute('Interfacer', {from: deployer}, 'setVerifier', verifier.address);
+		console.log(`Setting identityVerifier on Interfacer`);
+		await execute('Interfacer', {from: deployer}, 'setVerifier', identityVerifier.address);
 	} catch (error) {
 		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
 		console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	}
 
-	try {
-		console.log(`Setting Interfacer on ApprovalFactory`);
-		await execute('ApprovalFactory', {from: deployer}, 'setInterfacer', interfacer.address);
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setInterfacer:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	console.log(`Setting Interfacer on ApprovalFactory`);
+	// 	await execute('ApprovalFactory', {from: deployer}, 'setInterfacer', interfacer.address);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setInterfacer:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
-	try {
-		console.log(`Setting Factory on Interfacer`);
-		await execute('Interfacer', {from: deployer}, 'setFactory', campapaignFactory.address);
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	console.log(`Setting Factory on Interfacer`);
+	// 	await execute('Interfacer', {from: deployer}, 'setFactory', campapaignFactory.address);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setFactory:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	// try {
 	// 	// await execute('Verifier', {from: deployer}, 'toggleUseWalletVerification');

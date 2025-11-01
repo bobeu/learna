@@ -1,26 +1,137 @@
 /* eslint-disable */
 
+/**
+ * AI Service for Learna - Google Gemini Integration
+
+ * REVERSIBLE IMPLEMENTATION:
+ * To revert these changes, you can:
+ * 1. Remove ALTERNATIVE_MODELS and use single model from env
+ * 2. Remove the fallback loops in generate* methods
+ * 3. Restore original synchronous getModel() call
+ * 
+ * MODEL SELECTION:
+ * - Topics: Tries gemini-1.5-flash -> gemini-1.5-pro -> gemini-pro
+ * - Articles: Tries gemini-1.5-pro -> gemini-1.5-flash -> gemini-pro  
+ * - Quizzes: Tries gemini-1.5-flash -> gemini-1.5-pro -> gemini-pro
+ * 
+ * ENV VARIABLES:
+ * Supports: GEMINI_API_KEY, NEXT_PUBLIC_GEMINI_API_KEY, 
+ *           GOOGLE_GEMINI_API_KEY, NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
+ * Override model: GEMINI_MODEL or NEXT_PUBLIC_GEMINI_MODEL
+ */
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Alternative models to try for each task (in order of preference)
+// Each task type has an ordered list of models to try with fallbacks
+const MODEL_PREFERENCES = {
+  topics: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'],
+  article: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
+  quizzes: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'],
+} as const;
+
+type TaskType = keyof typeof MODEL_PREFERENCES;
 
 class AIService {
   private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (apiKey && apiKey !== 'mock_gemini_key') {
-      this.genAI = new GoogleGenerativeAI(apiKey);
+    // Support both old and new env variable names
+    const apiKey = process.env.GEMINI_API_KEY || 
+                   process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+                   process.env.GOOGLE_GEMINI_API_KEY ||
+                   process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
+    
+    if(apiKey && apiKey !== 'mock_gemini_key' && apiKey !== 'mock_google_ai_studio_key') {
+      try {
+        this.genAI = new GoogleGenerativeAI(apiKey);
+      } catch (error) {
+        console.error('Failed to initialize Google Generative AI:', error);
+      }
     }
   }
 
-  private getModel() {
+  /**
+   * Try to generate content with multiple model fallbacks
+   * Attempts models in order of preference until one succeeds
+   */
+  private async generateWithFallback(
+    taskType: TaskType,
+    prompt: string
+  ): Promise<{ response: any; text: string }> {
     if (!this.genAI) {
       throw new Error('Gemini API key not configured');
     }
-    const model = process.env.GEMINI_MODEL;
-    if(!model){
-      throw new Error('Gemini model not specified');
+
+    // Check for environment override - this takes highest priority
+    const envModel = process.env.GEMINI_MODEL || process.env.NEXT_PUBLIC_GEMINI_MODEL;
+    if (envModel) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: envModel });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        return { response, text };
+      } catch (error: any) {
+        console.warn(`Environment model ${envModel} failed, trying fallbacks...`);
+      }
     }
-    return this.genAI.getGenerativeModel({ model });
+
+    // Try models in order of preference
+    const modelsToTry = MODEL_PREFERENCES[taskType];
+    let lastError: any = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        return { response, text };
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`Failed to use model ${modelName} for ${taskType}, trying next...`);
+        continue;
+      }
+    }
+
+    // If all models fail, throw the last error
+    throw lastError || new Error(`All model attempts failed for ${taskType}`);
+  }
+
+  /**
+   * Parse JSON from AI response text
+   * Handles various formats including markdown code blocks
+   */
+  private parseJsonFromText(text: string, expectedType: 'array' | 'object'): any {
+    // First try to find JSON directly
+    let jsonMatch = expectedType === 'array' 
+      ? text.match(/\[[\s\S]*\]/)
+      : text.match(/\{[\s\S]*\}/);
+    
+    if (!jsonMatch) {
+      // Try to find JSON in markdown code blocks
+      jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        try {
+          return JSON.parse(jsonMatch[1]);
+        } catch (e) {
+          // Try the whole match if first attempt fails
+          jsonMatch = [jsonMatch[1]];
+        }
+      }
+    }
+
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        console.warn('Failed to parse JSON from response:', parseError);
+        return null;
+      }
+    }
+
+    return null;
   }
 
   async generateTopics(campaignName: string, campaignDescription: string): Promise<Array<{
@@ -35,7 +146,6 @@ class AIService {
         return this.getMockTopics(campaignName);
       }
 
-      const model = this.getModel();
       const prompt = `Generate 3 educational topics for a learning campaign about "${campaignName}". 
       Campaign description: "${campaignDescription}"
       
@@ -47,20 +157,24 @@ class AIService {
       
       Focus on practical, hands-on learning topics that would be valuable for developers and learners.`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      // Generate content with automatic model fallback
+      const { text } = await this.generateWithFallback('topics', prompt);
       
-      // Try to parse JSON from response
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+      // Parse JSON from response
+      const parsed = this.parseJsonFromText(text, 'array');
+      if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
       }
       
       // Fallback to mock if parsing fails
+      console.warn('Using mock topics due to parsing failure');
       return this.getMockTopics(campaignName);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating topics:', error);
+      // If it's a model error, log it specifically
+      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+        console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
+      }
       return this.getMockTopics(campaignName);
     }
   }
@@ -76,7 +190,6 @@ class AIService {
         return this.getMockArticle(topic, maxWords);
       }
 
-      const model = this.getModel();
       const prompt = `Write a comprehensive educational article about "${topic}" for the "${campaignName}" learning campaign.
       
       Requirements:
@@ -93,28 +206,29 @@ class AIService {
       - wordCount: actual word count
       - readingTime: estimated reading time in minutes`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      // Generate content with automatic model fallback
+      const { text } = await this.generateWithFallback('article', prompt);
       
-      // Try to parse JSON from response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-
-
+      // Parse JSON from response
+      const parsed = this.parseJsonFromText(text, 'object');
+      if (parsed && typeof parsed === 'object') {
         return {
           title: parsed.title || topic,
           content: parsed.content || text,
           wordCount: parsed.wordCount || maxWords,
-          readingTime: parsed.readingTime || (maxWords > 0? Math.ceil(maxWords / 200) : 0)
+          readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0)
         };
       }
       
       // Fallback to mock if parsing fails
+      console.warn('Using mock article due to parsing failure');
       return this.getMockArticle(topic, maxWords);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating article:', error);
+      // If it's a model error, log it specifically
+      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+        console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
+      }
       return this.getMockArticle(topic, maxWords);
     }
   }
@@ -131,7 +245,6 @@ class AIService {
         return this.getMockQuizzes(articleTitle, questionCount);
       }
 
-      const model = this.getModel();
       const prompt = `Generate ${questionCount} quiz questions based on this article about "${articleTitle}":
       
       Article content:
@@ -151,20 +264,24 @@ class AIService {
       - correctAnswer: index of correct answer (0-3)
       - explanation: explanation for the correct answer`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      // Generate content with automatic model fallback
+      const { text } = await this.generateWithFallback('quizzes', prompt);
       
-      // Try to parse JSON from response
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+      // Parse JSON from response
+      const parsed = this.parseJsonFromText(text, 'array');
+      if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
       }
       
       // Fallback to mock if parsing fails
+      console.warn('Using mock quizzes due to parsing failure');
       return this.getMockQuizzes(articleTitle, questionCount);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating quizzes:', error);
+      // If it's a model error, log it specifically
+      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+        console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
+      }
       return this.getMockQuizzes(articleTitle, questionCount);
     }
   }

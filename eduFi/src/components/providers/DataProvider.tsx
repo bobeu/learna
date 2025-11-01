@@ -37,19 +37,43 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
     const { isConnected, address } = useAccount();
     const account = formatAddr(address);
 
+    const set_FactoryData = React.useCallback((data: ReadData) => {
+        setData(data);
+    }, []);
+
+    const set_Owner = React.useCallback((owner: Address) => {
+        setOwner(owner);
+    }, []);
+
+    const set_HasApproval = React.useCallback((hasApproval: boolean) => {
+        setHasApproval(hasApproval);
+    }, []);
+
+    const set_VerificationStatus = React.useCallback((status: boolean) => {
+        setVerificationStatus(status);
+    }, []);
+
+    const set_InterfacerData = React.useCallback((data: InterfacerReadData) => {
+        setInterfacerData(data);
+    }, []); 
+
+    const set_CampaignsData = React.useCallback((data: FormattedCampaignTemplate[]) => {
+        setCampaignsData(data);
+    }, []);
+
     // Use public data fetcher hook when user is not connected
     usePublicDataFetcher({
-        setFactoryData: setData,
-        setOwner,
-        setHasApproval,
-        setVerificationStatus,
-        setInterfacerData,
-        setCampaignsData,
-        setIsLoadingCampaigns: setIsLoadingCampaignsPublic,
+        set_FactoryData,
+        set_Owner,
+        set_HasApproval,
+        set_VerificationStatus,
+        set_InterfacerData,
+        set_CampaignsData,
+        set_IsLoadingCampaigns: setIsLoadingCampaignsPublic,
         factoryData,
     });
 
-    const { td, readArgs, contractAddresses } = React.useMemo(() => {
+    const readTxObject = React.useMemo(() => {
         // Build read transactions data
         const { transactionData: td, contractAddresses: ca } = filterTransactionData({
             chainId,
@@ -65,18 +89,20 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
             ca.Interfacer as Address,
         ];
 
-        return { td, readArgs, contractAddresses };
+        const readTxObject = td.map((item, i) => {
+            // console.log("item", item);
+            return{
+                abi: item.abi,
+                functionName: item.functionName,
+                address: contractAddresses[i],
+                args: readArgs[i]
+            }
+        });
+
+        return readTxObject;
     }, [account, chainId]);
 
-
-    const readTxObject = td.map((item, i) => {
-        return{
-            abi: item.abi,
-            functionName: item.functionName,
-            address: contractAddresses[i],
-            args: readArgs[i]
-        }
-    });
+    // console.log("readTxObject", readTxObject);
 
     // Read data from the CampaignFactory contact 
     const { data: factoryReadData, } = useReadContracts({

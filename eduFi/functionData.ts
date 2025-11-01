@@ -4,7 +4,8 @@ import setCreationFee42220 from "./contractsArtifacts/42220/setCreationFee.json"
 import panicWithdraw42220 from "./contractsArtifacts/42220/panicWithdraw.json";
 import withdraw42220 from "./contractsArtifacts/42220/withdraw.json";
 import setFeeTo42220 from "./contractsArtifacts/42220/setFeeTo.json";
-import getData42220 from "./contractsArtifacts/42220/getData.json";
+import getFactoryData42220 from "./contractsArtifacts/42220/getFactoryData.json";
+import getInterfacerData42220 from "./contractsArtifacts/42220/getInterfacerData.json";
 import setVerifier42220 from "./contractsArtifacts/42220/setVerifier.json";
 import setApprovalFactory42220 from "./contractsArtifacts/42220/setApprovalFactory.json";
 import createCampaign42220 from "./contractsArtifacts/42220/createCampaign.json";
@@ -16,19 +17,20 @@ import setApproval42220 from "./contractsArtifacts/42220/setApproval.json";
 import setFactory42220 from "./contractsArtifacts/42220/setFactory.json";
 import getFactory42220 from "./contractsArtifacts/42220/getFactory.json";
 import banOrUnbanUser42220 from "./contractsArtifacts/42220/banOrUnbanUser.json";
-import toggleUseWalletVerification42220 from "./contractsArtifacts/42220/toggleUseWalletVerification.json";
 import getVerificationStatus42220 from "./contractsArtifacts/42220/getVerificationStatus.json";
-// import addFund42220 from "./contractsArtifacts/42220/addFund.json";
-// // import approveIntegration42220 from "./contractsArtifacts/42220/approveIntegration.json";
-// // import claimRewardForPOINT42220 from "./contractsArtifacts/42220/claimRewardForPOINT.json";
-// // import claimRewardForPOASS42220 from "./contractsArtifacts/42220/claimRewardForPOASS.json";
-// // import editMetaData42220 from "./contractsArtifacts/42220/editMetaData.json";
-// // import epochSetting42220 from "./contractsArtifacts/42220/epochSetting.json";
-// // import proveAssimilation42220 from "./contractsArtifacts/42220/proveAssimilation.json";
-// // import setNewOwner42220 from "./contractsArtifacts/42220/setNewOwner.json";
-// // import submitProofOfIntegration42220 from "./contractsArtifacts/42220/submitProofOfIntegration.json";
-// // import pause42220 from "./contractsArtifacts/42220/pause.json";
-// // import unpause42220 from "./contractsArtifacts/42220/unpause.json";
+import toggleUseWalletVerification42220 from "./contractsArtifacts/42220/toggleUseWalletVerification.json";
+import addFund42220 from "./contractsArtifacts/42220/addFund.json";
+import approveIntegration42220 from "./contractsArtifacts/42220/approveIntegration.json";
+import claimRewardForPOINT42220 from "./contractsArtifacts/42220/claimRewardForPOINT.json";
+import claimRewardForPOASS42220 from "./contractsArtifacts/42220/claimRewardForPOASS.json";
+import editMetaData42220 from "./contractsArtifacts/42220/editMetaData.json";
+import epochSetting42220 from "./contractsArtifacts/42220/epochSetting.json";
+import proveAssimilation42220 from "./contractsArtifacts/42220/proveAssimilation.json";
+import setNewOwner42220 from "./contractsArtifacts/42220/setNewOwner.json";
+import submitProofOfIntegration42220 from "./contractsArtifacts/42220/submitProofOfIntegration.json";
+import pause42220 from "./contractsArtifacts/42220/pause.json";
+import unpause42220 from "./contractsArtifacts/42220/unpause.json";
+import isVerified42220 from "./contractsArtifacts/42220/isVerified.json";
 
 // Celo Sepolia contract configs
 import owner11142220 from "./contractsArtifacts/11142220/owner.json";
@@ -109,14 +111,14 @@ const functionData = [
     [
         { key: 'banOrUnbanUser', value: { ...banOrUnbanUser42220} },
         { key: 'setFeeTo', value: { ...setFeeTo42220} },
-        { key: 'getData', value: { ...getData42220} },
+        { key: 'getFactoryData', value: { ...getFactoryData42220} },
         { key: 'setVerifier', value: { ...setVerifier42220} },
         { key: 'setApprovalFactory', value: { ...setApprovalFactory42220} },
         { key: 'createCampaign', value: { ...createCampaign42220} },
         { key: 'getUserCampaigns', value: { ...getUserCampaigns42220} },
         { key: 'hasApproval', value: { ...hasApproval42220} },
         { key: 'removeApproval', value: { ...removeApproval42220} },
-        { key: 'getData', value: { ...getData42220} },
+        { key: 'getInterfacerData', value: { ...getInterfacerData42220} },
         { key: 'setApproval', value: { ...setApproval42220} },
         { key: 'setFactory', value: { ...setFactory42220} },
         { key: 'getFactory', value: { ...getFactory42220} },
@@ -125,19 +127,20 @@ const functionData = [
         { key: 'verify', value: { ...verify42220} },
         { key: 'panicWithdraw', value: { ...panicWithdraw42220} },
         { key: 'withdraw', value: { ...withdraw42220} },
-        { key: 'owner', value: { ...owner42220} },
         { key: 'setCreationFee', value: { ...setCreationFee42220} },
-        // { key: 'addFund', value: { ...addFund42220} },
-        // { key: 'approveIntegration', value: { ...approveIntegration42220} },
-        // { key: 'claimRewardForPOASS', value: { ...claimRewardForPOASS42220} },
-        // { key: 'claimRewardForPOINT', value: { ...claimRewardForPOINT42220} },
-        // { key: 'editMetaData', value: { ...editMetaData42220} },
-        // { key: 'epochSetting', value: { ...epochSetting42220} },
-        // { key: 'pause', value: { ...pause42220} },
-        // { key: 'unpause', value: { ...unpause42220} },
-        // { key: 'proveAssimilation', value: { ...proveAssimilation42220} },
-        // { key: 'setNewOwner', value: { ...setNewOwner42220} },
-        // { key: 'submitProofOfIntegration', value: { ...submitProofOfIntegration42220} },
+        { key: 'owner', value: { ...owner42220} },
+        { key: 'addFund', value: { ...addFund42220} },
+        { key: 'approveIntegration', value: { ...approveIntegration42220} },
+        { key: 'claimRewardForPOASS', value: { ...claimRewardForPOASS42220} },
+        { key: 'claimRewardForPOINT', value: { ...claimRewardForPOINT42220} },
+        { key: 'editMetaData', value: { ...editMetaData42220} },
+        { key: 'epochSetting', value: { ...epochSetting42220} },
+        { key: 'pause', value: { ...pause42220} },
+        { key: 'unpause', value: { ...unpause42220} },
+        { key: 'proveAssimilation', value: { ...proveAssimilation42220} },
+        { key: 'setNewOwner', value: { ...setNewOwner42220} },
+        { key: 'submitProofOfIntegration', value: { ...submitProofOfIntegration42220} },
+        { key: 'isVerified', value: { ...isVerified42220} },
     ],
 ];
 
