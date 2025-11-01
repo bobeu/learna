@@ -3,34 +3,28 @@
 /**
  * AI Service for Learna - Google Gemini Integration
 
- * REVERSIBLE IMPLEMENTATION:
- * To revert these changes, you can:
- * 1. Remove ALTERNATIVE_MODELS and use single model from env
- * 2. Remove the fallback loops in generate* methods
- * 3. Restore original synchronous getModel() call
- * 
  * MODEL SELECTION:
- * - Topics: Tries gemini-1.5-flash -> gemini-1.5-pro -> gemini-pro
- * - Articles: Tries gemini-1.5-pro -> gemini-1.5-flash -> gemini-pro  
- * - Quizzes: Tries gemini-1.5-flash -> gemini-1.5-pro -> gemini-pro
+ * - Text Generation (topics, articles, quizzes, ratings): Uses NEXT_PUBLIC_TEXT_GENERATION_MODEL (default: gemini-2.5-flash)
+ *   Falls back to: gemini-2.5-flash -> gemini-1.5-pro -> gemini-pro
+ * - Image Generation: Uses NEXT_PUBLIC_IMAGE_GENERATION_MODEL (default: gemini-2.5-flash-image)
+ *   Falls back to: gemini-2.5-flash-image
  * 
  * ENV VARIABLES:
- * Supports: GEMINI_API_KEY, NEXT_PUBLIC_GEMINI_API_KEY, 
+ * API Keys: GEMINI_API_KEY, NEXT_PUBLIC_GEMINI_API_KEY, 
  *           GOOGLE_GEMINI_API_KEY, NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY
- * Override model: GEMINI_MODEL or NEXT_PUBLIC_GEMINI_MODEL
+ * Text Model: NEXT_PUBLIC_TEXT_GENERATION_MODEL (default: gemini-2.5-flash)
+ * Image Model: NEXT_PUBLIC_IMAGE_GENERATION_MODEL (default: gemini-2.5-flash-image)
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Alternative models to try for each task (in order of preference)
-// Each task type has an ordered list of models to try with fallbacks
-const MODEL_PREFERENCES = {
-  topics: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'],
-  article: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
-  quizzes: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'],
-} as const;
+// Fallback models for text generation (used if env model fails)
+const TEXT_GENERATION_FALLBACKS = ['gemini-2.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
 
-type TaskType = keyof typeof MODEL_PREFERENCES;
+// Fallback models for image generation
+const IMAGE_GENERATION_FALLBACKS = ['gemini-2.5-flash-image'];
+
+type TextTaskType = 'topics' | 'article' | 'quizzes' | 'rating';
 
 class AIService {
   private genAI: GoogleGenerativeAI | null = null;
@@ -52,33 +46,25 @@ class AIService {
   }
 
   /**
-   * Try to generate content with multiple model fallbacks
-   * Attempts models in order of preference until one succeeds
+   * Generate text content with model fallback
+   * Uses NEXT_PUBLIC_TEXT_GENERATION_MODEL or falls back to default models
    */
-  private async generateWithFallback(
-    taskType: TaskType,
+  private async generateTextWithFallback(
+    taskType: TextTaskType,
     prompt: string
   ): Promise<{ response: any; text: string }> {
     if (!this.genAI) {
       throw new Error('Gemini API key not configured');
     }
 
-    // Check for environment override - this takes highest priority
-    const envModel = process.env.GEMINI_MODEL || process.env.NEXT_PUBLIC_GEMINI_MODEL;
-    if (envModel) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: envModel });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        return { response, text };
-      } catch (error: any) {
-        console.warn(`Environment model ${envModel} failed, trying fallbacks...`);
-      }
-    }
+    // Get the text generation model from environment variable
+    const envTextModel = process.env.NEXT_PUBLIC_TEXT_GENERATION_MODEL;
+    
+    // Build list of models to try: env model first, then fallbacks
+    const modelsToTry = envTextModel 
+      ? [envTextModel, ...TEXT_GENERATION_FALLBACKS.filter(m => m !== envTextModel)]
+      : TEXT_GENERATION_FALLBACKS;
 
-    // Try models in order of preference
-    const modelsToTry = MODEL_PREFERENCES[taskType];
     let lastError: any = null;
 
     for (const modelName of modelsToTry) {
@@ -91,12 +77,19 @@ class AIService {
       } catch (error: any) {
         lastError = error;
         console.warn(`Failed to use model ${modelName} for ${taskType}, trying next...`);
+        
+        // If it's a 404 (model not found), continue to next model
+        if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+          continue;
+        }
+        
+        // For other errors, still try next model but log the error
         continue;
       }
     }
 
     // If all models fail, throw the last error
-    throw lastError || new Error(`All model attempts failed for ${taskType}`);
+    throw lastError || new Error(`All text generation model attempts failed for ${taskType}`);
   }
 
   /**
@@ -158,7 +151,7 @@ class AIService {
       Focus on practical, hands-on learning topics that would be valuable for developers and learners.`;
 
       // Generate content with automatic model fallback
-      const { text } = await this.generateWithFallback('topics', prompt);
+      const { text } = await this.generateTextWithFallback('topics', prompt);
       
       // Parse JSON from response
       const parsed = this.parseJsonFromText(text, 'array');
@@ -207,7 +200,7 @@ class AIService {
       - readingTime: estimated reading time in minutes`;
 
       // Generate content with automatic model fallback
-      const { text } = await this.generateWithFallback('article', prompt);
+      const { text } = await this.generateTextWithFallback('article', prompt);
       
       // Parse JSON from response
       const parsed = this.parseJsonFromText(text, 'object');
@@ -265,7 +258,7 @@ class AIService {
       - explanation: explanation for the correct answer`;
 
       // Generate content with automatic model fallback
-      const { text } = await this.generateWithFallback('quizzes', prompt);
+      const { text } = await this.generateTextWithFallback('quizzes', prompt);
       
       // Parse JSON from response
       const parsed = this.parseJsonFromText(text, 'array');
@@ -293,9 +286,74 @@ class AIService {
         return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
       }
 
-      // Note: Gemini doesn't support image generation directly
-      // This would need to be integrated with a different service like DALL-E or Midjourney
-      // For now, return a working IPFS URI
+      // Get the image generation model from environment variable
+      const envImageModel = process.env.NEXT_PUBLIC_IMAGE_GENERATION_MODEL;
+      
+      // Build list of models to try: env model first, then fallbacks
+      const modelsToTry = envImageModel 
+        ? [envImageModel, ...IMAGE_GENERATION_FALLBACKS.filter(m => m !== envImageModel)]
+        : IMAGE_GENERATION_FALLBACKS;
+
+      let lastError: any = null;
+
+      for (const modelName of modelsToTry) {
+        try {
+          const model = this.genAI.getGenerativeModel({ model: modelName });
+          
+          // For image generation, we use generateContent with the prompt
+          // The response should contain image data or a URL
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          
+          // Check if response contains image data
+          // Gemini 2.5 Flash Image may return base64 encoded image or a URL
+          const parts = response.candidates?.[0]?.content?.parts;
+          
+          if (parts && parts.length > 0) {
+            // Check for inline data (base64 image)
+            const inlineData = parts.find(part => part.inlineData);
+            if (inlineData?.inlineData) {
+              // Convert base64 to data URL or save to IPFS
+              // For now, return the data URL format
+              const mimeType = inlineData.inlineData.mimeType || 'image/png';
+              const base64Data = inlineData.inlineData.data;
+              return `data:${mimeType};base64,${base64Data}`;
+            }
+            
+            // Check for text that might contain a URL
+            const text = parts.find(part => part.text);
+            if (text?.text) {
+              // Try to extract URL from text
+              const urlMatch = text.text.match(/https?:\/\/[^\s]+|ipfs:\/\/[^\s]+/);
+              if (urlMatch) {
+                return urlMatch[0];
+              }
+            }
+          }
+          
+          // If no image data found in response, try fallback
+          console.warn(`No image data found in response from ${modelName}, trying next model...`);
+          continue;
+        } catch (error: any) {
+          lastError = error;
+          console.warn(`Failed to use model ${modelName} for image generation, trying next...`);
+          
+          // If it's a 404 (model not found), continue to next model
+          if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+            continue;
+          }
+          
+          // For other errors, still try next model
+          continue;
+        }
+      }
+
+      // If all models fail, log error and return fallback
+      if (lastError) {
+        console.error('Error generating image with all models:', lastError);
+      }
+      
+      // Return a working fallback IPFS URI
       return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
     } catch (error) {
       console.error('Error generating image:', error);
