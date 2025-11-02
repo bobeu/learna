@@ -1,8 +1,8 @@
 {
-  "contractAddress": "0x152238bc1a9498464CA6ad055C4dcD33D495Be64",
+  "contractAddress": "0x751F18E9134769a5177d2ACd98caCbe3c0E1AB32",
   "functionName": "setApprovalFactory",
   "inputCount": 1,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [
@@ -111,8 +111,39 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCampaign",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "identifier",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICampaignFactory.Campaign",
+          "name": "cmp",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
-      "name": "getData",
+      "name": "getFactoryData",
       "outputs": [
         {
           "components": [
@@ -132,11 +163,6 @@
               "type": "uint256"
             },
             {
-              "internalType": "contract IVerifier",
-              "name": "verifier",
-              "type": "address"
-            },
-            {
               "internalType": "contract IApprovalFactory",
               "name": "approvalFactory",
               "type": "address"
@@ -154,50 +180,14 @@
                   "type": "address"
                 }
               ],
-              "internalType": "struct CampaignFactory.Campaign[]",
+              "internalType": "struct ICampaignFactory.Campaign[]",
               "name": "campaigns",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct CampaignFactory.ReadData",
+          "internalType": "struct ICampaignFactory.ReadData",
           "name": "data",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "getUserCampaigns",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "user",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "campaign",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "isCreator",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct CampaignFactory.UserCampaign[]",
-          "name": "",
-          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -257,38 +247,6 @@
           "type": "bool"
         }
       ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newVerifier",
-          "type": "address"
-        }
-      ],
-      "name": "setVerifier",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "updatedUserCampaign",
-      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     }

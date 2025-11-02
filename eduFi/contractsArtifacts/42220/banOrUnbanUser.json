@@ -1,8 +1,8 @@
 {
-  "contractAddress": "0x0B523E504bF03Aa424BCb8e43a0f2071a95eE906",
+  "contractAddress": "0x15142C7793Ac8571E825EfaFEcd0fcD0De9E8bf3",
   "functionName": "banOrUnbanUser",
   "inputCount": 1,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [
@@ -229,25 +229,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "getVerificationStatus",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "target",
           "type": "address"
         }
@@ -264,8 +245,14 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "isWalletVerificationRequired",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "isVerified",
       "outputs": [
         {
           "internalType": "bool",
@@ -410,6 +397,19 @@
       "name": "unApprove",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "useWalletVerification",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

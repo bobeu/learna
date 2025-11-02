@@ -152,7 +152,7 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
       };
       const functionName = "epochSetting";
       await writeContract({
-        address: campaign.contractAddress as `0x${string}`,
+        address: campaign.contractInfo.address as `0x${string}`,
         abi: campaignTemplate.abi.filter(({name}) => name === functionName),
         functionName,
         args: [contractArgs as any, rewardType]

@@ -11,11 +11,48 @@ const REACT_DATA_PATH = '../eduFi/contractsArtifacts';
 const CAMPAIGN_TEMPLATE_ABI_PATH = '../eduFi/contractsArtifacts/template.json';
 const ERC20_ABI_PATH ='../eduFi/contractsArtifacts/erc20.json';
 const GLOBAL_OUTPUT_PATH = '../eduFi/contractsArtifacts/global.json';
-const approvedFunctions = ['setCreationFee', 'setFeeTo', 'setVerifier', 'setApprovalFactory', 'createCampaign', 'getUserCampaigns', 'getData', 'hasApproval', 'removeApproval', 'setApproval', 'setFactory', 'getFactory', 'verify', 'verifyByApprove', 'toggleUseWalletVerification', 'banOrUnbanUser', 'getVerificationStatus', 'panicWithdraw', 'withdraw', 'owner'];
-const approveTemplateFunctions = ['getData', 'addFund', 'claimRewardForPOINT', 'claimRewardForPOASS', 'submitProofOfIntegration', 'approveIntegration', 'proveAssimilation', 'epochSetting', 'pause', 'unpause', 'owner'];
-const readFunctions = ['getUserCampaigns', 'getData', 'hasApproval', 'getFactory', 'getVerificationStatus'];
-const functionsRequireArgUpdate = approvedFunctions;
-const requiredContracts = ['ApprovalFactory.json', 'CampaignFactory.json', 'FeeManager.json', 'VerifierV2.json'];
+const approvedFunctions = [
+    'setCreationFee', 
+    'setFeeTo',
+    'setVerifier', 
+    'setApprovalFactory', 
+    'createCampaign', 
+    'getUserCampaigns', 
+    'getData', 
+    'hasApproval', 
+    'removeApproval', 
+    'setApproval', 
+    'setFactory', 
+    'getFactory', 
+    'verify', 
+    'verifyByApprove', 
+    'toggleUseWalletVerification', 
+    'banOrUnbanUser', 
+    'getVerificationStatus', 
+    'panicWithdraw', 
+    'withdraw', 
+    'owner',
+    'editMetaData',
+    'getCampaignData', 
+    'getFactoryData', 
+    'getInterfacerData', 
+    'addFund', 
+    'claimRewardForPOINT', 
+    'claimRewardForPOASS', 
+    'submitProofOfIntegration', 
+    'approveIntegration',
+    'proveAssimilation', 
+    'epochSetting', 
+    'pause', 
+    'setNewOwner',
+    'unpause', 
+    'owner',
+    'isVerified'
+];
+
+// const readFunctions = ['getUserCampaigns', 'getData', 'hasApproval', 'getFactory', 'getVerificationStatus'];
+// const functionsRequireArgUpdate = approvedFunctions;
+const requiredContracts = ['ApprovalFactory.json', 'CampaignFactory.json', 'FeeManager.json', 'IdentityVerifier.json', 'Interfacer.json'];
 const chainName = {11142220: 'sepolia', 42220: 'celo'};
 const chainIds = [11142220, 42220]
 let workBuild = {
@@ -35,7 +72,6 @@ const erc20ArtifactsContents = {
 
 let globalOutput = {
     approvedFunctions: approvedFunctions,
-    approveTemplateFunctions: approveTemplateFunctions,
     chainName: chainName,
     chainIds: chainIds,
     paths: workBuild,
@@ -43,12 +79,18 @@ let globalOutput = {
         {
             "stablecoin": '',
             "ApprovalFactory": "",
-            "CampaignFactory": ""
+            "CampaignFactory": "",
+            "IdentityVerifier": "",
+            "Interfacer": "",
+            "FeeManager": "",
         },
         {
             "stablecoin": '0x765de816845861e75a25fca122bb6898b8b1282a',
             "ApprovalFactory": "",
-            "CampaignFactory": ""
+            "CampaignFactory": "",
+            "IdentityVerifier": "",
+            "Interfacer": "",
+            "FeeManager": "",
         }
     ],
 };
@@ -116,18 +158,18 @@ try {
                     item.inputs && item.inputs.forEach((input) => {
                         inputs.push(input.name);
                     });
-                    const isReadFunction = readFunctions.includes(item.name);
+                    // const isReadFunction = readFunctions.includes(item.name);
                     const dir = `${REACT_DATA_PATH}/${chainId}`;
                     if (!fs.existsSync(dir)) {
                         fs.mkdirSync(dir, { recursive: true });
                     }
                     const stdItemOutPath = path.join(dir, `${item.name}.json`);
                     // console.log("stdItemOutPath", stdItemOutPath);
-                    itemOutput.abi = isReadFunction? [item] : artifact.abi;
+                    itemOutput.abi =  artifact.abi;
                     itemOutput.inputCount = inputs.length;
                     itemOutput.functionName = item.name;
                     itemOutput.contractAddress = artifact.address;
-                    itemOutput.requireArgUpdate = functionsRequireArgUpdate.includes(item.name)
+                    // itemOutput.requireArgUpdate = functionsRequireArgUpdate.includes(item.name)
                     fs.writeFileSync(stdItemOutPath, JSON.stringify(itemOutput, null, 2));
                     globalOutput.contractAddresses[chainIndex][basename] = artifact.address;
 

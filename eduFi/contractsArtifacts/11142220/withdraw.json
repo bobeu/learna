@@ -1,8 +1,8 @@
 {
-  "contractAddress": "0x2864bfA7896DA58B0c1E4da982d2747A3de5D2D6",
+  "contractAddress": "0x469ecA24F49B729fb85d0E597abf2F0362168022",
   "functionName": "withdraw",
   "inputCount": 2,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [

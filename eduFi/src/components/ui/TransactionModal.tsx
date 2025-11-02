@@ -59,7 +59,13 @@ export default function TransactionModal({
 
   const waitForConfirmation = async(hash: `0x${string}`) => {
     const receipt = await waitForTransactionReceipt(config, {hash, confirmations: CONFIMATION_BLOCK});
-    return receipt.transactionHash;
+    
+    // Verify transaction was successful
+    if (receipt.status !== 'success') {
+      throw new Error(`Transaction failed: ${hash}`);
+    }
+    
+    return receipt;
   } 
 
   const executeStep = async (step: TransactionStep) => {
@@ -72,16 +78,22 @@ export default function TransactionModal({
         args: step.args,
         value: step.value,
       });
-      hash = await waitForConfirmation(hash);
-      setTxHashes(prev => ({ ...prev, [step.id]: hash }));
+      const receipt = await waitForConfirmation(hash);
+      const txHash = receipt.transactionHash;
+      setTxHashes(prev => ({ ...prev, [step.id]: txHash }));
       setCompletedSteps(prev => new Set([...prev, step.id]));
       
       if (isLastStep) {
-        onSuccess?.(hash);
-        setTimeout(() => {
-          onClose();
-          resetModal();
-        }, 2000);
+        // Only call onSuccess if transaction status is 'success'
+        if (receipt.status === 'success') {
+          onSuccess?.(txHash);
+          setTimeout(() => {
+            onClose();
+            resetModal();
+          }, 2000);
+        } else {
+          throw new Error(`Transaction reverted: ${txHash}`);
+        }
       } else {
         setCurrentStepIndex(prev => prev + 1);
       }

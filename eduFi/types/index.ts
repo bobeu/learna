@@ -5,7 +5,9 @@ export type DifficultyLevel = 'easy' | 'medium' | 'hard' | '';
 export type Address = `0x${string}`;
 export type FunctionName = 
   '' | 
-  'getData'|
+  'getCampaignData'|
+  'getFactoryData'|
+  'getInterfacerData'|
   'owner'|
   'allowance'|
   'approve'|
@@ -30,7 +32,7 @@ export type FunctionName =
   'setPermission' |
   'banOrUnbanUser'|
   'getCampaingData' |
-  'getVerificationStatus' |
+  'isVerified' |
   'proveAssimilation' |
   'createCampaign' |
   'hasApproval' |
@@ -133,7 +135,8 @@ export interface FilterTransactionReturnType {
     ApprovalFactory: string;
     CampaignFactory: string;
     FeeManager: string;
-    VerifierV2: string;
+    IdentityVerifier: string;
+    Interfacer: string;
   };
 }
 
@@ -230,7 +233,10 @@ export interface CreateCampaignInput {
 }
 
 export interface FormattedCampaignTemplate {
-  contractAddress: Address;
+  contractInfo: { 
+    address: Address;
+    index: bigint;
+  }
   epochData: EpochData[];
   metadata: Metadata;
   verifier: Address,
@@ -241,7 +247,22 @@ export interface FormattedCampaignTemplate {
   isPointClaimed: boolean[]; // Array that shows whether a builder has claimed ERC20 reward for proof of integration for a specified epoch
 }
 
-export type CampaignTemplateReadData = Omit<FormattedCampaignTemplate, 'contractAddress'>;
+export type CampaignTemplateReadData = Omit<FormattedCampaignTemplate, 'contractInfo'>;
+
+export interface InterfacerReadData {
+  factory: Address;
+  verifier: Address;
+  owner: Address;
+}
+
+
+//// ================== MOCKDATA ===================
+
+export const mockInterfacerReadData : InterfacerReadData = {
+  factory: zeroAddress,
+  verifier: zeroAddress,
+  owner: zeroAddress
+} 
 
 export const mockFilterTransactionData : FilterTransactionReturnType = {
   transactionData: [{
@@ -257,7 +278,8 @@ export const mockFilterTransactionData : FilterTransactionReturnType = {
     ApprovalFactory: zeroAddress,
     CampaignFactory: zeroAddress,
     FeeManager: zeroAddress,
-    VerifierV2: zeroAddress
+    IdentityVerifier: zeroAddress,
+    Interfacer: zeroAddress
   }
 }
 
@@ -293,7 +315,10 @@ export interface CampaignStateProps {
 }
 
 export const mockCampaignTemplateReadData : FormattedCampaignTemplate = {
-  contractAddress: zeroAddress,
+  contractInfo: {
+    address: zeroAddress,
+    index: 0n
+  },
   epochData: [{
     totalProofs: 0,
     setting: {

@@ -1,8 +1,8 @@
 {
-  "contractAddress": "0xb3F3a7E5c87CaC34358070e0974D58C79b14D784",
+  "contractAddress": "0x29d18D3e6562679Bb8D293F953A2C444f6618536",
   "functionName": "setApproval",
   "inputCount": 1,
-  "requireArgUpdate": true,
+  "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [],
@@ -93,20 +93,7 @@
     },
     {
       "inputs": [],
-      "name": "factory",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getFactory",
+      "name": "getInterfacer",
       "outputs": [
         {
           "internalType": "address",
@@ -131,6 +118,19 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "interfacer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -186,11 +186,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "newFactory",
+          "name": "newInterfacer",
           "type": "address"
         }
       ],
-      "name": "setFactory",
+      "name": "setInterfacer",
       "outputs": [
         {
           "internalType": "bool",

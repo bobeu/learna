@@ -1,18 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Brain } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useWriteContract } from 'wagmi';
-import { ProofOfAssimilation, Performance, CampaignStateProps } from '../../../types';
+import { useAccount, useWriteContract } from 'wagmi';
+import { ProofOfAssimilation, Performance, CampaignStateProps, FunctionName, Address } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
 import { Hex, stringToHex, zeroAddress } from 'viem';
-import campaignTemplate from "../../../contractsArtifacts/template.json";
-import { normalizeString } from '../utilities';
+// import campaignTemplate from "../../../contractsArtifacts/template.json";
+import { filterTransactionData, normalizeString, formatAddr } from '../utilities';
 import ArticleReading, { Steps } from './ArticleReading';
 import Quiz, { QuizQuestion } from './Quiz';
 import Results from './Results';
 import TopicSelection, { GeneratedTopic } from './TopicSelection';
+import QuizProgressConfirmation from './QuizProgressConfirmation';
+import UnsavedProgressIndicator from './UnsavedProgressIndicator';
+import {
+  saveUnsavedProgress,
+  loadUnsavedProgress,
+  clearUnsavedProgress,
+  isProgressAlreadySaved,
+  type UnsavedQuizProgress
+} from './quizProgressStorage';
+import useStorage from '../hooks/useStorage';
 
 interface AITutorProps {
   campaign: CampaignStateProps;
@@ -28,6 +38,9 @@ interface GeneratedArticle {
 
 export default function AITutor({ campaign, onClose }: AITutorProps) {
   const { isPending } = useWriteContract(); 
+  const { chainId, address } = useAccount();
+  const { campaignsData } = useStorage();
+  const userAddress = formatAddr(address);
   
   // State management
   const [currentStep, setCurrentStep] = useState<Steps>('topics');
@@ -43,6 +56,171 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
+  
+  // Progress retention state
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [pendingClose, setPendingClose] = useState(false);
+  const [hasUnsavedData, setHasUnsavedData] = useState(false);
+
+  // Get saved learner data from blockchain to filter out already saved progress
+  const savedLearnerData = useMemo(() => {
+    if(!address || !campaignsData) return null;
+    const userAddr = userAddress.toLowerCase();
+    const campaignData = campaignsData.find(c => 
+      c.contractInfo.address.toLowerCase() === campaign.__raw.contractInfo.address.toLowerCase()
+    );
+    
+    if(!campaignData) return null;
+    
+    // Get learner data from all epochs
+    const allPoass: Array<{ score: number; percentage: number; questionSize: number; timeSpent: number }> = [];
+    campaignData.epochData.forEach(epoch => {
+      const learner = epoch.learners.find(l => l.id.toLowerCase() === userAddr);
+      if(learner) {
+        learner.poass.forEach(poa => {
+          allPoass.push({
+            score: poa.score,
+            percentage: poa.percentage,
+            questionSize: poa.questionSize,
+            timeSpent: poa.timeSpent
+          });
+        });
+      }
+    });
+    
+    return allPoass;
+  }, [address, campaignsData, campaign, userAddress]);
+
+  // Save current progress to localStorage
+  const saveProgress = useCallback(() => {
+    if(!address || !userAddress) return;
+    
+    // Only save if we're on results page with valid data
+    if(currentStep === 'results' && performance && selectedTopic && article) {
+      const progress: UnsavedQuizProgress = {
+        campaignId: campaign.__raw.contractInfo.index.toString(),
+        campaignAddress: campaign.__raw.contractInfo.address,
+        topic: selectedTopic,
+        article: {
+          title: article.title,
+          content: article.content,
+          wordCount: article.wordCount,
+          readingTime: article.readingTime
+        },
+        quizzes: quizzes.map(q => ({
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation
+        })),
+        userAnswers: [...userAnswers],
+        currentQuizIndex,
+        quizScore,
+        performance: {
+          value: performance.value,
+          ratedAt: typeof performance.ratedAt === 'string' ? performance.ratedAt : ''
+        },
+        startTime,
+        endTime,
+        currentStep,
+        savedAt: Date.now()
+      };
+      
+      // Check if this progress is already saved on blockchain
+      if(!savedLearnerData || !isProgressAlreadySaved(progress, savedLearnerData)) {
+        saveUnsavedProgress(userAddress, progress);
+        setHasUnsavedData(true);
+      }
+    }
+  }, [address, userAddress, currentStep, performance, selectedTopic, article, quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime, campaign, savedLearnerData]);
+
+  // Restore progress from localStorage on mount
+  useEffect(() => {
+    if(!address || !userAddress) return;
+    
+    const saved = loadUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+    if(!saved) return;
+    
+    // Check if saved progress is already on blockchain
+    if(savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
+      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+      return;
+    }
+    
+    // Restore the saved progress
+    if(saved.topic) {
+      setSelectedTopic(saved.topic as GeneratedTopic);
+    }
+    if(saved.article) {
+      setArticle(saved.article);
+    }
+    if(saved.quizzes.length > 0) {
+      setQuizzes(saved.quizzes);
+    }
+    if(saved.userAnswers.length > 0) {
+      setUserAnswers(saved.userAnswers);
+      setCurrentQuizIndex(saved.currentQuizIndex);
+    }
+    if(saved.quizScore > 0) {
+      setQuizScore(saved.quizScore);
+    }
+    if(saved.performance) {
+      setPerformance({
+        value: saved.performance.value,
+        ratedAt: stringToHex(saved.performance.ratedAt || new Date().toISOString())
+      });
+    }
+    if(saved.startTime) {
+      setStartTime(saved.startTime);
+    }
+    if(saved.endTime) {
+      setEndTime(saved.endTime);
+    }
+    if(saved.currentStep) {
+      setCurrentStep(saved.currentStep);
+    }
+    
+    setHasUnsavedData(true);
+  }, [address, userAddress, campaign.__raw.contractInfo.index, savedLearnerData]);
+
+  // Auto-save progress when quiz results are calculated
+  // saveProgress already checks if data is on blockchain before saving
+  useEffect(() => {
+    if(currentStep === 'results' && performance && selectedTopic && article) {
+      saveProgress();
+    }
+  }, [currentStep, performance, selectedTopic, article, saveProgress]);
+
+  // Handle dialog close with confirmation if there's unsaved data
+  const handleDialogClose = useCallback((open: boolean) => {
+    if(!open && hasUnsavedData && currentStep === 'results') {
+      setShowConfirmationDialog(true);
+      setPendingClose(true);
+    } else if(!open) {
+      onClose();
+    }
+  }, [hasUnsavedData, currentStep, onClose]);
+
+  // Handle save and close
+  const handleSaveAndClose = useCallback(() => {
+    saveProgress();
+    setShowConfirmationDialog(false);
+    setPendingClose(false);
+    setHasUnsavedData(false);
+    onClose();
+  }, [saveProgress, onClose]);
+
+  // Handle discard
+  const handleDiscard = useCallback(() => {
+    if(address && userAddress) {
+      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+    }
+    setShowConfirmationDialog(false);
+    setPendingClose(false);
+    setHasUnsavedData(false);
+    onClose();
+  }, [address, userAddress, campaign.__raw.contractInfo.index, onClose]);
 
   // Generate topics based on campaign
   const generateTopics = async () => {
@@ -57,10 +235,11 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const topics = await response.json();
         setGeneratedTopics(topics);
       } else {
+        console.log("response", response)
         // Fallback to mock topics
         setGeneratedTopics([
           {
@@ -114,7 +293,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const articleData = await response.json();
         setArticle(articleData);
       } else {
@@ -135,7 +314,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Generate quiz based on article
   const generateQuiz = async () => {
-    if (!article) return;
+    if(!article) return;
     
     setIsGenerating(true);
     try {
@@ -149,7 +328,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         }),
       });
       
-      if (response.ok) {
+      if(response.ok) {
         const quizData = await response.json();
         setQuizzes(quizData);
       } else {
@@ -185,7 +364,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     let correctAnswers = 0; 
     const quizSize = quizzes.length;
     userAnswers.forEach((answer, index) => {
-      if (answer === quizzes[index].correctAnswer) {
+      if(answer === quizzes[index].correctAnswer) {
         correctAnswers++;
       }
     });
@@ -194,10 +373,10 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     
     // Calculate performance rating
     let performanceValue = 0;
-    if (score >= 90) performanceValue = 5;
-    else if (score >= 80) performanceValue = 4;
-    else if (score >= 70) performanceValue = 3;
-    else if (score >= 60) performanceValue = 2;
+    if(score >= 90) performanceValue = 5;
+    else if(score >= 80) performanceValue = 4;
+    else if(score >= 70) performanceValue = 3;
+    else if(score >= 60) performanceValue = 2;
     else performanceValue = 1;
     
     setPerformance({
@@ -210,7 +389,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Prepare data for on-chain storage
   const prepareOnChainData = () => {
-    if (!performance || !selectedTopic || !article) return null;
+    if(!performance || !selectedTopic || !article) return null;
     let timeSpent = 0;
     const timeDiff = endTime - startTime;
     if(timeDiff > 0) {
@@ -232,7 +411,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   // Create transaction steps for on-chain storage
   const createTransactionSteps = (): TransactionStep[] => {
     const data = prepareOnChainData();
-    if (!data) return [{
+    if(!data) return [{
       id: 'null', 
       title: 'null',
       description: 'Data unavailable', 
@@ -241,31 +420,59 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
       abi: [],
       args: []
     }];
+    const { transactionData: td } = filterTransactionData({chainId, filter: true, functionNames: ['proveAssimilation']})
     
     return [{
       id: 'prove-assimilation',
       title: 'Store Proof of Learning',
       description: 'Storing your quiz results and performance rating on-chain',
-      functionName: 'proveAssimilation',
-      contractAddress: campaign.__raw.contractAddress,
-      abi: campaignTemplate.abi,
-      args: [data.proofOfAssimilation, data.performance],
+      functionName: td[0].functionName as FunctionName,
+      contractAddress: td[0].contractAddress as Address,
+      abi: td[0].abi,
+      args: [data.proofOfAssimilation, data.performance, campaign.__raw.contractInfo.index],
     }];
   };
 
   const handleStoreOnChain = () => {
     const steps = createTransactionSteps();
-    if (steps.length === 0) {
+    if(steps.length === 0) {
       alert('No data to store');
       return;
     }
     setShowTransactionModal(true);
   };
 
-  const handleTransactionSuccess = (txHash: string) => {
+  const handleTransactionSuccess = useCallback((txHash: string) => {
     console.log('Proof of assimilation stored:', txHash);
     setShowTransactionModal(false);
-  };
+    
+    // Clear saved progress from localStorage since it's now on blockchain
+    // This should only happen on successful transaction completion
+    if(address && userAddress) {
+      const campaignId = campaign.__raw.contractInfo.index.toString();
+      clearUnsavedProgress(userAddress, campaignId);
+      setHasUnsavedData(false);
+      
+      // Verify the data was actually cleared
+      const remainingData = loadUnsavedProgress(userAddress, campaignId);
+      if(remainingData) {
+        console.warn('Failed to clear unsaved progress, attempting again...');
+        clearUnsavedProgress(userAddress, campaignId);
+      }
+      
+      console.log('Successfully cleared unsaved progress after on-chain storage');
+    }
+    
+    // Reset any pending close states
+    setPendingClose(false);
+    setShowConfirmationDialog(false);
+    
+    // Close the AITutor modal immediately after successful transaction
+    // Use a small delay to ensure transaction modal closes smoothly first
+    setTimeout(() => {
+      onClose();
+    }, 500);
+  }, [address, userAddress, campaign, onClose]);
 
   const handleTransactionError = (error: Error) => {
     console.error('Failed to store proof:', error);
@@ -293,7 +500,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   return (
     <>
-      <Dialog open={true} onOpenChange={onClose}>
+      <Dialog open={!pendingClose} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-surface">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -371,6 +578,34 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         onSuccess={handleTransactionSuccess}
         onError={handleTransactionError}
       />
+
+      <QuizProgressConfirmation
+        isOpen={showConfirmationDialog}
+        onClose={() => {
+          setShowConfirmationDialog(false);
+          setPendingClose(false);
+        }}
+        onSaveAndClose={handleSaveAndClose}
+        onDiscard={handleDiscard}
+      />
+
+      {hasUnsavedData && performance && quizScore > 0 && (
+        <UnsavedProgressIndicator
+          campaignName={normalizeString(campaign.name as Hex)}
+          quizScore={quizScore}
+          performanceValue={performance.value}
+          onDismiss={() => {
+            if(address && userAddress) {
+              clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+            }
+            setHasUnsavedData(false);
+          }}
+          onClick={() => {
+            setPendingClose(false);
+            setShowConfirmationDialog(false);
+          }}
+        />
+      )}
     </>
   );
 }
