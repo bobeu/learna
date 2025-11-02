@@ -132,6 +132,16 @@ export function getAllUnsavedProgressKeys(address: string): string[] {
 }
 
 /**
+ * Check if saved progress is older than specified days (default 7 days)
+ */
+export function isProgressOlderThanDays(progress: UnsavedQuizProgress, days: number = 7): boolean {
+  if (!progress.savedAt) return false;
+  
+  const daysSinceSaved = Math.floor((Date.now() - progress.savedAt) / (1000 * 60 * 60 * 24));
+  return daysSinceSaved >= days;
+}
+
+/**
  * Check if progress matches already saved data on blockchain
  * Compares score, percentage, questionSize, and timeSpent to avoid duplicates
  */
