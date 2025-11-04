@@ -253,12 +253,12 @@ export default function NewCampaignPage(){
     };
 
     return (
-        <main className=" min-h-screen px-4 sm:px-6 lg:px-8 pt-4 pb-8 bg-white dark:bg-black dark:font-mono">
-            <div className="max-w-7xl space-y-4 mx-auto">
-                <div className="w-full flex justify-between items-center gap-4 md:gap-8">
-                    <Link href="/">
-                        <Button variant="outline" className={`gap-2 ${isDark ? 'text-white border-neutral-700' : ''}`}>
-                            <ArrowLeft className="w-4 h-4" /> Back to Home
+        <main className="min-h-screen px-3 sm:px-4 md:px-6 lg:px-8 pt-4 pb-6 sm:pb-8 bg-white dark:bg-black dark:font-mono">
+            <div className="max-w-7xl space-y-3 sm:space-y-4 mx-auto">
+                <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 md:gap-8">
+                    <Link href="/" className="w-full sm:w-auto">
+                        <Button variant="outline" className={`gap-2 w-full sm:w-auto text-sm sm:text-base ${isDark ? 'text-white border-neutral-700' : ''}`}>
+                            <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Home</span><span className="sm:hidden">Back</span>
                         </Button>
                     </Link>
                    <ButtonTemplate 
@@ -269,20 +269,21 @@ export default function NewCampaignPage(){
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 pt-4 md:pt-0">
-                    <div className="lg:col-span-1 w-full max-h-screen md:overflow-auto">
-                        <Card className="h-full overflow-auto border-neutral-200 dark:border-neutral-800 dark:bg-surface">
-                            <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10 pt-2 sm:pt-4">
+                    <div className="lg:col-span-1 w-full md:max-h-screen md:overflow-y-auto">
+                        <Card className="h-full md:overflow-auto border-neutral-200 dark:border-neutral-800 dark:bg-surface">
+                            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <div className="text-lg font-semibold">Your Campaigns</div>
-                                    <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowMyCampaigns((s) => !s)}>
-                                        {showMyCampaigns ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />} View All
+                                    <div className="text-base sm:text-lg font-semibold">Your Campaigns</div>
+                                    <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm" onClick={() => setShowMyCampaigns((s) => !s)}>
+                                        {showMyCampaigns ? <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" /> : <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />} 
+                                        <span className="hidden sm:inline">View All</span>
                                     </Button>
                                 </div>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <Stat label="Created" value={String(myCampaigns.length)} icon={<Layers className="w-4 h-4" />} />
-                                    <Stat label="Total TVL" value={`$${totalTVL}`} icon={<BarChart3 className="w-4 h-4" />} />
-                                    <Stat label="Active" value={String(1)} icon={<Calendar className="w-4 h-4" />} />
+                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                    <Stat label="Created" value={String(myCampaigns.length)} icon={<Layers className="w-3 h-3 sm:w-4 sm:h-4" />} />
+                                    <Stat label="Total TVL" value={`$${totalTVL}`} icon={<BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />} />
+                                    <Stat label="Active" value={String(1)} icon={<Calendar className="w-3 h-3 sm:w-4 sm:h-4" />} />
                                 </div>
 
                                 {showMyCampaigns && (
@@ -307,17 +308,19 @@ export default function NewCampaignPage(){
                             </CardContent>
                         </Card>
                     </div>
-                    <div className="relative w-full max-h-screen lg:col-span-2 md:overflow-auto">
+                    <div className="relative w-full lg:col-span-2 overflow-visible md:max-h-screen md:overflow-y-auto">
                         {
                             !displayForm ? (
                                 myCampaigns.length > 0? 
-                                <MotionDisplayWrapper className="">
-                                    <CampaignStatsTemplate campaign={selectedCampaign} /> 
+                                <MotionDisplayWrapper className="w-full">
+                                    <div className="w-full overflow-x-hidden">
+                                        <CampaignStatsTemplate campaign={selectedCampaign} /> 
+                                    </div>
                                 </MotionDisplayWrapper>
                                         : 
-                                    <MotionDisplayWrapper className="absolute left-[10%] top-20 md:left-1/3 md:top-1/3 flex flex-col items-center text-center gap-2">
-                                        <h3 className="text-xl">You have no campaign</h3>
-                                        <h3 className="text-neutral-500">Connect your wallet to see your campaigns or create one</h3>
+                                    <MotionDisplayWrapper className="relative sm:absolute sm:left-1/3 sm:top-1/3 flex flex-col items-center text-center gap-2 p-4 sm:p-0">
+                                        <h3 className="text-lg sm:text-xl">You have no campaign</h3>
+                                        <h3 className="text-sm sm:text-base text-neutral-500">Connect your wallet to see your campaigns or create one</h3>
                                         <ButtonTemplate 
                                             isDark={isDark} 
                                             onClick={onClickNewButton} 
@@ -328,11 +331,11 @@ export default function NewCampaignPage(){
                                     </MotionDisplayWrapper>
                             ) : (
                                 <Card className="border-neutral-200 dark:border-neutral-800 dark:bg-surface">
-                                    <CardContent className="p-6 space-y-6">
-                                        <div className="flex justify-between items-center">
+                                    <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                                             <div>
-                                                <div className="text-xl font-semibold mb-1">Create new campaign</div>
-                                                <div className="text-sm text-neutral-500">Provide details.</div>
+                                                <div className="text-lg sm:text-xl font-semibold mb-1">Create new campaign</div>
+                                                <div className="text-xs sm:text-sm text-neutral-500">Provide details.</div>
                                                 {/* and funding. You can add multiple ERC20s and native CELO */}
                                             </div>
                                             <ButtonTemplate 
@@ -344,7 +347,7 @@ export default function NewCampaignPage(){
                                             />
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
                                                 <Label htmlFor="name">Campaign name</Label>
                                                 <Input id="name" value={name || ''} onChange={(e) => setName(e.target.value)} placeholder="e.g. Solidity Fundamentals" />
@@ -436,13 +439,6 @@ export default function NewCampaignPage(){
 
                 </div>
             </div>
-{/* 
-            <CampaignStatsModal 
-                isOpen={campaingStatModalOpen}
-                campaign={selectedCampaign} 
-                onClose={onCloseCampaignStatModal} 
-            /> */}
-            
              <TransactionModal
                 isOpen={showTransactionModal}
                 onClose={onClose}
@@ -458,11 +454,11 @@ export default function NewCampaignPage(){
 
 function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }){
     return (
-        <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary-200 text-black flex items-center justify-center">{icon}</div>
-            <div>
-                <div className="text-xs text-neutral-500">{label}</div>
-                <div className="text-base font-semibold">{value}</div>
+        <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center gap-2 sm:gap-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary-200 text-black flex items-center justify-center flex-shrink-0">{icon}</div>
+            <div className="min-w-0 flex-1">
+                <div className="text-xs text-neutral-500 truncate">{label}</div>
+                <div className="text-sm sm:text-base font-semibold truncate">{value}</div>
             </div>
         </div>
     );

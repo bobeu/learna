@@ -184,12 +184,12 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-xl font-bold">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-lg sm:text-xl font-bold">
                 Campaign Settings
               </DialogTitle>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Update your campaign configuration and funding
               </p>
             </div>
@@ -197,11 +197,11 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Warning about token limit */}
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <AlertDescription className="text-xs sm:text-sm">
               You can use a maximum of 3 tokens as funding tokens in your campaign. 
               Current total: {totalTokens} tokens.
             </AlertDescription>
@@ -209,11 +209,11 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
 
           {/* Basic Settings */}
           <Card>
-            <CardHeader>
-              <CardTitle>Basic Settings</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Basic Settings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <Label htmlFor="maxProof">Max Proofs Per Day</Label>
                   <Input
@@ -348,23 +348,23 @@ export default function CampaignSettingsModal({ campaign, isOpen, onClose }: Cam
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2">
+            <Button variant="outline" onClick={onClose} className="w-full sm:w-auto text-sm sm:text-base">
               Cancel
             </Button>
             <Button 
               onClick={handleSave} 
               disabled={isPending || isConfirming}
-              className="min-w-[120px]"
+              className="w-full sm:min-w-[120px] text-sm sm:text-base"
             >
               {isPending || isConfirming ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
                   {isPending ? "Confirming..." : "Updating..."}
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Save Settings
                 </>
               )}

@@ -69,28 +69,28 @@ function FundDisplay({ funds, title }: FundDisplayProps) {
   }, [funds.erc20Ass, funds.erc20Int]);
 
   return (
-    <div className="space-y-3">
-      <h4 className="font-semibold text-sm text-gray-700">{title}</h4>
+    <div className="space-y-2 sm:space-y-3">
+      <h4 className="font-semibold text-xs sm:text-sm text-gray-700">{title}</h4>
       
       {/* Native Funds */}
-      <div className="flex items-center justify-between p-3 border border-gray-600/40 rounded-lg">
-        <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium">Native (CELO)</span>
+      <div className="flex items-center justify-between p-2 sm:p-3 border border-gray-600/40 rounded-lg gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+          <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium truncate">Native (CELO)</span>
         </div>
-        <span className="font-mono text-sm">{totalNative} CELO</span>
+        <span className="font-mono text-xs sm:text-sm flex-shrink-0">{totalNative} CELO</span>
       </div>
 
       {/* ERC20 Tokens */}
       {erc20Tokens.map((token, index) => (
-        <div key={`${token.token}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+        <div key={`${token.token}-${index}`} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-blue-600">{token.symbol[0]}</span>
             </div>
-            <span className="text-sm font-medium">{token.name} ({token.symbol})</span>
+            <span className="text-xs sm:text-sm font-medium truncate">{token.name} ({token.symbol})</span>
           </div>
-          <span className="font-mono text-sm">{token.amount}</span>
+          <span className="font-mono text-xs sm:text-sm flex-shrink-0 truncate max-w-[100px] sm:max-w-none">{token.amount}</span>
         </div>
       ))}
     </div>
@@ -109,31 +109,31 @@ function LearnerList({ learners, onLearnerClick }: LearnerListProps) {
 
         return (
           <Card 
-            key={learner.id} 
+            key={learner.id.slice(2).concat('id')} 
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => onLearnerClick(learner)}
           >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm flex-shrink-0">
                     {learner.id.slice(2, 4).toUpperCase()}
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-xs sm:text-sm truncate">
                       {learner.id.slice(0, 6)}...{learner.id.slice(-4)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 truncate">
                       {learner.poass.length} proofs • {learner.ratings.length} ratings
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2">
+                <div className="text-right flex-shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Badge variant="secondary" className="text-xs">
                       {totalScore} pts
                     </Badge>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                   </div>
                   <p className="text-xs text-gray-500">
                     Avg: {avgRating.toFixed(1)}/5
@@ -156,70 +156,70 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
   const endDate = new Date(Number(epochData.setting.endDate) * 1000);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Epoch Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Epoch {epochIndex + 1}</h3>
-          <p className="text-sm text-gray-500">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base sm:text-lg font-semibold">Epoch {epochIndex + 1}</h3>
+          <p className="text-xs sm:text-sm text-gray-500 break-words">
             Ends: {endDate.toLocaleDateString()} at {endDate.toLocaleTimeString()}
           </p>
         </div>
         {isOwner && (
-          <Button variant="outline" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
             Settings
           </Button>
         )}
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{totalLearners}</p>
-                <p className="text-xs text-gray-500">Learners</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">{totalLearners}</p>
+                <p className="text-xs text-gray-500 truncate">Learners</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-600" />
-              <div>
-                <p className="text-2xl font-bold">{totalProofs}</p>
-                <p className="text-xs text-gray-500">Total Proofs</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">{totalProofs}</p>
+                <p className="text-xs text-gray-500 truncate">Total Proofs</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{maxProofsPerDay}</p>
-                <p className="text-xs text-gray-500">Max/Day</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">{maxProofsPerDay}</p>
+                <p className="text-xs text-gray-500 truncate">Max/Day</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-purple-600" />
-              <div>
-                <p className="text-2xl font-bold">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold truncate">
                   {totalLearners > 0 ? (Number(totalProofs) / Number(totalLearners)).toFixed(1) : 0}
                 </p>
-                <p className="text-xs text-gray-500">Avg/User</p>
+                <p className="text-xs text-gray-500 truncate">Avg/User</p>
               </div>
             </div>
           </CardContent>
@@ -227,7 +227,7 @@ function EpochStats({ epochData, epochIndex, onLearnerClick, onClaimReward, isOw
       </div>
 
       {/* Funds Display */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         <FundDisplay 
           funds={epochData.setting.funds} 
           title="Total Campaign Funds" 
@@ -285,54 +285,54 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
   return (
     <>
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="epochs">Epochs ({campaign.epochData.length})</TabsTrigger>
-          <TabsTrigger value="settings" disabled={!isOwner}>
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-3">Overview</TabsTrigger>
+          <TabsTrigger value="epochs" className="text-xs sm:text-sm px-2 sm:px-3">Epochs ({campaign.epochData.length})</TabsTrigger>
+          <TabsTrigger value="settings" disabled={!isOwner} className="text-xs sm:text-sm px-2 sm:px-3">
             Settings
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
           {/* Campaign Overview */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold">
+                  <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold truncate">
                       {campaign.epochData.reduce((sum, epoch) => sum + epoch.learners.length, 0)}
                     </p>
-                    <p className="text-xs text-gray-500">Total Learners</p>
+                    <p className="text-xs text-gray-500 truncate">Total Learners</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-600" />
-                  <div>
-                    <p className="text-2xl font-bold">
+                  <Trophy className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold truncate">
                       {totalProofs}
                     </p>
-                    <p className="text-xs text-gray-500">Total Proofs</p>
+                    <p className="text-xs text-gray-500 truncate">Total Proofs</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-green-600" />
-                  <div>
-                    <p className="text-2xl font-bold">
+                  <Calendar className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold truncate">
                       {campaign.epoches.toString()}
                     </p>
-                    <p className="text-xs text-gray-500">Total Epochs</p>
+                    <p className="text-xs text-gray-500 truncate">Total Epochs</p>
                   </div>
                 </div>
               </CardContent>
@@ -340,53 +340,57 @@ export default function CampaignStatsTemplate({ campaign }: CampaignStatsModalPr
           </div>
 
           {/* Campaign Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Information</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg">Campaign Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Start Date</p>
-                  <p className="text-sm">{campaignMetadata.startDate.toLocaleDateString()}</p>
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Start Date</p>
+                  <p className="text-xs sm:text-sm break-words">{campaignMetadata.startDate.toLocaleDateString()}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">End Date</p>
-                  <p className="text-sm">{campaignMetadata.endDate.toLocaleDateString()}</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">End Date</p>
+                  <p className="text-xs sm:text-sm break-words">{campaignMetadata.endDate.toLocaleDateString()}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Owner</p>
-                  <AddressWrapper
-                    account={campaign.owner}
-                    display={true}
-                    copyIconSize='6'
-                    size={6}
-                    overrideClassName='font-mono text-sm'
-                  />
+                <div className="min-w-0 sm:col-span-2">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Owner</p>
+                  <div className="break-all">
+                    <AddressWrapper
+                      account={campaign.owner}
+                      display={true}
+                      copyIconSize='6'
+                      size={6}
+                      overrideClassName='font-mono text-xs sm:text-sm break-all'
+                    />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Contract</p>
-                  <AddressWrapper
-                    account={campaign.contractInfo.address}
-                    display={true}
-                    copyIconSize='6'
-                    size={6}
-                    overrideClassName='font-mono text-sm'
-                  />
+                <div className="min-w-0 sm:col-span-2">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Contract</p>
+                  <div className="break-all">
+                    <AddressWrapper
+                      account={campaign.contractInfo.address}
+                      display={true}
+                      copyIconSize='6'
+                      size={6}
+                      overrideClassName='font-mono text-xs sm:text-sm break-all'
+                    />
+                  </div>
                 </div>
               </div>
               
               {campaignMetadata.link && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Documentation</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">Documentation</p>
                   <a 
                     href={campaignMetadata.link} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                    className="text-xs sm:text-sm text-blue-600 hover:underline flex items-start gap-1 break-all"
                   >
-                    {campaignMetadata.link}
-                    <ExternalLink className="w-3 h-3" />
+                    <span className="break-all">{campaignMetadata.link}</span>
+                    <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5" />
                   </a>
                 </div>
               )}

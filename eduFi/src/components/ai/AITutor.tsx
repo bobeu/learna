@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Brain } from 'lucide-react';
+import { Brain, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAccount, useWriteContract } from 'wagmi';
 import { ProofOfAssimilation, Performance, CampaignStateProps, FunctionName, Address } from '../../../types';
 import TransactionModal, { TransactionStep } from '@/components/ui/TransactionModal';
@@ -15,11 +16,13 @@ import Results from './Results';
 import TopicSelection, { GeneratedTopic } from './TopicSelection';
 import QuizProgressConfirmation from './QuizProgressConfirmation';
 import UnsavedProgressIndicator from './UnsavedProgressIndicator';
+import SavedProgressDialog from './SavedProgressDialog';
 import {
   saveUnsavedProgress,
   loadUnsavedProgress,
   clearUnsavedProgress,
   isProgressAlreadySaved,
+  isProgressOlderThanDays,
   type UnsavedQuizProgress
 } from './quizProgressStorage';
 import useStorage from '../hooks/useStorage';
@@ -59,8 +62,12 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   
   // Progress retention state
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [showSavedProgressDialog, setShowSavedProgressDialog] = useState(false);
   const [pendingClose, setPendingClose] = useState(false);
   const [hasUnsavedData, setHasUnsavedData] = useState(false);
+  const [transactionSucceeded, setTransactionSucceeded] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Start closed until saved progress is checked
+  const [pendingSavedProgress, setPendingSavedProgress] = useState<UnsavedQuizProgress | null>(null);
 
   // Get saved learner data from blockchain to filter out already saved progress
   const savedLearnerData = useMemo(() => {
@@ -94,6 +101,12 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   // Save current progress to localStorage
   const saveProgress = useCallback(() => {
     if(!address || !userAddress) return;
+    
+    // Don't save if transaction already succeeded
+    if(transactionSucceeded) {
+      console.log('Transaction already succeeded, preventing local save');
+      return;
+    }
     
     // Only save if we're on results page with valid data
     if(currentStep === 'results' && performance && selectedTopic && article) {
@@ -131,22 +144,57 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
       if(!savedLearnerData || !isProgressAlreadySaved(progress, savedLearnerData)) {
         saveUnsavedProgress(userAddress, progress);
         setHasUnsavedData(true);
+        // console.log('Progress saved locally');
+      } else {
+        console.log('Progress already saved on blockchain, skipping local save');
       }
     }
-  }, [address, userAddress, currentStep, performance, selectedTopic, article, quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime, campaign, savedLearnerData]);
+  }, [address, userAddress, currentStep, performance, selectedTopic, article, quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime, campaign, savedLearnerData, transactionSucceeded]);
 
-  // Restore progress from localStorage on mount
+  // Check for saved progress when AITutor opens and handle it appropriately
   useEffect(() => {
-    if(!address || !userAddress) return;
+    if(!address || !userAddress) {
+      // If no address, just open the dialog normally
+      setIsDialogOpen(true);
+      return;
+    }
     
     const saved = loadUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
-    if(!saved) return;
+    
+    // If no saved progress, open dialog normally
+    if(!saved) {
+      setIsDialogOpen(true);
+      return;
+    }
+    
+    // Check if saved progress is older than 7 days
+    if(isProgressOlderThanDays(saved, 7)) {
+      // console.log('Saved progress is older than 7 days, auto-deleting...');
+      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+      setIsDialogOpen(true); // Open dialog normally after cleanup
+      return;
+    }
     
     // Check if saved progress is already on blockchain
     if(savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
+      // console.log('Saved progress already exists on blockchain, removing local copy...');
       clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+      setTransactionSucceeded(true); // Mark as succeeded since it's on blockchain
+      setIsDialogOpen(true); // Open dialog normally
       return;
     }
+    
+    // If we have valid saved progress, show dialog asking user what to do
+    setPendingSavedProgress(saved);
+    setShowSavedProgressDialog(true);
+    // Don't open main dialog yet - wait for user decision
+  }, [address, userAddress, campaign.__raw.contractInfo.index, savedLearnerData]);
+
+  // Handle user's decision to continue with saved progress
+  const handleContinueWithSavedProgress = useCallback(() => {
+    if(!pendingSavedProgress) return;
+    
+    const saved = pendingSavedProgress;
     
     // Restore the saved progress
     if(saved.topic) {
@@ -182,7 +230,20 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     }
     
     setHasUnsavedData(true);
-  }, [address, userAddress, campaign.__raw.contractInfo.index, savedLearnerData]);
+    setPendingSavedProgress(null);
+    setShowSavedProgressDialog(false);
+    setIsDialogOpen(true); // Open main dialog after restoring progress
+  }, [pendingSavedProgress]);
+
+  // Handle user's decision to discard saved progress
+  const handleDiscardSavedProgress = useCallback(() => {
+    if(!address || !userAddress || !pendingSavedProgress) return;
+    
+    clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+    setPendingSavedProgress(null);
+    setShowSavedProgressDialog(false);
+    setIsDialogOpen(true); // Open main dialog after discarding
+  }, [address, userAddress, pendingSavedProgress, campaign.__raw.contractInfo.index]);
 
   // Auto-save progress when quiz results are calculated
   // saveProgress already checks if data is on blockchain before saving
@@ -194,13 +255,30 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   // Handle dialog close with confirmation if there's unsaved data
   const handleDialogClose = useCallback((open: boolean) => {
-    if(!open && hasUnsavedData && currentStep === 'results') {
-      setShowConfirmationDialog(true);
-      setPendingClose(true);
-    } else if(!open) {
-      onClose();
+    setIsDialogOpen(open);
+    if(!open) {
+      // Save progress before closing if we're on results page and transaction hasn't succeeded
+      if(currentStep === 'results' && performance && selectedTopic && article && !transactionSucceeded) {
+        saveProgress();
+        if(hasUnsavedData) {
+          setShowConfirmationDialog(true);
+          setPendingClose(true);
+          return;
+        }
+      }
+      
+      // If no unsaved data or transaction succeeded, close normally
+      if(!hasUnsavedData || transactionSucceeded) {
+        onClose();
+      } else {
+        setShowConfirmationDialog(true);
+        setPendingClose(true);
+      }
+    } else {
+      // Dialog is being opened
+      setPendingClose(false);
     }
-  }, [hasUnsavedData, currentStep, onClose]);
+  }, [hasUnsavedData, currentStep, onClose, performance, selectedTopic, article, transactionSucceeded, saveProgress]);
 
   // Handle save and close
   const handleSaveAndClose = useCallback(() => {
@@ -446,6 +524,9 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     console.log('Proof of assimilation stored:', txHash);
     setShowTransactionModal(false);
     
+    // Mark transaction as succeeded to prevent future saves
+    setTransactionSucceeded(true);
+    
     // Clear saved progress from localStorage since it's now on blockchain
     // This should only happen on successful transaction completion
     if(address && userAddress) {
@@ -474,9 +555,22 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     }, 500);
   }, [address, userAddress, campaign, onClose]);
 
-  const handleTransactionError = (error: Error) => {
+  const handleTransactionError = useCallback((error: Error) => {
     console.error('Failed to store proof:', error);
-  };
+    
+    // Transaction failed, so save progress locally to prevent data loss
+    // This ensures user can retry later without losing their progress
+    if(address && userAddress && currentStep === 'results' && performance && selectedTopic && article) {
+      console.log('Transaction failed, saving progress locally for retry...');
+      saveProgress();
+      
+      // Show confirmation that progress was saved
+      setHasUnsavedData(true);
+    }
+    
+    // Don't close the modal on error, let user retry
+    setShowTransactionModal(false);
+  }, [address, userAddress, currentStep, performance, selectedTopic, article, saveProgress]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -500,19 +594,23 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
   return (
     <>
-      <Dialog open={!pendingClose} onOpenChange={handleDialogClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-surface">
+      <Dialog open={isDialogOpen && !pendingClose} onOpenChange={handleDialogClose}>
+        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%] mx-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <Brain className="w-6 h-6 text-primary-500" />
-              Learna Tutor - {normalizeString(campaign.name as Hex)}
+            <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-gray-900 dark:text-white">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500 flex-shrink-0" />
+                <span className="text-base sm:text-lg font-semibold break-words min-w-0">
+                  Learna Tutor - {normalizeString(campaign.name as Hex)}
+                </span>
+              </div>
             </DialogTitle>
-            <DialogDescription className="text-gray-600 dark:text-gray-300">
+            <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               Learn with our intelligent AI-powered tutor and prove your knowledge of a subject
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
             {/* Step 1: Topic Selection */}
             {currentStep === 'topics' && (
               <TopicSelection 
@@ -542,6 +640,31 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
             )}
 
             {/* Step 3: Quiz */}
+            {currentStep === 'quiz' && isGenerating && quizzes.length === 0 && (
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                    Knowledge Test
+                  </h3>
+                </div>
+                <Card className="border-neutral-200 dark:border-neutral-800">
+                  <CardContent className="p-6 sm:p-8 md:p-12">
+                    <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4">
+                      <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 animate-spin text-primary-500" />
+                      <div className="text-center space-y-1.5 sm:space-y-2">
+                        <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
+                          Generating Quiz Questions
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                          Our AI tutor is preparing your knowledge test...
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
             {currentStep === 'quiz' && quizzes.length > 0 && (
               <Quiz 
                 calculateResults={calculateResults}
@@ -589,7 +712,16 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
         onDiscard={handleDiscard}
       />
 
-      {hasUnsavedData && performance && quizScore > 0 && (
+      <SavedProgressDialog
+        isOpen={showSavedProgressDialog}
+        onContinue={handleContinueWithSavedProgress}
+        onDiscard={handleDiscardSavedProgress}
+        quizScore={pendingSavedProgress?.quizScore || 0}
+        performanceValue={pendingSavedProgress?.performance?.value || 0}
+        savedAt={pendingSavedProgress?.savedAt || Date.now()}
+      />
+
+      {hasUnsavedData && performance && quizScore > 0 && !transactionSucceeded && (
         <UnsavedProgressIndicator
           campaignName={normalizeString(campaign.name as Hex)}
           quizScore={quizScore}
@@ -601,8 +733,14 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
             setHasUnsavedData(false);
           }}
           onClick={() => {
+            // Reopen the dialog by setting pendingClose to false and ensuring dialog is open
             setPendingClose(false);
             setShowConfirmationDialog(false);
+            setIsDialogOpen(true);
+            // Ensure we're on the results page when reopening
+            if(currentStep !== 'results') {
+              setCurrentStep('results');
+            }
           }}
         />
       )}
