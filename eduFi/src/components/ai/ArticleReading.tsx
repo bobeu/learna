@@ -41,10 +41,10 @@ function ArticleReading(props : ArticleReadingProps) {
 
             {isArticleReady && (
                 <Card className="border-neutral-200 dark:border-neutral-800">
-                    <CardContent className="p-6">
-                        <div className="prose max-w-none text-gray-900 dark:text-white">
-                            <h1 className="text-2xl font-bold mb-4">{articleTitle}</h1>
-                            <div className="whitespace-pre-wrap leading-relaxed">
+                    <CardContent className="p-4 sm:p-6 overflow-x-hidden">
+                        <div className="prose max-w-none text-gray-900 dark:text-white break-words overflow-x-hidden">
+                            <h1 className="text-xl sm:text-2xl font-bold mb-4 break-words">{articleTitle}</h1>
+                            <div className="whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">
                                 {articleContent}
                             </div>
                         </div>

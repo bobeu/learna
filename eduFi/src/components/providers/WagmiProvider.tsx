@@ -15,6 +15,50 @@ const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API
 
 if (!projectId) throw new Error('Project ID is undefined');
 
+// Create QueryClient instance outside component to prevent recreation and disconnections
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false, // Prevent refetch on window focus
+      refetchOnReconnect: true,
+      retry: 1, // Reduce retry attempts
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
+// Create config outside component to prevent recreation
+const config = getDefaultConfig({
+  appName: 'Learna',
+  projectId,
+  appIcon: 'https://learna.vercel.app/logo.png',
+  appDescription: APP_DESCRIPTION,
+  appUrl: APP_URL,
+  chains: [celoSepolia, celo],
+  ssr: true, // Enable SSR for better stability
+  multiInjectedProviderDiscovery: true,
+  pollingInterval: 30_000, // Increase from 10s to 30s to reduce frequency
+  syncConnectedChain: true,
+  transports: {
+    [celoSepolia.id]: http(alchemy_celosepolia_api),
+    [celo.id]: http(alchemy_celo_api),
+  },
+});
+
+// Create theme outside component to prevent recreation
+const theme = lightTheme({
+  ...lightTheme.accentColors.purple,
+  accentColorForeground: '#0f1113',
+  borderRadius: 'large',
+  fontStack: 'system',
+  overlayBlur: 'small',
+  accentColor: '#fff'
+});
+
 // Custom hook for Coinbase Wallet detection and auto-connection
 function useCoinbaseWalletAutoConnect() {
   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
@@ -24,6 +68,7 @@ function useCoinbaseWalletAutoConnect() {
   useEffect(() => {
     // Check if we're running in Coinbase Wallet
     const checkCoinbaseWallet = () => {
+      if (typeof window === 'undefined') return;
       const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
         window.ethereum?.isCoinbaseWalletExtension ||
         window.ethereum?.isCoinbaseWalletBrowser;
@@ -40,8 +85,14 @@ function useCoinbaseWalletAutoConnect() {
 
   useEffect(() => {
     // Auto-connect if in Coinbase Wallet and not already connected
-    if (isCoinbaseWallet && !isConnected) {
-      connect({ connector: connectors[1] }); // Coinbase Wallet connector
+    if (isCoinbaseWallet && !isConnected && connectors.length > 1) {
+      // Only auto-connect if explicitly in Coinbase Wallet browser
+      const coinbaseConnector = connectors.find(c => 
+        c.name.toLowerCase().includes('coinbase')
+      );
+      if (coinbaseConnector) {
+        connect({ connector: coinbaseConnector });
+      }
     }
   }, [isCoinbaseWallet, isConnected, connect, connectors]);
 
@@ -55,39 +106,9 @@ function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) 
 }
 
 export default function Provider({ children }: { children: React.ReactNode }) {
-  // Load the default config from RainbowKit
-  const config = getDefaultConfig({
-    appName: 'Learna',
-    projectId,
-    appIcon: 'https://learna.vercel.app/logo.png',
-    appDescription: APP_DESCRIPTION,
-    appUrl: APP_URL,
-    chains: [celoSepolia, celo],
-    // ssr: true,
-    // multiInjectedProviderDiscovery: true,
-    pollingInterval: 10_000,
-    syncConnectedChain: true,
-    transports: {
-      [celoSepolia.id]: http(alchemy_celosepolia_api),
-      [celo.id]: http(alchemy_celo_api),
-    },
-  });
-
-  // Light theme configuration for RainbowKit wallet set up
-  const theme = lightTheme(
-    {
-      ...lightTheme.accentColors.purple,
-      accentColorForeground: '#0f1113',
-      borderRadius: 'large',
-      fontStack: 'system',
-      overlayBlur: 'small',
-      accentColor: '#fff'
-    }
-  );
-  
   return (
-    <WagmiProvider config={config as unknown as any} >
-      <QueryClientProvider client={new QueryClient()}>
+    <WagmiProvider config={config as unknown as any}>
+      <QueryClientProvider client={queryClient}>
         <RainbowKitProvider 
           coolMode={true}
           modalSize="compact" 

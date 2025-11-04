@@ -180,30 +180,30 @@ export default function TransactionModal({
                   status === "failed" ? "border-red-500 bg-red-50 dark:bg-red-900/20" :
                   "border-gray-200 dark:border-gray-700"
                 }`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         {getStatusIcon(status)}
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white truncate">
                             {step.title}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">
                             {step.description}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
                         {getStatusBadge(status)}
                         {txHashes[step.id] && (
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => window.open(`https://explorer.celo.org/tx/${txHashes[step.id]}`, '_blank')}
-                            className="gap-1"
+                            className="gap-1 text-xs sm:text-sm"
                           >
                             <ExternalLink className="w-3 h-3" />
-                            View
+                            <span className="hidden sm:inline">View</span>
                           </Button>
                         )}
                       </div>

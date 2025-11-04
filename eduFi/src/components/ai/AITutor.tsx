@@ -144,7 +144,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
       if(!savedLearnerData || !isProgressAlreadySaved(progress, savedLearnerData)) {
         saveUnsavedProgress(userAddress, progress);
         setHasUnsavedData(true);
-        console.log('Progress saved locally');
+        // console.log('Progress saved locally');
       } else {
         console.log('Progress already saved on blockchain, skipping local save');
       }
@@ -169,7 +169,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     
     // Check if saved progress is older than 7 days
     if(isProgressOlderThanDays(saved, 7)) {
-      console.log('Saved progress is older than 7 days, auto-deleting...');
+      // console.log('Saved progress is older than 7 days, auto-deleting...');
       clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
       setIsDialogOpen(true); // Open dialog normally after cleanup
       return;
@@ -177,7 +177,7 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
     
     // Check if saved progress is already on blockchain
     if(savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
-      console.log('Saved progress already exists on blockchain, removing local copy...');
+      // console.log('Saved progress already exists on blockchain, removing local copy...');
       clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
       setTransactionSucceeded(true); // Mark as succeeded since it's on blockchain
       setIsDialogOpen(true); // Open dialog normally
@@ -595,18 +595,22 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
   return (
     <>
       <Dialog open={isDialogOpen && !pendingClose} onOpenChange={handleDialogClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-surface">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%] mx-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <Brain className="w-6 h-6 text-primary-500" />
-              Learna Tutor - {normalizeString(campaign.name as Hex)}
+            <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-gray-900 dark:text-white">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500 flex-shrink-0" />
+                <span className="text-base sm:text-lg font-semibold break-words min-w-0">
+                  Learna Tutor - {normalizeString(campaign.name as Hex)}
+                </span>
+              </div>
             </DialogTitle>
-            <DialogDescription className="text-gray-600 dark:text-gray-300">
+            <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               Learn with our intelligent AI-powered tutor and prove your knowledge of a subject
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
             {/* Step 1: Topic Selection */}
             {currentStep === 'topics' && (
               <TopicSelection 
@@ -637,21 +641,21 @@ export default function AITutor({ campaign, onClose }: AITutorProps) {
 
             {/* Step 3: Quiz */}
             {currentStep === 'quiz' && isGenerating && quizzes.length === 0 && (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                     Knowledge Test
                   </h3>
                 </div>
                 <Card className="border-neutral-200 dark:border-neutral-800">
-                  <CardContent className="p-12">
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                      <Loader2 className="w-12 h-12 animate-spin text-primary-500" />
-                      <div className="text-center space-y-2">
-                        <p className="text-lg font-medium text-gray-900 dark:text-white">
+                  <CardContent className="p-6 sm:p-8 md:p-12">
+                    <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4">
+                      <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 animate-spin text-primary-500" />
+                      <div className="text-center space-y-1.5 sm:space-y-2">
+                        <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
                           Generating Quiz Questions
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                           Our AI tutor is preparing your knowledge test...
                         </p>
                       </div>

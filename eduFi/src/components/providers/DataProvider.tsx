@@ -112,8 +112,9 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         allowFailure: true,
         query: {
             enabled: !!isConnected,
-            refetchOnReconnect: 'always', 
-            refetchInterval: 5000,
+            refetchOnReconnect: true, 
+            refetchInterval: 30000, // Increased from 5s to 30s to reduce frequency and prevent disconnections
+            staleTime: 15000, // Add stale time to prevent unnecessary refetches
         }
     });
 
@@ -172,9 +173,10 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         contracts: campaignDataTrxns,
         allowFailure: true,
         query: {
-            enabled: !!isConnected,
-            refetchOnReconnect: 'always', 
-            refetchInterval: 5000,
+            enabled: !!isConnected && campaignDataTrxns.length > 0,
+            refetchOnReconnect: true, 
+            refetchInterval: 30000, // Increased from 5s to 30s to reduce frequency and prevent disconnections
+            staleTime: 15000, // Add stale time to prevent unnecessary refetches
         }
     });
     

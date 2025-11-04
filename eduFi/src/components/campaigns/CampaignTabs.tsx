@@ -13,26 +13,26 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
     const pastCampaigns = campaigns.filter((c: { status: string; }) => c.status === 'completed');
 
     return(
-        <section className={`${compact ? 'py-8' : 'py-20'} px-4 sm:px-6 lg:px-8 dark:font-mono ${className}`}>
+        <section className={`${compact ? 'py-6 sm:py-8' : 'py-12 sm:py-16 md:py-20'} px-4 sm:px-6 lg:px-8 dark:font-mono ${className}`}>
             <div className="max-w-7xl mx-auto">
             {showHeader && (
-                <div className="text-center mb-12">
-                    <h2 className={`text-4xl font-bold mb-4 text-black opacity-80 dark:text-white`}>Learning Campaigns</h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-300">
+                <div className="text-center mb-6 sm:mb-8 md:mb-12 px-2">
+                    <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 text-black opacity-80 dark:text-white`}>Learning Campaigns</h2>
+                    <p className="text-sm sm:text-base md:text-xl text-gray-600 dark:text-gray-300">
                     Choose from our curated selection of learning campaigns
                     </p>
                 </div>
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className={`grid w-full grid-cols-3 mb-8`}>
-                <TabsTrigger value="current">Current</TabsTrigger>
-                <TabsTrigger value="featured">Featured</TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsList className={`grid w-full grid-cols-3 mb-4 sm:mb-6 md:mb-8 h-auto`}>
+                <TabsTrigger value="current" className="text-xs sm:text-sm px-2 sm:px-3">Current</TabsTrigger>
+                <TabsTrigger value="featured" className="text-xs sm:text-sm px-2 sm:px-3">Featured</TabsTrigger>
+                <TabsTrigger value="past" className="text-xs sm:text-sm px-2 sm:px-3">Past</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="current" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <TabsContent value="current" className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {isLoading ? (
                     Array.from({ length: 6 }).map((_, i) => (
                         <Card key={i} className="w-full">
@@ -58,8 +58,8 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                 </div>
                 </TabsContent>
 
-                    <TabsContent value="featured" className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <TabsContent value="featured" className="space-y-4 sm:space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {featuredCampaigns.map((campaign) => (
                             <CampaignSliderCard
                                 key={campaign.id}
@@ -70,8 +70,8 @@ export default function CampaignTabs({campaigns, isLoading, handleJoinCampaign, 
                             ))}
                         </div>
                     </TabsContent>
-                    <TabsContent value="past" className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <TabsContent value="past" className="space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {
                             pastCampaigns.map((campaign) => (
                                 <CampaignSliderCard

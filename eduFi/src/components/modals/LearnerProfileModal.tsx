@@ -188,81 +188,79 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Learner Header */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-base sm:text-xl font-bold flex-shrink-0">
                   {learner.id.slice(2, 4).toUpperCase()}
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold truncate">
                     {learner.id.slice(0, 6)}...{learner.id.slice(-4)}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500 break-all">
                     Learner ID: {learner.id}
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-sm">
-                      {learnerStats.totalScore} pts
-                    </Badge>
-                    <Badge className="text-sm">
-                      {learnerStats.avgRating.toFixed(1)}/5
-                    </Badge>
-                  </div>
+                <div className="flex items-center gap-2 self-start sm:self-auto sm:flex-col sm:items-end">
+                  <Badge variant="secondary" className="text-xs sm:text-sm">
+                    {learnerStats.totalScore} pts
+                  </Badge>
+                  <Badge className="text-xs sm:text-sm">
+                    {learnerStats.avgRating.toFixed(1)}/5
+                  </Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{learnerStats.totalScore}</p>
-                    <p className="text-xs text-gray-500">Total Score</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-2xl font-bold truncate">{learnerStats.totalScore}</p>
+                    <p className="text-xs text-gray-500 truncate">Total Score</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{learnerStats.verifiedProofs}</p>
-                    <p className="text-xs text-gray-500">Verified Proofs</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-2xl font-bold truncate">{learnerStats.verifiedProofs}</p>
+                    <p className="text-xs text-gray-500 truncate">Verified Proofs</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{learnerStats.totalProofs}</p>
-                    <p className="text-xs text-gray-500">Total Proofs</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Target className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-2xl font-bold truncate">{learnerStats.totalProofs}</p>
+                    <p className="text-xs text-gray-500 truncate">Total Proofs</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <p className="text-2xl font-bold">{learnerStats.totalRatings}</p>
-                    <p className="text-xs text-gray-500">Ratings</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Star className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-2xl font-bold truncate">{learnerStats.totalRatings}</p>
+                    <p className="text-xs text-gray-500 truncate">Ratings</p>
                   </div>
                 </div>
               </CardContent>
@@ -271,11 +269,11 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
 
           {/* Performance Metrics */}
           <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Performance Metrics</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <h4 className="font-semibold text-sm text-gray-700 mb-2">Verification Rate</h4>
                   <div className="flex items-center gap-2">

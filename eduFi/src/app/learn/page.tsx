@@ -159,22 +159,22 @@ export default function LearnPage(){
                     </Card>
 
                     <Card className="lg:col-span-2 border-neutral-200 dark:border-neutral-800 dark:bg-surface">
-                        <CardContent className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                <div className="md:col-span-3">
-                                    <Label htmlFor="search">Search</Label>
+                        <CardContent className="p-4 sm:p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+                                <div className="sm:col-span-2 md:col-span-3">
+                                    <Label htmlFor="search" className="text-xs sm:text-sm">Search</Label>
                                     <div className="relative">
-                                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
-                                        <Input id="search" placeholder="Search by name or funded amount" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                        <Search className="w-3 h-3 sm:w-4 sm:h-4 absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                                        <Input id="search" placeholder="Search by name or funded amount" className="pl-7 sm:pl-9 text-xs sm:text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
                                     </div>
                                 </div>
                                 <div>
-                                    <Label htmlFor="startDate">Start date</Label>
-                                    <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                    <Label htmlFor="startDate" className="text-xs sm:text-sm">Start date</Label>
+                                    <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="text-xs sm:text-sm" />
                                 </div>
                                 <div>
-                                    <Label htmlFor="endDate">End date</Label>
-                                    <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                    <Label htmlFor="endDate" className="text-xs sm:text-sm">End date</Label>
+                                    <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="text-xs sm:text-sm" />
                                 </div>
                             </div>
                         </CardContent>
@@ -195,13 +195,11 @@ export default function LearnPage(){
 
 function StatItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }){
     return (
-        <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary-200 text-black flex items-center justify-center">
-                {icon}
-            </div>
-            <div>
-                <div className="text-xs text-neutral-500">{label}</div>
-                <div className="text-base font-semibold">{value}</div>
+        <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center gap-2 sm:gap-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary-200 text-black flex items-center justify-center flex-shrink-0">{icon}</div>
+            <div className="min-w-0 flex-1">
+                <div className="text-xs text-neutral-500 truncate">{label}</div>
+                <div className="text-sm sm:text-base font-semibold truncate">{value}</div>
             </div>
         </div>
     );
