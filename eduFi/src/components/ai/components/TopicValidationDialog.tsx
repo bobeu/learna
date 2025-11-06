@@ -71,7 +71,7 @@ export default function TopicValidationDialog({
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
               <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-200">
-                Please choose a topic that's more aligned with the campaign to ensure you get the best learning experience.
+                {"Please choose a topic that's more aligned with the campaign to ensure you get the best learning experience."}
               </p>
             </div>
           )}

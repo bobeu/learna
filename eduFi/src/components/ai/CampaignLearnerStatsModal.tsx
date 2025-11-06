@@ -16,7 +16,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { BarChart3, BookOpenCheck, Trophy, Target, TrendingUp, Clock } from 'lucide-react';
+import { BarChart3, BookOpenCheck, Trophy, Target, TrendingUp } from 'lucide-react';
 import { CampaignStateProps } from '../../../types';
 import { toBN, calculateStreak, formatAddr } from '@/components/utilities';
 import { useAccount } from 'wagmi';

@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { aiService } from '../../../services/aiService';
 
@@ -55,7 +56,7 @@ If the topic is not relevant, set isValid to false and politely explain why, sug
     const isRelevant = normalizedTopic.includes(normalizedCampaign) || 
                       normalizedCampaign.includes(normalizedTopic) ||
                       normalizedDesc.includes(normalizedTopic) ||
-                      normalizedTopic.split(' ').some(word => normalizedDesc.includes(word));
+                      normalizedTopic.split(' ').some((word: string) => normalizedDesc.includes(word));
     
     return NextResponse.json({
       isValid: isRelevant,

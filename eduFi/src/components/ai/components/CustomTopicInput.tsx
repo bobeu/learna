@@ -40,7 +40,7 @@ export default function CustomTopicInput({
       >
         <div className="text-center sm:text-left">
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Don't see a topic you like? Enter your own!
+            Don&apos;t see a topic you like? Enter your own!
           </p>
           <Button
             type="button"
@@ -67,7 +67,7 @@ export default function CustomTopicInput({
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <Label htmlFor="custom-topic" className="text-sm font-medium text-gray-900 dark:text-white">
-            Enter a topic you'd like to learn
+            Enter a topic you&apos;d like to learn
           </Label>
           <Input
             id="custom-topic"

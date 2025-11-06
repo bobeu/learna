@@ -10,7 +10,7 @@ function ArticleReading(props : ArticleReadingProps) {
         setCurrentStep, 
         selectedTopicTitle, 
         articleContent,
-        articleTitle,
+        // articleTitle,
         readingTime, 
         isGenerating, 
         isArticleReady

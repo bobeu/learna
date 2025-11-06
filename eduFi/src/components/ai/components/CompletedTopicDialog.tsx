@@ -42,7 +42,7 @@ export default function CompletedTopicDialog({
             <span className="text-base sm:text-lg">Topic Already Completed</span>
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-            You've already completed a learning path for this campaign
+            {"You've already completed a learning path for this campaign"}
           </DialogDescription>
         </DialogHeader>
 
@@ -67,7 +67,7 @@ export default function CompletedTopicDialog({
 
           <div className="space-y-2">
             <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-              Would you like to:
+              {'Would you like to:'}
             </p>
             <ul className="space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <li className="flex items-start gap-2">

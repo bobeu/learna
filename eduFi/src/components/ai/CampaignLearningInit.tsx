@@ -22,7 +22,6 @@ import { generateTopicsWithGreeting } from './services/topicGenerationService';
 import { validateCustomTopic } from './services/topicValidationService';
 import { 
   isTopicCompleted, 
-  saveCompletedTopic,
   type CompletedTopic 
 } from './services/topicStorageService';
 import { useTopicState } from './hooks/useTopicState';
@@ -44,13 +43,11 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
   const { address } = useAccount();
   const userAddress = formatAddr(address);
   const campaignId = campaign.__raw?.contractInfo?.index?.toString() || campaign.id.toString();
-  const campaignAddress = campaign.__raw?.contractInfo?.address || '';
   
   // Topic state management (in memory)
   const {
     topics,
     selectedTopic,
-    customTopic,
     greeting,
     campaignInfo,
     setTopics,
