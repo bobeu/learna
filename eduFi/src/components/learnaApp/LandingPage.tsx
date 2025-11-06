@@ -1,7 +1,7 @@
 "use client";
 /*eslint-disable */
 import React, { useState, useEffect, useMemo } from 'react';
-import ImprovedAITutor from '../ai/AITutor';
+import CampaignLearningInit from '../ai/CampaignLearningInit';
 import Features from './Features';
 import Hero from './Hero';
 import CampaignTabs from '../campaigns/CampaignTabs';
@@ -82,9 +82,9 @@ export default function LandingPage() {
         />
         <Features />
 
-        {/* AI Tutor Modal */}
+        {/* Campaign Learning Init Modal */}
         {selectedCampaign && (
-          <ImprovedAITutor
+          <CampaignLearningInit
             campaign={selectedCampaign}
             onClose={() => setSelectedCampaign(null)}
           />

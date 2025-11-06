@@ -19,10 +19,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Fallback models for text generation (used if env model fails)
-const TEXT_GENERATION_FALLBACKS = ['gemini-2.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+const TEXT_GENERATION_FALLBACKS = [
+  process.env.TEXT_GENERATION_MODEL,
+  process.env.ARTICLE_GENERATION_MODEL_FIRST_TRY,
+  'gemini-2.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro'
+].filter((model): model is string => !!model); // Filter out undefined/null values
 
 // Fallback models for image generation
-const IMAGE_GENERATION_FALLBACKS = ['gemini-2.5-flash-image'];
+const IMAGE_GENERATION_FALLBACKS = [
+  process.env.IMAGE_GENERATION_MODEL,
+  'gemini-2.5-flash-image'
+].filter((model): model is string => !!model);
 
 type TextTaskType = 'topics' | 'article' | 'quizzes' | 'rating';
 
@@ -46,82 +55,839 @@ class AIService {
   }
 
   /**
-   * Generate text content with model fallback
+   * Create a timeout promise that rejects after specified milliseconds
+   */
+  private createTimeoutPromise(ms: number): Promise<never> {
+    return new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`Request timeout after ${ms}ms`)), ms);
+    });
+  }
+
+  /**
+   * Generate text content with model fallback, timeout, and retry logic
    * Uses NEXT_PUBLIC_TEXT_GENERATION_MODEL or falls back to default models
    */
-  private async generateTextWithFallback(
+  async generateTextWithFallback(
     taskType: TextTaskType,
-    prompt: string
+    prompt: string,
+    timeoutMs: number = taskType === 'article' ? 60000 : 30000 // 60s for articles, 30s for others
   ): Promise<{ response: any; text: string }> {
-    if (!this.genAI) {
+    if(!this.genAI) {
       throw new Error('Gemini API key not configured');
     }
 
     // Get the text generation model from environment variable
-    const envTextModel = process.env.NEXT_PUBLIC_TEXT_GENERATION_MODEL;
+    const envTextModel = process.env.TEXT_GENERATION_MODEL;
     
-    // Build list of models to try: env model first, then fallbacks
+    // Build list of models to try: env model first, then fallbacks (excluding the env model if it's in fallbacks)
     const modelsToTry = envTextModel 
-      ? [envTextModel, ...TEXT_GENERATION_FALLBACKS.filter(m => m !== envTextModel)]
+      ? [envTextModel, ...TEXT_GENERATION_FALLBACKS.filter(m => m && m !== envTextModel)]
       : TEXT_GENERATION_FALLBACKS;
+    
+    // Ensure we have at least one model to try
+    if(modelsToTry.length === 0) {
+      throw new Error('No models available for text generation');
+    }
 
     let lastError: any = null;
+    const maxRetries = 2;
 
     for (const modelName of modelsToTry) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const model = this.genAI.getGenerativeModel({ 
+            model: modelName,
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              // maxOutputTokens: taskType === 'article' ? 2048 : 1024, // Reduce tokens for topics
+            }
+          });
+
+          // Add timeout wrapper with proper promise handling
+          const generatePromise = model.generateContent(prompt).then(result => result.response);
+          const timeoutPromise = this.createTimeoutPromise(timeoutMs);
+          
+          const response = await Promise.race([generatePromise, timeoutPromise]);
         const text = response.text();
+          
         return { response, text };
       } catch (error: any) {
         lastError = error;
-        console.warn(`Failed to use model ${modelName} for ${taskType}, trying next...`);
-        
-        // If it's a 404 (model not found), continue to next model
-        if (error?.message?.includes('404') || error?.message?.includes('not found')) {
-          continue;
+          
+          // Check for specific error types
+          const errorMessage = error?.message || String(error) || '';
+          const errorString = errorMessage.toLowerCase();
+          const isNetworkError = errorString.includes('fetch failed') || 
+                                errorString.includes('network') ||
+                                errorString.includes('timeout') ||
+                                errorString.includes('econnreset') ||
+                                errorString.includes('enotfound') ||
+                                errorString.includes('econnrefused') ||
+                                error?.name === 'TypeError' && errorMessage.includes('fetch');
+          const isModelNotFound = errorString.includes('404') || 
+                                 errorString.includes('not found') ||
+                                 errorString.includes('model not found');
+          const isRateLimit = errorString.includes('429') || 
+                            errorString.includes('rate limit') ||
+                            errorString.includes('quota');
+          
+          // If model not found, skip to next model
+          if(isModelNotFound) {
+            console.warn(`Model ${modelName} not found, trying next...`);
+            break; // Break inner loop, continue to next model
+          }
+          
+          // If rate limited, wait and retry
+          if(isRateLimit && attempt < maxRetries) {
+            const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff
+            console.warn(`Rate limited on ${modelName}, retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue; // Retry same model
+          }
+          
+          // If network error and not last attempt, retry
+          if(isNetworkError && attempt < maxRetries) {
+            const waitTime = Math.pow(2, attempt) * 1000;
+            console.warn(`Network error on ${modelName}, retrying in ${waitTime}ms...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            continue; // Retry same model
+          }
+          
+          // If last attempt for this model, log and try next model
+          if(attempt === maxRetries) {
+            console.warn(`Failed to use model ${modelName} for ${taskType} after ${maxRetries + 1} attempts, trying next...`);
+            break; // Break inner loop, continue to next model
+          }
         }
-        
-        // For other errors, still try next model but log the error
-        continue;
       }
     }
 
-    // If all models fail, throw the last error
-    throw lastError || new Error(`All text generation model attempts failed for ${taskType}`);
+    // If all models fail, provide a helpful error message
+    const errorMessage = lastError?.message || 'Unknown error';
+    throw new Error(`Failed to generate ${taskType} after trying all models. Last error: ${errorMessage}`);
+  }
+
+  /**
+   * Clean and repair JSON string
+   */
+  private cleanJsonString(jsonStr: string): string {
+    if(!jsonStr || typeof jsonStr !== 'string') return '';
+    
+    // Remove markdown code block markers if still present
+    jsonStr = jsonStr.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/g, '');
+    
+    // Remove trailing commas before closing brackets/braces (multiple passes for nested structures)
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1'); // Second pass for nested
+    
+    // Remove comments (single line and multi-line)
+    jsonStr = jsonStr.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    // Remove any trailing commas in arrays/objects (final pass)
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+    
+    // Remove any leading/trailing whitespace and newlines
+    return jsonStr.trim();
+  }
+
+  /**
+   * Extract JSON from markdown code blocks with improved regex
+   * Handles cases where JSON content itself contains code blocks
+   */
+  private extractFromMarkdown(text: string): string | null {
+    // Strategy: Find ```json or ```, then extract JSON using brace counting
+    // This avoids issues with nested ``` in JSON content
+    
+    // Find the start of ```json or ```
+    const jsonBlockMatch = text.match(/```json/i);
+    const genericBlockMatch = text.match(/```(?!json)/i);
+    
+    let blockStart = -1;
+    let contentStartOffset = 3; // Default for ```
+    
+    if(jsonBlockMatch && jsonBlockMatch.index !== undefined) {
+      blockStart = jsonBlockMatch.index;
+      contentStartOffset = 8; // ```json is 8 chars
+    } else if(genericBlockMatch && genericBlockMatch.index !== undefined) {
+      blockStart = genericBlockMatch.index;
+      contentStartOffset = 3; // ``` is 3 chars
+    }
+    
+    if(blockStart !== -1) {
+      // Find where the actual JSON content starts (after ```json or ``` and optional newline)
+      let contentStart = blockStart + contentStartOffset;
+      // Skip whitespace and newlines
+      while(contentStart < text.length && /\s/.test(text[contentStart])) {
+        contentStart++;
+      }
+      
+      // Now extract the JSON object/array using brace counting
+      // This properly handles nested code blocks in JSON strings
+      const contentFromStart = text.substring(contentStart);
+      const jsonStart = contentFromStart.indexOf('{');
+      const arrayStart = contentFromStart.indexOf('[');
+      
+      if(jsonStart !== -1 && (arrayStart === -1 || jsonStart < arrayStart)) {
+        // Extract JSON object
+        const jsonExtract = this.extractJsonObject(contentFromStart.substring(jsonStart));
+        if(jsonExtract) {
+          return jsonExtract;
+        }
+      } else if(arrayStart !== -1) {
+        // Extract JSON array
+        const jsonExtract = this.extractJsonArray(contentFromStart.substring(arrayStart));
+        if(jsonExtract) {
+          return jsonExtract;
+        }
+      }
+    }
+    
+    // Fallback: Try regex patterns (works if no nested ``` in JSON)
+    const patterns = [
+      /```json\s*\n?([\s\S]*?)\n?\s*```/i,
+      /```\s*\n?([\s\S]*?)\n?\s*```/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if(match && match[1]) {
+        let content = match[1].trim();
+        
+        // Verify it looks like JSON
+        if(content.startsWith('{') || content.startsWith('[')) {
+          // Use the existing extractJsonObject/extractJsonArray methods which properly handle strings
+          if(content.startsWith('{')) {
+            const jsonExtract = this.extractJsonObject(content);
+            if(jsonExtract) {
+              return jsonExtract;
+            }
+          } else if(content.startsWith('[')) {
+            const jsonExtract = this.extractJsonArray(content);
+            if(jsonExtract) {
+              return jsonExtract;
+            }
+          }
+          
+          // Fallback: return the content as-is if extraction fails
+          // (the parseJsonFromText will try to repair it)
+          return content;
+        }
+      }
+    }
+    
+    // Last resort: Find JSON directly in text (no code blocks)
+    const jsonStart = text.indexOf('{');
+    if(jsonStart !== -1) {
+      const jsonExtract = this.extractJsonObject(text.substring(jsonStart));
+      if(jsonExtract) {
+        return jsonExtract;
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Extract JSON object by counting braces (handles nested objects)
+   * Also handles incomplete JSON by finding the last valid position
+   */
+  private extractJsonObject(text: string): string | null {
+    const startIndex = text.indexOf('{');
+    if(startIndex === -1) return null;
+
+    let braceCount = 0;
+    let inString = false;
+    let escapeNext = false;
+    let lastValidEnd = -1;
+
+    for (let i = startIndex; i < text.length; i++) {
+      const char = text[i];
+
+      if(escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if(char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if(char === '"' && !escapeNext) {
+        inString = !inString;
+        continue;
+      }
+
+      if(!inString) {
+        if(char === '{') braceCount++;
+        if(char === '}') {
+          braceCount--;
+          if(braceCount === 0) {
+            return text.substring(startIndex, i + 1);
+          }
+          // Track the last closing brace we've seen
+          if(braceCount === 1) {
+            lastValidEnd = i;
+          }
+        }
+      }
+    }
+
+    // If we didn't find a complete object but found a partial one, try to extract it
+    if(braceCount > 0 && lastValidEnd > startIndex) {
+      // Try to close the object by finding where we can safely cut
+      let extracted = text.substring(startIndex, lastValidEnd + 1);
+      // Try to repair by adding closing braces
+      const missingBraces = braceCount;
+      extracted += '}'.repeat(missingBraces);
+      return extracted;
+    }
+
+    // Last resort: if we have an opening brace but incomplete JSON, try to extract and repair
+    if(braceCount > 0) {
+      let extracted = text.substring(startIndex);
+      
+      // If we're in the middle of a string, find where it started and close it
+      if(inString) {
+        // Find the last complete property before the incomplete string
+        // Look for pattern: "key": "value",
+        const lastCompleteProperty = extracted.lastIndexOf('",');
+        if(lastCompleteProperty > 0) {
+          // Cut at the end of the last complete property
+          extracted = extracted.substring(0, lastCompleteProperty + 2);
+        } else {
+          // If no complete property found, find the last key-value separator
+          const lastColon = extracted.lastIndexOf(':');
+          if(lastColon > 0) {
+            // Find the key before this colon
+            const beforeColon = extracted.substring(0, lastColon);
+            const keyStart = beforeColon.lastIndexOf('"');
+            if(keyStart > 0) {
+              // Remove the incomplete property entirely
+              const keyEnd = beforeColon.indexOf('"', keyStart + 1);
+              if(keyEnd > keyStart) {
+                // Keep everything up to the key, then close
+                extracted = extracted.substring(0, keyStart - 1); // Remove the comma before the key
+                // Remove trailing comma if present
+                if(extracted.endsWith(',')) {
+                  extracted = extracted.slice(0, -1);
+                }
+              }
+            }
+          }
+        }
+      } else {
+        // Not in a string, find the last complete property
+        const lastComma = extracted.lastIndexOf(',');
+        if(lastComma > 0) {
+          // Check if there's a complete property after the last comma
+          const afterComma = extracted.substring(lastComma + 1).trim();
+          // If it doesn't look like a complete key-value pair, remove it
+          if(!afterComma.match(/^"[^"]+"\s*:\s*"[^"]*",?\s*$/)) {
+            extracted = extracted.substring(0, lastComma);
+          }
+        }
+      }
+      
+      // Remove trailing whitespace and commas
+      extracted = extracted.trim();
+      if(extracted.endsWith(',')) {
+        extracted = extracted.slice(0, -1);
+      }
+      
+      // Close any open strings
+      const quoteCount = (extracted.match(/"/g) || []).length;
+      if(quoteCount % 2 !== 0) {
+        extracted += '"';
+      }
+      
+      // Add closing braces
+      extracted += '}'.repeat(braceCount);
+      return extracted;
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract JSON array by counting brackets
+   */
+  private extractJsonArray(text: string): string | null {
+    const startIndex = text.indexOf('[');
+    if(startIndex === -1) return null;
+
+    let bracketCount = 0;
+    let inString = false;
+    let escapeNext = false;
+
+    for (let i = startIndex; i < text.length; i++) {
+      const char = text[i];
+
+      if(escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if(char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if(char === '"' && !escapeNext) {
+        inString = !inString;
+        continue;
+      }
+
+      if(!inString) {
+        if(char === '[') bracketCount++;
+        if(char === ']') {
+          bracketCount--;
+          if(bracketCount === 0) {
+            return text.substring(startIndex, i + 1);
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Extract code examples from markdown content
+   * Returns an array of code blocks with their language and content
+   * 
+   * Handles various code block formats:
+   * - ```language\ncode\n```
+   * - ```language code```
+   * - ```\ncode\n``` (no language)
+   * - ```code``` (no language, no newline)
+   */
+  extractCodeExamples(markdownContent: string): Array<{
+    language: string;
+    code: string;
+    index: number;
+  }> {
+    if(!markdownContent || typeof markdownContent !== 'string') {
+      return [];
+    }
+
+    const codeExamples: Array<{
+      language: string;
+      code: string;
+      index: number;
+    }> = [];
+
+    // Pattern to match code blocks with improved handling:
+    // - Optional language identifier (word characters, hyphens, dots)
+    // - Optional whitespace/newline after language
+    // - Code content (non-greedy to match until closing ```)
+    // - Handles both ```language\ncode``` and ```language code``` formats
+    const codeBlockPattern = /```(\w[\w.-]*)?\s*\n?([\s\S]*?)```/g;
+    let match;
+    let index = 0;
+
+    while ((match = codeBlockPattern.exec(markdownContent)) !== null) {
+      const language = match[1]?.trim() || 'text';
+      let code = match[2] || '';
+      
+      // Clean up code: remove leading/trailing whitespace but preserve internal formatting
+      code = code.trim();
+      
+      if(code) {
+        codeExamples.push({
+          language: language.toLowerCase(), // Normalize language to lowercase
+          code,
+          index: index++
+        });
+      }
+    }
+
+    return codeExamples;
+  }
+
+  /**
+   * Extract and validate code examples from article content
+   * Returns structured code examples with metadata
+   */
+  extractAndValidateCodeExamples(articleContent: string): {
+    codeExamples: Array<{
+      language: string;
+      code: string;
+      index: number;
+      lineCount: number;
+    }>;
+    hasCodeExamples: boolean;
+    languages: string[];
+  } {
+    const codeExamples = this.extractCodeExamples(articleContent);
+    
+    const validatedExamples = codeExamples.map(example => ({
+      ...example,
+      lineCount: example.code.split('\n').length
+    }));
+
+    const languages = [...new Set(validatedExamples.map(ex => ex.language))];
+
+    return {
+      codeExamples: validatedExamples,
+      hasCodeExamples: validatedExamples.length > 0,
+      languages
+    };
+  }
+
+  /**
+   * Repair incomplete JSON by removing incomplete array items
+   * Specifically handles cases where the last item in an array is incomplete
+   */
+  private repairIncompleteArrayItems(jsonStr: string): string {
+    // Simple approach: find arrays with incomplete last items
+    // Look for pattern: "topics": [ ... incomplete content
+    const topicsArrayMatch = jsonStr.match(/"topics"\s*:\s*\[([\s\S]*?)(?:\]|$)/);
+    
+    if(topicsArrayMatch) {
+      const arrayContent = topicsArrayMatch[1];
+      // Find the last complete object in the array (ending with })
+      const lastCompleteObject = arrayContent.lastIndexOf('}');
+      
+      if(lastCompleteObject > 0) {
+        // Check if there's incomplete content after the last complete object
+        const afterLastObject = arrayContent.substring(lastCompleteObject + 1).trim();
+        
+        // If there's content that doesn't look like just whitespace and closing bracket
+        if(afterLastObject && !afterLastObject.match(/^\s*\]?\s*$/)) {
+          // Find the position of the array start
+          const arrayStartPos = topicsArrayMatch.index! + topicsArrayMatch[0].indexOf('[');
+          
+          // Reconstruct: everything before array, array content up to last complete object, close array and object
+          const beforeArray = jsonStr.substring(0, arrayStartPos + 1);
+          const completeArrayContent = arrayContent.substring(0, lastCompleteObject + 1).trim();
+          // Remove trailing comma if present
+          const cleanContent = completeArrayContent.endsWith(',') 
+            ? completeArrayContent.slice(0, -1).trim() 
+            : completeArrayContent;
+          
+          // Close the array and the root object
+          return beforeArray + cleanContent + '\n  ]\n}';
+        }
+      }
+    }
+    
+    // Fallback: try to find any incomplete array and repair it
+    // Find arrays that don't have a closing bracket
+    let bracketCount = 0;
+    let inString = false;
+    let escapeNext = false;
+    let arrayStart = -1;
+    let lastCompleteObjectPos = -1;
+    
+    for (let i = 0; i < jsonStr.length; i++) {
+      const char = jsonStr[i];
+      
+      if(escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+      
+      if(char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+      
+      if(char === '"' && !escapeNext) {
+        inString = !inString;
+        continue;
+      }
+      
+      if(!inString) {
+        if(char === '[') {
+          if(bracketCount === 0) {
+            arrayStart = i;
+            lastCompleteObjectPos = -1;
+          }
+          bracketCount++;
+        } else if(char === ']') {
+          bracketCount--;
+          if(bracketCount === 0) {
+            arrayStart = -1;
+            lastCompleteObjectPos = -1;
+          }
+        } else if(char === '}') {
+          // Track the last complete object we've seen
+          if(bracketCount > 0) {
+            lastCompleteObjectPos = i;
+          }
+        }
+      }
+    }
+    
+    // If we have an incomplete array
+    if(bracketCount > 0 && arrayStart !== -1 && lastCompleteObjectPos > arrayStart) {
+      // Cut after the last complete object, skipping whitespace and comma
+      let cutPoint = lastCompleteObjectPos + 1;
+      while (cutPoint < jsonStr.length && 
+             /[\s,]/.test(jsonStr[cutPoint])) {
+        cutPoint++;
+      }
+      
+      const beforeArray = jsonStr.substring(0, arrayStart + 1);
+      const arrayContent = jsonStr.substring(arrayStart + 1, cutPoint).trim();
+      const cleanContent = arrayContent.endsWith(',') 
+        ? arrayContent.slice(0, -1).trim() 
+        : arrayContent;
+      
+      // Close array and root object
+      return beforeArray + cleanContent + ']\n}';
+    }
+    
+    return jsonStr;
   }
 
   /**
    * Parse JSON from AI response text
    * Handles various formats including markdown code blocks
+   * Includes robust error handling and JSON repair
    */
-  private parseJsonFromText(text: string, expectedType: 'array' | 'object'): any {
-    // First try to find JSON directly
-    let jsonMatch = expectedType === 'array' 
-      ? text.match(/\[[\s\S]*\]/)
-      : text.match(/\{[\s\S]*\}/);
-    
-    if (!jsonMatch) {
-      // Try to find JSON in markdown code blocks
-      jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/);
-      if (jsonMatch) {
+  parseJsonFromText(text: string, expectedType: 'array' | 'object'): any {
+    if(!text || typeof text !== 'string') {
+      return null;
+    }
+
+    // Strategy 1: Extract from markdown code blocks (most common case)
+    const markdownExtract = this.extractFromMarkdown(text);
+    if(markdownExtract) {
+      try {
+        const cleaned = this.cleanJsonString(markdownExtract);
+        return JSON.parse(cleaned);
+      } catch (error) {
+        // Try repair - first try removing incomplete array items
         try {
-          return JSON.parse(jsonMatch[1]);
-        } catch (e) {
-          // Try the whole match if first attempt fails
-          jsonMatch = [jsonMatch[1]];
+          let repaired = this.repairIncompleteArrayItems(markdownExtract);
+          repaired = this.cleanJsonString(repaired);
+          return JSON.parse(repaired);
+        } catch (repairError1) {
+          // Try simpler repair
+          try {
+            let repaired = this.cleanJsonString(markdownExtract);
+            const lastBrace = repaired.lastIndexOf(expectedType === 'array' ? ']' : '}');
+            if(lastBrace > 0) {
+              repaired = repaired.substring(0, lastBrace + 1);
+              return JSON.parse(repaired);
+            }
+          } catch (repairError2) {
+            // Continue to next strategy
+          }
         }
       }
     }
 
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (parseError) {
-        console.warn('Failed to parse JSON from response:', parseError);
-        return null;
+    // Strategy 2: Extract JSON object/array directly using brace/bracket counting
+    if(expectedType === 'array') {
+      const arrayExtract = this.extractJsonArray(text);
+      if(arrayExtract) {
+        try {
+          const cleaned = this.cleanJsonString(arrayExtract);
+          return JSON.parse(cleaned);
+        } catch (error) {
+          // Try repair - remove incomplete array items
+          try {
+            let repaired = this.repairIncompleteArrayItems(arrayExtract);
+            repaired = this.cleanJsonString(repaired);
+            return JSON.parse(repaired);
+          } catch (repairError1) {
+            // Try simpler repair
+            try {
+              const cleaned = this.cleanJsonString(arrayExtract);
+              const lastBracket = cleaned.lastIndexOf(']');
+              if(lastBracket > 0) {
+                return JSON.parse(cleaned.substring(0, lastBracket + 1));
+              }
+            } catch (repairError2) {
+              // Continue
+            }
+          }
+        }
       }
+    } else {
+      const objectExtract = this.extractJsonObject(text);
+      if(objectExtract) {
+        try {
+          const cleaned = this.cleanJsonString(objectExtract);
+          return JSON.parse(cleaned);
+        } catch (error) {
+          // Try repair - first try removing incomplete array items
+          try {
+            let repaired = this.repairIncompleteArrayItems(objectExtract);
+            repaired = this.cleanJsonString(repaired);
+            return JSON.parse(repaired);
+          } catch (repairError1) {
+            // Try simpler repair
+            try {
+              const cleaned = this.cleanJsonString(objectExtract);
+              const lastBrace = cleaned.lastIndexOf('}');
+              if(lastBrace > 0) {
+                return JSON.parse(cleaned.substring(0, lastBrace + 1));
+              }
+            } catch (repairError2) {
+              // Continue
+            }
+          }
+        }
+      }
+    }
+
+    // Strategy 3: Find JSON after common prefixes
+    const prefixMatch = text.match(/(?:json|JSON|response|result)[\s:]*([\[\{][\s\S]*[\]\}])/i);
+    if(prefixMatch && prefixMatch[1]) {
+      try {
+        const cleaned = this.cleanJsonString(prefixMatch[1]);
+        return JSON.parse(cleaned);
+      } catch (error) {
+        // Try repair
+        try {
+          let repaired = this.cleanJsonString(prefixMatch[1]);
+          const lastBrace = repaired.lastIndexOf(expectedType === 'array' ? ']' : '}');
+          if(lastBrace > 0) {
+            repaired = repaired.substring(0, lastBrace + 1);
+            return JSON.parse(repaired);
+          }
+        } catch (repairError) {
+          // Continue
+        }
+      }
+    }
+
+    // Last resort: aggressive extraction - remove all markdown and extract JSON
+    try {
+      // Remove all markdown code block markers
+      let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      
+      // Find the JSON structure
+      const jsonStart = cleaned.indexOf(expectedType === 'array' ? '[' : '{');
+      
+      if(jsonStart !== -1) {
+        // Try to find complete JSON first
+        const jsonEnd = cleaned.lastIndexOf(expectedType === 'array' ? ']' : '}');
+        
+        if(jsonEnd !== -1 && jsonEnd > jsonStart) {
+          cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+          cleaned = this.cleanJsonString(cleaned);
+          try {
+            return JSON.parse(cleaned);
+          } catch (parseError) {
+            // If parsing fails, try to repair incomplete JSON
+            // First try removing incomplete array items
+            try {
+              let repaired = this.repairIncompleteArrayItems(cleaned);
+              repaired = this.cleanJsonString(repaired);
+              return JSON.parse(repaired);
+            } catch (repairError1) {
+              // Continue with other repair strategies
+            }
+            
+            if(expectedType === 'object') {
+              // Count braces to see if we need to close them
+              const openBraces = (cleaned.match(/\{/g) || []).length;
+              const closeBraces = (cleaned.match(/\}/g) || []).length;
+              const missingBraces = openBraces - closeBraces;
+              
+              if(missingBraces > 0) {
+                // Try to find a safe place to cut and close
+                let repaired = cleaned;
+                // Remove any trailing incomplete property
+                const lastComma = repaired.lastIndexOf(',');
+                if(lastComma > 0) {
+                  // Check if there's a complete property after the last comma
+                  const afterComma = repaired.substring(lastComma + 1).trim();
+                  // If it doesn't look like a complete key-value pair, remove it
+                  if(!afterComma.includes(':') || afterComma.split(':').length < 2) {
+                    repaired = repaired.substring(0, lastComma);
+                  }
+                }
+                // Close any open strings
+                const openQuotes = (repaired.match(/"/g) || []).length;
+                if(openQuotes % 2 !== 0) {
+                  // Find the last unclosed quote and close it
+                  let quoteCount = 0;
+                  for (let i = repaired.length - 1; i >= 0; i--) {
+                    if(repaired[i] === '"' && (i === 0 || repaired[i - 1] !== '\\')) {
+                      quoteCount++;
+                      if(quoteCount === 1) {
+                        // This is the last quote, check if it's closed
+                        const afterQuote = repaired.substring(i + 1);
+                        if(!afterQuote.includes('"')) {
+                          repaired += '"';
+                        }
+                        break;
+                      }
+                    }
+                  }
+                }
+                // Add missing closing braces
+                repaired += '}'.repeat(missingBraces);
+                repaired = this.cleanJsonString(repaired);
+                try {
+                  return JSON.parse(repaired);
+                } catch (repairError) {
+                  // If repair still fails, return null
+                }
+              }
+            }
+          }
+        } else {
+          // No closing brace found - JSON is incomplete
+          // Try to extract what we have and repair it using extractJsonObject
+          if(expectedType === 'object') {
+            const objectExtract = this.extractJsonObject(cleaned);
+            if(objectExtract) {
+              try {
+                const cleanedExtract = this.cleanJsonString(objectExtract);
+                return JSON.parse(cleanedExtract);
+              } catch (repairError) {
+                // Try one more repair pass
+                try {
+                  // Count braces and close them
+                  const openBraces = (objectExtract.match(/\{/g) || []).length;
+                  const closeBraces = (objectExtract.match(/\}/g) || []).length;
+                  const missingBraces = openBraces - closeBraces;
+                  
+                  if(missingBraces > 0) {
+                    // Find the last complete property
+                    const lastCompleteProp = objectExtract.lastIndexOf('",');
+                    let repaired = lastCompleteProp > 0 
+                      ? objectExtract.substring(0, lastCompleteProp + 2)
+                      : objectExtract;
+                    
+                    // Remove trailing comma
+                    repaired = repaired.trim();
+                    if(repaired.endsWith(',')) {
+                      repaired = repaired.slice(0, -1);
+                    }
+                    
+                    // Close open strings
+                    const quoteCount = (repaired.match(/"/g) || []).length;
+                    if(quoteCount % 2 !== 0) {
+                      repaired += '"';
+                    }
+                    
+                    // Add closing braces
+                    repaired += '}'.repeat(missingBraces);
+                    repaired = this.cleanJsonString(repaired);
+                    return JSON.parse(repaired);
+                  }
+                } catch (finalError) {
+                  // If all repairs fail, return null
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (finalError) {
+      console.warn('Failed to parse JSON from response after all strategies');
+      console.warn('Response preview (first 500 chars):', text.substring(0, 500));
+      console.warn('Error:', finalError);
+      return null;
     }
 
     return null;
@@ -134,28 +900,34 @@ class AIService {
     difficulty: 'easy' | 'medium' | 'hard';
   }>> {
     try {
-      if (!this.genAI) {
+      if(!this.genAI) {
         // Fallback to mock data
         return this.getMockTopics(campaignName);
       }
 
-      const prompt = `Generate 3 educational topics for a learning campaign about "${campaignName}". 
-      Campaign description: "${campaignDescription}"
-      
-      Return a JSON array with objects containing:
-      - id: unique identifier
-      - title: topic title
-      - description: brief description
-      - difficulty: "easy", "medium", or "hard"
-      
-      Focus on practical, hands-on learning topics that would be valuable for developers and learners.`;
+      // Optimized prompt for faster response
+      const prompt = `Generate 5+ educational topics for "${campaignName}".
+
+Description: ${campaignDescription || 'Learning campaign'}
+
+IMPORTANT - Response Format:
+You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+Return the JSON array directly in this exact format:
+
+[{"id":"topic-1","title":"Topic Title","description":"Brief description","difficulty":"easy"},{"id":"topic-2","title":"Topic Title","description":"Brief description","difficulty":"medium"},...]
+
+Requirements:
+- Minimum 5 topics
+- Vary difficulty (easy, medium, hard)
+- Practical, hands-on focus
+- Return ONLY the raw JSON array, nothing else.`;
 
       // Generate content with automatic model fallback
       const { text } = await this.generateTextWithFallback('topics', prompt);
       
       // Parse JSON from response
       const parsed = this.parseJsonFromText(text, 'array');
-      if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      if(parsed && Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
       
@@ -165,51 +937,92 @@ class AIService {
     } catch (error: any) {
       console.error('Error generating topics:', error);
       // If it's a model error, log it specifically
-      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+      if(error?.message?.includes('404') || error?.message?.includes('not found')) {
         console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
       }
       return this.getMockTopics(campaignName);
     }
   }
 
-  async generateArticle(topic: string, campaignName: string, maxWords: number = 500): Promise<{
+  async generateArticle(topic: string, campaignName: string, maxWords: number = 5000): Promise<{
     title: string;
     content: string;
     wordCount: number;
     readingTime: number;
+    codeExamples?: Array<{
+      language: string;
+      code: string;
+      index: number;
+      lineCount: number;
+    }>;
+    hasCodeExamples?: boolean;
+    codeLanguages?: string[];
   }> {
     try {
-      if (!this.genAI) {
+      if(!this.genAI) {
+        console.warn('No AI model found, using mock article');
         return this.getMockArticle(topic, maxWords);
       }
 
-      const prompt = `Write a comprehensive educational article about "${topic}" for the "${campaignName}" learning campaign.
-      
-      Requirements:
-      - Write exactly ${maxWords} words
-      - Use clear, engaging language
-      - Include practical examples and code snippets where relevant
-      - Structure with proper headings (##, ###)
-      - Focus on hands-on learning and real-world applications
-      - Make it suitable for developers and technical learners
-      
-      Format the response as JSON with:
-      - title: article title
-      - content: full article content in markdown
-      - wordCount: actual word count
-      - readingTime: estimated reading time in minutes`;
+      // Optimized prompt for faster response - shorter and more direct
+      // Includes specific instructions for code examples and strict JSON format
+      const prompt = `Write a ${maxWords}-word article about "${topic}" for "${campaignName}".
+
+Requirements:
+- ${maxWords} maximum words. It could be greater if it contains coding examples or other content.
+- Clear language
+- Include practical code examples with proper syntax highlighting
+- Use markdown code blocks with language tags (e.g., \`\`\`solidity, \`\`\`javascript, \`\`\`typescript, \`\`\`python)
+- Code examples should be complete, runnable, and well-commented
+- Include at least 2-3 code examples if the topic involves programming
+- Markdown headings for structure
+
+IMPORTANT - Response Format:
+You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+Return the JSON object directly in this exact format:
+
+{"title":"Article Title Here","content":"Full markdown content with code examples","wordCount":${maxWords},"readingTime":${Math.ceil(maxWords / 200)}}
+
+The "content" field should contain the full article in markdown format, including any code examples with proper markdown code blocks.
+Do NOT include \`\`\`json or any markdown code block markers around the response itself.
+Return ONLY the raw JSON object, nothing else.`;
 
       // Generate content with automatic model fallback
       const { text } = await this.generateTextWithFallback('article', prompt);
       
       // Parse JSON from response
-      const parsed = this.parseJsonFromText(text, 'object');
-      if (parsed && typeof parsed === 'object') {
+      // First, try direct JSON parsing (AI should return raw JSON per instructions)
+      let parsed: any = null;
+      let cleanedText = text.trim();
+      
+      // Try direct JSON parse first (most common case if AI follows instructions)
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch (directParseError) {
+        // If direct parse fails, try extraction methods
+        // Remove any leading text before the JSON (like "text" prefix)
+        const textPrefixMatch = cleanedText.match(/^\w+\s+```/);
+        if(textPrefixMatch) {
+          cleanedText = cleanedText.substring(textPrefixMatch[0].indexOf('```'));
+        }
+        
+        // Try parsing with extraction methods
+        parsed = this.parseJsonFromText(cleanedText, 'object');
+      }
+      if(parsed && typeof parsed === 'object') {
+        const content = parsed.content || text;
+        
+        // Extract code examples from the content
+        const codeExamplesData = this.extractAndValidateCodeExamples(content);
+        
         return {
           title: parsed.title || topic,
-          content: parsed.content || text,
+          content: content,
           wordCount: parsed.wordCount || maxWords,
-          readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0)
+          readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0),
+          codeExamples: codeExamplesData.codeExamples,
+          hasCodeExamples: codeExamplesData.hasCodeExamples,
+          codeLanguages: codeExamplesData.languages
         };
       }
       
@@ -219,7 +1032,7 @@ class AIService {
     } catch (error: any) {
       console.error('Error generating article:', error);
       // If it's a model error, log it specifically
-      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+      if(error?.message?.includes('404') || error?.message?.includes('not found')) {
         console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
       }
       return this.getMockArticle(topic, maxWords);
@@ -234,7 +1047,7 @@ class AIService {
     explanation: string;
   }>> {
     try {
-      if (!this.genAI) {
+      if(!this.genAI) {
         return this.getMockQuizzes(articleTitle, questionCount);
       }
 
@@ -243,26 +1056,35 @@ class AIService {
       Article content:
       ${articleContent}
       
+      IMPORTANT - Response Format:
+      You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+      Return the JSON array directly in this exact format:
+      
+      [{"id":"quiz-1","question":"Question text?","options":["Option A","Option B","Option C","Option D"],"correctAnswer":0,"explanation":"Explanation text"},{"id":"quiz-2",...}]
+      
       Requirements:
       - Create questions that test understanding, not just memorization
       - Include 4 multiple choice options for each question
       - Provide clear explanations for correct answers
       - Mix difficulty levels (easy, medium, hard)
       - Focus on practical applications and key concepts
-      
-      Return JSON array with objects containing:
-      - id: unique identifier
-      - question: the question text
-      - options: array of 4 answer options
-      - correctAnswer: index of correct answer (0-3)
-      - explanation: explanation for the correct answer`;
+      - Return ONLY the raw JSON array, nothing else.`;
 
       // Generate content with automatic model fallback
       const { text } = await this.generateTextWithFallback('quizzes', prompt);
       
       // Parse JSON from response
-      const parsed = this.parseJsonFromText(text, 'array');
-      if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      // First, try direct JSON parsing (AI should return raw JSON per instructions)
+      let parsed: any = null;
+      const cleanedText = text.trim();
+      
+      try {
+        parsed = JSON.parse(cleanedText);
+      } catch (directParseError) {
+        // If direct parse fails, try extraction methods
+        parsed = this.parseJsonFromText(cleanedText, 'array');
+      }
+      if(parsed && Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
       
@@ -272,7 +1094,7 @@ class AIService {
     } catch (error: any) {
       console.error('Error generating quizzes:', error);
       // If it's a model error, log it specifically
-      if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+      if(error?.message?.includes('404') || error?.message?.includes('not found')) {
         console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
       }
       return this.getMockQuizzes(articleTitle, questionCount);
@@ -281,7 +1103,7 @@ class AIService {
 
   async generateImage(prompt: string): Promise<string> {
     try {
-      if (!this.genAI) {
+      if(!this.genAI) {
         // Return a working IPFS URI for mock images
         return `ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme-original.png`;
       }
@@ -309,10 +1131,10 @@ class AIService {
           // Gemini 2.5 Flash Image may return base64 encoded image or a URL
           const parts = response.candidates?.[0]?.content?.parts;
           
-          if (parts && parts.length > 0) {
+          if(parts && parts.length > 0) {
             // Check for inline data (base64 image)
             const inlineData = parts.find(part => part.inlineData);
-            if (inlineData?.inlineData) {
+            if(inlineData?.inlineData) {
               // Convert base64 to data URL or save to IPFS
               // For now, return the data URL format
               const mimeType = inlineData.inlineData.mimeType || 'image/png';
@@ -322,10 +1144,10 @@ class AIService {
             
             // Check for text that might contain a URL
             const text = parts.find(part => part.text);
-            if (text?.text) {
+            if(text?.text) {
               // Try to extract URL from text
               const urlMatch = text.text.match(/https?:\/\/[^\s]+|ipfs:\/\/[^\s]+/);
-              if (urlMatch) {
+              if(urlMatch) {
                 return urlMatch[0];
               }
             }
@@ -339,7 +1161,7 @@ class AIService {
           console.warn(`Failed to use model ${modelName} for image generation, trying next...`);
           
           // If it's a 404 (model not found), continue to next model
-          if (error?.message?.includes('404') || error?.message?.includes('not found')) {
+          if(error?.message?.includes('404') || error?.message?.includes('not found')) {
             continue;
           }
           
@@ -349,7 +1171,7 @@ class AIService {
       }
 
       // If all models fail, log error and return fallback
-      if (lastError) {
+      if(lastError) {
         console.error('Error generating image with all models:', lastError);
       }
       
@@ -362,7 +1184,12 @@ class AIService {
     }
   }
 
-  private getMockTopics(campaignName: string) {
+  private getMockTopics(campaignName: string): Array<{
+    id: string;
+    title: string;
+    description: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+  }> {
     return [
       {
         id: '1',
@@ -381,6 +1208,18 @@ class AIService {
         title: `${campaignName} Best Practices`,
         description: 'Industry standards and optimization techniques',
         difficulty: 'hard' as const
+      },
+      {
+        id: '4',
+        title: `${campaignName} Implementation Guide`,
+        description: 'Step-by-step guide to implementing real-world solutions',
+        difficulty: 'medium' as const
+      },
+      {
+        id: '5',
+        title: `${campaignName} Troubleshooting`,
+        description: 'Common issues and how to resolve them effectively',
+        difficulty: 'easy' as const
       }
     ];
   }
@@ -401,6 +1240,16 @@ The architecture of ${topic} is built on several key components that work togeth
 
 ### Implementation Patterns
 There are several proven patterns for implementing ${topic} solutions. Each pattern has its own strengths and use cases, making it important to choose the right approach for your specific needs.
+
+Here's a basic example:
+
+\`\`\`javascript
+// Example implementation
+function example() {
+  console.log("Hello, ${topic}!");
+  return true;
+}
+\`\`\`
 
 ## Practical Applications
 
@@ -426,11 +1275,16 @@ To begin your journey with ${topic}, start by understanding the basic concepts a
 
 Mastering ${topic} opens up numerous opportunities in the technology landscape. With dedication and practice, you can become proficient in this powerful technology and contribute to innovative solutions that shape the future of digital systems.`;
 
+    const codeExamplesData = this.extractAndValidateCodeExamples(content);
+    
     return {
       title: topic,
       content,
       wordCount: maxWords,
-      readingTime: Math.ceil(maxWords / 200)
+      readingTime: Math.ceil(maxWords / 200),
+      codeExamples: codeExamplesData.codeExamples,
+      hasCodeExamples: codeExamplesData.hasCodeExamples,
+      codeLanguages: codeExamplesData.languages
     };
   }
 

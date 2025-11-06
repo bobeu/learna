@@ -21,7 +21,7 @@ import {
 import { Learner, Performance, ProofOfIntegration } from "../../../types";
 
 interface LearnerProfileModalProps {
-  learner: Learner;
+  learner: Learner | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -157,7 +157,9 @@ function Rating({ rating, index }: RatingProps) {
 // Main Learner Profile Modal Component
 export default function LearnerProfileModal({ learner, isOpen, onClose }: LearnerProfileModalProps) {
   const learnerStats = useMemo(() => {
-    const totalScore = learner.poass.reduce((sum, poa) => sum + poa.score, 0);
+    if (!learner) return null;
+
+    const totalScore = learner.poass.reduce((sum, poa) => sum + Number(poa.score), 0);
     const verifiedPoints = learner.point.verified ? 1 : 0; // Verified proof of integrations. Points are verified when builder's score is greater than 0
     const totalProofs = learner.poass.length;
     const avgRating = learner.ratings.length > 0 
@@ -174,6 +176,10 @@ export default function LearnerProfileModal({ learner, isOpen, onClose }: Learne
       verificationRate: totalProofs > 0 ? (verifiedPoints / totalProofs) * 100 : 0
     };
   }, [learner]);
+
+  if (!learner || !learnerStats) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

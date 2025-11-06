@@ -32,9 +32,9 @@ export default function Hero({campaigns, handleJoinCampaign} : {campaigns: Campa
             </div>
             <div className="max-w-7xl mx-auto">
                 <div className="text-center">
-                    <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary-100 text-gray-900 text-xs sm:text-sm font-medium mb-4 sm:mb-8">
+                    <div className="flex items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary-100 text-gray-900 text-xs sm:text-sm font-medium mb-4 sm:mb-8 max-w-fit mx-auto w-full sm:w-auto">
                       <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                      <span className="truncate">AI-powered proof of learning and integration</span>
+                      <span className="truncate max-w-[calc(100vw-5rem)] sm:max-w-none">AI-powered proof of learning and integration</span>
                     </div>
 
                     <h1 className={`text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-4 text-gray-900 dark:text-white dark:font-mono font-black drop-shadow-lg drop-shadow-primary-500 leading-tight px-2`}>
