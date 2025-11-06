@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '../ui/button';
 import { BookOpen, Clock, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
+import MarkdownRenderer from './MarkdownRenderer';
 
 function ArticleReading(props : ArticleReadingProps) {
     const {
@@ -9,7 +10,7 @@ function ArticleReading(props : ArticleReadingProps) {
         setCurrentStep, 
         selectedTopicTitle, 
         articleContent,
-        articleTitle,
+        // articleTitle,
         readingTime, 
         isGenerating, 
         isArticleReady
@@ -42,11 +43,11 @@ function ArticleReading(props : ArticleReadingProps) {
             {isArticleReady && (
                 <Card className="border-neutral-200 dark:border-neutral-800">
                     <CardContent className="p-4 sm:p-6 overflow-x-hidden">
-                        <div className="prose max-w-none text-gray-900 dark:text-white break-words overflow-x-hidden">
-                            <h1 className="text-xl sm:text-2xl font-bold mb-4 break-words">{articleTitle}</h1>
-                            <div className="whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">
-                                {articleContent}
-                            </div>
+                        <div className="break-words overflow-x-hidden">
+                            {/* <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 break-words text-primary-500 dark:text-primary-400 border-b-2 border-primary-500/20 dark:border-primary-400/20 pb-2">
+                                {articleTitle}
+                            </h1> */}
+                            <MarkdownRenderer content={articleContent || ''} />
                         </div>
                     </CardContent>
                 </Card>
