@@ -37,15 +37,16 @@ export async function POST(request: NextRequest) {
     // Parse JSON from response
     // First, try direct JSON parsing (AI should return raw JSON per instructions)
 
-    type ParsedResponse = { 
+    type Response = { 
       id?: string; 
       question?: string; 
       options?: string[];
       correctAnswer?: number;
       explanation?: string;
-     }[];
+    };
+     type Quizzes = Response[];
     
-    let quizzes: ParsedResponse | null = null;
+    let quizzes: Quizzes | null = null;
     const cleanedText = text.trim();
     // console.log("Cleaned text: ", cleanedText);
     
