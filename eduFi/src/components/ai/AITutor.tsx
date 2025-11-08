@@ -447,6 +447,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
       });
       
       if(response.ok) {
+        console.log("response", response);
         const quizData = await response.json();
         setQuizzes(quizData);
       } else {

@@ -24,11 +24,11 @@ function ArticleReading(props : ArticleReadingProps) {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                     {selectedTopicTitle || ''}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                     {readingTime || 0} min read
                 </div>
             </div>

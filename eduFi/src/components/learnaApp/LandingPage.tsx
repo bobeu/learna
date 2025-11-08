@@ -20,8 +20,6 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignStateProps | null>(null);
   const [selectedCampaignStats, setSelectedCampaignStats] = useState<FormattedCampaignTemplate | null>(null);
-//   const autoplay = useMemo(() => Autoplay({ delay: 3500, stopOnInteraction: true }), []);
-//   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [autoplay]);
 
   const { campaignsData } = useStorage();
 
