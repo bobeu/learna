@@ -73,13 +73,16 @@ export async function POST(request: NextRequest) {
 
     // Fallback to mock if parsing fails
     console.warn('Using mock quizzes due to parsing failure');
-    return aiService.getMockQuizzes(articleTitle, questionCount);
-  } catch (error: any) {
+    const mockQuizzes = aiService.getMockQuizzes(articleTitle, questionCount);
+    return NextResponse.json(mockQuizzes);
+  } catch (error: unknown) {
     console.error('Error generating quizzes:', error);
     // If it's a model error, log it specifically
-    if(error?.message?.includes('404') || error?.message?.includes('not found')) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if(errorMessage.includes('404') || errorMessage.includes('not found')) {
       console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
     }
-    return aiService.getMockQuizzes(articleTitle, questionCount);
+    const mockQuizzes = aiService.getMockQuizzes(articleTitle, questionCount);
+    return NextResponse.json(mockQuizzes);
   }
 }

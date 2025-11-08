@@ -18,6 +18,9 @@ import TopicSelection, { GeneratedTopic } from './TopicSelection';
 import QuizProgressConfirmation from './QuizProgressConfirmation';
 import UnsavedProgressIndicator from './UnsavedProgressIndicator';
 import SavedProgressDialog from './SavedProgressDialog';
+import ContinueOrNewTopicDialog from './components/ContinueOrNewTopicDialog';
+import ContinueOrNewArticleDialog from './components/ContinueOrNewArticleDialog';
+import QuizExpiryDialog from './components/QuizExpiryDialog';
 import {
   saveUnsavedProgress,
   loadUnsavedProgress,
@@ -26,7 +29,18 @@ import {
   isProgressOlderThanDays,
   type UnsavedQuizProgress
 } from './quizProgressStorage';
-import { saveCompletedTopic } from './services/topicStorageService';
+import {
+  saveAITutorState,
+  loadAITutorState,
+  clearAITutorState,
+  saveQuizState,
+  loadQuizState,
+  clearQuizState,
+  isQuizStateExpired,
+  getQuizTimeRemaining,
+  type SavedAITutorState
+} from './services/aiTutorStorageService';
+import { saveCompletedTopic, getCampaignCompletedTopics } from './services/topicStorageService';
 import useStorage from '../hooks/useStorage';
 
 interface AITutorProps {
@@ -71,6 +85,14 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
   const [transactionSucceeded, setTransactionSucceeded] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Start closed until saved progress is checked
   const [pendingSavedProgress, setPendingSavedProgress] = useState<UnsavedQuizProgress | null>(null);
+  
+  // New dialog states for user choices
+  const [showContinueTopicDialog, setShowContinueTopicDialog] = useState(false);
+  const [showContinueArticleDialog, setShowContinueArticleDialog] = useState(false);
+  const [showQuizExpiryDialog, setShowQuizExpiryDialog] = useState(false);
+  const [savedState, setSavedState] = useState<SavedAITutorState | null>(null);
+  const [greeting, setGreeting] = useState<string | null>(null);
+  const [campaignInfo, setCampaignInfo] = useState<string | null>(null);
 
   // Get saved learner data from blockchain to filter out already saved progress
   const savedLearnerData = useMemo(() => {
@@ -101,7 +123,55 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
     return allPoass;
   }, [address, campaignsData, campaign, userAddress]);
 
-  // Save current progress to localStorage
+  // Save AITutor state to localStorage (topics, articles, etc.)
+  const saveAITutorStateToStorage = useCallback(() => {
+    if(!address || !userAddress || transactionSucceeded) return;
+    
+    const campaignId = campaign.__raw.contractInfo.index.toString();
+    const state: SavedAITutorState = {
+      campaignId,
+      campaignAddress: campaign.__raw.contractInfo.address,
+      topics: generatedTopics,
+      selectedTopic,
+      greeting,
+      campaignInfo,
+      article: article ? {
+        title: article.title,
+        content: article.content,
+        wordCount: article.wordCount,
+        readingTime: article.readingTime
+      } : null,
+      quizzes: [],
+      userAnswers: [],
+      currentQuizIndex: 0,
+      quizScore: 0,
+      startTime: 0,
+      endTime: 0,
+      currentStep,
+      savedAt: Date.now()
+    };
+    
+    saveAITutorState(userAddress, state);
+  }, [address, userAddress, campaign, generatedTopics, selectedTopic, greeting, campaignInfo, article, currentStep, transactionSucceeded]);
+
+  // Save quiz state temporarily (3 minutes)
+  const saveQuizStateToStorage = useCallback(() => {
+    if(!address || !userAddress || quizzes.length === 0) return;
+    
+    const campaignId = campaign.__raw.contractInfo.index.toString();
+    saveQuizState(
+      userAddress,
+      campaignId,
+      quizzes,
+      userAnswers,
+      currentQuizIndex,
+      quizScore,
+      startTime,
+      endTime
+    );
+  }, [address, userAddress, campaign, quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime]);
+
+  // Save current progress to localStorage (for results page)
   const saveProgress = useCallback(() => {
     if(!address || !userAddress) return;
     
@@ -153,45 +223,213 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
       }
     }
   }, [address, userAddress, currentStep, performance, selectedTopic, article, quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime, campaign, savedLearnerData, transactionSucceeded]);
+  
+  // Auto-save AITutor state when topics, article, or step changes
+  useEffect(() => {
+    if(isDialogOpen && address && userAddress && (generatedTopics.length > 0 || article || currentStep !== 'topics')) {
+      saveAITutorStateToStorage();
+    }
+  }, [generatedTopics, selectedTopic, article, currentStep, greeting, campaignInfo, isDialogOpen, address, userAddress, saveAITutorStateToStorage]);
+  
+  // Auto-save quiz state when quiz data changes
+  useEffect(() => {
+    if(isDialogOpen && address && userAddress && currentStep === 'quiz' && quizzes.length > 0) {
+      saveQuizStateToStorage();
+    }
+  }, [quizzes, userAnswers, currentQuizIndex, quizScore, startTime, endTime, currentStep, isDialogOpen, address, userAddress, saveQuizStateToStorage]);
+  
+  // Prevent ESC key from closing modal globally
+  useEffect(() => {
+    if(isDialogOpen) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if(e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }
+      };
+      
+      // Use capture phase to catch ESC before it reaches Dialog
+      document.addEventListener('keydown', handleKeyDown, { capture: true, passive: false });
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown, { capture: true });
+      };
+    }
+  }, [isDialogOpen]);
 
-  // Check for saved progress when AITutor opens and handle it appropriately
+  // Check for saved AITutor state when component mounts
   useEffect(() => {
     if(!address || !userAddress) {
-      // If no address, just open the dialog normally
       setIsDialogOpen(true);
       return;
     }
     
-    const saved = loadUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
+    const campaignId = campaign.__raw.contractInfo.index.toString();
+    const saved = loadAITutorState(userAddress, campaignId);
     
-    // If no saved progress, open dialog normally
-    if(!saved) {
-      setIsDialogOpen(true);
-      return;
+    if(saved) {
+      setSavedState(saved);
+      
+      // Check if we have saved topics
+      if(saved.topics && saved.topics.length > 0) {
+        // Check if any topics are completed (should be removed)
+        const completedTopics = getCampaignCompletedTopics(userAddress, campaignId);
+        const completedTopicIds = new Set(completedTopics.map(t => t.topicId));
+        const filteredTopics = saved.topics.filter(t => !completedTopicIds.has(t.id));
+        
+        if(filteredTopics.length > 0) {
+          // Show dialog to continue with saved topics or generate new ones
+          setShowContinueTopicDialog(true);
+          return;
+        }
+      }
+      
+      // Check if we have saved article
+      if(saved.article && saved.selectedTopic) {
+        // Show dialog to continue reading or choose different topic
+        setShowContinueArticleDialog(true);
+        return;
+      }
     }
     
-    // Check if saved progress is older than 7 days
-    if(isProgressOlderThanDays(saved, 7)) {
-      // console.log('Saved progress is older than 7 days, auto-deleting...');
-      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
-      setIsDialogOpen(true); // Open dialog normally after cleanup
+    // Check for quiz state (temporary - 3 minutes)
+    const quizState = loadQuizState(userAddress, campaignId);
+    if(quizState && !quizState.isValid) {
+      // Quiz expired
+      clearQuizState(userAddress, campaignId);
+      setShowQuizExpiryDialog(true);
       return;
+    } else if(quizState && quizState.isValid) {
+      // Quiz still valid, show expiry warning if less than 1 minute remaining
+      const timeRemaining = getQuizTimeRemaining(userAddress, campaignId);
+      if(timeRemaining > 0 && timeRemaining <= 1) {
+        setShowQuizExpiryDialog(true);
+        return;
+      }
     }
     
-    // Check if saved progress is already on blockchain
-    if(savedLearnerData && isProgressAlreadySaved(saved, savedLearnerData)) {
-      // console.log('Saved progress already exists on blockchain, removing local copy...');
-      clearUnsavedProgress(userAddress, campaign.__raw.contractInfo.index.toString());
-      setTransactionSucceeded(true); // Mark as succeeded since it's on blockchain
-      setIsDialogOpen(true); // Open dialog normally
-      return;
+    // Check for old unsaved progress (results page)
+    const oldProgress = loadUnsavedProgress(userAddress, campaignId);
+    if(oldProgress) {
+      if(isProgressOlderThanDays(oldProgress, 7)) {
+        clearUnsavedProgress(userAddress, campaignId);
+      } else if(savedLearnerData && isProgressAlreadySaved(oldProgress, savedLearnerData)) {
+        clearUnsavedProgress(userAddress, campaignId);
+        setTransactionSucceeded(true);
+      } else {
+        setPendingSavedProgress(oldProgress);
+        setShowSavedProgressDialog(true);
+        return;
+      }
     }
     
-    // If we have valid saved progress, show dialog asking user what to do
-    setPendingSavedProgress(saved);
-    setShowSavedProgressDialog(true);
-    // Don't open main dialog yet - wait for user decision
+    // No saved state, open dialog normally
+    setIsDialogOpen(true);
   }, [address, userAddress, campaign.__raw.contractInfo.index, savedLearnerData]);
+  
+  // Handle continue with saved topics
+  const handleContinueWithSavedTopics = useCallback(() => {
+    if(!savedState) return;
+    
+    setGeneratedTopics(savedState.topics || []);
+    if(savedState.selectedTopic) {
+      setSelectedTopic(savedState.selectedTopic);
+    }
+    if(savedState.greeting) {
+      setGreeting(savedState.greeting);
+    }
+    if(savedState.campaignInfo) {
+      setCampaignInfo(savedState.campaignInfo);
+    }
+    if(savedState.currentStep) {
+      setCurrentStep(savedState.currentStep);
+    }
+    
+    setShowContinueTopicDialog(false);
+    setIsDialogOpen(true);
+  }, [savedState]);
+  
+  // Handle generate new topics
+  const handleGenerateNewTopics = useCallback(() => {
+    if(!savedState || !address || !userAddress) {
+      setShowContinueTopicDialog(false);
+      setIsDialogOpen(true);
+      return;
+    }
+    
+    // Merge new topics with saved ones (avoid duplicates)
+    const campaignId = campaign.__raw.contractInfo.index.toString();
+    const existingTopicIds = new Set((savedState.topics || []).map(t => t.id));
+    
+    // Generate new topics will be added to state, and we'll merge them
+    setShowContinueTopicDialog(false);
+    setIsDialogOpen(true);
+    // Topics will be generated by user action
+  }, [savedState, address, userAddress, campaign]);
+  
+  // Handle continue with saved article
+  const handleContinueWithSavedArticle = useCallback(() => {
+    if(!savedState || !savedState.article) return;
+    
+    setArticle(savedState.article);
+    if(savedState.selectedTopic) {
+      setSelectedTopic(savedState.selectedTopic);
+    }
+    if(savedState.currentStep) {
+      setCurrentStep(savedState.currentStep);
+    }
+    
+    setShowContinueArticleDialog(false);
+    setIsDialogOpen(true);
+  }, [savedState]);
+  
+  // Handle choose different topic
+  const handleChooseDifferentTopic = useCallback(() => {
+    if(!savedState || !address || !userAddress) {
+      setShowContinueArticleDialog(false);
+      setCurrentStep('topics');
+      setIsDialogOpen(true);
+      return;
+    }
+    
+    // Load saved topics if available
+    if(savedState.topics && savedState.topics.length > 0) {
+      setGeneratedTopics(savedState.topics);
+      if(savedState.greeting) {
+        setGreeting(savedState.greeting);
+      }
+      if(savedState.campaignInfo) {
+        setCampaignInfo(savedState.campaignInfo);
+      }
+    }
+    
+    setShowContinueArticleDialog(false);
+    setCurrentStep('topics');
+    setIsDialogOpen(true);
+  }, [savedState, address, userAddress]);
+  
+  // Handle quiz expiry dialog
+  const handleRegenerateSameTopic = useCallback(() => {
+    if(!selectedTopic || !article) return;
+    
+    clearQuizState(userAddress, campaign.__raw.contractInfo.index.toString());
+    setShowQuizExpiryDialog(false);
+    setCurrentStep('quiz');
+    setIsDialogOpen(true);
+    // Regenerate quiz will be triggered
+  }, [selectedTopic, article, userAddress, campaign]);
+  
+  const handleChooseDifferentTopicForQuiz = useCallback(() => {
+    clearQuizState(userAddress, campaign.__raw.contractInfo.index.toString());
+    setShowQuizExpiryDialog(false);
+    setCurrentStep('topics');
+    setQuizzes([]);
+    setUserAnswers([]);
+    setCurrentQuizIndex(0);
+    setQuizScore(0);
+    setIsDialogOpen(true);
+  }, [userAddress, campaign]);
 
   // Handle user's decision to continue with saved progress
   const handleContinueWithSavedProgress = useCallback(() => {
@@ -256,32 +494,50 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
     }
   }, [currentStep, performance, selectedTopic, article, saveProgress]);
 
-  // Handle dialog close with confirmation if there's unsaved data
-  const handleDialogClose = useCallback((open: boolean) => {
-    setIsDialogOpen(open);
-    if(!open) {
-      // Save progress before closing if we're on results page and transaction hasn't succeeded
-      if(currentStep === 'results' && performance && selectedTopic && article && !transactionSucceeded) {
-        saveProgress();
-        if(hasUnsavedData) {
-          setShowConfirmationDialog(true);
-          setPendingClose(true);
-          return;
-        }
+  // Handle explicit close button click (only way to close modal)
+  const handleExplicitClose = useCallback(() => {
+    // ALWAYS save current state before closing
+    if(address && userAddress) {
+      // Save AITutor state (topics, articles, etc.)
+      if(generatedTopics.length > 0 || article || currentStep !== 'topics') {
+        saveAITutorStateToStorage();
       }
       
-      // If no unsaved data or transaction succeeded, close normally
-      if(!hasUnsavedData || transactionSucceeded) {
-        onClose();
-      } else {
-        setShowConfirmationDialog(true);
-        setPendingClose(true);
+      // If on quiz step, save quiz state (temporary - 3 minutes)
+      if(currentStep === 'quiz' && quizzes.length > 0) {
+        saveQuizStateToStorage();
       }
-    } else {
-      // Dialog is being opened
-      setPendingClose(false);
+      
+      // If on results page, save progress
+      if(currentStep === 'results' && performance && selectedTopic && article && !transactionSucceeded) {
+        saveProgress();
+      }
     }
-  }, [hasUnsavedData, currentStep, onClose, performance, selectedTopic, article, transactionSucceeded, saveProgress]);
+    
+    // If on results page with unsaved data, show confirmation
+    if(currentStep === 'results' && performance && selectedTopic && article && !transactionSucceeded && hasUnsavedData) {
+      setShowConfirmationDialog(true);
+      setPendingClose(true);
+      return;
+    }
+    
+    // Close the modal
+    onClose();
+  }, [address, userAddress, hasUnsavedData, currentStep, onClose, performance, selectedTopic, article, transactionSucceeded, saveProgress, generatedTopics, saveAITutorStateToStorage, quizzes, saveQuizStateToStorage]);
+  
+  // Prevent accidental closing - only allow explicit close button
+  const handleDialogClose = useCallback((open: boolean) => {
+    // ALWAYS prevent closing on outside click or ESC - only allow explicit close button
+    if(!open) {
+      // Prevent closing - user must use explicit close button
+      // Force dialog to stay open
+      setIsDialogOpen(true);
+      return;
+    }
+    // Only allow opening, not closing
+    setIsDialogOpen(open);
+    setPendingClose(false);
+  }, []);
 
   // Handle save and close
   const handleSaveAndClose = useCallback(() => {
@@ -317,12 +573,20 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
       });
       
       if(response.ok) {
-        const topics = await response.json();
-        setGeneratedTopics(topics);
+        const newTopics = await response.json();
+        
+        // Merge with saved topics (avoid duplicates)
+        if(savedState && savedState.topics && savedState.topics.length > 0) {
+          const existingTopicIds = new Set(savedState.topics.map(t => t.id));
+          const uniqueNewTopics = newTopics.filter((t: GeneratedTopic) => !existingTopicIds.has(t.id));
+          setGeneratedTopics([...savedState.topics, ...uniqueNewTopics]);
+        } else {
+          setGeneratedTopics(newTopics);
+        }
       } else {
         console.log("response", response)
         // Fallback to mock topics
-        setGeneratedTopics([
+        const mockTopics = [
           {
             id: '1',
             title: `${campaign.name} Fundamentals`,
@@ -341,19 +605,37 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
             description: 'Industry standards and optimization techniques',
             difficulty: 'hard'
           }
-        ]);
+        ];
+        
+        // Merge with saved topics
+        if(savedState && savedState.topics && savedState.topics.length > 0) {
+          const existingTopicIds = new Set(savedState.topics.map(t => t.id));
+          const uniqueMockTopics = mockTopics.filter((t: GeneratedTopic) => !existingTopicIds.has(t.id));
+          setGeneratedTopics([...savedState.topics, ...uniqueMockTopics]);
+        } else {
+          setGeneratedTopics(mockTopics);
+        }
       }
     } catch (error) {
       console.error('Failed to generate topics:', error);
       // Use fallback topics
-      setGeneratedTopics([
+      const mockTopics = [
         {
           id: '1',
           title: `${campaign.name} Fundamentals`,
           description: 'Learn the basic concepts and principles',
           difficulty: 'easy'
         }
-      ]);
+      ];
+      
+      // Merge with saved topics
+      if(savedState && savedState.topics && savedState.topics.length > 0) {
+        const existingTopicIds = new Set(savedState.topics.map(t => t.id));
+        const uniqueMockTopics = mockTopics.filter((t: GeneratedTopic) => !existingTopicIds.has(t.id));
+        setGeneratedTopics([...savedState.topics, ...uniqueMockTopics]);
+      } else {
+        setGeneratedTopics(mockTopics);
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -433,6 +715,27 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
   // Generate quiz based on article
   const generateQuiz = async () => {
     if(!article) return;
+    
+    // Check for saved quiz state first (if within 3 minutes)
+    if(address && userAddress) {
+      const campaignId = campaign.__raw.contractInfo.index.toString();
+      const savedQuizState = loadQuizState(userAddress, campaignId);
+      
+      if(savedQuizState && savedQuizState.isValid) {
+        // Restore saved quiz state
+        setQuizzes(savedQuizState.quizzes);
+        setUserAnswers(savedQuizState.userAnswers);
+        setCurrentQuizIndex(savedQuizState.currentQuizIndex);
+        setQuizScore(savedQuizState.quizScore);
+        setStartTime(savedQuizState.startTime);
+        setEndTime(savedQuizState.endTime);
+        setCurrentStep('quiz');
+        return;
+      } else if(savedQuizState && !savedQuizState.isValid) {
+        // Quiz expired, clear it
+        clearQuizState(userAddress, campaignId);
+      }
+    }
     
     setIsGenerating(true);
     try {
@@ -582,6 +885,20 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
         difficulty: selectedTopic.difficulty,
         completedAt: Date.now(),
       });
+      
+      // Remove completed topic from saved AITutor state
+      const saved = loadAITutorState(userAddress, campaignId);
+      if(saved && saved.topics) {
+        const filteredTopics = saved.topics.filter(t => t.id !== selectedTopic.id);
+        if(filteredTopics.length !== saved.topics.length) {
+          const updatedState: SavedAITutorState = {
+            ...saved,
+            topics: filteredTopics,
+            selectedTopic: saved.selectedTopic?.id === selectedTopic.id ? null : saved.selectedTopic
+          };
+          saveAITutorState(userAddress, updatedState);
+        }
+      }
     }
     
     // Clear saved progress from localStorage since it's now on blockchain
@@ -651,8 +968,21 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
 
   return (
     <>
-      <Dialog open={isDialogOpen && !pendingClose} onOpenChange={handleDialogClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%] mx-0">
+      <Dialog open={isDialogOpen && !pendingClose} onOpenChange={handleDialogClose} modal={true}>
+        <DialogContent 
+          className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%] mx-0"
+          hideCloseButton={true}
+          onInteractOutside={(e) => {
+            // Prevent closing on outside click - CRITICAL: never allow outside click to close
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onEscapeKeyDown={(e) => {
+            // Prevent closing on ESC key - CRITICAL: never allow ESC to close
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           <DialogHeader>
             <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-gray-900 dark:text-white">
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -661,6 +991,16 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
                   Learna Tutor - {normalizeString(campaign.name as Hex)}
                 </span>
               </div>
+              <button
+                onClick={handleExplicitClose}
+                className="absolute right-2 top-2 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800 dark:data-[state=open]:text-neutral-400 p-1 z-50"
+                aria-label="Close"
+                type="button"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               Learn with our intelligent AI-powered tutor and prove your knowledge of a subject
@@ -776,6 +1116,28 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
         quizScore={pendingSavedProgress?.quizScore || 0}
         performanceValue={pendingSavedProgress?.performance?.value || 0}
         savedAt={pendingSavedProgress?.savedAt || Date.now()}
+      />
+
+      <ContinueOrNewTopicDialog
+        isOpen={showContinueTopicDialog}
+        savedTopics={savedState?.topics || []}
+        onContinue={handleContinueWithSavedTopics}
+        onNewTopics={handleGenerateNewTopics}
+      />
+
+      <ContinueOrNewArticleDialog
+        isOpen={showContinueArticleDialog}
+        articleTitle={savedState?.article?.title || ''}
+        onContinue={handleContinueWithSavedArticle}
+        onDifferentTopic={handleChooseDifferentTopic}
+      />
+
+      <QuizExpiryDialog
+        isOpen={showQuizExpiryDialog}
+        timeRemaining={address && userAddress ? getQuizTimeRemaining(userAddress, campaign.__raw.contractInfo.index.toString()) : 0}
+        isExpired={address && userAddress ? isQuizStateExpired(userAddress, campaign.__raw.contractInfo.index.toString()) : false}
+        onRegenerateSame={handleRegenerateSameTopic}
+        onDifferentTopic={handleChooseDifferentTopicForQuiz}
       />
 
       {hasUnsavedData && performance && quizScore > 0 && !transactionSucceeded && (
