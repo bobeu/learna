@@ -21,16 +21,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Fallback models for text generation (used if env model fails)
 const TEXT_GENERATION_FALLBACKS = [
   process.env.TEXT_GENERATION_MODEL,
-  process.env.ARTICLE_GENERATION_MODEL_FIRST_TRY,
-  'gemini-2.5-flash',
-  'gemini-1.5-pro',
-  'gemini-pro'
+  process.env.ARTICLE_GENERATION_MODEL_FIRST_TRY
 ].filter((model): model is string => !!model); // Filter out undefined/null values
 
 // Fallback models for image generation
 const IMAGE_GENERATION_FALLBACKS = [
-  process.env.IMAGE_GENERATION_MODEL,
-  'gemini-2.5-flash-image'
+  process.env.IMAGE_GENERATION_MODEL
 ].filter((model): model is string => !!model);
 
 type TextTaskType = 'topics' | 'article' | 'quizzes' | 'rating';
@@ -110,11 +106,12 @@ class AIService {
           const timeoutPromise = this.createTimeoutPromise(timeoutMs);
           
           const response = await Promise.race([generatePromise, timeoutPromise]);
-        const text = response.text();
+          const text = response.text();
           
-        return { response, text };
-      } catch (error: any) {
-        lastError = error;
+          return { response, text };
+        } catch (error: any) {
+          console.warn("Error: ", error);
+          lastError = error;
           
           // Check for specific error types
           const errorMessage = error?.message || String(error) || '';
@@ -911,22 +908,23 @@ class AIService {
 Description: ${campaignDescription || 'Learning campaign'}
 
 IMPORTANT - Response Format:
-You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+You MUST return ONLY valid JSON i.e {}. Do NOT wrap the result it in markdown code blocks or preprend or append any symbol such as quote, backticks, etc. Do NOT add any text or symbol before or after the outer curly braces.
 Return the JSON array directly in this exact format:
 
 [{"id":"topic-1","title":"Topic Title","description":"Brief description","difficulty":"easy"},{"id":"topic-2","title":"Topic Title","description":"Brief description","difficulty":"medium"},...]
 
 Requirements:
-- Minimum 5 topics
+- Maximum of 20 topics
 - Vary difficulty (easy, medium, hard)
 - Practical, hands-on focus
 - Return ONLY the raw JSON array, nothing else.`;
 
       // Generate content with automatic model fallback
       const { text } = await this.generateTextWithFallback('topics', prompt);
-      
+      console.log("text topic", text.substring(0, 50));
       // Parse JSON from response
       const parsed = this.parseJsonFromText(text, 'array');
+      console.log("Parsed topic", parsed);
       if(parsed && Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
@@ -944,162 +942,176 @@ Requirements:
     }
   }
 
-  async generateArticle(topic: string, campaignName: string, maxWords: number = 5000): Promise<{
-    title: string;
-    content: string;
-    wordCount: number;
-    readingTime: number;
-    codeExamples?: Array<{
-      language: string;
-      code: string;
-      index: number;
-      lineCount: number;
-    }>;
-    hasCodeExamples?: boolean;
-    codeLanguages?: string[];
-  }> {
-    try {
-      if(!this.genAI) {
-        console.warn('No AI model found, using mock article');
-        return this.getMockArticle(topic, maxWords);
-      }
+//   async generateArticle(topic: string, campaignName: string, maxWords: number = 5000): Promise<{
+//     title: string;
+//     content: string;
+//     wordCount: number;
+//     readingTime: number;
+//     codeExamples?: Array<{
+//       language: string;
+//       code: string;
+//       index: number;
+//       lineCount: number;
+//     }>;
+//     hasCodeExamples?: boolean;
+//     codeLanguages?: string[];
+//   }> {
+//     try {
+//       if(!this.genAI) {
+//         console.warn('No AI model found, using mock article');
+//         return this.getMockArticle(topic, maxWords);
+//       }
 
-      // Optimized prompt for faster response - shorter and more direct
-      // Includes specific instructions for code examples and strict JSON format
-      const prompt = `Write a ${maxWords}-word article about "${topic}" for "${campaignName}".
+//       // Optimized prompt for faster response - shorter and more direct
+//       // Includes specific instructions for code examples and strict JSON format
+//       const prompt = `Write a ${maxWords}-word article about "${topic}" for "${campaignName}".
 
-Requirements:
-- ${maxWords} maximum words. It could be greater if it contains coding examples or other content.
-- Clear language
-- Include practical code examples with proper syntax highlighting
-- Use markdown code blocks with language tags (e.g., \`\`\`solidity, \`\`\`javascript, \`\`\`typescript, \`\`\`python)
-- Code examples should be complete, runnable, and well-commented
-- Include at least 2-3 code examples if the topic involves programming
-- Markdown headings for structure
+// Requirements:
+// - ${maxWords} maximum words. It could be greater if it contains coding examples or other content.
+// - Clear language
+// - Include practical code examples with proper syntax highlighting
+// - Use markdown code blocks with language tags for code examples only (e.g., \`\`\`solidity, \`\`\`javascript, \`\`\`typescript, \`\`\`python)
+// - Code examples should be complete, runnable, and well-commented
+// - Include at least 2-3 code examples if the topic involves programming
+// - Markdown headings for structure
 
-IMPORTANT - Response Format:
-You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
-Return the JSON object directly in this exact format:
+// IMPORTANT - Response Format:
+// You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+// Return the JSON object directly in this exact format:
 
-{"title":"Article Title Here","content":"Full markdown content with code examples","wordCount":${maxWords},"readingTime":${Math.ceil(maxWords / 200)}}
+// {"title":"Article Title Here","content":"Full markdown content with code examples","wordCount":${maxWords},"readingTime":${Math.ceil(maxWords / 200)}}
 
-The "content" field should contain the full article in markdown format, including any code examples with proper markdown code blocks.
-Do NOT include \`\`\`json or any markdown code block markers around the response itself.
-Return ONLY the raw JSON object, nothing else.`;
+// The "content" field should contain the full article in markdown format, including any code examples with proper markdown code blocks.
+// Do NOT include backticks or \`\`\`json or any markdown code block markers around the response itself.
+// Return ONLY the raw JSON object starting with { and ending with }, nothing else.`;
 
-      // Generate content with automatic model fallback
-      const { text } = await this.generateTextWithFallback('article', prompt);
+//       // Generate content with automatic model fallback
+//       const { text } = await this.generateTextWithFallback('article', prompt);
+//       // console.log('text', text);
+//       // Parse JSON from response
+//       // First, try direct JSON parsing (AI should return raw JSON per instructions)
+//       let parsed: any = null;
+//       let cleanedText = text.trim();
       
-      // Parse JSON from response
-      // First, try direct JSON parsing (AI should return raw JSON per instructions)
-      let parsed: any = null;
-      let cleanedText = text.trim();
-      
-      // Try direct JSON parse first (most common case if AI follows instructions)
-      try {
-        parsed = JSON.parse(cleanedText);
-      } catch (directParseError) {
-        // If direct parse fails, try extraction methods
-        // Remove any leading text before the JSON (like "text" prefix)
-        const textPrefixMatch = cleanedText.match(/^\w+\s+```/);
-        if(textPrefixMatch) {
-          cleanedText = cleanedText.substring(textPrefixMatch[0].indexOf('```'));
-        }
+//       // Try direct JSON parse first (most common case if AI follows instructions)
+//       try {
+//         if(text.startsWith('```json')) {
+//           // cleanedText = text.substring(text.indexOf('```json') + 7);
+//           cleanedText = text.substring(text.indexOf('```json') + 7, text.lastIndexOf('```'));
+//           cleanedText = cleanedText.trim();
+//           if(cleanedText.startsWith('json')) cleanedText = cleanedText.substring(4);
+//         }
+//         if(text.endsWith('```')) {
+//           // cleanedText = text.substring(0, text.lastIndexOf('```'));
+//           cleanedText = text.substring(text.indexOf('```') + 3, text.lastIndexOf('```'));
+//         }
+//         console.log('cleanedTextttt', cleanedText);
+//         parsed = JSON.parse(cleanedText);
+//       } catch (directParseError) {
+//         // console.log('directParseError', directParseError);
+//         // If direct parse fails, try extraction methods
+//         // Remove any leading text before the JSON (like "text" prefix)
+//         const textPrefixMatch = cleanedText.match(/^\w+\s+```/);
+//         if(textPrefixMatch) {
+//           cleanedText = cleanedText.substring(textPrefixMatch[0].indexOf('```'));
+//         }
+//         // console.log('cleanedText', cleanedText);
         
-        // Try parsing with extraction methods
-        parsed = this.parseJsonFromText(cleanedText, 'object');
-      }
-      if(parsed && typeof parsed === 'object') {
-        const content = parsed.content || text;
+//         // Try parsing with extraction methods
+//         parsed = this.parseJsonFromText(cleanedText, 'object');
+//         // console.log('parsed ', parsed );
+//       }
+//       if(parsed && typeof parsed === 'object') {
+//         const content = parsed.content || text;
         
-        // Extract code examples from the content
-        const codeExamplesData = this.extractAndValidateCodeExamples(content);
+//         // Extract code examples from the content
+//         const codeExamplesData = this.extractAndValidateCodeExamples(content);
         
-        return {
-          title: parsed.title || topic,
-          content: content,
-          wordCount: parsed.wordCount || maxWords,
-          readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0),
-          codeExamples: codeExamplesData.codeExamples,
-          hasCodeExamples: codeExamplesData.hasCodeExamples,
-          codeLanguages: codeExamplesData.languages
-        };
-      }
+//         return {
+//           title: parsed.title || topic,
+//           content: content,
+//           wordCount: parsed.wordCount || maxWords,
+//           readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0),
+//           codeExamples: codeExamplesData.codeExamples,
+//           hasCodeExamples: codeExamplesData.hasCodeExamples,
+//           codeLanguages: codeExamplesData.languages
+//         };
+//       }
       
-      // Fallback to mock if parsing fails
-      console.warn('Using mock article due to parsing failure');
-      return this.getMockArticle(topic, maxWords);
-    } catch (error: any) {
-      console.error('Error generating article:', error);
-      // If it's a model error, log it specifically
-      if(error?.message?.includes('404') || error?.message?.includes('not found')) {
-        console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
-      }
-      return this.getMockArticle(topic, maxWords);
-    }
-  }
+//       // Fallback to mock if parsing fails
+//       console.warn('Using mock article due to parsing failure');
+//       return this.getMockArticle(topic, maxWords);
+//     } catch (error: any) {
+//       console.error('Error generating article:', error);
+//       // If it's a model error, log it specifically
+//       if(error?.message?.includes('404') || error?.message?.includes('not found')) {
+//         console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
+//       }
+//       return this.getMockArticle(topic, maxWords);
+//     }
+//   }
 
-  async generateQuizzes(articleContent: string, articleTitle: string, questionCount: number = 10): Promise<Array<{
-    id: string;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-    explanation: string;
-  }>> {
-    try {
-      if(!this.genAI) {
-        return this.getMockQuizzes(articleTitle, questionCount);
-      }
+  // async generateQuizzes(articleContent: string, articleTitle: string, questionCount: number = 10): Promise<Array<{
+  //   id: string;
+  //   question: string;
+  //   options: string[];
+  //   correctAnswer: number;
+  //   explanation: string;
+  // }>> {
+  //   try {
+  //     if(!this.genAI) {
+  //       return this.getMockQuizzes(articleTitle, questionCount);
+  //     }
 
-      const prompt = `Generate ${questionCount} quiz questions based on this article about "${articleTitle}":
+  //     const prompt = `Generate ${questionCount} quiz questions based on this article about "${articleTitle}":
       
-      Article content:
-      ${articleContent}
+  //     Article content:
+  //     ${articleContent}
       
-      IMPORTANT - Response Format:
-      You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
-      Return the JSON array directly in this exact format:
+  //     IMPORTANT - Response Format:
+  //     You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
+  //     Return the JSON array directly in this exact format:
       
-      [{"id":"quiz-1","question":"Question text?","options":["Option A","Option B","Option C","Option D"],"correctAnswer":0,"explanation":"Explanation text"},{"id":"quiz-2",...}]
+  //     [{"id":"quiz-1","question":"Question text?","options":["Option A","Option B","Option C","Option D"],"correctAnswer":0,"explanation":"Explanation text"},{"id":"quiz-2",...}]
       
-      Requirements:
-      - Create questions that test understanding, not just memorization
-      - Include 4 multiple choice options for each question
-      - Provide clear explanations for correct answers
-      - Mix difficulty levels (easy, medium, hard)
-      - Focus on practical applications and key concepts
-      - Return ONLY the raw JSON array, nothing else.`;
+  //     Requirements:
+  //     - Create questions that test understanding, not just memorization
+  //     - Include 4 multiple choice options for each question
+  //     - Provide clear explanations for correct answers
+  //     - Mix difficulty levels (easy, medium, hard)
+  //     - Focus on practical applications and key concepts
+  //     - Return ONLY the raw JSON array, nothing else.`;
 
-      // Generate content with automatic model fallback
-      const { text } = await this.generateTextWithFallback('quizzes', prompt);
+  //     // Generate content with automatic model fallback
+  //     const { text } = await this.generateTextWithFallback('quizzes', prompt);
       
-      // Parse JSON from response
-      // First, try direct JSON parsing (AI should return raw JSON per instructions)
-      let parsed: any = null;
-      const cleanedText = text.trim();
+  //     // Parse JSON from response
+  //     // First, try direct JSON parsing (AI should return raw JSON per instructions)
+  //     let parsed: any = null;
+  //     const cleanedText = text.trim();
       
-      try {
-        parsed = JSON.parse(cleanedText);
-      } catch (directParseError) {
-        // If direct parse fails, try extraction methods
-        parsed = this.parseJsonFromText(cleanedText, 'array');
-      }
-      if(parsed && Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
+  //     try {
+  //       parsed = JSON.parse(cleanedText);
+  //     } catch (directParseError) {
+  //       // If direct parse fails, try extraction methods
+  //       parsed = this.parseJsonFromText(cleanedText, 'array');
+  //     }
+  //     if(parsed && Array.isArray(parsed) && parsed.length > 0) {
+  //       return parsed;
+  //     }
       
-      // Fallback to mock if parsing fails
-      console.warn('Using mock quizzes due to parsing failure');
-      return this.getMockQuizzes(articleTitle, questionCount);
-    } catch (error: any) {
-      console.error('Error generating quizzes:', error);
-      // If it's a model error, log it specifically
-      if(error?.message?.includes('404') || error?.message?.includes('not found')) {
-        console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
-      }
-      return this.getMockQuizzes(articleTitle, questionCount);
-    }
-  }
+  //     // Fallback to mock if parsing fails
+  //     console.warn('Using mock quizzes due to parsing failure');
+  //     return this.getMockQuizzes(articleTitle, questionCount);
+  //   } catch (error: any) {
+  //     console.error('Error generating quizzes:', error);
+  //     // If it's a model error, log it specifically
+  //     if(error?.message?.includes('404') || error?.message?.includes('not found')) {
+  //       console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
+  //     }
+  //     return this.getMockQuizzes(articleTitle, questionCount);
+  //   }
+  // }
 
   async generateImage(prompt: string): Promise<string> {
     try {
@@ -1288,7 +1300,7 @@ Mastering ${topic} opens up numerous opportunities in the technology landscape. 
     };
   }
 
-  private getMockQuizzes(articleTitle: string, questionCount: number) {
+  getMockQuizzes(articleTitle: string, questionCount: number) {
     const mockQuizzes = [
       {
         id: '1',
