@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
       correctAnswer?: number;
       explanation?: string;
     };
-     type Quizzes = Response[];
+    type ParsedResponse = Array<Response>;
     
-    let quizzes: Quizzes | null = null;
+    let quizzes: ParsedResponse | null = null;
     const cleanedText = text.trim();
     // console.log("Cleaned text: ", cleanedText);
     
