@@ -49,7 +49,7 @@ export default function Hero({campaigns, handleJoinCampaign} : {campaigns: Campa
                     <div className="pt-2 sm:pt-4 pb-8 sm:pb-12 md:pb-20 px-2 sm:px-4 md:px-6 lg:px-8 dark:font-mono">
                         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                             <div className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-400 dark:border-neutral-800 dark:bg-surface`}>
-                                <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3`}>For Builders</h3>
+                                <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3`}>{'Builders & Learners'}</h3>
                                 <p className={`text-sm sm:text-base text-gray-700 dark:text-gray-200 mb-4 sm:mb-6`}>Follow AI-crafted learning paths on technologies like Celo, Farcaster, Next.js, Solidity, Wagmi and more. Earn crypto for proofs of learning and shipped integrations.</p>
                                 <ul className={`space-y-1.5 sm:space-y-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 mb-4 sm:mb-6`}>
                                     <li className="flex items-center gap-2"><Star className="w-4 h-4 sm:w-5 sm:h-5 text-primary-500 flex-shrink-0"/>Short, challenging lessons</li>
@@ -62,7 +62,7 @@ export default function Hero({campaigns, handleJoinCampaign} : {campaigns: Campa
                             </div>
 
                             <div className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-400 dark:border-neutral-800 dark:bg-surface`}>
-                                <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3`}>For Protocol Owners/Managers</h3>
+                                <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3`}>Protocol Owners/Managers</h3>
                                 <p className={`text-sm sm:text-base text-gray-700 dark:text-gray-200 mb-4 sm:mb-6`}>Launch funded learning campaigns to onboard developers to your SDK or protocol. Reward with up to 3 ERC20 tokens and native assets like Celo.</p>
                                 <ul className={`space-y-1.5 sm:space-y-2 text-sm sm:text-base text-gray-700 dark:text-gray-200 mb-4 sm:mb-6`}>
                                     <li className="flex items-center gap-2"><Star className="w-4 h-4 sm:w-5 sm:h-5 text-primary-500 flex-shrink-0"/>Target web2/web3 devs, designers, PMs</li>

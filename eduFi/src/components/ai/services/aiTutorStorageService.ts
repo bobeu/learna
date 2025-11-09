@@ -211,4 +211,3 @@ export function getQuizTimeRemaining(address: string, campaignId: string): numbe
   if (!quizState || !quizState.isValid) return 0;
   return Math.ceil(quizState.timeRemaining / (60 * 1000)); // Convert to minutes
 }
-

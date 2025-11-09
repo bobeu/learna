@@ -1,3 +1,4 @@
+import { GeneratedTopic } from "@/components/ai/TopicSelection";
 import { Address } from "../../types";
 
 export const RECEIVER = "0xa1f70ffA4322E3609dD905b41f17Bf3913366bC1" as Address;
@@ -16,3 +17,23 @@ export const APP_WEBHOOK_URL = process.env.NEXT_PUBLIC_NEYNAR_API_KEY && process
     : `${APP_URL}/api/webhook`;
 export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
 export const MINI_APP_METADATA = process.env.NEXT_PUBLIC_MINI_APP_METADATA;
+export const getMockTopics = (name: string) : GeneratedTopic[] => ([
+    {
+      id: '1',
+      title: `${name} Fundamentals`,
+      description: 'Learn the basic concepts and principles',
+      difficulty: 'easy'
+    },
+    {
+      id: '2',
+      title: `Advanced ${name} Concepts`,
+      description: 'Dive deeper into complex implementations',
+      difficulty: 'medium'
+    },
+    {
+      id: '3',
+      title: `${name} Best Practices`,
+      description: 'Industry standards and optimization techniques',
+      difficulty: 'hard'
+    }
+]);

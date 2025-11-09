@@ -51,7 +51,7 @@ export default function LandingPage() {
   useEffect(() => {
     setCampaigns(mappedCampaigns);
     setIsLoading(!mappedCampaigns || mappedCampaigns.length === 0);
-    // Prefetch learn route for faster nav
+    // Prefetch learn route for faster nav. Works best in production mode
     router.prefetch?.('/learn');
     router.prefetch?.('/campaigns/new');
   }, [mappedCampaigns, router]);
@@ -66,41 +66,41 @@ export default function LandingPage() {
 
   return (
     <div className={`min-h-screen overflow-auto transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white font-mono`}>
-        {/* <Navbar /> */}
-        <Hero 
-          handleJoinCampaign={handleJoinCampaign}
-          campaigns={campaigns}
-          // isLoading={isLoading}
+      {/* <Navbar /> */}
+      <Hero 
+        handleJoinCampaign={handleJoinCampaign}
+        campaigns={campaigns}
+      />
+      
+      <CampaignTabs 
+        campaigns={campaigns}
+        handleJoinCampaign={handleJoinCampaign}
+        handleViewStats={handleViewCampaignStats}
+        isLoading={isLoading}
+      />
+      <Features />
+
+      {/* Campaign Learning Init Modal */}
+      {selectedCampaign && (
+        <CampaignLearningInit
+          campaign={selectedCampaign}
+          onClose={() => setSelectedCampaign(null)}
         />
-        <CampaignTabs 
-          campaigns={campaigns}
-          handleJoinCampaign={handleJoinCampaign}
-          handleViewStats={handleViewCampaignStats}
-          isLoading={isLoading}
+      )}
+
+      {/* Campaign Stats Modal */}
+      {selectedCampaignStats && (
+        <CampaignStatsModal
+          campaign={selectedCampaignStats}
+          isOpen={!!selectedCampaignStats}
+          onClose={() => setSelectedCampaignStats(null)}
         />
-        <Features />
+      )}
 
-        {/* Campaign Learning Init Modal */}
-        {selectedCampaign && (
-          <CampaignLearningInit
-            campaign={selectedCampaign}
-            onClose={() => setSelectedCampaign(null)}
-          />
-        )}
+      <Footer />
 
-        {/* Campaign Stats Modal */}
-        {selectedCampaignStats && (
-          <CampaignStatsModal
-            campaign={selectedCampaignStats}
-            isOpen={!!selectedCampaignStats}
-            onClose={() => setSelectedCampaignStats(null)}
-          />
-        )}
-
-        <Footer />
-
-        {/* Scroll to top */}
-        <ScrollTopButton />
+      {/* Scroll to top */}
+      <ScrollTopButton />
     </div>
   );
 }

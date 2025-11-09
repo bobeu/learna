@@ -20,14 +20,14 @@ interface ContinueOrNewTopicDialogProps {
   isOpen: boolean;
   savedTopics: GeneratedTopic[];
   onContinue: () => void;
-  onNewTopics: () => void;
+  onGenerateNew: () => void;
 }
 
 export default function ContinueOrNewTopicDialog({
   isOpen,
   savedTopics,
   onContinue,
-  onNewTopics,
+  onGenerateNew,
 }: ContinueOrNewTopicDialogProps) {
   return (
     <Dialog open={isOpen}>
@@ -68,7 +68,7 @@ export default function ContinueOrNewTopicDialog({
               Continue with Saved Topics
             </Button>
             <Button
-              onClick={onNewTopics}
+              onClick={onGenerateNew}
               variant="outline"
               className="flex-1 border-neutral-300 dark:border-neutral-700"
             >
