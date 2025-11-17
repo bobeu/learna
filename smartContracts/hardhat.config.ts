@@ -133,6 +133,12 @@ const config: HardhatUserConfig = {
       11142220: `privatekey://${process.env.PRIVATE_0x84F as string}`,
       42220: `privatekey://${process.env.PRIVATE_0x84F as string}`
     },
+    engagementReward: {
+      default: 7,
+      44787: `0xb44fC3A592aDaA257AECe1Ae8956019EA53d0465`,
+      11142220: `0xb44fC3A592aDaA257AECe1Ae8956019EA53d0465`,
+      42220: '0x25db74CF4E7BA120526fd87e159CF656d94bAE43'
+    },
   },
 
   solidity: {

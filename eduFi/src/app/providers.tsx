@@ -13,15 +13,15 @@ const WagmiProvider = dynamic(
 
 export function Providers({ children } : {children: React.ReactNode}) {
   return (
-    <WagmiProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+      <WagmiProvider>
         <MiniAppProvider analyticsEnabled={true}>
           <NeynaAppContext>
             {children}
             <RouteTransitionOverlay />
           </NeynaAppContext>
         </MiniAppProvider>
-      </ThemeProvider>
-    </WagmiProvider>
+      </WagmiProvider>
+    </ThemeProvider>
   );
 }

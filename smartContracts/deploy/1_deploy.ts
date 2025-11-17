@@ -46,13 +46,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 	console.log(`Fee Manager contract deployed to: ${feeManager.address}`);
 
-	const interfacer = await deploy("Interfacer", {
-		from: deployer,
-		args: [],
-		log: true,
-	});
-	console.log(`Interfacer contract deployed to: ${interfacer.address}`);
-	
 	const identityVerifier = await deploy("IdentityVerifier", {
 		from: deployer,
 		args: [identityVerificationHub],
@@ -66,6 +59,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		log: true,
 	});
 	console.log(`ApprovalFactory deployed to: ${approvalFactory.address}`);
+
+	const interfacer = await deploy("Interfacer", {
+		from: deployer,
+		args: [approvalFactory.address],
+		log: true,
+	});
+	console.log(`Interfacer contract deployed to: ${interfacer.address}`);
 	
 	const CREATION_FEE = parseUnits('0.001',18);
 

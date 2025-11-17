@@ -4,14 +4,17 @@ pragma solidity 0.8.28;
 
 import { ICampaignTemplate, ICampaignFactory, IInterfacer } from "./interfaces/ICampaignTemplate.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
+import { IApprovalFactory } from "./ApprovalFactory.sol";
 
 contract Interfacer is IInterfacer {
     // ERRORS
     error NotCampaignOwner();
     error OnlyOwner();
+    error PointClaimed();
     error NotVerified();
+    error NoApproval();
     error OperationFailed();
-    error FactoryIsZeroAddress();
+    error ZeroAddress();
     error InvalidCampaignIndex();
 
     struct ReadData {
@@ -19,9 +22,18 @@ contract Interfacer is IInterfacer {
         address verifier;
         address owner;
     }
+
+    struct Point {
+        bool isClaimed;
+        uint64 point;
+        uint lastSyncedEpoch;
+    }
     
     // CampaignFactory
     ICampaignFactory public factory;
+
+    ///@notice Approval factory contract
+    IApprovalFactory private approvalFactory;
 
     // Verifier contract
     IVerifier private verifier;
@@ -34,14 +46,19 @@ contract Interfacer is IInterfacer {
     ///@notice Users' registered campaign
     mapping(address => mapping(address => bool)) private isRegisteredCampaign;
 
+    /// Mapping of user to points earned
+    mapping(address => Point) internal points;
+
     modifier onlyOwner {
         if(_msgSender() != owner) revert OnlyOwner();
         _;
     }
 
     // ============== CONSTRUCTOR ==============
-    constructor () {
+    constructor (IApprovalFactory _approvalFactory) {
         owner = _msgSender();
+        if(address(_approvalFactory) == address(0)) revert ZeroAddress();
+        approvalFactory = _approvalFactory;
     }
 
     function _msgSender() internal view returns(address sender) {
@@ -69,7 +86,7 @@ contract Interfacer is IInterfacer {
     }
 
     function setFactory(address _factory) public onlyOwner returns(bool) {
-        if(_factory == address(0)) revert FactoryIsZeroAddress();
+        if(_factory == address(0)) revert ZeroAddress();
         factory = ICampaignFactory(_factory);
         return true;
     }
@@ -90,6 +107,19 @@ contract Interfacer is IInterfacer {
         require(newOwner != address(0), "New owner is zero");
         owner = newOwner;
         return true;
+    }
+
+    /**@dev Set new approval contract 
+        @param newApprovalFactory : New Approval contract
+     */
+    function setApprovalFactory(address newApprovalFactory) external returns(bool) {
+        if(!approvalFactory.hasApproval(_msgSender())) revert NoApproval();
+        if(newApprovalFactory != address(approvalFactory)){
+            approvalFactory = IApprovalFactory(newApprovalFactory);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**@dev Update setting for current epoch
@@ -133,7 +163,6 @@ contract Interfacer is IInterfacer {
         if(!verifier.isVerified(sender)) revert NotVerified();
         return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, false).identifier).claimRewardForPOINT(fundIndex, epoch, sender));
     }
-
     
     /**@dev Builders submit proof on integration 
      * @param campaignIndex : Campaign index
@@ -148,22 +177,23 @@ contract Interfacer is IInterfacer {
     
     /**@dev Owner or approved account can explicitly approve proof of integration reward for learners/builders
         @param targets : Array of target addresses
-        @param points : Points earned as proof of integration
+        @param _points : Points earned as proof of integration
         @param epoch : Epoch Id
         @param campaignIndex : Campaign index
         @notice Targets array size must tally with that of points. 
      */
-    function approveIntegration(address[] memory targets, uint32[]memory points, uint epoch, uint campaignIndex) external returns(bool){
-        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).approveIntegration(targets, points, epoch));
+    function approveIntegration(address[] memory targets, uint32[] memory _points, uint epoch, uint campaignIndex) external returns(bool){
+        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).approveIntegration(targets, _points, epoch));
     }
 
     /**@dev Add funds to campaign
         @param token: Token address
         @param rwType: Reward type
         @param campaignIndex : Campaign index
+        @notice Only operator or approved account can add funds
     */
     function addFund(address token, ICampaignTemplate.RewardType rwType, uint campaignIndex) external payable returns(bool){
-        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).addFund{value: msg.value}(token, rwType));
+        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).addFund{value: msg.value}(token, _msgSender(), rwType));
     }
 
     /**@dev Set metadata
@@ -202,6 +232,38 @@ contract Interfacer is IInterfacer {
 
     function getUserCampaigns(address target) external view returns(ICampaignFactory.UserCampaign[] memory) {
         return userCampaigns[target];
+    }
+
+    /**@dev Claim points for user. 
+        @notice : Learners can only claim once per epoch, hence they are adviced to claim 
+        their points only when the epoch is completed otherwise they may lose the real points.
+     */
+    function claimPoint(uint epoch, uint campaignIndex) external returns(bool) {
+        address sender = _msgSender();
+        Point storage _p = points[sender];
+        if(_p.isClaimed) revert PointClaimed();
+        uint64 proofs = ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).getUserPoints(epoch, sender);
+        if(_p.lastSyncedEpoch == epoch) {
+            if(proofs > 0) {
+                unchecked {
+                    _p.point += proofs;
+                    _p.lastSyncedEpoch += 1;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**@dev Sync claim status for the target user.
+        @param target : Account making claim
+        @notice Only approved account can make claim
+    */
+    function syncClaim(address target) external returns(bool) {
+        if(!approvalFactory.hasApproval(_msgSender())) revert NoApproval();
+        Point storage _p = points[target];
+        if(_p.isClaimed) revert PointClaimed();
+        _p.isClaimed = true;
+        return true;
     }
 
     function registerCampaign(address _campaign) external {

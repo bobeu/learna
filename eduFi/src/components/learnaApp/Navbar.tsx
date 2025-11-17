@@ -51,7 +51,7 @@ export default function Navbar() {
 
                   if(!ready) {
                     return (
-                      <Button variant="outline" size="sm" className="p-2 text-orange-400" disabled>
+                      <Button variant="outline" size="sm" className="p-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" disabled>
                         <X className="w-4 h-4" />
                       </Button>
                     );
@@ -59,7 +59,7 @@ export default function Navbar() {
 
                   if(!connected) {
                     return (
-                      <Button variant="outline" size="sm" className="p-2 text-red-400" onClick={openConnectModal}>
+                      <Button variant="outline" size="sm" className="p-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-black dark:border-primary-500 dark:text-primary-500 dark:hover:bg-primary-500 dark:hover:text-black" onClick={openConnectModal}>
                         <X className="w-4 h-4" />
                       </Button>
                     );
@@ -69,7 +69,7 @@ export default function Navbar() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="p-2"
+                      className="p-2 border-gray-300 dark:border-gray-600 hover:border-primary-500 dark:hover:border-primary-500"
                       onClick={openAccountModal}
                     >
                       {chain.hasIcon && (

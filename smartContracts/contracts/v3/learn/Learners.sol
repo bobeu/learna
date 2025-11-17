@@ -1,57 +1,54 @@
-// SPDX-License-Identifier: MIT
+// //SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.28;
+// pragma solidity 0.8.28;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IStorage } from "./Storage.sol";
+// import { ICourseCreator } from "./CourseCreator.sol";
+// import { Common } from "./Common.sol";
 
-interface ILearners {
-    // STRUCTURED DATA
-    struct Course {
-        
-    }
+// interface ILearners {
+//     // STRUCTURED DATA
+//     struct Profile {
+//         ICourseCreator.Course[] courses;
+//     }
 
-    struct PrimaryData {
-        uint id;
-        bool isCreator;
-    }
 
-    struct ReadCourse {
-        uint id;
-        Course[] courses;
-    }
+//     // ERRORS
+//     error CouseCreatorIsUndefined();
+//     // error NotACreator();
+//     // error NoCoursesAvailable();
+//     // error CourseTitleIsEmpty();
+//     // error CourseAlreadyExist();
+//     // error StorageAddressUndefined();
+//     // error TransferFromFailed();
+//     // error FeeReceiverOrTokenUndefined();
 
-    struct ReadData {
-        uint creatorCount;
-        address storageAddress;
-        ReadCourse[] allCourses;
-    }
+//     // EVENTS
+//     // event CourseAdded(Course);
+// }
 
-    // ERRORS
-    // error NotACreator();
-    // error NoCoursesAvailable();
-    // error CourseTitleIsEmpty();
-    // error CourseAlreadyExist();
-    // error StorageAddressUndefined();
-    // error TransferFromFailed();
-    // error FeeReceiverOrTokenUndefined();
+// contract Learners is ILearners, Common {
 
-    // EVENTS
-    event CourseAdded(Course);
-}
+//     // Contract address of the CourseCreator
+//     address internal courseCreator;
 
-contract Learners is ILearners, Ownable {
+//     // ============== CONSTRUCTOR ==============
 
-    // ============== CONSTRUCTOR ==============
+//     constructor () {}
 
-    constructor () Ownable(_msgSender()) {
-    }
+//     /**@dev Update CourseCreator contract
+//      */
+//     function setCourseCreator(
+//         address newCourseCreator
+//     ) public onlyOwner validateAddress(newCourseCreator) returns(bool) {
+//         courseCreator = newCourseCreator;
+//         return true;
+//     }
 
-    /**@dev Register for a course
-        @param courseId The ID of the course to register for
-     */
-    function registerForACourse(uint courseId) public returns(bool) {
-        return true;
-    }
-}
+//     /**@dev Register for a course
+//         @param courseId The ID of the course to register for
+//      */
+//     function registerForACourse(uint courseId) public validateAddress(courseCreator) returns(bool) {
+//         ICourseCreator.Course memory cs = ICourseCreator(courseCreator).registerForCourse(courseId, _msgSender());
+
+//     }
+// }
