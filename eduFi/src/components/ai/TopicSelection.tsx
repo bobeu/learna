@@ -13,6 +13,7 @@ function TopicSelection(props : TopicSelectionProps) {
         generateTopics,
         getDifficultyColor,
         generatedTopics,
+        isCheckingSavedTopics = false,
     } = props;
 
     return (
@@ -26,7 +27,16 @@ function TopicSelection(props : TopicSelectionProps) {
                 </p>
             </div>
 
-            {generatedTopics.length === 0 && (
+            {isCheckingSavedTopics && (
+                <div className="text-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Searching for available topics...
+                    </p>
+                </div>
+            )}
+
+            {!isCheckingSavedTopics && generatedTopics.length === 0 && (
                 <div className="text-center">
                 <Button 
                     onClick={generateTopics} 
@@ -83,11 +93,13 @@ function TopicSelection(props : TopicSelectionProps) {
 
 export default TopicSelection
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface GeneratedTopic {
   id: string;
   title: string;
   description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: Difficulty;
 }
 
 export interface TopicSelectionProps {
@@ -98,4 +110,5 @@ export interface TopicSelectionProps {
     setSelectedTopic: (topic: GeneratedTopic) => void;
     generateTopics: () => Promise<void>;
     getDifficultyColor: (arg: string) => string;
+    isCheckingSavedTopics?: boolean;
 }

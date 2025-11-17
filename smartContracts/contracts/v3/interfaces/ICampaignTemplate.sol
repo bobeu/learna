@@ -117,12 +117,11 @@ interface ICampaignTemplate {
     }
 
     struct MetadataInput {
-        string name; // Campaign name e.g Divvi
+        string name; // Campaign name. Ex. Celo
         string link; // Any other relevant link
         string description; // Max length is 300
         string imageUrl;
         uint64 endDateInHr;
-
     }
 
     struct Spot {
@@ -178,8 +177,9 @@ interface ICampaignTemplate {
     function claimRewardForPOINT(uint8 fundIndex, uint epoch, address user) external returns(bool);
     function submitProofOfIntegration(string[3] memory links, address user) external returns(bool);
     function approveIntegration(address[] memory targets, uint32[]memory points, uint epoch) external returns(bool);
-    function addFund(address token, RewardType rwType) external payable returns(bool);
+    function addFund(address token, address op, RewardType rwType) external payable returns(bool);
     function editMetaData(MetadataInput memory _meta) external returns(bool);
     function pause() external returns(bool);
     function unpause() external returns(bool);
+    function getUserPoints(uint epoch, address user) external view returns(uint64 points);
 }

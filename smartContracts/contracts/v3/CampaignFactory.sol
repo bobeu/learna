@@ -36,8 +36,6 @@ contract CampaignFactory is ICampaignFactory{
         uint _creationFee,
         IApprovalFactory _approvalFactory
     ) {
-        // if(_dev == address(0)) revert ZeroAddress();
-        // if(address(_approvalFactory) == address(0)) revert ZeroAddress();
         approvalFactory = _approvalFactory;
         dev = _dev;
         _setCreationFee(_creationFee);

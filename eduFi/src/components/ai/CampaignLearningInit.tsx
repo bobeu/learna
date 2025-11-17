@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowRight } from 'lucide-react';
 import { CampaignStateProps } from '../../../types';
-import { normalizeString } from '../utilities';
+import { normalizeString, getDifficultyColor } from '../utilities';
 import { useAccount } from 'wagmi';
 import { formatAddr } from '../utilities';
 import { motion } from 'framer-motion';
@@ -20,10 +20,8 @@ import { Hex } from "viem";
 // Services and hooks
 import { generateTopicsWithGreeting } from './services/topicGenerationService';
 import { validateCustomTopic } from './services/topicValidationService';
-import { 
-  isTopicCompleted, 
-  type CompletedTopic 
-} from './services/topicStorageService';
+import { isTopicCompleted, type CompletedTopic, getCampaignCompletedTopics } from './services/topicStorageService';
+import { loadAITutorState, type SavedAITutorState } from './services/aiTutorStorageService';
 import { useTopicState } from './hooks/useTopicState';
 import { GeneratedTopic } from './TopicSelection';
 
@@ -32,6 +30,7 @@ import TopicGenerationDisplay from './components/TopicGenerationDisplay';
 import CustomTopicInput from './components/CustomTopicInput';
 import TopicValidationDialog from './components/TopicValidationDialog';
 import CompletedTopicDialog from './components/CompletedTopicDialog';
+import ContinueOrNewTopicDialog from './components/ContinueOrNewTopicDialog';
 import AITutor from './AITutor';
 
 interface CampaignLearningInitProps {
@@ -62,36 +61,79 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
   const [isGenerating, setIsGenerating] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(true);
+  const [isCheckingSavedTopics, setIsCheckingSavedTopics] = useState(true);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   const [showCompletedDialog, setShowCompletedDialog] = useState(false);
+  const [showContinueTopicDialog, setShowContinueTopicDialog] = useState(false);
   const [validationResult, setValidationResult] = useState<{ isValid: boolean; message: string } | null>(null);
   const [pendingCustomTopic, setPendingCustomTopic] = useState<string>('');
   const [completedTopicData, setCompletedTopicData] = useState<CompletedTopic | null>(null);
+  const [savedState, setSavedState] = useState<SavedAITutorState | null>(null);
   const [showAITutor, setShowAITutor] = useState(false);
 
   // Check for completed topics when topics are generated
   const checkCompletedTopics = useCallback((generatedTopics: GeneratedTopic[]) => {
-    if (!address || !userAddress || generatedTopics.length === 0) return null;
+    if(!address || !userAddress || generatedTopics.length === 0) return null;
 
     // Check each generated topic to see if any match completed topics
     for (const topic of generatedTopics) {
       const completed = isTopicCompleted(userAddress, campaignId, topic.title);
-      if (completed) {
+      if(completed) {
         return completed;
       }
     }
     return null;
   }, [address, userAddress, campaignId]);
 
-  // Generate topics on mount
+  // Load saved topics first, then generate if needed
   useEffect(() => {
-    if (!isDialogOpen) return;
+    if(!isDialogOpen) return;
 
     const initializeTopics = async () => {
-      // Only generate if topics haven't been generated yet
-      if (topics.length > 0) return;
+      // Start with checking saved topics
+      setIsCheckingSavedTopics(true);
+      
+      // Small delay to show "searching" state
+      await new Promise(resolve => setTimeout(resolve, 300));
 
+      if(!address || !userAddress) {
+        setIsCheckingSavedTopics(false);
+        return;
+      }
+
+      // PRIORITY 1: Check for saved AITutor state (topics, articles, etc.)
+      const saved = loadAITutorState(userAddress, campaignId);
+      
+      if(saved && saved.topics && saved.topics.length > 0) {
+        // Filter out completed topics
+        const completedTopics = getCampaignCompletedTopics(userAddress, campaignId);
+        const completedTopicIds = new Set(completedTopics.map(t => t.topicId));
+        const filteredTopics = saved.topics.filter(t => !completedTopicIds.has(t.id));
+        
+        if(filteredTopics.length > 0) {
+          // Load saved topics
+          setTopics(filteredTopics);
+          if(saved.greeting) setGreeting(saved.greeting);
+          if(saved.campaignInfo) setCampaignInfo(saved.campaignInfo);
+          setSavedState(saved);
+          
+          setIsCheckingSavedTopics(false);
+          // Show dialog to continue with saved topics or generate new ones
+          setShowContinueTopicDialog(true);
+          return; // Don't generate new topics
+        }
+      }
+
+      // PRIORITY 2: Only generate if no saved topics and topics haven't been generated yet
+      if(topics.length > 0) {
+        setIsCheckingSavedTopics(false);
+        return;
+      }
+
+      // Generate new topics
       setIsGenerating(true);
+      setIsCheckingSavedTopics(false);
+      
       try {
         const campaignName = normalizeString(campaign.name as Hex);
         const campaignDesc = normalizeString(campaign.description as Hex);
@@ -103,9 +145,9 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
         setTopics(response.topics || []);
 
         // Check for completed topics after generation
-        if (response.topics.length > 0) {
+        if(response.topics.length > 0) {
           const completed = checkCompletedTopics(response.topics);
-          if (completed) {
+          if(completed) {
             setCompletedTopicData(completed);
             setShowCompletedDialog(true);
           }
@@ -123,9 +165,9 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
   // Handle topic selection from generated topics
   const handleTopicSelect = useCallback((topic: GeneratedTopic) => {
     // Check if topic was already completed
-    if (address && userAddress) {
+    if(address && userAddress) {
       const completed = isTopicCompleted(userAddress, campaignId, topic.title);
-      if (completed) {
+      if(completed) {
         setCompletedTopicData(completed);
         setShowCompletedDialog(true);
         return;
@@ -150,11 +192,11 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
       setValidationResult(result);
       setShowValidationDialog(true);
 
-      if (result.isValid) {
+      if(result.isValid) {
         // Check if this custom topic was already completed
-        if (address && userAddress) {
+        if(address && userAddress) {
           const completed = isTopicCompleted(userAddress, campaignId, topicTitle);
-          if (completed) {
+          if(completed) {
             setValidationResult(null);
             setShowValidationDialog(false);
             setCompletedTopicData(completed);
@@ -188,7 +230,7 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
 
   // Handle validation dialog confirm
   const handleValidationConfirm = useCallback(() => {
-    if (validationResult?.isValid && pendingCustomTopic) {
+    if(validationResult?.isValid && pendingCustomTopic) {
       const customTopicObj: GeneratedTopic = {
         id: `custom-${Date.now()}`,
         title: pendingCustomTopic,
@@ -205,7 +247,7 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
 
   // Handle continue with completed topic
   const handleContinueWithCompleted = useCallback(() => {
-    if (!completedTopicData) return;
+    if(!completedTopicData) return;
 
     // Create topic object from completed topic
     const topic: GeneratedTopic = {
@@ -228,9 +270,44 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
     // User can now select from generated topics or input custom one
   }, []);
 
+  // Handle continue with saved topics
+  const handleContinueWithSavedTopics = useCallback(() => {
+    setShowContinueTopicDialog(false);
+    // Topics are already loaded, user can now select one
+  }, []);
+
+  // Handle generate new topics (user wants new ones instead of saved)
+  const handleGenerateNewTopics = useCallback(async () => {
+    setShowContinueTopicDialog(false);
+    
+    // Generate new topics
+    setIsGenerating(true);
+    try {
+      const campaignName = normalizeString(campaign.name as Hex);
+      const campaignDesc = normalizeString(campaign.description as Hex);
+
+      const response = await generateTopicsWithGreeting(campaignName, campaignDesc);
+      
+      // Merge with existing saved topics (add new ones that don't exist)
+      const existingTopicTitles = new Set(topics.map(t => t.title.toLowerCase()));
+      const newTopics = response.topics.filter(t => !existingTopicTitles.has(t.title.toLowerCase()));
+      
+      if(newTopics.length > 0) {
+        setTopics([...topics, ...newTopics]);
+      }
+      
+      if(response.greeting && !greeting) setGreeting(response.greeting);
+      if(response.campaignInfo && !campaignInfo) setCampaignInfo(response.campaignInfo);
+    } catch (error) {
+      console.error('Error generating new topics:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [campaign, topics, greeting, campaignInfo, setTopics, setGreeting, setCampaignInfo]);
+
   // Handle start learning
   const handleStartLearning = useCallback(() => {
-    if (!selectedTopic) return;
+    if(!selectedTopic) return;
     setShowAITutor(true);
   }, [selectedTopic]);
 
@@ -241,22 +318,8 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
     onClose();
   }, [onClose, resetState]);
 
-  // Get difficulty color
-  const getDifficultyColor = (difficulty: string): string => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800';
-      case 'hard':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200 border-red-200 dark:border-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200 border-gray-200 dark:border-gray-800';
-    }
-  };
-
   // Show AITutor if topic is selected and user clicked start
-  if (showAITutor && selectedTopic) {
+  if(showAITutor && selectedTopic) {
     return (
       <AITutor
         campaign={campaign}
@@ -271,14 +334,34 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
 
   return (
     <>
-      <Dialog open={isDialogOpen} onOpenChange={handleClose}>
-        <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface mx-0 left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%]">
+      <Dialog 
+        open={isDialogOpen} 
+        onOpenChange={handleClose}
+        modal={true}
+      >
+        <DialogContent 
+          className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white dark:bg-surface mx-0 left-4 right-4 translate-x-0 sm:left-[50%] sm:right-auto sm:translate-x-[-50%] top-[50%] translate-y-[-50%]"
+          hideCloseButton={true}
+          preventOutsideClose={true}  
+        >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500 flex-shrink-0" />
-              <span className="text-base sm:text-lg font-semibold break-words min-w-0">
-                {normalizeString(campaign.name as Hex)}
-              </span>
+            <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-gray-900 dark:text-white">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500 flex-shrink-0" />
+                <span className="text-base sm:text-lg font-semibold break-words min-w-0">
+                  {normalizeString(campaign.name as Hex)}
+                </span>
+              </div>
+              <button
+                onClick={handleClose}
+                className="absolute right-2 top-2 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800 dark:data-[state=open]:text-neutral-400 p-1 z-50"
+                aria-label="Close"
+                type="button"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               Choose a topic to start your learning journey
@@ -286,23 +369,37 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
           </DialogHeader>
 
           <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
-            {/* Topic Generation Display */}
-            <TopicGenerationDisplay
-              greeting={greeting}
-              campaignInfo={campaignInfo}
-              topics={topics}
-              isGenerating={isGenerating}
-              onTopicSelect={handleTopicSelect}
-              getDifficultyColor={getDifficultyColor}
-              selectedTopicId={selectedTopic?.id || null}
-            />
+            {/* Show loading state while checking for saved topics */}
+            {isCheckingSavedTopics && (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Searching for available topics...
+                </p>
+              </div>
+            )}
 
-            {/* Custom Topic Input - Always visible */}
-            <CustomTopicInput
-              onValidate={handleCustomTopicValidate}
-              isValidating={isValidating}
-              isDisabled={isGenerating}
-            />
+            {/* Topic Generation Display */}
+            {!isCheckingSavedTopics && (
+              <TopicGenerationDisplay
+                greeting={greeting}
+                campaignInfo={campaignInfo}
+                topics={topics}
+                isGenerating={isGenerating}
+                onTopicSelect={handleTopicSelect}
+                getDifficultyColor={getDifficultyColor}
+                selectedTopicId={selectedTopic?.id || null}
+              />
+            )}
+
+            {/* Custom Topic Input - Always visible (when not checking) */}
+            {!isCheckingSavedTopics && (
+              <CustomTopicInput
+                onValidate={handleCustomTopicValidate}
+                isValidating={isValidating}
+                isDisabled={isGenerating}
+              />
+            )}
 
             {/* Start Learning Button */}
             {selectedTopic && (
@@ -353,6 +450,16 @@ export default function CampaignLearningInit({ campaign, onClose }: CampaignLear
           completedTopic={completedTopicData}
           onContinue={handleContinueWithCompleted}
           onUseNew={handleUseNewTopic}
+        />
+      )}
+
+      {/* Continue with Saved Topics Dialog */}
+      {savedState && savedState.topics && savedState.topics.length > 0 && (
+        <ContinueOrNewTopicDialog
+          isOpen={showContinueTopicDialog}
+          savedTopics={savedState.topics}
+          onContinue={handleContinueWithSavedTopics}
+          onGenerateNew={handleGenerateNewTopics}
         />
       )}
     </>

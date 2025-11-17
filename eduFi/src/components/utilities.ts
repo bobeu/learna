@@ -1,8 +1,8 @@
 /* eslint-disable */
 import { formatEther, Hex,hexToString,keccak256, stringToBytes, stringToHex, zeroAddress } from "viem";
-import BigNumber from "bignumber.js";
 // @ts-ignore: Missing type declarations for 'ethers' in this environment
 import { ethers } from "ethers";
+import BigNumber from "bignumber.js";
 import globalContractData from "../../contractsArtifacts/global.json";
 import { getFunctionData } from "../../functionData";
 import { getDataSuffix as getDivviDataSuffix, submitReferral } from "@divvi/referral-sdk";
@@ -438,3 +438,37 @@ export async function uploadImageToPinata({
     };
   }
 }
+
+// export const getDifficultyColor = (difficulty: string) => {
+//   switch (difficulty) {
+//     case 'easy': return 'bg-green-100 text-green-800 border-green-200';
+//     case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+//     case 'hard': return 'bg-red-100 text-red-800 border-red-200';
+//     default: return 'bg-gray-100 text-gray-800 border-gray-200';
+//   }
+// };
+
+// Get difficulty color
+export const getDifficultyColor = (difficulty: string): string => {
+  switch (difficulty.toLowerCase()) {
+    case 'easy':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800';
+    case 'hard':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200 border-red-200 dark:border-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200 border-gray-200 dark:border-gray-800';
+  }
+};
+
+export const getPerformanceRating = (value: number) => {
+  switch (value) {
+    case 5: return { text: 'Excellent', color: 'text-green-600' };
+    case 4: return { text: 'Very Good', color: 'text-blue-600' };
+    case 3: return { text: 'Good', color: 'text-yellow-600' };
+    case 2: return { text: 'Fair', color: 'text-orange-600' };
+    case 1: return { text: 'Needs Improvement', color: 'text-red-600' };
+    default: return { text: 'Not Rated', color: 'text-gray-600' };
+  }
+};

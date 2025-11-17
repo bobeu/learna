@@ -14,25 +14,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Optimized prompt - explicitly request JSON only without markdown
-    const prompt = `You are an AI tutor for "${campaignName}".
+    const prompt = `You are an AI tutor for "${campaignName}". Generate educational topics based on "${campaignName}".
 
 Campaign Description: ${campaignDescription || 'Learning platform'}
 
 IMPORTANT - Response Format:
-You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks (\`\`\`json). Do NOT add any text before or after the JSON.
-Return the JSON object directly starting with { and ending with }.
+Your response must be in JSON format without any markdown code blocks or preprend or append any symbol such as quote, backticks, etc. Do NOT add any text or symbol before or after the outer curly braces. MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks (\`\`\`json). Do NOT add any text before or after the JSON.
+Return the JSON object directly starting with { and ending with } without any text or symbol before or after it.
 
 Required JSON structure:
 {"greeting":"Welcome message (2-3 sentences)","campaignInfo":"Campaign info (2-3 sentences)","topics":[{"id":"topic-1","title":"Topic title","description":"Brief description","difficulty":"easy"},{"id":"topic-2","title":"Topic title","description":"Brief description","difficulty":"medium"},{"id":"topic-3","title":"Topic title","description":"Brief description","difficulty":"hard"},{"id":"topic-4","title":"Topic title","description":"Brief description","difficulty":"easy"},{"id":"topic-5","title":"Topic title","description":"Brief description","difficulty":"medium"}]}
 
 Requirements:
-- Minimum 5 topics
+- Maximum of 20 topics
 - Vary difficulty levels (easy, medium, hard)
 - Practical, hands-on focus
 - Return ONLY the raw JSON object, nothing else. No markdown, no code blocks, no explanations.`;
 
     const { text } = await aiService.generateTextWithFallback('topics', prompt);
-    
     // Parse JSON from response
     // First, try direct JSON parsing (AI should return raw JSON per instructions)
     type ParsedResponse = { 
@@ -46,6 +45,7 @@ Requirements:
     
     try {
       const parsedValue = JSON.parse(cleanedText);
+      // console.log("parsedValue", parsedValue.substring(0, 60));
       if (parsedValue && typeof parsedValue === 'object' && 'topics' in parsedValue) {
         parsed = parsedValue as ParsedResponse;
       }

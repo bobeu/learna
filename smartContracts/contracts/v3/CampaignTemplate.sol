@@ -18,8 +18,6 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
 
     address private dev;
 
-    address internal operator;
-
     /**@dev Mapping showing whether user has claimed reward for an epoch or not
         @notice We use address(this) to represent 3rd key in the mapping for the native coin e.g Celo. Since there can be more than one reward token in a campign,
         we use the address for each token as 3rd key in the mapping.
@@ -48,9 +46,8 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         address _dev, 
         IApprovalFactory _approvalFactory, 
         MetadataInput memory meta
-    ) payable CampaignMetadata(_approvalFactory, meta) {
+    ) payable CampaignMetadata(_approvalFactory, meta, _operator) {
         dev = _dev;
-        operator =_operator;
         unchecked {
             if(msg.value > 0) epochData[epoches].setting.funds.nativeAss += msg.value;
             if(meta.endDateInHr > 0) {
@@ -74,16 +71,17 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         RewardType rwType, 
         uint fundIndex, 
         uint epoch
-    ) internal view returns(ERC20Token memory erc20, uint256 native, uint fundSize) {
+    ) internal view returns(ERC20Token memory erc20, uint256 native) {
+        uint fundSize;
         if(rwType == RewardType.POASS) {
             fundSize = epochData[epoch].setting.funds.erc20Ass.length;
-            if(fundIndex < fundSize){
+            if(fundSize > 0 && fundIndex < fundSize){
                 erc20 = epochData[epoch].setting.funds.erc20Ass[fundIndex];
             }
             native = epochData[epoch].setting.funds.nativeAss;
         } else {
             fundSize = epochData[epoch].setting.funds.erc20Int.length;
-            if(fundIndex < fundSize){
+            if(fundSize > 0 && fundIndex < fundSize){
                 erc20 = epochData[epoch].setting.funds.erc20Int[fundIndex];
             }
             native = epochData[epoch].setting.funds.nativeInt;
@@ -111,18 +109,16 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         if(totalProofs >= userProofs) {
             if(totalProofs > 0 && userProofs > 0) { 
                 unchecked {
-                    (ERC20Token memory erc, uint256 native, uint fundSize) = _getFunds(rwType, fundIndex, epoch);
+                    (ERC20Token memory erc, uint256 native) = _getFunds(rwType, fundIndex, epoch);
                     if(!isClaimed[rwType][epoch][target][address(this)]){
                         if(native > 0) sh.native = totalProofs.calculateShare(userProofs, native, 18);
                     }
-                    if(fundSize > 0) {
-                        if(erc.amount > 0) {
-                            if(erc.token != address(0)){
-                                sh.token = erc.token;
-                                if(!isClaimed[rwType][epoch][target][erc.token]) {
-                                    dec = IERC20Metadata(erc.token).decimals();
-                                    sh.erc20 = totalProofs.calculateShare(userProofs, erc.amount, dec);
-                                }
+                    if(erc.amount > 0) {
+                        if(erc.token != address(0)){
+                            sh.token = erc.token;
+                            if(!isClaimed[rwType][epoch][target][erc.token]) {
+                                dec = IERC20Metadata(erc.token).decimals();
+                                sh.erc20 = totalProofs.calculateShare(userProofs, erc.amount, dec);
                             }
                         }
                     }
@@ -131,11 +127,19 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         }
     }
 
+    /** @dev Get total points for user for specific epoch
+        @param epoch : Epoch Id
+        @param user: Target address
+     */
+    function getUserPoints(uint epoch, address user) external view returns(uint64 points) {
+        return _aggregateProofs(epoch, spots[user][epoch].value);
+    }
+
     /**@dev Aggregate all proofs for the current learner
         @param epoch: Epoch Id
         @param userIndex : Position of the learner in the Learners' array
      */
-    function _calculateProofs(uint epoch, uint userIndex) internal view returns(uint64 userProofs) {
+    function _aggregateProofs(uint epoch, uint userIndex) internal view returns(uint64 userProofs) {
         ProofOfAssimilation[] memory poass = epochData[epoch].learners[userIndex].poass;
         for(uint i = 0; i < poass.length; i++) {
             unchecked {
@@ -160,7 +164,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         @param arg : Setting of type EpochSettingInput
         @param rwType: Reward type
     */
-    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyApproved returns(bool) {
+    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyApproved(address(0)) returns(bool) {
         uint64 currentTime = _now();
         if(currentTime >= metadata.endDate) {
             epoches += 1;
@@ -190,18 +194,16 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         @param poa : Proof of assimilation object
         @param rating : Performance rating for completing a path
      */
-    function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating, address user) external onlyApproved whenNotPaused returns(bool) {
+    function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating, address user) external onlyApproved(address(0)) whenNotPaused returns(bool) {
         uint epoch = epoches;
-        Spot memory spot = spots[user][epoch];
+        Spot storage spot = spots[user][epoch];
         if(!spot.hasValue) {
             spot.hasValue = true;
             spot.value = epochData[epoch].learners.length;
             epochData[epoch].learners.push();
-            spots[user][epoch] = spot;
             epochData[epoch].learners[spot.value].id = user;
         }
-        // Learner memory lnr = learners[epoch][spot.value];
-        Frequency memory fq = frequencies[user];
+        Frequency storage fq = frequencies[user];
         uint24 maxProof = epochData[epoch].setting.maxProof;
         unchecked {
             if(fq.lastSeen > 0) {
@@ -231,13 +233,13 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         @param epoch : Epoch to claim from .
         @notice Learners can only claim from an epoch if the epoch deadline has passed.
      */
-    function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) external onlyApproved whenNotPaused validateEpochInput(epoch) returns(bool) {
+    function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) external onlyApproved(address(0)) whenNotPaused validateEpochInput(epoch) returns(bool) {
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
         Spot memory spot = spots[user][epoch];
         Common.ShareOut memory sh = dev._rebalance(
             _calculateShare(
                 RewardType.POASS,
-                _calculateProofs(epoch, spot.value), 
+                _aggregateProofs(epoch, spot.value), 
                 epochData[epoch].totalProofs, 
                 fundIndex, 
                 epoch, 
@@ -269,7 +271,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         uint8 fundIndex, 
         uint epoch,
         address user
-    ) external onlyApproved whenNotPaused validateEpochInput(epoch) returns(bool) {
+    ) external onlyApproved(address(0)) whenNotPaused validateEpochInput(epoch) returns(bool) {
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
         Spot memory spot = spots[user][epoch];
         Common.ShareOut memory sh = dev._rebalance(
@@ -349,7 +351,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         @notice Builder can submit at most 3 links before the epoch ends. Continous submission will override existing links which allow
         them to edit as many time as they wish. Builder must have proof assimilation before they can submit proof of integration.
      */
-    function submitProofOfIntegration(string[3] memory links, address user) external whenNotPaused onlyApproved returns(bool) {
+    function submitProofOfIntegration(string[3] memory links, address user) external whenNotPaused onlyApproved(address(0)) returns(bool) {
         uint epoch = epoches;
         Spot memory spot = spots[user][epoch];
         if(!spot.hasValue) revert NoProofOfLearning();
@@ -369,7 +371,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         address[] memory targets, 
         uint32[]memory points, 
         uint epoch
-    ) external onlyApproved whenNotPaused returns(bool) {
+    ) external onlyApproved(address(0)) whenNotPaused returns(bool) {
         if(targets.length == points.length) {
             for(uint32 i = 0; i < targets.length; i++) {
                 address target = targets[i];
@@ -388,13 +390,15 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
 
     /**@dev Add funds to campaign
         @param token: Token address
+        @param op: Address funding the campaign
         @param rwType: Reward type
      */
     function addFund(
-        address token, 
+        address token,
+        address op,
         RewardType rwType
-    ) external payable onlyApproved whenNotPaused returns(bool) {
-        _setUpERC20Funds(token, operator, rwType, msg.value);
+    ) external payable onlyApproved(op) whenNotPaused returns(bool) {
+        _setUpERC20Funds(token, op, rwType, msg.value);
         return true;
     }
 

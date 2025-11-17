@@ -69,3 +69,26 @@
     @apply bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent;
   }
 }
+
+/* RainbowKit Theme Customization */
+@layer base {
+  /* Connect Button Styling */
+  [data-rk] button[data-testid="rk-connect-button"] {
+    @apply font-mono;
+  }
+  
+  /* Account Modal Styling */
+  [data-rk] [data-testid="rk-account-button"] {
+    @apply font-mono;
+  }
+  
+  /* Modal Background */
+  [data-rk] [role="dialog"] {
+    @apply font-mono;
+  }
+  
+  /* Ensure modal text uses project font */
+  [data-rk] * {
+    font-family: inherit;
+  }
+}
