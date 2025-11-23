@@ -202,7 +202,6 @@ export function normalizeImageSrc(val: string) {
  */
 export function formatCampaignsTemplateReadData(arg: CampaignTemplateReadData, address: Address, index: number) : FormattedCampaignTemplate {
   const { epochData, metadata: mt, ...rest } = arg;
-  // console.log("formatCampaignsTemplateReadData", arg);
   return {
     contractInfo: { address, index: BigInt(index) },
     epochData: epochData.map(({learners, setting, totalProofs}) => {
@@ -402,13 +401,11 @@ export async function uploadImageToPinata({
     // Create file with proper type
     const imageFile = new File([file], uniqueFileName, { type: fileType });
 
-    // console.log("pinata", pinata);
     // Upload to Pinata using the correct API structure
     const response = await pinata.upload.public
     .file(imageFile)
     .name(campaignName);
 
-    // console.log("Response", response);
     // Verify upload was successful
     if (!response || !response.cid) {
       alert('Upload failed: No CID returned from Pinata');

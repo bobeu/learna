@@ -1,21 +1,11 @@
 {
-  "contractAddress": "0x751F18E9134769a5177d2ACd98caCbe3c0E1AB32",
+  "contractAddress": "0xcE76040bF69D22A73630DdB2da6C1Ae5eb4f19a5",
   "functionName": "setApprovalFactory",
   "inputCount": 1,
   "requireArgUpdate": false,
   "abi": [
     {
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "_dev",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_creationFee",
-          "type": "uint256"
-        },
         {
           "internalType": "contract IApprovalFactory",
           "name": "_approvalFactory",
@@ -27,12 +17,7 @@
     },
     {
       "inputs": [],
-      "name": "FeetoIsTheSame",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InsufficientValue",
+      "name": "InvalidCampaignIndex",
       "type": "error"
     },
     {
@@ -42,27 +27,178 @@
     },
     {
       "inputs": [],
+      "name": "NotCampaignOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotVerified",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OnlyOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OperationFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PointClaimed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "ZeroAddress",
       "type": "error"
     },
     {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
           "internalType": "address",
-          "name": "sender",
+          "name": "token",
           "type": "address"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "campaign",
-          "type": "address"
+          "internalType": "enum ICampaignTemplate.RewardType",
+          "name": "rwType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
         }
       ],
-      "name": "NewCampaign",
-      "type": "event"
+      "name": "addFund",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "targets",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint32[]",
+          "name": "_points",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "approveIntegration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimPoint",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "fundIndex",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimRewardForPOASS",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "fundIndex",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimRewardForPOINT",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [
@@ -95,11 +231,67 @@
             }
           ],
           "internalType": "struct ICampaignTemplate.MetadataInput",
-          "name": "metadata",
+          "name": "_meta",
           "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
         }
       ],
-      "name": "createCampaign",
+      "name": "editMetaData",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint24",
+              "name": "maxProof",
+              "type": "uint24"
+            },
+            {
+              "internalType": "uint24",
+              "name": "endInHr",
+              "type": "uint24"
+            },
+            {
+              "internalType": "address[]",
+              "name": "tokens",
+              "type": "address[]"
+            },
+            {
+              "internalType": "address",
+              "name": "newOperator",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct ICampaignTemplate.EpochSettingInput",
+          "name": "arg",
+          "type": "tuple"
+        },
+        {
+          "internalType": "enum ICampaignTemplate.RewardType",
+          "name": "rwType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "epochSetting",
       "outputs": [
         {
           "internalType": "bool",
@@ -111,31 +303,13 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "index",
-          "type": "uint256"
-        }
-      ],
-      "name": "getCampaign",
+      "inputs": [],
+      "name": "factory",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "creator",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "identifier",
-              "type": "address"
-            }
-          ],
-          "internalType": "struct ICampaignFactory.Campaign",
-          "name": "cmp",
-          "type": "tuple"
+          "internalType": "contract ICampaignFactory",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -143,54 +317,173 @@
     },
     {
       "inputs": [],
-      "name": "getFactoryData",
+      "name": "getInterfacerData",
       "outputs": [
         {
           "components": [
             {
               "internalType": "address",
-              "name": "dev",
+              "name": "factory",
               "type": "address"
             },
             {
               "internalType": "address",
-              "name": "feeTo",
+              "name": "verifier",
               "type": "address"
             },
             {
-              "internalType": "uint256",
-              "name": "creationFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "contract IApprovalFactory",
-              "name": "approvalFactory",
+              "internalType": "address",
+              "name": "owner",
               "type": "address"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "creator",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address",
-                  "name": "identifier",
-                  "type": "address"
-                }
-              ],
-              "internalType": "struct ICampaignFactory.Campaign[]",
-              "name": "campaigns",
-              "type": "tuple[]"
             }
           ],
-          "internalType": "struct ICampaignFactory.ReadData",
-          "name": "data",
+          "internalType": "struct Interfacer.ReadData",
+          "name": "",
           "type": "tuple"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "getUserCampaigns",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "campaign",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isCreator",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ICampaignFactory.UserCampaign[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "pause",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "questionSize",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint32",
+              "name": "score",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint64",
+              "name": "totalPoints",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint16",
+              "name": "percentage",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timeSpent",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes",
+              "name": "completedAt",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ICampaignTemplate.ProofOfAssimilation",
+          "name": "poa",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "value",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes",
+              "name": "ratedAt",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ICampaignTemplate.Performance",
+          "name": "rating",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "proveAssimilation",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_campaign",
+          "type": "address"
+        }
+      ],
+      "name": "registerCampaign",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -215,12 +508,12 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "newFee",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "_factory",
+          "type": "address"
         }
       ],
-      "name": "setCreationFee",
+      "name": "setFactory",
       "outputs": [
         {
           "internalType": "bool",
@@ -235,11 +528,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "newFeeTo",
+          "name": "newOwner",
           "type": "address"
         }
       ],
-      "name": "setFeeTo",
+      "name": "setNewOwner",
       "outputs": [
         {
           "internalType": "bool",
@@ -247,6 +540,100 @@
           "type": "bool"
         }
       ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newVerifier",
+          "type": "address"
+        }
+      ],
+      "name": "setVerifier",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string[3]",
+          "name": "links",
+          "type": "string[3]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "submitProofOfIntegration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "syncClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "unpause",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "updateUserCampaign",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     }

@@ -102,7 +102,6 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
         return readTxObject;
     }, [account, chainId]);
 
-    // console.log("readTxObject", readTxObject);
 
     // Read data from the CampaignFactory contact 
     const { data: factoryReadData, } = useReadContracts({
@@ -130,6 +129,7 @@ export default function DataProvider({children} : {children: React.ReactNode}) {
                 owner_ = factoryReadData[0].result as Address;
             }
             if(factoryReadData && factoryReadData[1].status === 'success' && factoryReadData[1].result !== undefined) {
+                // console.log('factoryReadData[1].result', factoryReadData[1].result);
                 data = factoryReadData[1].result as ReadData;
             }
             if(factoryReadData && factoryReadData[2].status === 'success' && factoryReadData[2].result !== undefined) {

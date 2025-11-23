@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { 
     CampaignTemplateReadData,
     FormattedCampaignTemplate,
@@ -45,20 +45,12 @@ export function usePublicDataFetcher({
     // Get chainId from wagmi if connected, otherwise default to celoSepolia
     const wagmiChainId = useChainId();
     const chainId = wagmiChainId || celoSepolia.id; // Default to celoSepolia if not connected
+    // console.log("chainId:", chainId);
     const publicClient = getPublicClient(chainId);
     
     // Get user address if connected, otherwise use zeroAddress
     const { address, isConnected } = useAccount();
     const account = formatAddr(address) || zeroAddress;
-
-    // Function to read contracts using public client
-    // const readContracts = useCallback(async () => {
-    //     if(isConnected) {
-    //         return; // Only run when user is NOT connected
-    //     }
-
-       
-    // }, [chainId, account, publicClient, isConnected, set_FactoryData, set_Owner, set_HasApproval, set_VerificationStatus, set_InterfacerData]);
 
     // Initial fetch and periodic refetch for factory data
     useEffect(() => {

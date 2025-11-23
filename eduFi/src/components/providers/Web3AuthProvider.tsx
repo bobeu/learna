@@ -17,20 +17,20 @@ const alchemy_celosepolia_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_SEPOLIA_API
 if (!projectId) throw new Error('Project ID is undefined');
 
 // Create QueryClient instance outside component to prevent recreation and disconnections
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: false, // Prevent refetch on window focus
-      refetchOnReconnect: true,
-      retry: 1, // Reduce retry attempts
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
-});
+// const queryClient = new QueryClient({
+//   defaultOptions: {
+//     queries: {
+//       staleTime: 1000 * 60 * 5, // 5 minutes
+//       gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+//       refetchOnWindowFocus: false, // Prevent refetch on window focus
+//       refetchOnReconnect: true,
+//       retry: 1, // Reduce retry attempts
+//     },
+//     mutations: {
+//       retry: 1,
+//     },
+//   },
+// });
 
 // Create config outside component to prevent recreation
 const config = getDefaultConfig({
@@ -42,8 +42,8 @@ const config = getDefaultConfig({
   chains: [celoSepolia, celo],
   ssr: true, // Enable SSR for better stability
   multiInjectedProviderDiscovery: true,
-  pollingInterval: 30_000, // Increase from 10s to 30s to reduce frequency
-  syncConnectedChain: true,
+  pollingInterval: 10_000, // Increase from 10s to 30s to reduce frequency
+  // syncConnectedChain: true,
   transports: {
     [celoSepolia.id]: http(alchemy_celosepolia_api),
     [celo.id]: http(alchemy_celo_api),
@@ -51,50 +51,50 @@ const config = getDefaultConfig({
 });
 
 // Custom hook for Coinbase Wallet detection and auto-connection
-function useCoinbaseWalletAutoConnect() {
-  const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
-  const { connect, connectors } = useConnect();
-  const { isConnected } = useAccount();
+// function useCoinbaseWalletAutoConnect() {
+//   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
+//   const { connect, connectors } = useConnect();
+//   const { isConnected } = useAccount();
 
-  useEffect(() => {
-    // Check if we're running in Coinbase Wallet
-    const checkCoinbaseWallet = () => {
-      if (typeof window === 'undefined') return;
-      const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
-        window.ethereum?.isCoinbaseWalletExtension ||
-        window.ethereum?.isCoinbaseWalletBrowser;
-      setIsCoinbaseWallet(!!isInCoinbaseWallet);
-    };
+//   useEffect(() => {
+//     // Check if we're running in Coinbase Wallet
+//     const checkCoinbaseWallet = () => {
+//       if (typeof window === 'undefined') return;
+//       const isInCoinbaseWallet = window.ethereum?.isCoinbaseWallet || 
+//         window.ethereum?.isCoinbaseWalletExtension ||
+//         window.ethereum?.isCoinbaseWalletBrowser;
+//       setIsCoinbaseWallet(!!isInCoinbaseWallet);
+//     };
     
-    checkCoinbaseWallet();
-    window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     checkCoinbaseWallet();
+//     window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
     
-    return () => {
-      window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
-    };
-  }, []);
+//     return () => {
+//       window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
+//     };
+//   }, []);
 
-  useEffect(() => {
-    // Auto-connect if in Coinbase Wallet and not already connected
-    if (isCoinbaseWallet && !isConnected && connectors.length > 1) {
-      // Only auto-connect if explicitly in Coinbase Wallet browser
-      const coinbaseConnector = connectors.find(c => 
-        c.name.toLowerCase().includes('coinbase')
-      );
-      if (coinbaseConnector) {
-        connect({ connector: coinbaseConnector });
-      }
-    }
-  }, [isCoinbaseWallet, isConnected, connect, connectors]);
+//   useEffect(() => {
+//     // Auto-connect if in Coinbase Wallet and not already connected
+//     if (isCoinbaseWallet && !isConnected && connectors.length > 1) {
+//       // Only auto-connect if explicitly in Coinbase Wallet browser
+//       const coinbaseConnector = connectors.find(c => 
+//         c.name.toLowerCase().includes('coinbase')
+//       );
+//       if (coinbaseConnector) {
+//         connect({ connector: coinbaseConnector });
+//       }
+//     }
+//   }, [isCoinbaseWallet, isConnected, connect, connectors]);
 
-  return isCoinbaseWallet;
-}
+//   return isCoinbaseWallet;
+// }
 
 // Wrapper component that provides Coinbase Wallet auto-connection
-function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
-  useCoinbaseWalletAutoConnect();
-  return <>{children}</>;
-}
+// function CoinbaseWalletAutoConnect({ children }: { children: React.ReactNode }) {
+//   useCoinbaseWalletAutoConnect();
+//   return <>{children}</>;
+// }
 
 // Themed RainbowKit Provider that adapts to light/dark mode
 function ThemedRainbowKitProvider({ children }: { children: React.ReactNode }) {
@@ -168,17 +168,32 @@ function ThemedRainbowKitProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function Provider({ children }: { children: React.ReactNode }) {
+  const queryClient = new QueryClient();
+
   return (
     <WagmiProvider config={config as unknown as any}>
       <QueryClientProvider client={queryClient}>
         <ThemedRainbowKitProvider>
-          <CoinbaseWalletAutoConnect>
+          {/* <CoinbaseWalletAutoConnect> */}
             <DataProvider>
               { children }
             </DataProvider>
-          </CoinbaseWalletAutoConnect>
+          {/* </CoinbaseWalletAutoConnect> */}
         </ThemedRainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
+
+
+
+// import { Web3AuthProvider as MetamaskEmbeddedWalletProvider } from '@web3auth/modal/react';
+// import web3AuthContextConfig from "../../configs/web3AuthConfig";
+
+// export default function Web3AuthProvider({ children }: { children: React.ReactNode }) {
+//   return (
+//     <MetamaskEmbeddedWalletProvider config={web3AuthContextConfig}>
+//       { children }
+//     </MetamaskEmbeddedWalletProvider>
+//   )
+// }

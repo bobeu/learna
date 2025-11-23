@@ -39,6 +39,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	console.log("networkName", networkName);
 	console.log("mode", mode);
 
+	const testToken = await deploy("TestToken", {
+		from: deployer,
+		args: [],
+		log: true,
+	});
+	console.log(`TestToken contract deployed to: ${testToken.address}`);
+
 	const feeManager = await deploy("FeeManager", {
 		from: deployer,
 		args: [routeTo],
@@ -84,13 +91,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 	console.error("Error executing setFeeTo:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
-	try {
-		console.log(`Setting identityVerifier on Interfacer`);
-		await execute('Interfacer', {from: deployer}, 'setVerifier', identityVerifier.address);
-	} catch (error) {
-		const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
-		console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
-	}
+	// try {
+	// 	console.log(`Setting identityVerifier on Interfacer`);
+	// 	await execute('Interfacer', {from: deployer}, 'setVerifier', identityVerifier.address);
+	// } catch (error) {
+	// 	const errorMessage = error?.message || error?.reason || error?.data?.message || error?.data?.reason;
+	// 	console.error("Error executing setVerifier:", errorMessage?.stack || errorMessage?.slice(0, 100));
+	// }
 
 	// try {
 	// 	console.log(`Setting Interfacer on ApprovalFactory`);

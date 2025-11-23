@@ -6,6 +6,7 @@ import Features from './Features';
 import Hero from './Hero';
 import CampaignTabs from '../campaigns/CampaignTabs';
 import Footer from './Footer';
+import AnimatedFlowBackground from './AnimatedFlowBackground';
 import { useRouter } from 'next/navigation';
 import { formatEther } from 'viem';
 import useStorage from '../hooks/useStorage';
@@ -65,7 +66,11 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen overflow-auto transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white font-mono`}>
+    // <div className={`min-h-screen overflow-auto transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white font-mono relative`}>
+    <div className={`min-h-screen overflow-auto transition-colors duration-300 text-gray-900 dark:text-white font-mono relative`}>
+      {/* Animated Flow Background */}
+      <AnimatedFlowBackground campaigns={campaigns} />
+      
       {/* <Navbar /> */}
       <Hero 
         handleJoinCampaign={handleJoinCampaign}
@@ -79,6 +84,8 @@ export default function LandingPage() {
         isLoading={isLoading}
       />
       <Features />
+
+      <Footer />
 
       {/* Campaign Learning Init Modal */}
       {selectedCampaign && (
@@ -96,8 +103,6 @@ export default function LandingPage() {
           onClose={() => setSelectedCampaignStats(null)}
         />
       )}
-
-      <Footer />
 
       {/* Scroll to top */}
       <ScrollTopButton />

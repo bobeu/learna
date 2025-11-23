@@ -131,7 +131,6 @@ export default function ProfilePage() {
     // if(startDateInNum > 0) startTimestamp = Math.floor(startDateInNum / 1000);
     // if(endDateInNum > 0) endTimestamp = Math.floor(endDateInNum / 1000);
     if(startDateInNum > 0) endDateInHr = Math.floor(((startDateInNum - endDateInNum) / 1000) / 360);
-    console.log("endDateInHr", endDateInHr);
     
     const createCampaignInput: CreateCampaignInput = {
       name: name,
@@ -240,7 +239,6 @@ export default function ProfilePage() {
   };
 
   const handleTransactionSuccess = (txHash: string) => {
-    console.log('Campaign created successfully:', txHash);
     setShowTransactionModal(false);
     setShowCreateForm(false);
     // Reset form

@@ -6,7 +6,7 @@ export default function NeynaAppContext({children} : {children: React.ReactNode}
         <NeynarContextProvider
             settings={{
                 clientId: process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID || "",
-                defaultTheme: Theme.Light,
+                // defaultTheme: Theme.Light,
                 eventsCallbacks: {
                     onAuthSuccess: () => { },
                     onSignout() { },
