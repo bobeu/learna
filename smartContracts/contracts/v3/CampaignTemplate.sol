@@ -160,19 +160,23 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         }
     }
 
-    /**@dev Perform setting for current epoch
-        @param arg : Setting of type EpochSettingInput
-        @param rwType: Reward type
-    */
-    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyApproved(address(0)) returns(bool) {
+    function _tryStartAndReturnEpoch() private returns(uint newEpoch) {
         uint64 currentTime = _now();
         if(currentTime >= metadata.endDate) {
             epoches += 1;
             metadata.startDate = currentTime;
         }
-        uint epoch = epoches;
-        EpochSetting memory eps = epochData[epoch].setting;
-        if(arg.maxProof != eps.maxProof && arg.maxProof > 0) eps.maxProof = arg.maxProof;
+        newEpoch = epoches;
+    }
+
+    /**@dev Perform setting for current epoch
+        @param arg : Setting of type EpochSettingInput
+        @param rwType: Reward type
+    */
+    function epochSetting(EpochSettingInput memory arg, RewardType rwType) external payable onlyApproved(address(0)) returns(bool) {
+        uint epoch = _tryStartAndReturnEpoch();
+        EpochSetting storage eps = epochData[epoch].setting;
+        if(arg.maxProof != eps.maxProof) eps.maxProof = arg.maxProof;
         unchecked {
             if(arg.endInHr > 0) {
                 uint64 newEndDate = _now() + uint64(arg.endInHr * 1 hours);
@@ -195,7 +199,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         @param rating : Performance rating for completing a path
      */
     function proveAssimilation(ProofOfAssimilation memory poa, Performance memory rating, address user) external onlyApproved(address(0)) whenNotPaused returns(bool) {
-        uint epoch = epoches;
+        uint epoch = _tryStartAndReturnEpoch();
         Spot storage spot = spots[user][epoch];
         if(!spot.hasValue) {
             spot.hasValue = true;
@@ -235,6 +239,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
      */
     function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) external onlyApproved(address(0)) whenNotPaused validateEpochInput(epoch) returns(bool) {
         if(_now() < epochData[epoch].setting.endDate) revert ClaimNotReady();
+        _tryStartAndReturnEpoch();
         Spot memory spot = spots[user][epoch];
         Common.ShareOut memory sh = dev._rebalance(
             _calculateShare(
@@ -352,7 +357,7 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
         them to edit as many time as they wish. Builder must have proof assimilation before they can submit proof of integration.
      */
     function submitProofOfIntegration(string[3] memory links, address user) external whenNotPaused onlyApproved(address(0)) returns(bool) {
-        uint epoch = epoches;
+        uint epoch = _tryStartAndReturnEpoch();
         Spot memory spot = spots[user][epoch];
         if(!spot.hasValue) revert NoProofOfLearning();
         for(uint8 i = 0; i < links.length; i++) {
@@ -370,13 +375,13 @@ contract CampaignTemplate is ICampaignTemplate, CampaignMetadata {
     function approveIntegration(
         address[] memory targets, 
         uint32[]memory points, 
-        uint epoch
-    ) external onlyApproved(address(0)) whenNotPaused returns(bool) {
+        uint epoch,
+        address op
+    ) external onlyApproved(op) whenNotPaused returns(bool) {
         if(targets.length == points.length) {
             for(uint32 i = 0; i < targets.length; i++) {
-                address target = targets[i];
-                Spot memory spot = spots[target][epoch];
-                if(target != address(0)) {
+                Spot memory spot = spots[targets[i]][epoch];
+                if(targets[i] != address(0)) {
                     epochData[epoch].learners[spot.value].point.verified = true;
                     unchecked {
                         epochData[epoch].learners[spot.value].point.score += points[i];

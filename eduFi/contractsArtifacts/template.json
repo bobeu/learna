@@ -327,6 +327,11 @@
           "internalType": "uint256",
           "name": "epoch",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "op",
+          "type": "address"
         }
       ],
       "name": "approveIntegration",

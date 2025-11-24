@@ -38,6 +38,7 @@ interface ICampaignFactory {
 interface IInterfacer {
     function updateUserCampaign(address user) external;
     function registerCampaign(address _campaign) external;
+    function syncClaim(address target) external returns(bool);
 }
 
 interface ICampaignTemplate {
@@ -176,7 +177,7 @@ interface ICampaignTemplate {
     function claimRewardForPOASS(uint8 fundIndex, uint epoch, address user) external returns(bool);
     function claimRewardForPOINT(uint8 fundIndex, uint epoch, address user) external returns(bool);
     function submitProofOfIntegration(string[3] memory links, address user) external returns(bool);
-    function approveIntegration(address[] memory targets, uint32[]memory points, uint epoch) external returns(bool);
+    function approveIntegration(address[] memory targets, uint32[]memory points, uint epoch, address op) external returns(bool);
     function addFund(address token, address op, RewardType rwType) external payable returns(bool);
     function editMetaData(MetadataInput memory _meta) external returns(bool);
     function pause() external returns(bool);

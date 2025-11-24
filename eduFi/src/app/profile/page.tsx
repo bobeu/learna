@@ -189,15 +189,26 @@ export default function ProfilePage() {
       const res = await fetch('/api/generate-image', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ prompt: `Generate a modern campaign cover image for ${name}. ${description}` }) 
+        body: JSON.stringify({ 
+          prompt: `Generate a modern campaign cover image for ${name}. ${description}`,
+          campaignName: name || 'unnamed-campaign'
+        }) 
       });
       const data = await res.json();
       if (data?.uri) {
+        // Convert IPFS URI to gateway URL for preview if needed
+        const previewUri = data.uri.startsWith('ipfs://') 
+          ? `https://ipfs.io/ipfs/${data.uri.slice(7)}` 
+          : data.uri;
         setImageUri(data.uri);
-        setImagePreview(data.uri);
+        setImagePreview(previewUri);
+      } else if (data?.error) {
+        console.error('Error generating image:', data.error);
+        alert('Failed to generate image. Please try again.');
       }
     } catch (error) {
       console.error('Error generating AI image:', error);
+      alert('Failed to generate image. Please try again.');
     } finally {
       setAiGenerating(false);
     }

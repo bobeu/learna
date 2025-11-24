@@ -1,5 +1,5 @@
 {
-  "contractAddress": "0xcE76040bF69D22A73630DdB2da6C1Ae5eb4f19a5",
+  "contractAddress": "0x73aECDb328B63176a8965D072594AB6da6904e65",
   "functionName": "pause",
   "inputCount": 1,
   "requireArgUpdate": false,
@@ -23,11 +23,6 @@
     {
       "inputs": [],
       "name": "NoApproval",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotCampaignOwner",
       "type": "error"
     },
     {
