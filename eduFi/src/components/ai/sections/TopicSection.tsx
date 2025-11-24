@@ -37,7 +37,10 @@ export default function TopicSection({
 
   return (
     <TopicSelection
-      generateArticle={handleTopicSelect}
+      generateArticle={async (topic: GeneratedTopic) => {
+        await onGenerateArticle(topic);
+        onSetCurrentStep('article');
+      }}
       generateTopics={onGenerateTopics}
       generatedTopics={generatedTopics}
       getDifficultyColor={getDifficultyColor}
