@@ -29,18 +29,15 @@ export default function TopicSection({
   onGenerateArticle,
   onSetCurrentStep,
 }: TopicSectionProps) {
-  const handleTopicSelect = (topic: GeneratedTopic) => {
+  const handleTopicSelect = async(topic: GeneratedTopic) => {
     onSelectTopic(topic);
-    onGenerateArticle(topic);
+    await onGenerateArticle(topic);
     onSetCurrentStep('article');
   };
 
   return (
     <TopicSelection
-      generateArticle={async (topic: GeneratedTopic) => {
-        await onGenerateArticle(topic);
-        onSetCurrentStep('article');
-      }}
+      generateArticle={handleTopicSelect}
       generateTopics={onGenerateTopics}
       generatedTopics={generatedTopics}
       getDifficultyColor={getDifficultyColor}
