@@ -17,7 +17,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleGenAI } from "@google/genai";
+// import { GoogleGenAI } from "@google/genai";
 
 // Fallback models for text generation (used if env model fails)
 const TEXT_GENERATION_FALLBACKS = [
@@ -34,7 +34,7 @@ type TextTaskType = 'topics' | 'article' | 'quizzes' | 'rating';
 
 class AIService {
   private genAI: GoogleGenerativeAI | null = null;
-  private imagenAI: GoogleGenAI | null = null;
+  // private imagenAI: GoogleGenAI | null = null;
 
   constructor() {
     // Support both old and new env variable names
@@ -973,18 +973,18 @@ Requirements:
             const response = (await model.generateContent(prompt)).response;
             console.log("response", response);
 
-            const image = await this.imagenAI?.models.generateImages({
-              model: "gemini-3-pro-preview",
-              prompt,
-              config: {
-                aspectRatio: "16:9",
-                imageSize: "1024x1024",
-                addWatermark: true,
-                labels: { },
-                numberOfImages: 1
-              }
-            });
-            console.log('image?.generatedImages?.[0].image?.imageBytes', image?.generatedImages?.[0].image?.imageBytes);
+            // const image = await this.imagenAI?.models.generateImages({
+            //   model: "gemini-3-pro-preview",
+            //   prompt,
+            //   config: {
+            //     aspectRatio: "16:9",
+            //     imageSize: "1024x1024",
+            //     addWatermark: true,
+            //     labels: { },
+            //     numberOfImages: 1
+            //   }
+            // });
+            // console.log('image?.generatedImages?.[0].image?.imageBytes', image?.generatedImages?.[0].image?.imageBytes);
             // Check if response contains image data
             // Gemini 2.5 Flash Image may return base64 encoded image or a URL
             const parts = response.candidates?.[0]?.content?.parts;

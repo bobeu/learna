@@ -1,5 +1,5 @@
 import React from "react";
-import { NeynarContextProvider, Theme } from "@neynar/react";
+import { NeynarContextProvider } from "@neynar/react";
 
 export default function NeynaAppContext({children} : {children: React.ReactNode}) {
     return(
