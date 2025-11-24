@@ -44,9 +44,9 @@ class AIService {
       try {
         this.genAI = new GoogleGenerativeAI(apiKey);
         // console.log("apiKey", process.env.GEMINI_API_KEY);
-        this.imagenAI = new GoogleGenAI({apiKey});
-        console.log("this.imagenAI", this.imagenAI);
-        console.log("this.genAI", this.genAI);
+        // this.imagenAI = new GoogleGenAI({apiKey});
+        // console.log("this.imagenAI", this.imagenAI);
+        // console.log("this.genAI", this.genAI);
       } catch (error) {
         console.error('Failed to initialize Google Generative AI:', error);
       }
