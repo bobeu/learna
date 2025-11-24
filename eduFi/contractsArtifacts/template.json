@@ -290,6 +290,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "op",
+          "type": "address"
+        },
+        {
           "internalType": "enum ICampaignTemplate.RewardType",
           "name": "rwType",
           "type": "uint8"
@@ -322,6 +327,11 @@
           "internalType": "uint256",
           "name": "epoch",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "op",
+          "type": "address"
         }
       ],
       "name": "approveIntegration",
@@ -788,6 +798,30 @@
           "internalType": "struct ICampaignTemplate.ReadData",
           "name": "data",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserPoints",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "points",
+          "type": "uint64"
         }
       ],
       "stateMutability": "view",

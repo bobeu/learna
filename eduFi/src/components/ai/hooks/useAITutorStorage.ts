@@ -7,7 +7,7 @@ import { useCallback, useEffect } from 'react';
 import { GeneratedTopic } from '../TopicSelection';
 import { QuizQuestion } from '../Quiz';
 import { CampaignStateProps } from '../../../../types';
-import { formatAddr, zeroAddress } from '../../utilities';
+import { formatAddr } from '../../utilities';
 import { useAccount } from 'wagmi';
 import {
   saveAITutorState,
@@ -19,6 +19,7 @@ import {
   isProgressAlreadySaved,
   type UnsavedQuizProgress
 } from '../quizProgressStorage';
+import { zeroAddress } from 'viem';
 
 export interface GeneratedArticle {
   title: string;

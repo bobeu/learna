@@ -17,6 +17,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+// import { GoogleGenAI } from "@google/genai";
 
 // Fallback models for text generation (used if env model fails)
 const TEXT_GENERATION_FALLBACKS = [
@@ -33,17 +34,19 @@ type TextTaskType = 'topics' | 'article' | 'quizzes' | 'rating';
 
 class AIService {
   private genAI: GoogleGenerativeAI | null = null;
+  // private imagenAI: GoogleGenAI | null = null;
 
   constructor() {
     // Support both old and new env variable names
-    const apiKey = process.env.GEMINI_API_KEY || 
-                   process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
-                   process.env.GOOGLE_GEMINI_API_KEY ||
-                   process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if(apiKey && apiKey !== 'mock_gemini_key' && apiKey !== 'mock_google_ai_studio_key') {
       try {
         this.genAI = new GoogleGenerativeAI(apiKey);
+        // console.log("apiKey", process.env.GEMINI_API_KEY);
+        // this.imagenAI = new GoogleGenAI({apiKey});
+        // console.log("this.imagenAI", this.imagenAI);
+        // console.log("this.genAI", this.genAI);
       } catch (error) {
         console.error('Failed to initialize Google Generative AI:', error);
       }
@@ -942,177 +945,6 @@ Requirements:
     }
   }
 
-//   async generateArticle(topic: string, campaignName: string, maxWords: number = 5000): Promise<{
-//     title: string;
-//     content: string;
-//     wordCount: number;
-//     readingTime: number;
-//     codeExamples?: Array<{
-//       language: string;
-//       code: string;
-//       index: number;
-//       lineCount: number;
-//     }>;
-//     hasCodeExamples?: boolean;
-//     codeLanguages?: string[];
-//   }> {
-//     try {
-//       if(!this.genAI) {
-//         console.warn('No AI model found, using mock article');
-//         return this.getMockArticle(topic, maxWords);
-//       }
-
-//       // Optimized prompt for faster response - shorter and more direct
-//       // Includes specific instructions for code examples and strict JSON format
-//       const prompt = `Write a ${maxWords}-word article about "${topic}" for "${campaignName}".
-
-// Requirements:
-// - ${maxWords} maximum words. It could be greater if it contains coding examples or other content.
-// - Clear language
-// - Include practical code examples with proper syntax highlighting
-// - Use markdown code blocks with language tags for code examples only (e.g., \`\`\`solidity, \`\`\`javascript, \`\`\`typescript, \`\`\`python)
-// - Code examples should be complete, runnable, and well-commented
-// - Include at least 2-3 code examples if the topic involves programming
-// - Markdown headings for structure
-
-// IMPORTANT - Response Format:
-// You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
-// Return the JSON object directly in this exact format:
-
-// {"title":"Article Title Here","content":"Full markdown content with code examples","wordCount":${maxWords},"readingTime":${Math.ceil(maxWords / 200)}}
-
-// The "content" field should contain the full article in markdown format, including any code examples with proper markdown code blocks.
-// Do NOT include backticks or \`\`\`json or any markdown code block markers around the response itself.
-// Return ONLY the raw JSON object starting with { and ending with }, nothing else.`;
-
-//       // Generate content with automatic model fallback
-//       const { text } = await this.generateTextWithFallback('article', prompt);
-//       // console.log('text', text);
-//       // Parse JSON from response
-//       // First, try direct JSON parsing (AI should return raw JSON per instructions)
-//       let parsed: any = null;
-//       let cleanedText = text.trim();
-      
-//       // Try direct JSON parse first (most common case if AI follows instructions)
-//       try {
-//         if(text.startsWith('```json')) {
-//           // cleanedText = text.substring(text.indexOf('```json') + 7);
-//           cleanedText = text.substring(text.indexOf('```json') + 7, text.lastIndexOf('```'));
-//           cleanedText = cleanedText.trim();
-//           if(cleanedText.startsWith('json')) cleanedText = cleanedText.substring(4);
-//         }
-//         if(text.endsWith('```')) {
-//           // cleanedText = text.substring(0, text.lastIndexOf('```'));
-//           cleanedText = text.substring(text.indexOf('```') + 3, text.lastIndexOf('```'));
-//         }
-//         console.log('cleanedTextttt', cleanedText);
-//         parsed = JSON.parse(cleanedText);
-//       } catch (directParseError) {
-//         // console.log('directParseError', directParseError);
-//         // If direct parse fails, try extraction methods
-//         // Remove any leading text before the JSON (like "text" prefix)
-//         const textPrefixMatch = cleanedText.match(/^\w+\s+```/);
-//         if(textPrefixMatch) {
-//           cleanedText = cleanedText.substring(textPrefixMatch[0].indexOf('```'));
-//         }
-//         // console.log('cleanedText', cleanedText);
-        
-//         // Try parsing with extraction methods
-//         parsed = this.parseJsonFromText(cleanedText, 'object');
-//         // console.log('parsed ', parsed );
-//       }
-//       if(parsed && typeof parsed === 'object') {
-//         const content = parsed.content || text;
-        
-//         // Extract code examples from the content
-//         const codeExamplesData = this.extractAndValidateCodeExamples(content);
-        
-//         return {
-//           title: parsed.title || topic,
-//           content: content,
-//           wordCount: parsed.wordCount || maxWords,
-//           readingTime: parsed.readingTime || (maxWords > 0 ? Math.ceil(maxWords / 200) : 0),
-//           codeExamples: codeExamplesData.codeExamples,
-//           hasCodeExamples: codeExamplesData.hasCodeExamples,
-//           codeLanguages: codeExamplesData.languages
-//         };
-//       }
-      
-//       // Fallback to mock if parsing fails
-//       console.warn('Using mock article due to parsing failure');
-//       return this.getMockArticle(topic, maxWords);
-//     } catch (error: any) {
-//       console.error('Error generating article:', error);
-//       // If it's a model error, log it specifically
-//       if(error?.message?.includes('404') || error?.message?.includes('not found')) {
-//         console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
-//       }
-//       return this.getMockArticle(topic, maxWords);
-//     }
-//   }
-
-  // async generateQuizzes(articleContent: string, articleTitle: string, questionCount: number = 10): Promise<Array<{
-  //   id: string;
-  //   question: string;
-  //   options: string[];
-  //   correctAnswer: number;
-  //   explanation: string;
-  // }>> {
-  //   try {
-  //     if(!this.genAI) {
-  //       return this.getMockQuizzes(articleTitle, questionCount);
-  //     }
-
-  //     const prompt = `Generate ${questionCount} quiz questions based on this article about "${articleTitle}":
-      
-  //     Article content:
-  //     ${articleContent}
-      
-  //     IMPORTANT - Response Format:
-  //     You MUST return ONLY valid JSON. Do NOT wrap it in markdown code blocks. Do NOT add any text before or after the JSON.
-  //     Return the JSON array directly in this exact format:
-      
-  //     [{"id":"quiz-1","question":"Question text?","options":["Option A","Option B","Option C","Option D"],"correctAnswer":0,"explanation":"Explanation text"},{"id":"quiz-2",...}]
-      
-  //     Requirements:
-  //     - Create questions that test understanding, not just memorization
-  //     - Include 4 multiple choice options for each question
-  //     - Provide clear explanations for correct answers
-  //     - Mix difficulty levels (easy, medium, hard)
-  //     - Focus on practical applications and key concepts
-  //     - Return ONLY the raw JSON array, nothing else.`;
-
-  //     // Generate content with automatic model fallback
-  //     const { text } = await this.generateTextWithFallback('quizzes', prompt);
-      
-  //     // Parse JSON from response
-  //     // First, try direct JSON parsing (AI should return raw JSON per instructions)
-  //     let parsed: any = null;
-  //     const cleanedText = text.trim();
-      
-  //     try {
-  //       parsed = JSON.parse(cleanedText);
-  //     } catch (directParseError) {
-  //       // If direct parse fails, try extraction methods
-  //       parsed = this.parseJsonFromText(cleanedText, 'array');
-  //     }
-  //     if(parsed && Array.isArray(parsed) && parsed.length > 0) {
-  //       return parsed;
-  //     }
-      
-  //     // Fallback to mock if parsing fails
-  //     console.warn('Using mock quizzes due to parsing failure');
-  //     return this.getMockQuizzes(articleTitle, questionCount);
-  //   } catch (error: any) {
-  //     console.error('Error generating quizzes:', error);
-  //     // If it's a model error, log it specifically
-  //     if(error?.message?.includes('404') || error?.message?.includes('not found')) {
-  //       console.error('Model not found error. This might indicate an SDK version issue or incorrect model name.');
-  //     }
-  //     return this.getMockQuizzes(articleTitle, questionCount);
-  //   }
-  // }
-
   async generateImage(prompt: string): Promise<string> {
     try {
       if(!this.genAI) {
@@ -1127,64 +959,131 @@ Requirements:
       const modelsToTry = envImageModel 
         ? [envImageModel, ...IMAGE_GENERATION_FALLBACKS.filter(m => m !== envImageModel)]
         : IMAGE_GENERATION_FALLBACKS;
-
+        // console.log("modelsToTry", modelsToTry);
       let lastError: any = null;
+      const maxRetries = 2;
 
       for (const modelName of modelsToTry) {
-        try {
-          const model = this.genAI.getGenerativeModel({ model: modelName });
-          
-          // For image generation, we use generateContent with the prompt
-          // The response should contain image data or a URL
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          
-          // Check if response contains image data
-          // Gemini 2.5 Flash Image may return base64 encoded image or a URL
-          const parts = response.candidates?.[0]?.content?.parts;
-          
-          if(parts && parts.length > 0) {
-            // Check for inline data (base64 image)
-            const inlineData = parts.find(part => part.inlineData);
-            if(inlineData?.inlineData) {
-              // Convert base64 to data URL or save to IPFS
-              // For now, return the data URL format
-              const mimeType = inlineData.inlineData.mimeType || 'image/png';
-              const base64Data = inlineData.inlineData.data;
-              return `data:${mimeType};base64,${base64Data}`;
-            }
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            const model = this.genAI.getGenerativeModel({ model: modelName });
             
-            // Check for text that might contain a URL
-            const text = parts.find(part => part.text);
-            if(text?.text) {
-              // Try to extract URL from text
-              const urlMatch = text.text.match(/https?:\/\/[^\s]+|ipfs:\/\/[^\s]+/);
-              if(urlMatch) {
-                return urlMatch[0];
+            // For image generation, we use generateContent with the prompt
+            // The response should contain image data or a URL
+            const response = (await model.generateContent(prompt)).response;
+            console.log("response", response);
+
+            // const image = await this.imagenAI?.models.generateImages({
+            //   model: "gemini-3-pro-preview",
+            //   prompt,
+            //   config: {
+            //     aspectRatio: "16:9",
+            //     imageSize: "1024x1024",
+            //     addWatermark: true,
+            //     labels: { },
+            //     numberOfImages: 1
+            //   }
+            // });
+            // console.log('image?.generatedImages?.[0].image?.imageBytes', image?.generatedImages?.[0].image?.imageBytes);
+            // Check if response contains image data
+            // Gemini 2.5 Flash Image may return base64 encoded image or a URL
+            const parts = response.candidates?.[0]?.content?.parts;
+            console.log("parts: ", parts);
+            if(parts && parts.length > 0) {
+              // Check for inline data (base64 image)
+              const inlineData = parts.find(part => part.inlineData);
+              if(inlineData?.inlineData) {
+                // Convert base64 to data URL or save to IPFS
+                // For now, return the data URL format
+                const mimeType = inlineData.inlineData.mimeType || 'image/png';
+                const base64Data = inlineData.inlineData.data;
+                return `data:${mimeType};base64,${base64Data}`;
+              }
+              
+              // Check for text that might contain a URL
+              const text = parts.find(part => part.text);
+              if(text?.text) {
+                // Try to extract URL from text
+                const urlMatch = text.text.match(/https?:\/\/[^\s]+|ipfs:\/\/[^\s]+/);
+                if(urlMatch) {
+                  return urlMatch[0];
+                }
               }
             }
+            
+            // If no image data found in response, try next model
+            console.warn(`No image data found in response from ${modelName}, trying next model...`);
+            break; // Break inner loop, continue to next model
+          } catch (error: any) {
+            lastError = error;
+            
+            // Check for specific error types
+            const errorMessage = error?.message || String(error) || '';
+            const errorString = errorMessage.toLowerCase();
+            const isModelNotFound = errorString.includes('404') || 
+                                 errorString.includes('not found') ||
+                                 errorString.includes('model not found');
+            const isRateLimit = errorString.includes('429') || 
+                              errorString.includes('rate limit') ||
+                              errorString.includes('quota') ||
+                              errorString.includes('quota exceeded');
+            
+            // If model not found, skip to next model
+            if(isModelNotFound) {
+              console.warn(`Model ${modelName} not found, trying next...`);
+              break; // Break inner loop, continue to next model
+            }
+            
+            // If rate limited, wait and retry with exponential backoff or extracted retry delay
+            if(isRateLimit && attempt < maxRetries) {
+              // Try to extract retry delay from error (Google API provides this in errorDetails)
+              let waitTime = Math.pow(2, attempt) * 1000; // Default exponential backoff
+              
+              // Try to extract retry delay from error message or errorDetails
+              const retryDelayMatch = errorMessage.match(/retry in ([\d.]+)s/i);
+              if(retryDelayMatch) {
+                waitTime = Math.ceil(parseFloat(retryDelayMatch[1]) * 1000);
+              } else if(error?.errorDetails) {
+                // Check errorDetails array for RetryInfo
+                const retryInfo = error.errorDetails.find((detail: any) => 
+                  detail['@type'] === 'type.googleapis.com/google.rpc.RetryInfo'
+                );
+                if(retryInfo?.retryDelay) {
+                  // retryDelay is usually in seconds, convert to milliseconds
+                  waitTime = Math.ceil(parseFloat(retryInfo.retryDelay) * 1000);
+                }
+              }
+              
+              console.warn(`Rate limited on ${modelName} (quota exceeded), retrying in ${waitTime}ms...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue; // Retry same model
+            }
+            
+            // If last attempt for this model, log and try next model
+            if(attempt === maxRetries) {
+              if(isRateLimit) {
+                console.error(`Quota exceeded for ${modelName} after ${maxRetries + 1} attempts. This model has hit its free tier limits.`);
+              } else {
+                console.warn(`Failed to use model ${modelName} for image generation after ${maxRetries + 1} attempts, trying next...`);
+              }
+              break; // Break inner loop, continue to next model
+            }
           }
-          
-          // If no image data found in response, try fallback
-          console.warn(`No image data found in response from ${modelName}, trying next model...`);
-          continue;
-        } catch (error: any) {
-          lastError = error;
-          console.warn(`Failed to use model ${modelName} for image generation, trying next...`);
-          
-          // If it's a 404 (model not found), continue to next model
-          if(error?.message?.includes('404') || error?.message?.includes('not found')) {
-            continue;
-          }
-          
-          // For other errors, still try next model
-          continue;
         }
       }
 
       // If all models fail, log error and return fallback
       if(lastError) {
-        console.error('Error generating image with all models:', lastError);
+        const errorMessage = lastError?.message || 'Unknown error';
+        const isQuotaError = errorMessage.toLowerCase().includes('quota') || 
+                           errorMessage.toLowerCase().includes('429');
+        
+        if(isQuotaError) {
+          console.error('All image generation models have exceeded their quota limits. Please check your Gemini API plan and billing details.');
+          console.error('Error details:', lastError);
+        } else {
+          console.error('Error generating image with all models:', lastError);
+        }
       }
       
       // Return a working fallback IPFS URI

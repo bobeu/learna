@@ -8,7 +8,6 @@ import { IApprovalFactory } from "./ApprovalFactory.sol";
 
 contract Interfacer is IInterfacer {
     // ERRORS
-    error NotCampaignOwner();
     error OnlyOwner();
     error PointClaimed();
     error NotVerified();
@@ -66,7 +65,9 @@ contract Interfacer is IInterfacer {
     }
 
     function _onlyCampaignCreator(address creator) internal view {
-        if(_msgSender() != creator) revert NotCampaignOwner();
+        if(_msgSender() != creator) {
+            if(!approvalFactory.hasApproval(_msgSender())) revert NoApproval();
+        }
     }
 
     /// @notice Ensure that the result of an operation succeed. The result must evaluate to boolean value.
@@ -183,7 +184,7 @@ contract Interfacer is IInterfacer {
         @notice Targets array size must tally with that of points. 
      */
     function approveIntegration(address[] memory targets, uint32[] memory _points, uint epoch, uint campaignIndex) external returns(bool){
-        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).approveIntegration(targets, _points, epoch));
+        return _ensureOperation(ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).approveIntegration(targets, _points, epoch, _msgSender()));
     }
 
     /**@dev Add funds to campaign

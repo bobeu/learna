@@ -42,7 +42,7 @@ export default function NewCampaignPage(){
 
     const [showMyCampaigns, setShowMyCampaigns] = React.useState<boolean>(false);
     const [ipfsUploading, setIpfsUploading] = React.useState<boolean>(false);
-    const [aiGenerating, setAiGenerating] = React.useState<boolean>(false);
+    // const [aiGenerating, setAiGenerating] = React.useState<boolean>(false);
     const [displayForm, setDisplayForm] = React.useState<boolean>(false);
     const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
@@ -190,19 +190,42 @@ export default function NewCampaignPage(){
         setShowTransactionModal(false);
     }
 
-    const generateAiImage = async () => {
-        setAiGenerating(true);
-        try{
-            const res = await fetch('/api/generate-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Generate a modern campaign cover image for ${name}. ${description}` }) });
-            const data = await res.json();
-            if (data?.uri) {
-                setImageUri(data.uri);
-                setImagePreview(data.uri);
-            }
-        } finally {
-            setAiGenerating(false);
-        }
-    };
+    // const generateAiImage = async () => {
+    //     setAiGenerating(true);
+    //     try{
+    //         if(!name) throw Error('Campaign title undefined');
+    //         const res = await fetch('/api/generate-image', { 
+    //             method: 'POST', 
+    //             headers: { 'Content-Type': 'application/json' }, 
+    //             body: JSON.stringify({ 
+    //                 prompt: `Generate a modern campaign cover image for ${name}. ${description}`,
+    //                 campaignName: name
+    //             }) 
+    //         });
+    //         console.log("Res", res);
+    //         const data = await res.json();
+    //         console.log("data", data);
+
+    //         if (data?.uri) {
+    //             // Convert IPFS URI to gateway URL for preview if needed
+    //             const previewUri = data.uri.startsWith('ipfs://') 
+    //                 ? `https://ipfs.io/ipfs/${data.uri.slice(7)}` 
+    //                 : data.uri;
+                    
+    //             console.log("data.uri", data.uri);
+    //             setImageUri(data.uri);
+    //             setImagePreview(previewUri);
+    //         } else if (data?.error) {
+    //             console.error('Error generating image:', data.error);
+    //             alert('Failed to generate image. Please try again.');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error generating AI image:', error);
+    //         alert('Failed to generate image. Please try again.');
+    //     } finally {
+    //         setAiGenerating(false);
+    //     }
+    // };
 
     // // Prepare data for on-chain storage
     const prepareOnChainData = () => {
@@ -384,12 +407,23 @@ export default function NewCampaignPage(){
                                                     <Button variant={useAiImage ? "outline" : "default"} size="sm" className="gap-2" onClick={() => setUseAiImage(false)}>
                                                         <ImageIcon className="w-4 h-4" /> Upload
                                                     </Button>
-                                                    <Button variant={useAiImage ? "default" : "outline"} size="sm" className="gap-2" onClick={() => setUseAiImage(true)}>
+                                                    {/* <Button variant={useAiImage ? "default" : "outline"} size="sm" className="gap-2" onClick={() => setUseAiImage(true)}>
                                                         <WandSparkles className="w-4 h-4" /> AI Generate
-                                                    </Button>
+                                                    </Button> */}
                                                 </div>
                                             </div>
-                                            {!useAiImage ? (
+                                            {
+                                                !useAiImage && (
+                                                    <div className="flex items-center gap-3">
+                                                        <Input type="file" accept="image/*" onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) uploadImage(file);
+                                                        }} />
+                                                        {ipfsUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                                    </div>
+                                                )
+                                            }
+                                            {/* {!useAiImage ? (
                                                 <div className="flex items-center gap-3">
                                                     <Input type="file" accept="image/*" onChange={(e) => {
                                                         const file = e.target.files?.[0];
@@ -403,7 +437,7 @@ export default function NewCampaignPage(){
                                                         {aiGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <WandSparkles className="w-4 h-4" />} Generate with AI
                                                     </Button>
                                                 </div>
-                                            )}
+                                            )} */}
                                             {imageUri && (
                                                 <div className="space-y-2">
                                                     <div className="text-xs text-neutral-500 break-all">Image URI: {imageUri}</div>

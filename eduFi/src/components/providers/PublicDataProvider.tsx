@@ -11,7 +11,7 @@ import {
     type ReadData, 
 } from '../../../types';
 import { useAccount, useChainId } from "wagmi";
-import { celoSepolia, celo } from 'wagmi/chains';
+import { celoSepolia } from 'wagmi/chains';
 import { zeroAddress } from 'viem';
 import { 
     filterTransactionData, 
@@ -39,7 +39,7 @@ export default function PublicDataProvider({children} : {children: React.ReactNo
     const publicClient = getPublicClient(chainId);
     
     // Get user address if connected, otherwise use zeroAddress
-    const { address, isConnected } = useAccount();
+    const { address } = useAccount();
     const account = formatAddr(address) || zeroAddress;
 
     // Function to read contracts using public client

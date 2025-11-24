@@ -25,10 +25,10 @@ export default function Hero({campaigns, handleJoinCampaign} : {campaigns: Campa
     const [showHow, setShowHow] = React.useState(false);
 
     return(
-        <section className="relative py-8 sm:py-12 md:py-20 px-4 sm:px-6 lg:px-8">
+        <section className="relative py-8 sm:py-12 md:py-20 px-4 sm:px-6 lg:px-8 z-10">
             <div className="absolute inset-0 -z-10">
-                <Image src="/learna-image4.png" alt="bg" fill className="object-cover opacity-20" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+                <Image src="/learna-image4.png" alt="bg" fill className="object-cover opacity-10 dark:opacity-5" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/60 dark:from-black/50 dark:via-black/30 dark:to-black/50 backdrop-blur-sm" />
             </div>
             <div className="max-w-7xl mx-auto">
                 <div className="text-center">

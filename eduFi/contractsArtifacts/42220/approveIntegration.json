@@ -1,18 +1,19 @@
 {
-  "contractAddress": "0x3b244c281042F38085ec7d43eb134b3D6b0609B1",
+  "contractAddress": "0xE3Af2c7bd759183e4BD52a625F81f1f401C39DCd",
   "functionName": "approveIntegration",
   "inputCount": 4,
   "requireArgUpdate": false,
   "abi": [
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "contract IApprovalFactory",
+          "name": "_approvalFactory",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "constructor"
-    },
-    {
-      "inputs": [],
-      "name": "FactoryIsZeroAddress",
-      "type": "error"
     },
     {
       "inputs": [],
@@ -21,7 +22,7 @@
     },
     {
       "inputs": [],
-      "name": "NotCampaignOwner",
+      "name": "NoApproval",
       "type": "error"
     },
     {
@@ -37,6 +38,16 @@
     {
       "inputs": [],
       "name": "OperationFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PointClaimed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
       "type": "error"
     },
     {
@@ -77,7 +88,7 @@
         },
         {
           "internalType": "uint32[]",
-          "name": "points",
+          "name": "_points",
           "type": "uint32[]"
         },
         {
@@ -92,6 +103,30 @@
         }
       ],
       "name": "approveIntegration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "campaignIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimPoint",
       "outputs": [
         {
           "internalType": "bool",
@@ -450,6 +485,25 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "newApprovalFactory",
+          "type": "address"
+        }
+      ],
+      "name": "setApprovalFactory",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_factory",
           "type": "address"
         }
@@ -517,6 +571,25 @@
         }
       ],
       "name": "submitProofOfIntegration",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        }
+      ],
+      "name": "syncClaim",
       "outputs": [
         {
           "internalType": "bool",
