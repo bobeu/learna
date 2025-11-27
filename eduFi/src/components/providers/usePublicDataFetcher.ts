@@ -9,7 +9,7 @@ import {
     type ReadData, 
 } from '../../../types';
 import { useAccount, useChainId } from "wagmi";
-import { celoSepolia } from 'wagmi/chains';
+import { celo } from 'wagmi/chains';
 import { zeroAddress } from 'viem';
 import { 
     filterTransactionData, 
@@ -42,9 +42,9 @@ export function usePublicDataFetcher({
     set_IsLoadingCampaigns,
     factoryData,
 }: UsePublicDataFetcherProps) {
-    // Get chainId from wagmi if connected, otherwise default to celoSepolia
+    // Get chainId from wagmi if connected, otherwise default to celo
     const wagmiChainId = useChainId();
-    const chainId = wagmiChainId || celoSepolia.id; // Default to celoSepolia if not connected
+    const chainId = wagmiChainId || celo.id; // Default to celo if not connected
     // console.log("chainId:", chainId);
     const publicClient = getPublicClient(chainId);
     
