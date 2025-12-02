@@ -37,7 +37,13 @@ export default function Navbar() {
             </div>
             {/* Mobile: Show compact version with chain icon only */}
             <div className="md:hidden">
-              <ConnectButton.Custom>
+              <ConnectButton 
+                showBalance={false}
+                chainStatus="icon"
+                accountStatus="avatar"
+                label="Connect"
+              />
+              {/* <ConnectButton.Custom>
                 {({
                   account,
                   chain,
@@ -94,7 +100,7 @@ export default function Navbar() {
                     </Button>
                   );
                 }}
-              </ConnectButton.Custom>
+              </ConnectButton.Custom> */}
             </div>
           </div>
         </div>
