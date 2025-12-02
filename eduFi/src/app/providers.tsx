@@ -15,14 +15,19 @@ const Web3AuthProvider = dynamic(
 export function Providers({ children } : {children: React.ReactNode}) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-      <Web3AuthProvider>
-        <MiniAppProvider analyticsEnabled={true}>
-          <NeynaAppContext>
+      {/* MiniAppProvider must wrap NeynarContextProvider for proper Farcaster miniapp support */}
+      <MiniAppProvider analyticsEnabled={true}>
+        {/* NeynarContextProvider handles Farcaster authentication in miniapp mode */}
+        <NeynaAppContext>
+          {/* Web3AuthProvider handles blockchain wallet connections (Wagmi/RainbowKit) */}
+          {/* In miniapp mode: Neynar handles Farcaster auth, wallet is auto-provided */}
+          {/* In web mode: Users explicitly connect via RainbowKit */}
+          <Web3AuthProvider>
             {children}
             <RouteTransitionOverlay />
-          </NeynaAppContext>
-        </MiniAppProvider>
-      </Web3AuthProvider>
+          </Web3AuthProvider>
+        </NeynaAppContext>
+      </MiniAppProvider>
     </ThemeProvider>
   );
 }

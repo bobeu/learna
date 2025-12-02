@@ -17,18 +17,19 @@ export const NeynarDataContext = React.createContext<NeynaDataContextProps | nul
 
 export const DataContext = React.createContext<DataContextProps | null>(null);
 
-export const StorageContextProvider = ({ value, children } : LearnaProviderProps) => {
-    return(
-        <DataContext.Provider value={value}>
-            { children }
-        </DataContext.Provider>
-    );
-}
 
 export const NeynaStorageContextProvider = ({ value, children } : NeynaProviderProps) => {
     return(
         <NeynarDataContext.Provider value={value}>
             { children }
         </NeynarDataContext.Provider>
+    );
+}
+
+export const StorageContextProvider = ({ value, children } : LearnaProviderProps) => {
+    return(
+        <DataContext.Provider value={value}>
+            { children }
+        </DataContext.Provider>
     );
 }
