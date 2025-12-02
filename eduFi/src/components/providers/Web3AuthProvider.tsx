@@ -9,7 +9,6 @@ import { RainbowKitProvider, getDefaultConfig, lightTheme, darkTheme } from "@ra
 import { celo, celoSepolia } from "wagmi/chains";
 import DataProvider from "./DataProvider";
 import { useTheme } from "next-themes";
-import { sdk } from "@farcaster/miniapp-sdk";
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
 const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
@@ -108,10 +107,8 @@ function ThemedRainbowKitProvider({ children }: { children: React.ReactNode }) {
 
 // Custom hook for Coinbase Wallet auto-connection
 // Only auto-connects Coinbase Wallet in web mode
-// In Farcaster context, users must explicitly connect via ConnectButton (allows MetaMask, etc.)
 function useCoinbaseWalletAutoConnect() {
   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
-  const [isFarcasterContext, setIsFarcasterContext] = useState(false);
   const { connect, connectors } = useConnect();
   const { isConnected } = useAccount();
 
@@ -124,20 +121,7 @@ function useCoinbaseWalletAutoConnect() {
       setIsCoinbaseWallet(!!isInCoinbaseWallet);
     };
     
-    // Check if we're in Farcaster context (for informational purposes only)
-    const checkFarcaster = async () => {
-      try {
-        const isMiniApp = await sdk.isInMiniApp();
-        setIsFarcasterContext(isMiniApp);
-      } catch (error) {
-        console.debug('Farcaster SDK check failed:', error);
-        setIsFarcasterContext(false);
-      }
-    };
-    
     checkCoinbaseWallet();
-    checkFarcaster();
-    
     window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
     
     return () => {
@@ -147,9 +131,8 @@ function useCoinbaseWalletAutoConnect() {
 
   useEffect(() => {
     // Only auto-connect Coinbase Wallet in web mode (not in Farcaster context)
-    // In Farcaster context, users should explicitly connect via ConnectButton
     // This allows them to choose MetaMask or other wallets
-    if (!isFarcasterContext && !isConnected && connectors.length > 0 && isCoinbaseWallet) {
+    if (isConnected && connectors.length > 0 && isCoinbaseWallet) {
       const coinbaseConnector = connectors.find(
         (connector) => connector.id === 'coinbaseWallet' || connector.id === 'coinbaseWalletSDK'
       ) || connectors[1];
@@ -157,7 +140,7 @@ function useCoinbaseWalletAutoConnect() {
         connect({ connector: coinbaseConnector });
       }
     }
-  }, [isCoinbaseWallet, isFarcasterContext, isConnected, connect, connectors]);
+  }, [isCoinbaseWallet, isConnected, connect, connectors]);
 
   return { isCoinbaseWallet };
 }

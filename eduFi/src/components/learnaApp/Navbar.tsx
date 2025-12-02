@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Moon, Sun, Library, X } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useTheme } from 'next-themes';
@@ -52,8 +52,7 @@ export default function Navbar() {
                   if(!ready) {
                     return (
                       <Button variant="outline" size="sm" className="p-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" disabled>
-                        <X className="w-4 h-4" />
-                        Connect
+                        {'Mounting...'}
                       </Button>
                     );
                   }
