@@ -51,7 +51,7 @@ export default function Navbar() {
 
                   if(!ready) {
                     return (
-                      <Button variant="outline" size="sm" className="p-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" disabled>
+                      <Button variant="outline" size="sm" className="p-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400">
                         {'Mounting...'}
                       </Button>
                     );
@@ -60,7 +60,6 @@ export default function Navbar() {
                   if(!connected) {
                     return (
                       <Button variant="outline" size="sm" className="p-2 border-primary-500 hover:bg-primary-200 dark:border-primary-500 dark:text-primary-500 dark:hover:bg-primary-500 dark:hover:text-black" onClick={openConnectModal}>
-                        {/* <X className="w-4 h-4" /> */}
                         <span className="text-sm font-medium text-primary-600 dark:text-white hover:text-primary-600 dark:hover:text-primary-200">Connect</span>
                       </Button>
                     );
