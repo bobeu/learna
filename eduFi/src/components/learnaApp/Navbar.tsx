@@ -15,13 +15,13 @@ export default function Navbar() {
     return(
       <nav className="w-full sticky top-0 z-50 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-black/90 backdrop-blur-sm px-4 md:px-7">
         <div className="max-w-7xl mx-auto flex justify-between items-center h-16 md:h-20">
-          <div className="flex justify-between items-center w-14 h-14 border border-primary-500 rounded-full">
+          {/* <div className="flex justify-between items-center w-14 h-14 border border-primary-500 rounded-full"> */}
             <img 
               src="/logo.png" 
               alt="Learna Logo" 
-              className="object-contain"
+              className="object-contain w-14 h-14 md:w-16 md:h-16"
             />
-          </div>
+          {/* </div> */}
           <div className="flex items-center gap-2 md:gap-4">
             <Button
               variant="ghost"
@@ -53,14 +53,16 @@ export default function Navbar() {
                     return (
                       <Button variant="outline" size="sm" className="p-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400" disabled>
                         <X className="w-4 h-4" />
+                        Connect
                       </Button>
                     );
                   }
 
                   if(!connected) {
                     return (
-                      <Button variant="outline" size="sm" className="p-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-black dark:border-primary-500 dark:text-primary-500 dark:hover:bg-primary-500 dark:hover:text-black" onClick={openConnectModal}>
-                        <X className="w-4 h-4" />
+                      <Button variant="outline" size="sm" className="p-2 border-primary-500 hover:bg-primary-200 dark:border-primary-500 dark:text-primary-500 dark:hover:bg-primary-500 dark:hover:text-black" onClick={openConnectModal}>
+                        {/* <X className="w-4 h-4" /> */}
+                        <span className="text-sm font-medium text-primary-600 dark:text-white hover:text-primary-600 dark:hover:text-primary-200">Connect</span>
                       </Button>
                     );
                   }

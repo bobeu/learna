@@ -26,10 +26,10 @@ export default function Hero({campaigns, handleJoinCampaign} : {campaigns: Campa
 
     return(
         <section className="relative py-8 sm:py-12 md:py-20 px-4 sm:px-6 lg:px-8 z-10">
-            <div className="absolute inset-0 -z-10">
-                <Image src="/learna-image4.png" alt="bg" fill className="object-cover opacity-10 dark:opacity-5" />
+            {/* <div className="absolute inset-0 -z-10">
+                <Image src="/logo.png" alt="bg" fill className="object-cover opacity-10 dark:opacity-5" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/60 dark:from-black/50 dark:via-black/30 dark:to-black/50 backdrop-blur-sm" />
-            </div>
+            </div> */}
             <div className="max-w-7xl mx-auto">
                 <div className="text-center">
                     <div className="flex items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary-100 text-gray-900 text-xs sm:text-sm font-medium mb-4 sm:mb-8 max-w-fit mx-auto w-full sm:w-auto">

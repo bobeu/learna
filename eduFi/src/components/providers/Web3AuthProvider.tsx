@@ -106,12 +106,12 @@ function ThemedRainbowKitProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Custom hook for wallet auto-connection
-// In Farcaster miniapp mode, Neynar handles authentication automatically
-// In web mode, we only auto-connect Coinbase Wallet if detected
+// Custom hook for Coinbase Wallet auto-connection
+// Only auto-connects Coinbase Wallet in web mode
+// In Farcaster context, users must explicitly connect via ConnectButton (allows MetaMask, etc.)
 function useCoinbaseWalletAutoConnect() {
   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
-  const [isFarcaster, setIsFarcaster] = useState(false);
+  const [isFarcasterContext, setIsFarcasterContext] = useState(false);
   const { connect, connectors } = useConnect();
   const { isConnected } = useAccount();
 
@@ -124,15 +124,14 @@ function useCoinbaseWalletAutoConnect() {
       setIsCoinbaseWallet(!!isInCoinbaseWallet);
     };
     
-    // Check if we're in Farcaster Mini App using the official SDK
+    // Check if we're in Farcaster context (for informational purposes only)
     const checkFarcaster = async () => {
       try {
         const isMiniApp = await sdk.isInMiniApp();
-        setIsFarcaster(isMiniApp);
+        setIsFarcasterContext(isMiniApp);
       } catch (error) {
-        // If SDK is not available or fails, assume not in Mini App
         console.debug('Farcaster SDK check failed:', error);
-        setIsFarcaster(false);
+        setIsFarcasterContext(false);
       }
     };
     
@@ -147,25 +146,20 @@ function useCoinbaseWalletAutoConnect() {
   }, []);
 
   useEffect(() => {
-    // Only auto-connect in web mode (not Farcaster miniapp)
-    // In Farcaster miniapp mode, Neynar handles authentication via NeynarContextProvider
-    // In web mode, auto-connect Coinbase Wallet if detected
-    if (!isFarcaster && !isConnected && connectors.length > 0) {
-      if (isCoinbaseWallet) {
-        // Auto-connect to Coinbase Wallet connector in web mode
-        const coinbaseConnector = connectors.find(
-          (connector) => connector.id === 'coinbaseWallet' || connector.id === 'coinbaseWalletSDK'
-        ) || connectors[1];
-        if (coinbaseConnector) {
-          connect({ connector: coinbaseConnector });
-        }
+    // Only auto-connect Coinbase Wallet in web mode (not in Farcaster context)
+    // In Farcaster context, users should explicitly connect via ConnectButton
+    // This allows them to choose MetaMask or other wallets
+    if (!isFarcasterContext && !isConnected && connectors.length > 0 && isCoinbaseWallet) {
+      const coinbaseConnector = connectors.find(
+        (connector) => connector.id === 'coinbaseWallet' || connector.id === 'coinbaseWalletSDK'
+      ) || connectors[1];
+      if (coinbaseConnector) {
+        connect({ connector: coinbaseConnector });
       }
     }
-    // Note: In Farcaster miniapp mode, wallet connection is handled by Neynar's authentication
-    // Users will be authenticated via NeynarContextProvider, which provides the wallet context
-  }, [isCoinbaseWallet, isFarcaster, isConnected, connect, connectors]);
+  }, [isCoinbaseWallet, isFarcasterContext, isConnected, connect, connectors]);
 
-  return { isCoinbaseWallet, isFarcaster };
+  return { isCoinbaseWallet };
 }
 
 // Wrapper component that provides Coinbase Wallet auto-connection
