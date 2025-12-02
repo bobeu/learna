@@ -9,6 +9,7 @@ import { RainbowKitProvider, getDefaultConfig, lightTheme, darkTheme } from "@ra
 import { celo, celoSepolia } from "wagmi/chains";
 import DataProvider from "./DataProvider";
 import { useTheme } from "next-themes";
+import { sdk } from "@farcaster/miniapp-sdk";
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
 const alchemy_celo_api = process.env.NEXT_PUBLIC_ALCHEMY_CELO_MAINNET_API as string;
@@ -105,23 +106,9 @@ function ThemedRainbowKitProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Helper function to detect Farcaster context
-function isFarcasterContext(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  const urlParams = new URLSearchParams(window.location.search);
-  
-  return (
-    userAgent.includes('farcaster') ||
-    urlParams.has('farcaster') ||
-    urlParams.get('mode') === 'farcaster' ||
-    (window as any).farcaster !== undefined ||
-    (window as any).parent?.farcaster !== undefined
-  );
-}
-
-// Custom hook for Coinbase Wallet and Farcaster detection and auto-connection
+// Custom hook for wallet auto-connection
+// In Farcaster miniapp mode, Neynar handles authentication automatically
+// In web mode, we only auto-connect Coinbase Wallet if detected
 function useCoinbaseWalletAutoConnect() {
   const [isCoinbaseWallet, setIsCoinbaseWallet] = useState(false);
   const [isFarcaster, setIsFarcaster] = useState(false);
@@ -137,9 +124,16 @@ function useCoinbaseWalletAutoConnect() {
       setIsCoinbaseWallet(!!isInCoinbaseWallet);
     };
     
-    // Check if we're in Farcaster context
-    const checkFarcaster = () => {
-      setIsFarcaster(isFarcasterContext());
+    // Check if we're in Farcaster Mini App using the official SDK
+    const checkFarcaster = async () => {
+      try {
+        const isMiniApp = await sdk.isInMiniApp();
+        setIsFarcaster(isMiniApp);
+      } catch (error) {
+        // If SDK is not available or fails, assume not in Mini App
+        console.debug('Farcaster SDK check failed:', error);
+        setIsFarcaster(false);
+      }
     };
     
     checkCoinbaseWallet();
@@ -147,46 +141,28 @@ function useCoinbaseWalletAutoConnect() {
     
     window.addEventListener('ethereum#initialized', checkCoinbaseWallet);
     
-    // Re-check Farcaster context periodically in case it loads asynchronously
-    // Limit to 10 checks (5 seconds total) to avoid running indefinitely
-    let farcasterCheckCount = 0;
-    const maxFarcasterChecks = 10;
-    const farcasterCheckInterval = setInterval(() => {
-      farcasterCheckCount++;
-      checkFarcaster();
-      if (farcasterCheckCount >= maxFarcasterChecks) {
-        clearInterval(farcasterCheckInterval);
-      }
-    }, 500);
-    
     return () => {
       window.removeEventListener('ethereum#initialized', checkCoinbaseWallet);
-      clearInterval(farcasterCheckInterval);
     };
   }, []);
 
   useEffect(() => {
-    // Auto-connect if in Coinbase Wallet or Farcaster context and not already connected
-    if (!isConnected && connectors.length > 0) {
+    // Only auto-connect in web mode (not Farcaster miniapp)
+    // In Farcaster miniapp mode, Neynar handles authentication via NeynarContextProvider
+    // In web mode, auto-connect Coinbase Wallet if detected
+    if (!isFarcaster && !isConnected && connectors.length > 0) {
       if (isCoinbaseWallet) {
-        // Auto-connect to Coinbase Wallet connector (typically index 1)
+        // Auto-connect to Coinbase Wallet connector in web mode
         const coinbaseConnector = connectors.find(
           (connector) => connector.id === 'coinbaseWallet' || connector.id === 'coinbaseWalletSDK'
         ) || connectors[1];
         if (coinbaseConnector) {
           connect({ connector: coinbaseConnector });
         }
-      } else if (isFarcaster) {
-        // Auto-connect to the first available connector in Farcaster context
-        // Typically this would be injected provider or Coinbase Wallet
-        const farcasterConnector = connectors.find(
-          (connector) => connector.id === 'coinbaseWallet' || connector.id === 'coinbaseWalletSDK'
-        ) || connectors[0];
-        if (farcasterConnector) {
-          connect({ connector: farcasterConnector });
-        }
       }
     }
+    // Note: In Farcaster miniapp mode, wallet connection is handled by Neynar's authentication
+    // Users will be authenticated via NeynarContextProvider, which provides the wallet context
   }, [isCoinbaseWallet, isFarcaster, isConnected, connect, connectors]);
 
   return { isCoinbaseWallet, isFarcaster };
