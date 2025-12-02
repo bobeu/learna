@@ -272,24 +272,16 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="flex justify-between items-center sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+              <div className="text-left sm:text-center flex-1 sm:flex-initial">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Your Profile</h1>
+                <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300">Manage your campaigns and participation</p>
+              </div>
               <Link href="/" className="w-full sm:w-auto">
                 <Button variant="outline" className={`gap-2 w-full sm:w-auto text-sm sm:text-base ${isDark ? 'text-white border-neutral-700' : ''}`}>
                   <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Home</span><span className="sm:hidden">Back</span>
                 </Button>
               </Link>
-              <div className="text-left sm:text-center flex-1 sm:flex-initial">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Your Profile</h1>
-                <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300">Manage your campaigns and participation</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-              <Button variant="outline" size="icon" onClick={() => setTheme(isDark ? 'light' : 'dark')} aria-label="Toggle theme" className="h-8 w-8 sm:h-10 sm:w-10">
-                {isDark ? <Sun className="w-3 h-3 sm:w-4 sm:h-4" /> : <Moon className="w-3 h-3 sm:w-4 sm:h-4" />}
-              </Button>
-              <div className="flex-1 sm:flex-initial">
-                <ConnectButton />
-              </div>
             </div>
           </div>
         </div>
@@ -328,7 +320,7 @@ export default function ProfilePage() {
                   <Label htmlFor="name">Campaign Name *</Label>
                   <Input
                     id="name"
-                    value={name || 'null'}
+                    value={String(name)}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter campaign name"
                     className="w-full"
@@ -338,7 +330,7 @@ export default function ProfilePage() {
                   <Label htmlFor="docUrl">Documentation URL</Label>
                   <Input
                     id="docUrl"
-                    value={docUrl || 'null'}
+                    value={String(docUrl)}
                     onChange={(e) => setDocUrl(e.target.value)}
                     placeholder="https://docs.example.com"
                     className="w-full"
@@ -350,7 +342,7 @@ export default function ProfilePage() {
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
-                  value={description || 'null'}
+                  value={String(description)}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your campaign..."
                   className="w-full min-h-[100px]"
@@ -365,7 +357,7 @@ export default function ProfilePage() {
                   <Input
                     id="startDate"
                     type="datetime-local"
-                    value={startDate || 'null'}
+                    value={String(startDate)}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full"
                   />
@@ -375,7 +367,7 @@ export default function ProfilePage() {
                   <Input
                     id="endDate"
                     type="datetime-local"
-                    value={endDate || 'null'}
+                    value={String(endDate)}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="w-full"
                   />
