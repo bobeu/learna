@@ -5,6 +5,10 @@ pragma solidity 0.8.28;
 import { Common } from "../../interfaces/Common.sol";
 import { IApprovalFactory } from "../ApprovalFactory.sol";
 
+interface IProofOfAssimilation {
+    function swapPointsForToken(uint points) external returns(bool);
+}
+
 interface ICampaignFactory { 
     error FeetoIsTheSame();
     error ZeroAddress();
@@ -38,7 +42,6 @@ interface ICampaignFactory {
 interface IInterfacer {
     function updateUserCampaign(address user) external;
     function registerCampaign(address _campaign) external;
-    function syncClaim(address target) external returns(bool);
 }
 
 interface ICampaignTemplate {

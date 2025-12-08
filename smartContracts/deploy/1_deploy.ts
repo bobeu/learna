@@ -136,7 +136,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	// 	console.error("Error executing setScope:", errorMessage?.stack || errorMessage?.slice(0, 100));
 	// }
 
-
 	// Read actions
 	const useWalletVerification = await read('IdentityVerifier', 'useWalletVerification');
 	const config = await read('IdentityVerifier', 'configId');

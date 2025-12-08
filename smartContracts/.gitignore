@@ -31,3 +31,6 @@ _d_.json
 /runContract.ts
 /test.ts
 /hashes.ts
+/builds.ts
+/gac.ts
+/gacd.json

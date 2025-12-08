@@ -428,7 +428,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
         } else {
           setIsCheckingSavedTopics(false);
           setPendingSavedProgress(oldProgress);
-    setShowSavedProgressDialog(true);
+          setShowSavedProgressDialog(true);
           return; // Don't open main dialog yet
         }
       }
@@ -1077,7 +1077,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500 flex-shrink-0" />
                 <span className="text-base sm:text-lg font-semibold break-words min-w-0">
-              Learna Tutor - {normalizeString(campaign.name as Hex)}
+                  Learna Tutor - {normalizeString(campaign.name as Hex)}
                 </span>
               </div>
               <button
