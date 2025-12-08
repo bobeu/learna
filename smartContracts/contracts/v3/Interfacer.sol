@@ -5,6 +5,7 @@ pragma solidity 0.8.28;
 import { ICampaignTemplate, ICampaignFactory, IInterfacer } from "./interfaces/ICampaignTemplate.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { IApprovalFactory } from "./ApprovalFactory.sol";
+import { IProofOfAssimilation } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Interfacer is IInterfacer {
     // ERRORS
@@ -12,6 +13,7 @@ contract Interfacer is IInterfacer {
     error PointClaimed();
     error NotVerified();
     error NoApproval();
+    error TokenNoSet();
     error OperationFailed();
     error ZeroAddress();
     error InvalidCampaignIndex();
@@ -21,32 +23,29 @@ contract Interfacer is IInterfacer {
         address verifier;
         address owner;
     }
-
-    struct Point {
-        bool isClaimed;
-        uint64 point;
-        uint lastSyncedEpoch;
-    }
     
+    // Reward token
+    IProofOfAssimilation internal token;
+
     // CampaignFactory
-    ICampaignFactory public factory;
+    ICampaignFactory internal factory;
 
     ///@notice Approval factory contract
-    IApprovalFactory private approvalFactory;
+    IApprovalFactory internal approvalFactory;
 
     // Verifier contract
-    IVerifier private verifier;
+    IVerifier internal verifier;
 
-    address private owner;
+    address internal owner;
 
     ///@notice User campaigns
-    mapping(address => ICampaignFactory.UserCampaign[]) private userCampaigns;
+    mapping(address => ICampaignFactory.UserCampaign[]) internal userCampaigns;
 
     ///@notice Users' registered campaign
-    mapping(address => mapping(address => bool)) private isRegisteredCampaign;
+    mapping(address => mapping(address => bool)) internal isRegisteredCampaign;
 
-    /// Mapping of user to points earned
-    mapping(address => Point) internal points;
+    /// Mapping of user to epoch to points earned
+    mapping(address => mapping(uint epoch => mapping(uint campaignIndex => bool))) internal isClaimed;
 
     modifier onlyOwner {
         if(_msgSender() != owner) revert OnlyOwner();
@@ -86,9 +85,9 @@ contract Interfacer is IInterfacer {
         if(enforeCreator) _onlyCampaignCreator(cmp.creator);
     }
 
-    function setFactory(address _factory) public onlyOwner returns(bool) {
-        if(_factory == address(0)) revert ZeroAddress();
-        factory = ICampaignFactory(_factory);
+    function setFactoryOrToken(address _factory, address _token) public onlyOwner returns(bool) {
+        if(_factory != address(0)) factory = ICampaignFactory(_factory);
+        if(_token != address(0)) token = IERC20(_token);
         return true;
     }
     
@@ -241,29 +240,15 @@ contract Interfacer is IInterfacer {
      */
     function claimPoint(uint epoch, uint campaignIndex) external returns(bool) {
         address sender = _msgSender();
-        Point storage _p = points[sender];
-        if(_p.isClaimed) revert PointClaimed();
-        uint64 proofs = ICampaignTemplate(_getAndValidateCampaign(campaignIndex, true).identifier).getUserPoints(epoch, sender);
-        if(_p.lastSyncedEpoch == epoch) {
+        bool claimed = isClaimed[sender][epoch][campaignIndex];
+        uint64 proofs = ICampaignTemplate(_getAndValidateCampaign(campaignIndex, false).identifier).getUserPoints(epoch, sender);
+        if(!claimed) {
+            isClaimed[sender][epoch][campaignIndex] = true;
             if(proofs > 0) {
-                unchecked {
-                    _p.point += proofs;
-                    _p.lastSyncedEpoch += 1;
-                }
+                if(address(token) = address(0)) revert TokenNoSet();
+                token.swapPointsForToken(proofs);
             }
         }
-        return true;
-    }
-
-    /**@dev Sync claim status for the target user.
-        @param target : Account making claim
-        @notice Only approved account can make claim
-    */
-    function syncClaim(address target) external returns(bool) {
-        if(!approvalFactory.hasApproval(_msgSender())) revert NoApproval();
-        Point storage _p = points[target];
-        if(_p.isClaimed) revert PointClaimed();
-        _p.isClaimed = true;
         return true;
     }
 
