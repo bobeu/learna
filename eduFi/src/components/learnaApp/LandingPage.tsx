@@ -67,17 +67,18 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen overflow-auto transition-colors duration-500 bg-white text-gray-900 dark:bg-[#1a1625] dark:text-white font-mono relative`}>
+    <div className={`min-h-screen overflow-auto transition-colors duration-500 text-gray-900 dark:text-white font-mono relative`}>
       {/* Animated Flow Background */}
       <AnimatedFlowBackground campaigns={campaigns} />
       
       {/* Gradient Overlay for better visibility with Neon lime accents */}
-      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-white/60 dark:to-[#1a1625]/90 pointer-events-none z-0" />
+      {/* <div className="" /> */}
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-white/60 dark:to-[#1a1625]/90 pointer-events-none z-20" />
       
       {/* Animated gradient orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
         <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-primary-500/10 rounded-full blur-3xl"
+          className="absolute top-20 left-10 w-72 h-72 bg-primary-500/10 rounded-full blur-sm"
           animate={{
             x: [0, 100, 0],
             y: [0, 50, 0],
@@ -90,7 +91,7 @@ export default function LandingPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-"
           animate={{
             x: [0, -80, 0],
             y: [0, -60, 0],

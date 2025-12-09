@@ -159,14 +159,16 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     const largeParticleCount = 5
     
     const shapes: Array<'circle' | 'hexagon' | 'star' | 'diamond'> = ['circle', 'hexagon', 'star', 'diamond']
+    const width = canvas.width || window.innerWidth
+    const height = canvas.height || window.innerHeight
     
     particlesRef.current = Array.from({ length: particleCount }, (_, i) => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * width,
+      y: Math.random() * height,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
       size: i < largeParticleCount ? Math.random() * 5 + 6 : Math.random() * 2 + 1.5,
-      opacity: i < largeParticleCount ? 0.3 : Math.random() * 0.2 + 0.1,
+      opacity: i < largeParticleCount ? 0.4 : Math.random() * 0.25 + 0.15,
       isLarge: i < largeParticleCount,
       connections: [],
       shape: shapes[Math.floor(Math.random() * shapes.length)],
@@ -268,10 +270,10 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
       const color = useLime ? neonLime : purple
       const colorRgba = useLime ? limeRgba : purpleRgba
 
-      // Outer glow - subtle
+      // Outer glow - visible but subtle
       const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
-      glowGradient.addColorStop(0, colorRgba(0.15))
-      glowGradient.addColorStop(0.5, colorRgba(0.08))
+      glowGradient.addColorStop(0, colorRgba(0.25))
+      glowGradient.addColorStop(0.5, colorRgba(0.15))
       glowGradient.addColorStop(1, colorRgba(0))
       
       ctx.beginPath()
@@ -285,14 +287,14 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           // Draw Learna logo if loaded
           if (logoImageRef.current) {
             const logoSize = size * 0.8
-            ctx.globalAlpha = 0.4
+            ctx.globalAlpha = 0.6
             ctx.drawImage(logoImageRef.current, -logoSize / 2, -logoSize / 2, logoSize, logoSize)
             ctx.globalAlpha = 1
           } else {
             // Fallback: Draw "L" for Learna
             ctx.beginPath()
             ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2)
-            ctx.fillStyle = colorRgba(0.3)
+            ctx.fillStyle = colorRgba(0.4)
             ctx.fill()
             ctx.strokeStyle = color
             ctx.lineWidth = 3
@@ -301,7 +303,7 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
             ctx.font = `bold ${size * 0.3}px monospace`
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.globalAlpha = 0.6
+            ctx.globalAlpha = 0.8
             ctx.fillText('L', 0, 0)
             ctx.globalAlpha = 1
           }
@@ -312,19 +314,23 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           ctx.beginPath()
           // Cap top (square)
           ctx.rect(-size * 0.3, -size * 0.4, size * 0.6, size * 0.3)
-          ctx.fillStyle = colorRgba(0.25)
+          ctx.fillStyle = colorRgba(0.35)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 2
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 2.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Tassel
           ctx.beginPath()
           ctx.moveTo(size * 0.3, -size * 0.1)
           ctx.lineTo(size * 0.35, size * 0.1)
           ctx.strokeStyle = color
-          ctx.lineWidth = 2
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 2.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           break
 
         case 'book':
@@ -332,28 +338,34 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           ctx.beginPath()
           // Left page
           ctx.rect(-size * 0.4, -size * 0.3, size * 0.35, size * 0.6)
-          ctx.fillStyle = colorRgba(0.2)
+          ctx.fillStyle = colorRgba(0.3)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 2
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 2.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Right page
           ctx.beginPath()
           ctx.rect(size * 0.05, -size * 0.3, size * 0.35, size * 0.6)
-          ctx.fillStyle = colorRgba(0.2)
+          ctx.fillStyle = colorRgba(0.3)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 2
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 2.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Book spine
           ctx.beginPath()
           ctx.moveTo(0, -size * 0.3)
           ctx.lineTo(0, size * 0.3)
           ctx.strokeStyle = color
-          ctx.lineWidth = 3
+          ctx.globalAlpha = 0.8
+          ctx.lineWidth = 3.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           break
 
         case 'certificate':
@@ -361,18 +373,22 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           ctx.beginPath()
           // Main rectangle
           ctx.rect(-size * 0.35, -size * 0.25, size * 0.7, size * 0.5)
-          ctx.fillStyle = colorRgba(0.2)
+          ctx.fillStyle = colorRgba(0.3)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 3
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 3.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Decorative border
           ctx.beginPath()
           ctx.rect(-size * 0.3, -size * 0.2, size * 0.6, size * 0.4)
           ctx.strokeStyle = color
-          ctx.lineWidth = 1.5
+          ctx.globalAlpha = 0.6
+          ctx.lineWidth = 2
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Star in center
           const starSize = size * 0.15
@@ -385,7 +401,7 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
             else ctx.lineTo(px, py)
           }
           ctx.closePath()
-          ctx.fillStyle = colorRgba(0.4)
+          ctx.fillStyle = colorRgba(0.5)
           ctx.fill()
           break
 
@@ -400,16 +416,18 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
             else ctx.lineTo(px, py)
           }
           ctx.closePath()
-          ctx.fillStyle = colorRgba(0.25)
+          ctx.fillStyle = colorRgba(0.35)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 3
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 3.5
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Inner circle
           ctx.beginPath()
           ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2)
-          ctx.fillStyle = colorRgba(0.3)
+          ctx.fillStyle = colorRgba(0.4)
           ctx.fill()
           break
 
@@ -420,19 +438,23 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           ctx.arc(-size * 0.15, 0, size * 0.3, 0, Math.PI * 2)
           // Right hemisphere
           ctx.arc(size * 0.15, 0, size * 0.3, 0, Math.PI * 2)
-          ctx.fillStyle = colorRgba(0.25)
+          ctx.fillStyle = colorRgba(0.35)
           ctx.fill()
           ctx.strokeStyle = color
-          ctx.lineWidth = 2.5
+          ctx.globalAlpha = 0.7
+          ctx.lineWidth = 3
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           // Neural connections (curved lines)
           ctx.beginPath()
           ctx.moveTo(-size * 0.1, -size * 0.1)
           ctx.quadraticCurveTo(0, 0, size * 0.1, -size * 0.1)
           ctx.strokeStyle = color
-          ctx.lineWidth = 1.5
+          ctx.globalAlpha = 0.6
+          ctx.lineWidth = 2
           ctx.stroke()
+          ctx.globalAlpha = 1
           
           ctx.beginPath()
           ctx.moveTo(-size * 0.1, size * 0.1)
@@ -559,7 +581,7 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: -10, opacity: 0.4 }}
+      style={{ zIndex: 30, opacity: 0.3 }}
     />
   )
 }
