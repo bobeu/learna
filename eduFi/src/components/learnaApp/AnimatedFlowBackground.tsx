@@ -1,9 +1,9 @@
 /**
  * Animated Flow Background Component for Learna
  * 
- * Creates animated particles/flow elements with campaign titles
- * Uses neon lime green and Celo yellow theme colors
- * Campaign titles appear as animated elements that reflect when campaigns are added
+ * Creates animated particles/flow elements with education and blockchain themed objects
+ * Includes: Graduation cap, Book, Certificate, Blockchain node, Brain, and Learna logo
+ * Uses subtle Neon lime and purple colors for visibility without distraction
  */
 
 'use client'
@@ -23,7 +23,7 @@ interface Particle {
   shape: 'circle' | 'hexagon' | 'star' | 'diamond'
 }
 
-interface CampaignElement {
+interface EducationObject {
   x: number
   y: number
   vx: number
@@ -31,8 +31,7 @@ interface CampaignElement {
   size: number
   rotation: number
   rotationSpeed: number
-  title: string
-  color: string // 'lime' or 'yellow'
+  type: 'graduation' | 'book' | 'certificate' | 'blockchain' | 'brain' | 'logo'
 }
 
 interface AnimatedFlowBackgroundProps {
@@ -42,20 +41,24 @@ interface AnimatedFlowBackgroundProps {
 export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
-  const campaignElementsRef = useRef<CampaignElement[]>([])
+  const educationObjectsRef = useRef<EducationObject[]>([])
   const animationFrameRef = useRef<number | undefined>(undefined)
+  const logoImageRef = useRef<HTMLImageElement | null>(null)
 
-  // Theme colors
+  // Theme colors - subtle and visible
   const neonLime = '#a7ff1f'
-  const celoYellow = '#FCFF52'
+  const purple = '#8b5cf6'
+  const limeRgba = (alpha: number) => `rgba(167, 255, 31, ${alpha})`
+  const purpleRgba = (alpha: number) => `rgba(139, 92, 246, ${alpha})`
 
-  // Helper function to convert hex to rgba
-  const hexToRgba = (hex: string, alpha: number): string => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
-  }
+  // Load logo image
+  useEffect(() => {
+    const img = new Image()
+    img.src = '/logo.png'
+    img.onload = () => {
+      logoImageRef.current = img
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -68,56 +71,102 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
+      
+      // Reinitialize education objects on resize if needed
+      if (educationObjectsRef.current.length === 0) {
+        initializeEducationObjects()
+      }
     }
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Initialize campaign elements from campaigns prop
-    const initializeCampaignElements = () => {
-      const campaignTitles = campaigns
-        .map(c => c.name)
-        .filter((name): name is string => Boolean(name && name.trim()))
-        .slice(0, 6) // Limit to 6 for performance
-
-      // If no campaigns, use placeholder educational terms
-      const titles = campaignTitles.length > 0 
-        ? campaignTitles 
-        : ['Solidity', 'Celo', 'Farcaster', 'Web3', 'DeFi', 'Learning']
-
-      campaignElementsRef.current = titles.map((title, i) => ({
-        x: (canvas.width / (titles.length + 1)) * (i + 1),
-        y: canvas.height * (0.2 + (i % 3) * 0.3),
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: (Math.random() - 0.5) * 0.15,
-        size: 100 + Math.random() * 40, // 100-140px
-        rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 0.5,
-        title: title.length > 12 ? title.substring(0, 12) + '...' : title,
-        color: i % 2 === 0 ? 'lime' : 'yellow',
-      }))
+    // Initialize education objects
+    const initializeEducationObjects = () => {
+      educationObjectsRef.current = [
+        {
+          x: canvas.width * 0.15,
+          y: canvas.height * 0.25,
+          vx: (Math.random() - 0.5) * 0.08,
+          vy: (Math.random() - 0.5) * 0.08,
+          size: 100,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.2,
+          type: 'logo', // Learna logo
+        },
+        {
+          x: canvas.width * 0.35,
+          y: canvas.height * 0.65,
+          vx: (Math.random() - 0.5) * 0.1,
+          vy: (Math.random() - 0.5) * 0.1,
+          size: 90,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.25,
+          type: 'graduation',
+        },
+        {
+          x: canvas.width * 0.65,
+          y: canvas.height * 0.35,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: (Math.random() - 0.5) * 0.12,
+          size: 85,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.3,
+          type: 'book',
+        },
+        {
+          x: canvas.width * 0.85,
+          y: canvas.height * 0.7,
+          vx: (Math.random() - 0.5) * 0.09,
+          vy: (Math.random() - 0.5) * 0.09,
+          size: 95,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.2,
+          type: 'certificate',
+        },
+        {
+          x: canvas.width * 0.5,
+          y: canvas.height * 0.75,
+          vx: (Math.random() - 0.5) * 0.11,
+          vy: (Math.random() - 0.5) * 0.11,
+          size: 80,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.35,
+          type: 'blockchain',
+        },
+        {
+          x: canvas.width * 0.75,
+          y: canvas.height * 0.2,
+          vx: (Math.random() - 0.5) * 0.1,
+          vy: (Math.random() - 0.5) * 0.1,
+          size: 88,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0.28,
+          type: 'brain',
+        },
+      ]
     }
 
-    initializeCampaignElements()
+    initializeEducationObjects()
 
     // Initialize particles with varied sizes and shapes
-    const particleCount = 50
-    const largeParticleCount = 6
+    const particleCount = 45 // Reduced for better performance
+    const largeParticleCount = 5
     
     const shapes: Array<'circle' | 'hexagon' | 'star' | 'diamond'> = ['circle', 'hexagon', 'star', 'diamond']
     
     particlesRef.current = Array.from({ length: particleCount }, (_, i) => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      size: i < largeParticleCount ? Math.random() * 6 + 8 : Math.random() * 3 + 2,
-      opacity: i < largeParticleCount ? 0.5 : Math.random() * 0.4 + 0.1,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: i < largeParticleCount ? Math.random() * 5 + 6 : Math.random() * 2 + 1.5,
+      opacity: i < largeParticleCount ? 0.3 : Math.random() * 0.2 + 0.1,
       isLarge: i < largeParticleCount,
       connections: [],
       shape: shapes[Math.floor(Math.random() * shapes.length)],
     }))
 
-    // Build connections between large particles
+    // Build connections between large particles (blockchain network)
     const buildConnections = () => {
       const largeParticles = particlesRef.current.filter(p => p.isLarge)
       
@@ -137,7 +186,7 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
             const dy = particle.y - other.y
             const distance = Math.sqrt(dx * dx + dy * dy)
             
-            if (distance < 250 && Math.random() > 0.6) {
+            if (distance < 200 && Math.random() > 0.7) {
               const otherIndex = particlesRef.current.indexOf(other)
               particle.connections.push(otherIndex)
             }
@@ -199,66 +248,192 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
       }
     }
 
-    // Draw campaign title element
-    const drawCampaignElement = (
+    // Draw education objects
+    const drawEducationObject = (
       ctx: CanvasRenderingContext2D,
-      element: CampaignElement
+      obj: EducationObject
     ) => {
       ctx.save()
-      ctx.translate(element.x, element.y)
-      ctx.rotate((element.rotation * Math.PI) / 180)
+      ctx.translate(obj.x, obj.y)
+      ctx.rotate((obj.rotation * Math.PI) / 180)
 
-      const color = element.color === 'lime' ? neonLime : celoYellow
-      
-      // Outer glow
-      const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, element.size)
-      glowGradient.addColorStop(0, hexToRgba(color, 0.6))
-      glowGradient.addColorStop(0.5, hexToRgba(color, 0.3))
-      glowGradient.addColorStop(1, hexToRgba(color, 0))
+      const size = obj.size
+      const useLime = obj.type === 'logo' || obj.type === 'blockchain' || obj.type === 'brain'
+      const color = useLime ? neonLime : purple
+      const colorRgba = useLime ? limeRgba : purpleRgba
+
+      // Outer glow - subtle
+      const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
+      glowGradient.addColorStop(0, colorRgba(0.15))
+      glowGradient.addColorStop(0.5, colorRgba(0.08))
+      glowGradient.addColorStop(1, colorRgba(0))
       
       ctx.beginPath()
-      ctx.arc(0, 0, element.size, 0, Math.PI * 2)
+      ctx.arc(0, 0, size, 0, Math.PI * 2)
       ctx.fillStyle = glowGradient
       ctx.fill()
 
-      // Hexagon border
-      ctx.beginPath()
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i
-        const px = element.size * 0.8 * Math.cos(angle)
-        const py = element.size * 0.8 * Math.sin(angle)
-        if (i === 0) ctx.moveTo(px, py)
-        else ctx.lineTo(px, py)
-      }
-      ctx.closePath()
-      ctx.strokeStyle = color
-      ctx.globalAlpha = 0.8
-      ctx.lineWidth = 3
-      ctx.stroke()
-      ctx.globalAlpha = 1
+      // Draw based on type
+      switch (obj.type) {
+        case 'logo':
+          // Draw Learna logo if loaded
+          if (logoImageRef.current) {
+            const logoSize = size * 0.8
+            ctx.globalAlpha = 0.4
+            ctx.drawImage(logoImageRef.current, -logoSize / 2, -logoSize / 2, logoSize, logoSize)
+            ctx.globalAlpha = 1
+          } else {
+            // Fallback: Draw "L" for Learna
+            ctx.beginPath()
+            ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2)
+            ctx.fillStyle = colorRgba(0.3)
+            ctx.fill()
+            ctx.strokeStyle = color
+            ctx.lineWidth = 3
+            ctx.stroke()
+            ctx.fillStyle = color
+            ctx.font = `bold ${size * 0.3}px monospace`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.globalAlpha = 0.6
+            ctx.fillText('L', 0, 0)
+            ctx.globalAlpha = 1
+          }
+          break
 
-      // Background
-      ctx.beginPath()
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i
-        const px = element.size * 0.75 * Math.cos(angle)
-        const py = element.size * 0.75 * Math.sin(angle)
-        if (i === 0) ctx.moveTo(px, py)
-        else ctx.lineTo(px, py)
-      }
-      ctx.closePath()
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.85)'
-      ctx.fill()
+        case 'graduation':
+          // Graduation cap
+          ctx.beginPath()
+          // Cap top (square)
+          ctx.rect(-size * 0.3, -size * 0.4, size * 0.6, size * 0.3)
+          ctx.fillStyle = colorRgba(0.25)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 2
+          ctx.stroke()
+          
+          // Tassel
+          ctx.beginPath()
+          ctx.moveTo(size * 0.3, -size * 0.1)
+          ctx.lineTo(size * 0.35, size * 0.1)
+          ctx.strokeStyle = color
+          ctx.lineWidth = 2
+          ctx.stroke()
+          break
 
-      // Draw title text
-      ctx.fillStyle = color
-      ctx.font = `bold ${element.size * 0.15}px monospace`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.shadowColor = color
-      ctx.shadowBlur = 10
-      ctx.fillText(element.title, 0, 0)
-      ctx.shadowBlur = 0
+        case 'book':
+          // Open book
+          ctx.beginPath()
+          // Left page
+          ctx.rect(-size * 0.4, -size * 0.3, size * 0.35, size * 0.6)
+          ctx.fillStyle = colorRgba(0.2)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 2
+          ctx.stroke()
+          
+          // Right page
+          ctx.beginPath()
+          ctx.rect(size * 0.05, -size * 0.3, size * 0.35, size * 0.6)
+          ctx.fillStyle = colorRgba(0.2)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 2
+          ctx.stroke()
+          
+          // Book spine
+          ctx.beginPath()
+          ctx.moveTo(0, -size * 0.3)
+          ctx.lineTo(0, size * 0.3)
+          ctx.strokeStyle = color
+          ctx.lineWidth = 3
+          ctx.stroke()
+          break
+
+        case 'certificate':
+          // Certificate/Badge
+          ctx.beginPath()
+          // Main rectangle
+          ctx.rect(-size * 0.35, -size * 0.25, size * 0.7, size * 0.5)
+          ctx.fillStyle = colorRgba(0.2)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 3
+          ctx.stroke()
+          
+          // Decorative border
+          ctx.beginPath()
+          ctx.rect(-size * 0.3, -size * 0.2, size * 0.6, size * 0.4)
+          ctx.strokeStyle = color
+          ctx.lineWidth = 1.5
+          ctx.stroke()
+          
+          // Star in center
+          const starSize = size * 0.15
+          ctx.beginPath()
+          for (let i = 0; i < 5; i++) {
+            const angle = (Math.PI * 2 / 5) * i - Math.PI / 2
+            const px = Math.cos(angle) * starSize
+            const py = Math.sin(angle) * starSize
+            if (i === 0) ctx.moveTo(px, py)
+            else ctx.lineTo(px, py)
+          }
+          ctx.closePath()
+          ctx.fillStyle = colorRgba(0.4)
+          ctx.fill()
+          break
+
+        case 'blockchain':
+          // Blockchain node (hexagon with connections)
+          ctx.beginPath()
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i
+            const px = size * 0.4 * Math.cos(angle)
+            const py = size * 0.4 * Math.sin(angle)
+            if (i === 0) ctx.moveTo(px, py)
+            else ctx.lineTo(px, py)
+          }
+          ctx.closePath()
+          ctx.fillStyle = colorRgba(0.25)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 3
+          ctx.stroke()
+          
+          // Inner circle
+          ctx.beginPath()
+          ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2)
+          ctx.fillStyle = colorRgba(0.3)
+          ctx.fill()
+          break
+
+        case 'brain':
+          // Brain icon (simplified)
+          ctx.beginPath()
+          // Left hemisphere
+          ctx.arc(-size * 0.15, 0, size * 0.3, 0, Math.PI * 2)
+          // Right hemisphere
+          ctx.arc(size * 0.15, 0, size * 0.3, 0, Math.PI * 2)
+          ctx.fillStyle = colorRgba(0.25)
+          ctx.fill()
+          ctx.strokeStyle = color
+          ctx.lineWidth = 2.5
+          ctx.stroke()
+          
+          // Neural connections (curved lines)
+          ctx.beginPath()
+          ctx.moveTo(-size * 0.1, -size * 0.1)
+          ctx.quadraticCurveTo(0, 0, size * 0.1, -size * 0.1)
+          ctx.strokeStyle = color
+          ctx.lineWidth = 1.5
+          ctx.stroke()
+          
+          ctx.beginPath()
+          ctx.moveTo(-size * 0.1, size * 0.1)
+          ctx.quadraticCurveTo(0, 0, size * 0.1, size * 0.1)
+          ctx.stroke()
+          break
+      }
 
       ctx.restore()
     }
@@ -267,28 +442,28 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Update campaign element positions and rotations
-      campaignElementsRef.current.forEach((element) => {
-        element.x += element.vx
-        element.y += element.vy
-        element.rotation += element.rotationSpeed
+      // Update education object positions and rotations
+      educationObjectsRef.current.forEach((obj) => {
+        obj.x += obj.vx
+        obj.y += obj.vy
+        obj.rotation += obj.rotationSpeed
 
         // Bounce off edges
-        if (element.x < element.size) {
-          element.x = element.size
-          element.vx = -element.vx
+        if (obj.x < obj.size) {
+          obj.x = obj.size
+          obj.vx = -obj.vx
         }
-        if (element.x > canvas.width - element.size) {
-          element.x = canvas.width - element.size
-          element.vx = -element.vx
+        if (obj.x > canvas.width - obj.size) {
+          obj.x = canvas.width - obj.size
+          obj.vx = -obj.vx
         }
-        if (element.y < element.size) {
-          element.y = element.size
-          element.vy = -element.vy
+        if (obj.y < obj.size) {
+          obj.y = obj.size
+          obj.vy = -obj.vy
         }
-        if (element.y > canvas.height - element.size) {
-          element.y = canvas.height - element.size
-          element.vy = -element.vy
+        if (obj.y > canvas.height - obj.size) {
+          obj.y = canvas.height - obj.size
+          obj.vy = -obj.vy
         }
       })
 
@@ -304,114 +479,60 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
         if (particle.y > canvas.height) particle.y = 0
       })
 
-      // Rebuild connections periodically
-      if (Math.random() < 0.01) {
+      // Rebuild connections periodically (less frequent for performance)
+      if (Math.random() < 0.005) {
         buildConnections()
       }
 
-      // Draw connections first (behind particles)
+      // Draw connections first (behind particles) - subtle
       particlesRef.current.forEach((particle) => {
         if (particle.isLarge) {
           particle.connections.forEach((connIndex) => {
             const connected = particlesRef.current[connIndex]
             if (connected) {
               const useLime = Math.random() > 0.5
-              const color = useLime ? neonLime : celoYellow
+              const color = useLime ? limeRgba(0.12) : purpleRgba(0.12)
               
               ctx.beginPath()
               ctx.moveTo(particle.x, particle.y)
               ctx.lineTo(connected.x, connected.y)
               ctx.strokeStyle = color
-              ctx.globalAlpha = 0.25
-              ctx.lineWidth = 1.5
+              ctx.lineWidth = 1
               ctx.stroke()
-              ctx.globalAlpha = 1
-              
-              // Draw small dots along the connection
-              const steps = 4
-              for (let s = 1; s < steps; s++) {
-                const t = s / steps
-                const bx = particle.x + (connected.x - particle.x) * t
-                const by = particle.y + (connected.y - particle.y) * t
-                ctx.beginPath()
-                ctx.arc(bx, by, 1.5, 0, Math.PI * 2)
-                ctx.fillStyle = color
-                ctx.globalAlpha = 0.4
-                ctx.fill()
-                ctx.globalAlpha = 1
-              }
             }
           })
         }
       })
 
-      // Draw campaign elements (behind particles)
-      campaignElementsRef.current.forEach((element) => {
-        drawCampaignElement(ctx, element)
+      // Draw education objects (behind particles)
+      educationObjectsRef.current.forEach((obj) => {
+        drawEducationObject(ctx, obj)
       })
 
-      // Draw particles
+      // Draw particles - subtle
       particlesRef.current.forEach((particle) => {
         const useLime = Math.random() > 0.5
-        const color = useLime ? neonLime : celoYellow
+        const color = useLime ? limeRgba : purpleRgba
         
-        // Draw glow effect for large particles
+        // Draw glow effect for large particles (subtle)
         if (particle.isLarge) {
           const gradient = ctx.createRadialGradient(
             particle.x, particle.y, 0,
-            particle.x, particle.y, particle.size * 2.5
+            particle.x, particle.y, particle.size * 2
           )
-          const opacity1 = particle.opacity
-          const opacity2 = particle.opacity * 0.4
-          gradient.addColorStop(0, hexToRgba(color, opacity1))
-          gradient.addColorStop(0.5, hexToRgba(color, opacity2))
-          gradient.addColorStop(1, hexToRgba(color, 0))
+          gradient.addColorStop(0, color(particle.opacity * 0.5))
+          gradient.addColorStop(0.5, color(particle.opacity * 0.2))
+          gradient.addColorStop(1, color(0))
           
-          drawShape(ctx, particle.shape, particle.x, particle.y, particle.size * 2.5)
+          drawShape(ctx, particle.shape, particle.x, particle.y, particle.size * 2)
           ctx.fillStyle = gradient
           ctx.fill()
         }
         
         // Main particle
         drawShape(ctx, particle.shape, particle.x, particle.y, particle.size)
-        ctx.fillStyle = color
-        ctx.globalAlpha = particle.opacity
+        ctx.fillStyle = color(particle.opacity)
         ctx.fill()
-        ctx.globalAlpha = 1
-        
-        // Inner highlight for large particles
-        if (particle.isLarge) {
-          drawShape(ctx, particle.shape, particle.x, particle.y, particle.size * 0.4)
-          ctx.fillStyle = color
-          ctx.globalAlpha = 0.5
-          ctx.fill()
-          ctx.globalAlpha = 1
-        }
-
-        // Draw connections to nearby small particles
-        if (!particle.isLarge) {
-          particlesRef.current.forEach((other) => {
-            if (other !== particle && !other.isLarge) {
-              const dx = particle.x - other.x
-              const dy = particle.y - other.y
-              const distance = Math.sqrt(dx * dx + dy * dy)
-
-              if (distance < 100) {
-                const useLime = Math.random() > 0.5
-                const color = useLime ? neonLime : celoYellow
-                
-                ctx.beginPath()
-                ctx.moveTo(particle.x, particle.y)
-                ctx.lineTo(other.x, other.y)
-                ctx.strokeStyle = color
-                ctx.globalAlpha = 0.15 * (1 - distance / 100)
-                ctx.lineWidth = 0.5
-                ctx.stroke()
-                ctx.globalAlpha = 1
-              }
-            }
-          })
-        }
       })
 
       animationFrameRef.current = requestAnimationFrame(animate)
@@ -432,8 +553,7 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: -10, opacity: 0.3 }}
+      style={{ zIndex: -10, opacity: 0.4 }}
     />
   )
 }
-

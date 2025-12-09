@@ -1,6 +1,7 @@
 "use client";
 /*eslint-disable */
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import CampaignLearningInit from '../ai/CampaignLearningInit';
 import Features from './Features';
 import Hero from './Hero';
@@ -66,26 +67,86 @@ export default function LandingPage() {
   };
 
   return (
-    // <div className={`min-h-screen overflow-auto transition-colors duration-300 bg-white text-gray-900 dark:bg-blackish dark:text-white font-mono relative`}>
-    <div className={`min-h-screen overflow-auto transition-colors duration-300 text-gray-900 dark:text-white font-mono relative`}>
+    <div className={`min-h-screen overflow-auto transition-colors duration-500 bg-white text-gray-900 dark:bg-[#1a1625] dark:text-white font-mono relative`}>
       {/* Animated Flow Background */}
       <AnimatedFlowBackground campaigns={campaigns} />
       
-      {/* <Navbar /> */}
-      <Hero 
-        handleJoinCampaign={handleJoinCampaign}
-        campaigns={campaigns}
-      />
+      {/* Gradient Overlay for better visibility with Neon lime accents */}
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-transparent to-white/60 dark:to-[#1a1625]/90 pointer-events-none z-0" />
       
-      <CampaignTabs 
-        campaigns={campaigns}
-        handleJoinCampaign={handleJoinCampaign}
-        handleViewStats={handleViewCampaignStats}
-        isLoading={isLoading}
-      />
-      <Features />
+      {/* Animated gradient orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <motion.div
+          className="absolute top-20 left-10 w-72 h-72 bg-primary-500/10 rounded-full blur-3xl"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+          animate={{
+            x: [0, -80, 0],
+            y: [0, -60, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+      
+      {/* <Navbar /> */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Hero 
+          handleJoinCampaign={handleJoinCampaign}
+          campaigns={campaigns}
+        />
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <CampaignTabs 
+          campaigns={campaigns}
+          handleJoinCampaign={handleJoinCampaign}
+          handleViewStats={handleViewCampaignStats}
+          isLoading={isLoading}
+        />
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <Features />
+      </motion.div>
 
-      <Footer />
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        <Footer />
+      </motion.div>
 
       {/* Campaign Learning Init Modal */}
       {selectedCampaign && (
@@ -120,12 +181,24 @@ const ScrollTopButton = () => {
   }, []);
   if (!show) return null;
   return (
-    <button
+    <motion.button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-6 right-6 z-50 rounded-full bg-primary-500 text-black px-4 py-3 shadow-lg hover:bg-primary-400"
+      className="fixed bottom-6 right-6 z-50 rounded-full bg-primary-500 text-black px-4 py-3 shadow-lg hover:bg-primary-400 transition-all duration-300"
       aria-label="Scroll to top"
+      whileHover={{ scale: 1.1, boxShadow: '0 0 20px rgba(167, 255, 31, 0.5)' }}
+      whileTap={{ scale: 0.95 }}
+      animate={{ 
+        boxShadow: [
+          '0 0 10px rgba(167, 255, 31, 0.3)',
+          '0 0 20px rgba(167, 255, 31, 0.5)',
+          '0 0 10px rgba(167, 255, 31, 0.3)',
+        ]
+      }}
+      transition={{ 
+        boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+      }}
     >
       ↑
-    </button>
+    </motion.button>
   );
 };
