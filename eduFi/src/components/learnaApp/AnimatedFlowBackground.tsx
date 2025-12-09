@@ -67,25 +67,22 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set canvas size
+    // Set canvas size first
     const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
-      
-      // Reinitialize education objects on resize if needed
-      if (educationObjectsRef.current.length === 0) {
-        initializeEducationObjects()
-      }
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width || window.innerWidth
+      canvas.height = rect.height || window.innerHeight
     }
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
 
-    // Initialize education objects
+    // Initialize education objects (must be called after canvas has dimensions)
     const initializeEducationObjects = () => {
+      const width = canvas.width || window.innerWidth
+      const height = canvas.height || window.innerHeight
+      
       educationObjectsRef.current = [
         {
-          x: canvas.width * 0.15,
-          y: canvas.height * 0.25,
+          x: width * 0.15,
+          y: height * 0.25,
           vx: (Math.random() - 0.5) * 0.08,
           vy: (Math.random() - 0.5) * 0.08,
           size: 100,
@@ -94,8 +91,8 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           type: 'logo', // Learna logo
         },
         {
-          x: canvas.width * 0.35,
-          y: canvas.height * 0.65,
+          x: width * 0.35,
+          y: height * 0.65,
           vx: (Math.random() - 0.5) * 0.1,
           vy: (Math.random() - 0.5) * 0.1,
           size: 90,
@@ -104,8 +101,8 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           type: 'graduation',
         },
         {
-          x: canvas.width * 0.65,
-          y: canvas.height * 0.35,
+          x: width * 0.65,
+          y: height * 0.35,
           vx: (Math.random() - 0.5) * 0.12,
           vy: (Math.random() - 0.5) * 0.12,
           size: 85,
@@ -114,8 +111,8 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           type: 'book',
         },
         {
-          x: canvas.width * 0.85,
-          y: canvas.height * 0.7,
+          x: width * 0.85,
+          y: height * 0.7,
           vx: (Math.random() - 0.5) * 0.09,
           vy: (Math.random() - 0.5) * 0.09,
           size: 95,
@@ -124,8 +121,8 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           type: 'certificate',
         },
         {
-          x: canvas.width * 0.5,
-          y: canvas.height * 0.75,
+          x: width * 0.5,
+          y: height * 0.75,
           vx: (Math.random() - 0.5) * 0.11,
           vy: (Math.random() - 0.5) * 0.11,
           size: 80,
@@ -134,8 +131,8 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
           type: 'blockchain',
         },
         {
-          x: canvas.width * 0.75,
-          y: canvas.height * 0.2,
+          x: width * 0.75,
+          y: height * 0.2,
           vx: (Math.random() - 0.5) * 0.1,
           vy: (Math.random() - 0.5) * 0.1,
           size: 88,
@@ -145,8 +142,17 @@ export default function AnimatedFlowBackground({ campaigns }: AnimatedFlowBackgr
         },
       ]
     }
-
+    
+    // Initialize canvas size first, then objects
+    resizeCanvas()
     initializeEducationObjects()
+    window.addEventListener('resize', () => {
+      resizeCanvas()
+      // Reinitialize objects on resize to use new dimensions
+      if (educationObjectsRef.current.length > 0) {
+        initializeEducationObjects()
+      }
+    })
 
     // Initialize particles with varied sizes and shapes
     const particleCount = 45 // Reduced for better performance
