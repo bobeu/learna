@@ -28,6 +28,8 @@ import CompletedTopicDialog from './components/CompletedTopicDialog';
 import { generateTopicsWithGreeting } from './services/topicGenerationService';
 import { validateCustomTopic } from './services/topicValidationService';
 import { isTopicCompleted, type CompletedTopic } from './services/topicStorageService';
+import { firebaseService } from '@/lib/firebaseService';
+import { useFirebaseProgressTracking } from './hooks/useFirebaseProgressTracking';
 import {
   saveUnsavedProgress,
   loadUnsavedProgress,
@@ -72,6 +74,18 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
   // State management
   const [currentStep, setCurrentStep] = useState<Steps>(initialTopic ? 'article' : 'topics');
   const [selectedTopic, setSelectedTopic] = useState<GeneratedTopic | null>(initialTopic || null);
+  
+  // Firebase progress tracking (initialized after selectedTopic state)
+  const campaignId = campaign.__raw?.contractInfo?.index?.toString() || '';
+  const { 
+    markArticleCompleted, 
+    markQuizCompleted, 
+    trackTopicAccess 
+  } = useFirebaseProgressTracking({
+    walletAddress: userAddress,
+    campaignId,
+    topicId: selectedTopic?.id || '',
+  });
   const [generatedTopics, setGeneratedTopics] = useState<GeneratedTopic[]>(initialTopic ? [initialTopic] : []);
   const [article, setArticle] = useState<GeneratedArticle | null>(null);
   const [quizzes, setQuizzes] = useState<QuizQuestion[]>([]);
@@ -702,6 +716,30 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
     setIsGenerating(true);
     setStartTime(Date.now());
     
+    // First, try to load article from Firebase
+    if (address && userAddress) {
+      try {
+        await firebaseService.waitForInitialization();
+        const campaignId = campaign.__raw.contractInfo.index.toString();
+        const savedArticle = await firebaseService.getArticle(userAddress, campaignId, topic.id);
+        
+        if (savedArticle && savedArticle.content) {
+          // Load existing article from Firebase
+          setArticle({
+            title: savedArticle.title,
+            content: savedArticle.content,
+            wordCount: savedArticle.content.split(/\s+/).length,
+            readingTime: Math.ceil(savedArticle.content.split(/\s+/).length / 200),
+          });
+          setIsGenerating(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('Failed to load article from Firebase, generating new one:', error);
+      }
+    }
+    
+    // If no article found in Firebase, generate new one
     // Timeout is handled at API route level (90s) and service level (60s for articles)
     // No need for client-side timeout that could cause app malfunctions
     try {
@@ -723,6 +761,32 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
             console.warn('Using fallback article due to API error:', articleData._error);
           }
         setArticle(articleData);
+        
+        // Save article to Firebase after generation
+        if (address && userAddress && articleData.content) {
+          try {
+            await firebaseService.waitForInitialization();
+            const campaignId = campaign.__raw.contractInfo.index.toString();
+            await firebaseService.saveArticle(
+              userAddress,
+              campaignId,
+              {
+                id: `article-${topic.id}-${Date.now()}`,
+                topicId: topic.id,
+                content: articleData.content,
+                title: articleData.title || topic.title,
+                completed: false,
+                lastReadAt: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+              }
+            );
+            
+            // Track topic access
+            await trackTopicAccess();
+          } catch (error) {
+            console.warn('Failed to save article to Firebase:', error);
+          }
+        }
         } catch (parseError) {
           // Silently handle JSON parse errors
           console.warn('Failed to parse article response, using fallback');
@@ -759,7 +823,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
     } finally {
       setIsGenerating(false);
     }
-  }, [campaign.name]);
+  }, [campaign.name, address, userAddress, trackTopicAccess]);
 
   // Handle continue with completed topic
   const handleContinueWithCompleted = useCallback(() => {
@@ -806,7 +870,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
     if(!selectedTopic) return;
     generateArticle(selectedTopic);
     setCurrentStep('article');
-  }, [selectedTopic, generateArticle]);
+  }, [selectedTopic, generateArticle, markArticleCompleted]);
 
   // Handle discard
   const handleDiscard = useCallback(() => {
@@ -830,27 +894,58 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
   const generateQuiz = async () => {
     if(!article) return;
     
-    // Check for saved quiz state first (if within 3 minutes)
-    if(address && userAddress) {
-      const campaignId = campaign.__raw.contractInfo.index.toString();
-      const savedQuizState = loadQuizState(userAddress, campaignId);
-      
-      if(savedQuizState && savedQuizState.isValid) {
-        // Restore saved quiz state
-        setQuizzes(savedQuizState.quizzes);
-        setUserAnswers(savedQuizState.userAnswers);
-        setCurrentQuizIndex(savedQuizState.currentQuizIndex);
-        setQuizScore(savedQuizState.quizScore);
-        setStartTime(savedQuizState.startTime);
-        setEndTime(savedQuizState.endTime);
-        setCurrentStep('quiz');
-        return;
-      } else if(savedQuizState && !savedQuizState.isValid) {
-        // Quiz expired, clear it
-        clearQuizState(userAddress, campaignId);
+    // Mark article as completed when user moves to quiz (they've finished reading)
+    if (selectedTopic && article) {
+      try {
+        await markArticleCompleted({
+          id: `article-${selectedTopic.id}`,
+          title: article.title,
+          content: article.content,
+        });
+      } catch (error) {
+        console.warn('Failed to mark article as completed:', error);
       }
     }
     
+    // Always generate new quiz - don't reuse previous attempts
+    // Check Firebase for completed quizzes to ensure we never reuse them
+    if(address && userAddress && selectedTopic) {
+      try {
+        await firebaseService.waitForInitialization();
+        const campaignId = campaign.__raw.contractInfo.index.toString();
+        
+        // Check if there's a completed quiz for this topic (prevent reuse)
+        const progress = await firebaseService.getCampaignProgress(userAddress, campaignId);
+        if (progress) {
+          const topic = progress.topics.find(t => t.id === selectedTopic.id);
+          if (topic && topic.quizCompleted) {
+            // Topic already has a completed quiz - always generate new one
+            // Don't restore any saved state for completed topics
+          } else {
+            // Check for saved quiz state only for temporary restoration (within 3 minutes)
+            const savedQuizState = loadQuizState(userAddress, campaignId);
+            if(savedQuizState && savedQuizState.isValid) {
+              // Restore saved quiz state only if within time limit (temporary state)
+              setQuizzes(savedQuizState.quizzes);
+              setUserAnswers(savedQuizState.userAnswers);
+              setCurrentQuizIndex(savedQuizState.currentQuizIndex);
+              setQuizScore(savedQuizState.quizScore);
+              setStartTime(savedQuizState.startTime);
+              setEndTime(savedQuizState.endTime);
+              setCurrentStep('quiz');
+              return;
+            } else if(savedQuizState && !savedQuizState.isValid) {
+              // Quiz expired, clear it and generate new one
+              clearQuizState(userAddress, campaignId);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to check quiz completion status:', error);
+      }
+    }
+    
+    // Always generate new quiz (never reuse completed quizzes)
     setIsGenerating(true);
     try {
       const response = await fetch('/api/generate-quizzes', {
@@ -894,7 +989,7 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
   };
 
   // Calculate quiz score and performance
-  const calculateResults = () => {
+  const calculateResults = async () => {
     setEndTime(Date.now());
   
     let correctAnswers = 0; 
@@ -920,8 +1015,52 @@ export default function AITutor({ campaign, onClose, initialTopic }: AITutorProp
       ratedAt: stringToHex(new Date().toISOString())
     });
     
+    // Mark quiz as completed using hook (saves to Firebase and updates progress)
+    if (address && userAddress && selectedTopic) {
+      try {
+        await markQuizCompleted({
+          id: `quiz-${selectedTopic.id}-${Date.now()}`, // Always new ID to prevent reuse
+          questions: quizzes,
+          score: score,
+        });
+      } catch (error) {
+        console.warn('Failed to save quiz to Firebase:', error);
+      }
+    }
+    
     setCurrentStep('results');
   };
+  
+  // Track topic access when article is loaded
+  useEffect(() => {
+    if (article && selectedTopic && userAddress) {
+      trackTopicAccess();
+    }
+  }, [article, selectedTopic, userAddress, trackTopicAccess]);
+
+  // Track progress when user answers quiz questions (updates on every action)
+  useEffect(() => {
+    if (currentStep === 'quiz' && userAnswers.length > 0 && selectedTopic && userAddress) {
+      // Update progress in Firebase whenever user answers a question
+      const updateProgress = async () => {
+        try {
+          await firebaseService.waitForInitialization();
+          const campaignId = campaign.__raw?.contractInfo?.index?.toString() || '';
+          await firebaseService.updateTopicProgress(
+            userAddress,
+            campaignId,
+            selectedTopic.id,
+            {
+              lastAccessedAt: new Date().toISOString(),
+            }
+          );
+        } catch (error) {
+          console.warn('Failed to update progress on quiz answer:', error);
+        }
+      };
+      updateProgress();
+    }
+  }, [userAnswers.length, currentStep, selectedTopic, userAddress, campaign]);
 
   // Prepare data for on-chain storage
   const prepareOnChainData = () => {

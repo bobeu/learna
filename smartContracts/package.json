@@ -22,8 +22,8 @@
     "tsc": "npx tsc -p . && cp typechain/*.d.ts dist/typechain/",
     "build": "yarn compile && yarn tsc",
     "clean": "hardhat clean",
-    "interact": "ts-node interact-interfacer.ts",
-    "generate-accounts": "ts-node generate-accounts.ts"
+    "builds": "ts-node builds.ts",
+    "gac": "ts-node gac.ts"
   },
   "dependencies": {
     "@chainlink/contracts": "^1.3.0",

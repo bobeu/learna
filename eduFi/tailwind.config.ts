@@ -35,9 +35,28 @@ export default {
           800: '#262a35',
           900: '#141720',
         },
-        blackish: '#0a0a0a',
-        surface: '#0f1113',
-        lime: '#b6ff3b',
+        // Lighter dark theme with purple/lavender tint for better visibility (inspired by SpookySwap aesthetic)
+        blackish: '#1a1625', // Purple-tinted dark background
+        surface: '#252030', // Lighter surface with purple tint
+        lime: '#a7ff1f', // Neon lime accent
+        dark: {
+          DEFAULT: '#1a1625', // Main dark background (purple-tinted)
+          lighter: '#252030', // Lighter cards/surfaces
+          lightest: '#2d2838', // Lightest surfaces
+        },
+        // Purple accent colors for harmony with dark theme
+        purple: {
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+        },
       },
 	  borderRadius: {
 		lg: 'var(--radius)',
@@ -55,6 +74,10 @@ export default {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.5s ease-out',
         'bounce-gentle': 'bounceGentle 2s infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+        'shimmer': 'shimmer 3s linear infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -68,6 +91,18 @@ export default {
         bounceGentle: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-10px)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 5px #a7ff1f, 0 0 10px #a7ff1f, 0 0 15px #a7ff1f' },
+          '100%': { boxShadow: '0 0 10px #a7ff1f, 0 0 20px #a7ff1f, 0 0 30px #a7ff1f' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
         },
       },
     },
